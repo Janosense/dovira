@@ -1,0 +1,134 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.heading {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+h1,
+.heading--h1 {
+  font-size: 46.1px;
+}
+
+h2,
+.heading--h2 {
+  font-size: 39.1px;
+}
+
+h3,
+.heading--h3 {
+  font-size: 33.2px;
+}
+
+h4,
+.heading--h4 {
+  font-size: 23.6px;
+}
+
+h5,
+.heading--h5 {
+  font-size: 22px;
+}
+
+h6,
+.heading--h6 {
+  font-size: 20px;
+}
+
+@media (min-width: 768px) {
+  h1,
+  .heading--h1 {
+    font-size: 57.6px;
+  }
+
+  h2,
+  .heading--h2 {
+    font-size: 48.96px;
+  }
+
+  h3,
+  .heading--h3 {
+    font-size: 41.6px;
+  }
+
+  h4,
+  .heading--h4 {
+    font-size: 29.5px;
+  }
+
+  h5,
+  .heading--h5 {
+    font-size: 23.6px;
+  }
+}
+
+@media (min-width: 1280px) {
+  h1,
+  .heading--h1 {
+    font-size: 72px;
+  }
+
+  h2,
+  .heading--h2 {
+    font-size: 61.2px;
+  }
+
+  h3,
+  .heading--h3 {
+    font-size: 52px;
+  }
+
+  h4,
+  .heading--h4 {
+    font-size: 36.8px;
+  }
+
+  h5,
+  .heading--h5 {
+    font-size: 29.5px;
+  }
+
+  h6,
+  .heading--h6 {
+    font-size: 23.6px;
+  }
+}
+
+@media (min-width: 1920px) {
+  h1,
+  .heading--h1 {
+    font-size: 80.64px;
+  }
+
+  h2,
+  .heading--h2 {
+    font-size: 68.5px;
+  }
+
+  h3,
+  .heading--h3 {
+    font-size: 58px;
+  }
+
+  h4,
+  .heading--h4 {
+    font-size: 41.2px;
+  }
+
+  h5,
+  .heading--h5 {
+    font-size: 33px;
+  }
+
+  h6,
+  .heading--h6 {
+    font-size: 26.4px;
+  }
+}

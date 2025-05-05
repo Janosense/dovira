@@ -1,0 +1,1 @@
+const o=()=>{const e=document.querySelector(".header__hamburger"),t=document.querySelector(".mobile-nav");e&&t&&e.addEventListener("click",()=>{t.classList.toggle("mobile-nav--active"),e.classList.toggle("is-active")})};export{o as toggleMobileNav};

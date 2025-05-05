@@ -1,0 +1,20 @@
+{
+	"name": "acf/links-group",
+	"title": "Links Group",
+	"description": "",
+	"category": "",
+	"icon": "admin-links",
+	"keywords": [
+		"links",
+		"group",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

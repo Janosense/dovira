@@ -1,0 +1,19 @@
+{
+	"name": "acf/hero",
+	"title": "Hero",
+	"description": "",
+	"category": "",
+	"icon": "arrow-right-alt2",
+	"keywords": [
+		"hero",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

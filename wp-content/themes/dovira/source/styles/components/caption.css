@@ -1,0 +1,25 @@
+.caption {
+  margin: 0;
+  padding-top: 12px;
+  font-size: 20px;
+  line-height: 1.1;
+
+  @media (min-width: 768px) {
+    padding-top: 16px;
+    font-size: 22px;
+  }
+
+  @media (min-width: 1280px) {
+    padding-top: 20px;
+    font-size: 26px;
+  }
+
+  @media (min-width: 1920px) {
+    padding-top: 24px;
+    font-size: 32px;
+  }
+
+  &:first-child {
+    padding-top: 0;
+  }
+}

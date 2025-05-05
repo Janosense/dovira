@@ -1,0 +1,19 @@
+{
+	"name": "acf/news",
+	"title": "News",
+	"description": "",
+	"category": "",
+	"icon": "admin-post",
+	"keywords": [
+		"news",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

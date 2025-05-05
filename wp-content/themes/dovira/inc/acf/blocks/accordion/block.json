@@ -1,0 +1,19 @@
+{
+  "name": "acf/accordion",
+  "title": "Accordion",
+  "description": "",
+  "category": "",
+  "icon": "editor-kitchensink",
+  "keywords": [
+    "accordion",
+    "dovira"
+  ],
+  "supports": {
+    "align": false,
+    "anchor": true
+  },
+  "acf": {
+    "mode": "preview",
+    "renderTemplate": "template.php"
+  }
+}

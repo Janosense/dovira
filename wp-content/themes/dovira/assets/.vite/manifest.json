@@ -1,0 +1,106 @@
+{
+  "source/admin.js": {
+    "file": "admin.BFVzndCX.js",
+    "name": "admin",
+    "src": "source/admin.js",
+    "isEntry": true,
+    "css": [
+      "admin.XegEKm-X.css"
+    ]
+  },
+  "source/main.js": {
+    "file": "main.DHImA-pv.js",
+    "name": "main",
+    "src": "source/main.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "source/scripts/modules/init-animations.js",
+      "source/scripts/modules/init-fancybox.js",
+      "source/scripts/modules/toggle-accordion.js",
+      "source/scripts/modules/check-test.js",
+      "source/scripts/modules/authentication.js",
+      "source/scripts/modules/reset-progress.js",
+      "source/scripts/modules/toggle-mobile-nav.js",
+      "source/scripts/modules/services-search.js",
+      "source/scripts/modules/init-service-price-lists.js",
+      "source/scripts/modules/init-swiper.js",
+      "source/scripts/modules/toggle-employees-city.js",
+      "source/scripts/modules/toggle-footer-calls.js"
+    ],
+    "css": [
+      "main.C_7vjBIk.css"
+    ]
+  },
+  "source/scripts/modules/authentication.js": {
+    "file": "_chunk.byVXYLG0.js",
+    "name": "authentication",
+    "src": "source/scripts/modules/authentication.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/check-test.js": {
+    "file": "_chunk.CN4RzRgn.js",
+    "name": "check-test",
+    "src": "source/scripts/modules/check-test.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/init-animations.js": {
+    "file": "_chunk.Delbh4B0.js",
+    "name": "init-animations",
+    "src": "source/scripts/modules/init-animations.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/init-fancybox.js": {
+    "file": "_chunk.DAhmmDnK.js",
+    "name": "init-fancybox",
+    "src": "source/scripts/modules/init-fancybox.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/init-service-price-lists.js": {
+    "file": "_chunk.Dt10a5No.js",
+    "name": "init-service-price-lists",
+    "src": "source/scripts/modules/init-service-price-lists.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/init-swiper.js": {
+    "file": "_chunk.B684riAg.js",
+    "name": "init-swiper",
+    "src": "source/scripts/modules/init-swiper.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/reset-progress.js": {
+    "file": "_chunk.lQQwxjPn.js",
+    "name": "reset-progress",
+    "src": "source/scripts/modules/reset-progress.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/services-search.js": {
+    "file": "_chunk.5MuT46-h.js",
+    "name": "services-search",
+    "src": "source/scripts/modules/services-search.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/toggle-accordion.js": {
+    "file": "_chunk.d1cMw5Hx.js",
+    "name": "toggle-accordion",
+    "src": "source/scripts/modules/toggle-accordion.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/toggle-employees-city.js": {
+    "file": "_chunk.DldrTSww.js",
+    "name": "toggle-employees-city",
+    "src": "source/scripts/modules/toggle-employees-city.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/toggle-footer-calls.js": {
+    "file": "_chunk.COom_a6q.js",
+    "name": "toggle-footer-calls",
+    "src": "source/scripts/modules/toggle-footer-calls.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/toggle-mobile-nav.js": {
+    "file": "_chunk.DjGs3uVK.js",
+    "name": "toggle-mobile-nav",
+    "src": "source/scripts/modules/toggle-mobile-nav.js",
+    "isDynamicEntry": true
+  }
+}

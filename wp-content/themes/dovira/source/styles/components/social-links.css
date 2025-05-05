@@ -1,0 +1,11 @@
+.social-links {
+  list-style-type: none;
+  display: flex;
+  column-gap: 15px;
+  margin: auto 0 0;
+  padding: 0;
+
+  @media (min-width: 768px) {
+    margin-top: 0;
+  }
+}

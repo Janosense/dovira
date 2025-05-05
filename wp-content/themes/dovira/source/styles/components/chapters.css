@@ -1,0 +1,157 @@
+.chapters__heading {
+  margin-bottom: 12px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 16px;
+  }
+
+  @media (min-width: 1280px) {
+    margin-bottom: 20px;
+  }
+
+  @media (min-width: 1920px) {
+    margin-bottom: 24px;
+  }
+}
+
+.chapters__item {
+  margin-bottom: 40px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.chapters__options {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 16px;
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.chapters__option {
+  position: relative;
+  flex-shrink: 0;
+  display: block;
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  border: 2px solid #dcdcdc;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.3s ease;
+
+  @media (min-width: 768px) {
+    width: auto;
+    padding: 12px;
+  }
+
+  & span {
+    display: block;
+  }
+}
+
+.chapters__option:hover {
+  background-color: #1995AD!important;
+  border-color:  #1995AD!important;
+  color: #FFF!important;
+
+  & .chapters__option-title {
+    color: #FFF!important;
+  }
+
+  & .chapters__option-icon {
+    fill: #FFF!important;
+  }
+
+  & .chapters__option-passed strong {
+    color: #FFF!important;
+  }
+}
+
+.chapters__option--success {
+  border-color: #1995AD;
+
+  .chapters__option-title {
+    color: #1995AD;
+  }
+
+  & .chapters__option-icon {
+    fill: #1995AD;
+  }
+
+  & .chapters__option-passed strong {
+    color: #1995AD;
+  }
+}
+
+.chapters__option--fault {
+  border-color: #ad0000;
+  background-color: rgba(255, 0, 0, 0.05);
+
+  .chapters__option-title {
+    color: #ad0000;
+  }
+
+  & .chapters__option-icon {
+    fill: #ad0000;
+  }
+
+  & .chapters__option-passed strong {
+    color: #ad0000;
+  }
+}
+
+.chapters__option--in-progress {
+  & .chapters__option-icon {
+    fill: #c0c0c0;
+  }
+}
+
+.chapters__option--new {
+  .chapters__option-title {
+    font-weight: 400;
+  }
+
+  & strong {
+    font-weight: 400;
+  }
+}
+
+.chapters__option-title {
+  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 18px;
+  color: #000;
+  transition: color 0.3s ease;
+
+  @media (min-width: 1024px) {
+    font-size: 22px;
+  }
+}
+
+.chapters__option-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  transition: fill 0.3s ease;
+}
+
+.chapters__actions {
+  text-align: right;
+  padding-top: 40px;
+}
+
+.chapters__note {
+  display: block;
+  margin: 0 0 12px;
+  padding-top: 4px;
+  color: #444;
+  font-size: 16px;
+}

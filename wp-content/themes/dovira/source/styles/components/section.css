@@ -1,0 +1,144 @@
+.section {
+  position: relative;
+
+  & .caption {
+    @media (min-width: 1024px) {
+      max-width: 84%;
+    }
+
+    @media (min-width: 1280px) {
+      max-width: 72%;
+    }
+  }
+
+  &:first-child {
+    padding-top: 100px;
+
+    @media (min-width: 1024px) {
+      padding-top: 120px;
+    }
+
+    @media (min-width: 1280px) {
+      padding-top: 0;
+    }
+  }
+}
+
+.section--with-bg {
+  padding-top: 40px;
+  padding-bottom: 40px;
+
+  @media (min-width: 768px) {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+  @media (min-width: 1280px) {
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+
+  @media (min-width: 1440px) {
+    padding-top: 100px;
+    padding-bottom: 100px;
+  }
+}
+
+.section--mb-small {
+  margin-bottom: 24px;
+}
+
+.section--mb-standard {
+  margin-bottom: 40px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 48px;
+  }
+
+  @media (min-width: 1280px) {
+    margin-bottom: 64px;
+  }
+
+  @media (min-width: 1440px) {
+    margin-bottom: 100px;
+  }
+}
+
+.section__header {
+  margin-bottom: 20px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 24px;
+  }
+
+  @media (min-width: 1280px) {
+    margin-bottom: 32px;
+  }
+
+  @media (min-width: 1440px) {
+    margin-bottom: 50px;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.section__header--align-left {
+  text-align: left;
+}
+
+.section__header--align-center {
+  text-align: center;
+
+  & .caption {
+    margin: auto;
+  }
+}
+
+.section__header--align-right {
+  text-align: right;
+
+  & .caption {
+    margin-left: auto;
+  }
+}
+
+.section__header + .section__cta-holder {
+  padding-top: 0;
+}
+
+.section__cta-holder {
+  display: grid;
+  width: 100%;
+  padding-top: 28px;
+
+  @media (min-width: 1024px) {
+    padding-top: 40px;
+  }
+}
+
+.section__cta-holder--align-left {
+  justify-content: flex-start;
+}
+
+.section__cta-holder--align-center {
+  justify-content: center;
+}
+
+.section__cta-holder--align-right {
+  justify-content: flex-end;
+}
+
+.section__background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+

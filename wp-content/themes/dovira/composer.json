@@ -1,0 +1,9 @@
+{
+  "require": {
+    "stoutlogic/acf-builder": "^1.12",
+    "vlucas/phpdotenv": "^5.5"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  }
+}

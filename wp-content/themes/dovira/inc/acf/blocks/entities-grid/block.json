@@ -1,0 +1,20 @@
+{
+	"name": "acf/entities-grid",
+	"title": "Entities Grid",
+	"description": "",
+	"category": "",
+	"icon": "screenoptions",
+	"keywords": [
+		"entity",
+		"grid",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"name": "acf/services",
+	"title": "Services",
+	"description": "",
+	"category": "",
+	"icon": "open-folder",
+	"keywords": [
+		"services",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

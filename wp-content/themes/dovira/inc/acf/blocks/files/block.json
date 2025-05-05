@@ -1,0 +1,19 @@
+{
+	"name": "acf/files",
+	"title": "Files",
+	"description": "",
+	"category": "",
+	"icon": "media-default",
+	"keywords": [
+		"files",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

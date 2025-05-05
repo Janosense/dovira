@@ -1,0 +1,40 @@
+{
+  "name": "dovira",
+  "version": "1.1.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "copy-env": "cp .env.example .env",
+    "env-prod": "sed -i '' 's/^WP_ENVIRONMENT_TYPE=.*/WP_ENVIRONMENT_TYPE=production/' .env",
+    "env-dev": "sed -i '' 's/^WP_ENVIRONMENT_TYPE=.*/WP_ENVIRONMENT_TYPE=development/' .env",
+    "start": "npm run env-dev && vite",
+    "build": "npm run env-prod && vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Syndicode/syndicode-wp-dovira.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Syndicode/syndicode-wp-dovira/issues"
+  },
+  "homepage": "https://github.com/Syndicode/syndicode-wp-dovira#readme",
+  "devDependencies": {
+    "browserslist": "^4.24.2",
+    "lightningcss": "^1.28.2",
+    "postcss": "^8.4.49",
+    "postcss-assets": "^6.0.0",
+    "postcss-prefix-selector": "^2.1.0",
+    "postcss-preset-env": "^10.1.1",
+    "postcss-replace": "^2.0.1",
+    "vite": "^5.4.11",
+    "vite-plugin-live-reload": "^3.0.3",
+    "vite-plugin-static-copy": "^2.1.0"
+  },
+  "dependencies": {
+    "@fancyapps/ui": "^5.0.36",
+    "swiper": "^11.2.1"
+  }
+}

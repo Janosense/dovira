@@ -1,0 +1,19 @@
+{
+	"name": "acf/about",
+	"title": "About",
+	"description": "",
+	"category": "",
+	"icon": "text",
+	"keywords": [
+		"about",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

@@ -1,0 +1,54 @@
+/* Settings */
+@import "@styles/colors.css";
+
+/* Libs */
+@import "@fancyapps/ui/dist/fancybox/fancybox.css";
+@import "../../node_modules/swiper/swiper.css";
+
+/* Components */
+@import "@styles/components/body.css";
+@import "@styles/components/wrapper.css";
+@import "@styles/components/heading.css";
+@import "@styles/components/caption";
+@import "@styles/components/gradient-layer.css";
+@import "@styles/components/main-nav.css";
+@import "@styles/components/mobile-nav.css";
+@import "@styles/components/button.css";
+@import "@styles/components/hamburger.css";
+@import "@styles/components/header.css";
+@import "@styles/components/footer.css";
+@import "@styles/components/section.css";
+@import "@styles/components/text.css";
+@import "@styles/components/questions.css";
+@import "@styles/components/answers.css";
+@import "@styles/components/loader.css";
+@import "@styles/components/form.css";
+@import "@styles/components/chapters.css";
+@import "@styles/components/pre-header.css";
+@import "@styles/components/social-links.css";
+@import "@styles/components/search-form.css";
+@import "@styles/components/breadcrumbs.css";
+@import "@styles/components/employee.css";
+@import "@styles/components/service.css";
+@import "@styles/components/article.css";
+@import "@styles/components/search-results.css";
+@import "@styles/components/sub-service.css";
+@import "@styles/components/footer-calls.css";
+
+/* Blocks */
+@import "@styles/blocks/hero.css";
+@import "@styles/blocks/text-image.css";
+@import "@styles/blocks/entities-grid.css";
+@import "@styles/blocks/gallery.css";
+@import "@styles/blocks/text-form.css";
+@import "@styles/blocks/accordion.css";
+@import "@styles/blocks/rich-text.css";
+@import "@styles/blocks/contacts.css";
+@import "@styles/blocks/links-group.css";
+@import "@styles/blocks/employees.css";
+@import "@styles/blocks/files.css";
+@import "@styles/blocks/news.css";
+@import "@styles/blocks/services.css";
+@import "@styles/blocks/contacts-simple.css";
+@import "@styles/blocks/entity-links.css";
+@import "@styles/blocks/about.css";

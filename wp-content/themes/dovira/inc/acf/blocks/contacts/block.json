@@ -1,0 +1,19 @@
+{
+	"name": "acf/contacts",
+	"title": "Contacts",
+	"description": "",
+	"category": "",
+	"icon": "location",
+	"keywords": [
+		"contacts",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

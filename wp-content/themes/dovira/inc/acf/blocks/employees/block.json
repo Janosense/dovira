@@ -1,0 +1,19 @@
+{
+	"name": "acf/employees",
+	"title": "Employees",
+	"description": "",
+	"category": "",
+	"icon": "groups",
+	"keywords": [
+		"employees",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

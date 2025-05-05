@@ -1,0 +1,20 @@
+{
+	"name": "acf/entity-links",
+	"title": "Entity links",
+	"description": "",
+	"category": "",
+	"icon": "text",
+	"keywords": [
+		"links",
+		"entity",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}
