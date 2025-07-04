@@ -1,0 +1,1 @@
+const o=()=>{const e=document.querySelector(".footer-calls__link--phones");e&&e.addEventListener("click",t=>{t.preventDefault()})},c=()=>{const e=document.querySelector(".footer-calls");e&&(o(),e.querySelector(".footer-calls__toggle").addEventListener("click",l=>{e.classList.toggle("footer-calls--active")}))};export{c as toggleFooterCalls};

@@ -143,7 +143,7 @@
 			</button>
 			<div class="footer-calls__holder">
 				<?php if ( ! empty( $main_phone ) ) : ?>
-					<a href="tel:<?= $main_phone; ?>" class="footer-calls__link">
+					<a href="tel:<?= $main_phone; ?>" class="footer-calls__link footer-calls__link--phones">
 						<svg width="800px" height="800px" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg"
 							 fill="none">
 							<path stroke="#FFFFFF" stroke-linejoin="round" stroke-width="12"
@@ -170,6 +170,17 @@
 						</svg>
 					</a>
 				<?php endif; ?>
+			</div>
+			<div class="footer-calls__phones">
+				<?php foreach ( $contacts as $contact ) :?>
+					<a href="tel:<?= str_replace( [
+						' ',
+						'-',
+						'(',
+						')'
+					], '', $contact['phones'][0]['number'] ); ?>"
+					   class="footer-calls__phone"><span><?= $contact['city'] ?>:</span> <?= $contact['phones'][0]['number']; ?></a>
+				<?php endforeach; ?>
 			</div>
 		</div>
 	<?php endif; ?>

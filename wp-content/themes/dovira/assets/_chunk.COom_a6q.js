@@ -1,1 +1,0 @@
-const l=()=>{const e=document.querySelector(".footer-calls");e&&e.querySelector(".footer-calls__toggle").addEventListener("click",t=>{e.classList.toggle("footer-calls--active")})};export{l as toggleFooterCalls};
