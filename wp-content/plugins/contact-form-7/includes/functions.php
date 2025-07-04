@@ -20,8 +20,7 @@ function wpcf7_plugin_path( $path = '' ) {
 function wpcf7_plugin_url( $path = '' ) {
 	$url = plugins_url( $path, WPCF7_PLUGIN );
 
-	if ( is_ssl()
-	and 'http:' == substr( $url, 0, 5 ) ) {
+	if ( is_ssl() and 'http:' === substr( $url, 0, 5 ) ) {
 		$url = 'https:' . substr( $url, 5 );
 	}
 
@@ -67,9 +66,9 @@ function wpcf7_upload_dir( $type = false ) {
 		'url' => $uploads['baseurl'],
 	) );
 
-	if ( 'dir' == $type ) {
+	if ( 'dir' === $type ) {
 		return $uploads['dir'];
-	} if ( 'url' == $type ) {
+	} if ( 'url' === $type ) {
 		return $uploads['url'];
 	}
 
@@ -158,7 +157,7 @@ function wpcf7_flat_join( $input, $options = '' ) {
 	$input = wpcf7_array_flatten( $input );
 	$output = array();
 
-	foreach ( (array) $input as $value ) {
+	foreach ( $input as $value ) {
 		if ( is_scalar( $value ) ) {
 			$output[] = trim( (string) $value );
 		}
@@ -359,7 +358,7 @@ function wpcf7_enctype_value( $enctype ) {
 		'text/plain',
 	);
 
-	if ( in_array( $enctype, $valid_enctypes ) ) {
+	if ( in_array( $enctype, $valid_enctypes, true ) ) {
 		return $enctype;
 	}
 
@@ -380,49 +379,9 @@ function wpcf7_enctype_value( $enctype ) {
  * @return bool True on success, false on failure.
  */
 function wpcf7_rmdir_p( $dir ) {
-	if ( is_file( $dir ) ) {
-		$file = $dir;
+	$filesystem = WPCF7_Filesystem::get_instance();
 
-		if ( @unlink( $file ) ) {
-			return true;
-		}
-
-		$stat = stat( $file );
-
-		if ( @chmod( $file, $stat['mode'] | 0200 ) ) { // add write for owner
-			if ( @unlink( $file ) ) {
-				return true;
-			}
-
-			@chmod( $file, $stat['mode'] );
-		}
-
-		return false;
-	}
-
-	if ( ! is_dir( $dir ) ) {
-		return false;
-	}
-
-	if ( $handle = opendir( $dir ) ) {
-		while ( false !== ( $file = readdir( $handle ) ) ) {
-			if ( $file == "."
-			or $file == ".." ) {
-				continue;
-			}
-
-			wpcf7_rmdir_p( path_join( $dir, $file ) );
-		}
-
-		closedir( $handle );
-	}
-
-	if ( false !== ( $files = scandir( $dir ) )
-	and ! array_diff( $files, array( '.', '..' ) ) ) {
-		return rmdir( $dir );
-	}
-
-	return false;
+	return $filesystem->delete( $dir, true );
 }
 
 
@@ -505,7 +464,12 @@ function wpcf7_count_code_units( $text ) {
  */
 function wpcf7_is_localhost() {
 	$sitename = wp_parse_url( network_home_url(), PHP_URL_HOST );
-	return in_array( strtolower( $sitename ), array( 'localhost', '127.0.0.1' ) );
+
+	return in_array(
+		strtolower( $sitename ),
+		array( 'localhost', '127.0.0.1' ),
+		true
+	);
 }
 
 
@@ -677,8 +641,10 @@ function wpcf7_log_remote_request( $url, $request, $response ) {
  * @return string|bool Anonymized IP address, or false on failure.
  */
 function wpcf7_anonymize_ip_addr( $ip_addr ) {
-	if ( ! function_exists( 'inet_ntop' )
-	or ! function_exists( 'inet_pton' ) ) {
+	if (
+		! function_exists( 'inet_ntop' ) or
+		! function_exists( 'inet_pton' )
+	) {
 		return $ip_addr;
 	}
 
@@ -688,13 +654,95 @@ function wpcf7_anonymize_ip_addr( $ip_addr ) {
 		return $ip_addr;
 	}
 
-	if ( 4 == strlen( $packed ) ) { // IPv4
+	if ( 4 === strlen( $packed ) ) { // IPv4
 		$mask = '255.255.255.0';
-	} elseif ( 16 == strlen( $packed ) ) { // IPv6
+	} elseif ( 16 === strlen( $packed ) ) { // IPv6
 		$mask = 'ffff:ffff:ffff:0000:0000:0000:0000:0000';
 	} else {
 		return $ip_addr;
 	}
 
 	return inet_ntop( $packed & inet_pton( $mask ) );
+}
+
+
+/**
+ * Retrieves a sanitized value from the $_GET superglobal.
+ *
+ * @param string $key Array key.
+ * @param mixed $default The default value returned when
+ *              the specified superglobal is not set.
+ * @return mixed Sanitized value.
+ */
+function wpcf7_superglobal_get( $key, $default = '' ) {
+	return wpcf7_superglobal( 'get', $key ) ?? $default;
+}
+
+
+/**
+ * Retrieves a sanitized value from the $_POST superglobal.
+ *
+ * @param string $key Array key.
+ * @param mixed $default The default value returned when
+ *              the specified superglobal is not set.
+ * @return mixed Sanitized value.
+ */
+function wpcf7_superglobal_post( $key, $default = '' ) {
+	return wpcf7_superglobal( 'post', $key ) ?? $default;
+}
+
+
+/**
+ * Retrieves a sanitized value from the $_REQUEST superglobal.
+ *
+ * @param string $key Array key.
+ * @param mixed $default The default value returned when
+ *              the specified superglobal is not set.
+ * @return mixed Sanitized value.
+ */
+function wpcf7_superglobal_request( $key, $default = '' ) {
+	return wpcf7_superglobal( 'request', $key ) ?? $default;
+}
+
+
+/**
+ * Retrieves a sanitized value from the $_SERVER superglobal.
+ *
+ * @param string $key Array key.
+ * @param mixed $default The default value returned when
+ *              the specified superglobal is not set.
+ * @return mixed Sanitized value.
+ */
+function wpcf7_superglobal_server( $key, $default = '' ) {
+	return wpcf7_superglobal( 'server', $key ) ?? $default;
+}
+
+
+/**
+ * Retrieves a sanitized value from the specified superglobal.
+ *
+ * @param string $superglobal A superglobal type.
+ * @param string $key Array key.
+ * @return string|array|null Sanitized value.
+ */
+function wpcf7_superglobal( $superglobal, $key ) {
+	$superglobals = array(
+		'get' => $_GET,
+		'post' => $_POST,
+		'request' => $_REQUEST,
+		'server' => $_SERVER,
+	);
+
+	if ( isset( $superglobals[$superglobal][$key] ) ) {
+		return map_deep(
+			$superglobals[$superglobal][$key],
+			static function ( $val ) {
+				$val = wp_unslash( $val );
+				$val = wp_check_invalid_utf8( $val );
+				$val = wp_kses_no_null( $val );
+				$val = wpcf7_strip_whitespaces( $val );
+				return $val;
+			}
+		);
+	}
 }
