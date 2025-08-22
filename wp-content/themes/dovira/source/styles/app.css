@@ -9,7 +9,7 @@
 @import "@styles/components/body.css";
 @import "@styles/components/wrapper.css";
 @import "@styles/components/heading.css";
-@import "@styles/components/caption";
+@import "@styles/components/caption.css";
 @import "@styles/components/gradient-layer.css";
 @import "@styles/components/main-nav.css";
 @import "@styles/components/mobile-nav.css";
@@ -34,6 +34,7 @@
 @import "@styles/components/search-results.css";
 @import "@styles/components/sub-service.css";
 @import "@styles/components/footer-calls.css";
+@import "@styles/components/not-found.css";
 
 /* Blocks */
 @import "@styles/blocks/hero.css";
