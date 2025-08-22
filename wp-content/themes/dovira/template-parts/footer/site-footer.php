@@ -122,7 +122,7 @@
 					</a>
 				<?php endif; ?>
 				<?php if ( ! empty( $telegram ) ) : ?>
-					<a href="<?= $telegram; ?>" target="_blank" class="footer-calls__link">
+					<a href="https://t.me/<?= $telegram; ?>" target="_blank" class="footer-calls__link">
 						<svg width="800px" height="800px" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg"
 							 fill="none">
 							<path stroke="#FFFFFF" stroke-width="12"
@@ -131,7 +131,7 @@
 					</a>
 				<?php endif; ?>
 				<?php if ( ! empty( $viber ) ) : ?>
-					<a href="<?= $viber; ?>" target="_blank" class="footer-calls__link">
+					<a href="viber://chat?number=<?= $viber; ?>" target="_blank" class="footer-calls__link">
 						<svg width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
 							 fill="none">
 							<path
