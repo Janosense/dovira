@@ -6,13 +6,13 @@
 				<span>Сторінку не знайдено</span></p>
 			<ul class="not-found__list">
 				<li>
-					<a href="/"></a>Головна
+					<a href="/">Головна</a>
 				</li>
 				<li>
-					<a href="/services/"></a>Послуги
+					<a href="/services/">Послуги</a>
 				</li>
 				<li>
-					<a href="/contacts/"></a>Контакти
+					<a href="/contacts/">Контакти</a>
 				</li>
 			</ul>
 		</div>
