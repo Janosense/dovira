@@ -69,6 +69,7 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 								<?php else: ?>
 									<?= wp_get_attachment_image( $entity['image']['id'], 'full', false, array(
 										'class' => 'entities-grid__image',
+										'alt' => $entity['title'],
 									) ); ?>
 								<?php endif; ?>
 							</div>

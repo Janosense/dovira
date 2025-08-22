@@ -46,6 +46,7 @@ endif;
 		<?php if ( ! empty( $background_image ) ) :
 			echo wp_get_attachment_image( $background_image['id'], 'full', false, array(
 				'class' => 'section__background-image',
+				'alt'   => $heading,
 			) );
 		endif; ?>
 		<?php if ( $show_gradient_layer ): ?>

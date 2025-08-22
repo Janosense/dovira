@@ -49,6 +49,7 @@ endif;
 		<?php if ( ! empty( $background_image ) ) :
 			echo wp_get_attachment_image( $background_image['id'], 'full', false, array(
 				'class' => 'section__background-image',
+				'alt'   => $heading,
 			) );
 		endif; ?>
 		<?php if ( $show_gradient_layer ): ?>
@@ -77,6 +78,7 @@ endif;
 								<div class="news__thumbnail-holder">
 									<?= get_the_post_thumbnail( $article->ID, 'full', array(
 										'class' => 'news__thumbnail',
+										'alt'   => get_the_title( $article->ID ),
 									) ) ?>
 									<span class="news__link-more">Читати далі</span>
 								</div>

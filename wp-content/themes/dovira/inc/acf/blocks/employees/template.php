@@ -53,6 +53,7 @@ endif;
 		<?php if ( ! empty( $background_image ) ) :
 			echo wp_get_attachment_image( $background_image['id'], 'full', false, array(
 				'class' => 'section__background-image',
+				'alt'   => $heading,
 			) );
 		endif; ?>
 		<?php if ( $show_gradient_layer ): ?>
@@ -109,6 +110,7 @@ endif;
 								<div class="employees__photo-holder">
 									<?= wp_get_attachment_image( $photo['id'], 'full', false, array(
 										'class' => 'employees__photo',
+										'alt'   => $employee->post_title,
 									) ) ?>
 									<span class="employees__link-more">Познайомитись</span>
 								</div>

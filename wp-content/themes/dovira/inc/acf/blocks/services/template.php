@@ -52,6 +52,7 @@ endif;
 		<?php if ( ! empty( $background_image ) ) :
 			echo wp_get_attachment_image( $background_image['id'], 'full', false, array(
 				'class' => 'section__background-image',
+				'alt'   => $heading,
 			) );
 		endif; ?>
 		<?php if ( $show_gradient_layer ): ?>
@@ -111,6 +112,7 @@ endif;
 							<a href="<?= get_permalink( $service->ID ); ?>" class="services__link">
 								<?= wp_get_attachment_image( $cover['id'], 'full', false, array(
 									'class' => 'services__image',
+									'alt'   => 'Ветеринарна клініка: ' . $service->post_title,
 								) ); ?>
 								<span
 									class="services__counter">Послуг: <?= is_countable( $prices ) ? count( $prices ) : 0 ?></span>

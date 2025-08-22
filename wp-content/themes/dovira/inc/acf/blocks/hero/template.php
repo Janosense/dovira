@@ -43,11 +43,13 @@ $margin_bottom           = dovira_get_acf_field( 'margin_bottom' );
 			$css_class = ! empty( $background_image_mobile ) ? 'hero__background-image hero__background-image--desktop' : 'hero__background-image hero__background-image--responsive';
 			echo wp_get_attachment_image( $background_image['id'], 'full', false, array(
 				'class' => $css_class,
+				'alt'   => $heading,
 			) );
 		endif; ?>
 		<?php if ( ! empty( $background_image_mobile ) ) :
 			echo wp_get_attachment_image( $background_image_mobile['id'], 'full', false, array(
 				'class' => 'hero__background-image hero__background-image--mobile',
+				'alt'   => $heading,
 			) );
 		endif; ?>
 		<?php if ( $show_gradient_layer ): ?>
