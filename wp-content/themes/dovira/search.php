@@ -143,6 +143,7 @@
 											<a href="<?= get_permalink( $service->ID ); ?>" class="services__link">
 												<?= wp_get_attachment_image( $cover['id'], 'full', false, array(
 													'class' => 'services__image',
+													'alt' => 'Ветеринарна клініка: ' . $service->post_title,
 												) ); ?>
 												<span
 													class="services__counter">Послуг: <?= is_countable( $prices ) ? count( $prices ) : 0 ?></span>
@@ -166,6 +167,7 @@
 											<div class="news__thumbnail-holder">
 												<?= get_the_post_thumbnail( $article->ID, 'full', array(
 													'class' => 'news__thumbnail',
+													'alt' => get_the_title( $article->ID ),
 												) ) ?>
 												<span class="news__link-more">Читати далі</span>
 											</div>
@@ -205,6 +207,7 @@
 											<div class="employees__photo-holder">
 												<?= wp_get_attachment_image( $photo['id'], 'full', false, array(
 													'class' => 'employees__photo',
+													'alt' =>  $employee->post_title,
 												) ) ?>
 												<span class="employees__link-more">Познайомитись</span>
 											</div>

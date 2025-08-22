@@ -35,6 +35,7 @@
 				<?php if ( ! empty( $photo ) ) : ?>
 					<?= wp_get_attachment_image( $photo['id'], 'full', false, array(
 						'class' => 'employee__photo',
+						'alt'   => get_the_title(),
 					) ); ?>
 				<?php endif; ?>
 				<div class="employee__info">

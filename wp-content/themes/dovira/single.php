@@ -29,6 +29,7 @@
 					<?php endif; ?>
 					<?php the_post_thumbnail( 'full', [
 						'class' => 'article__thumbnail',
+						'alt' => get_the_title(),
 					] ); ?>
 					<div class="article__content">
 						<?php the_content(); ?>
