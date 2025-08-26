@@ -12,7 +12,7 @@ function acf_add_post_type_service_fields(): void {
 		'required' => true,
 	) );
 
-	$fields->addTextarea( 'description', array(
+	$fields->addWysiwyg( 'description', array(
 		'label' => __( 'Description', 'dovira' ),
 	) );
 
