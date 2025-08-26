@@ -648,7 +648,7 @@ add_filter( 'manage_conversation_posts_columns', 'dovira_add_custom_conversation
  *
  * @return void
  */
-function club_championship_fill_custom_conversation_columns( string $column_name, int $post_id ): void {
+function dovira_fill_custom_conversation_columns( string $column_name, int $post_id ): void {
 	switch ( $column_name ) {
 		case 'is_processed':
 			$is_processed = dovira_get_acf_field( 'is_processed', $post_id );
@@ -661,7 +661,48 @@ function club_championship_fill_custom_conversation_columns( string $column_name
 
 }
 
-add_action( 'manage_conversation_posts_custom_column', 'club_championship_fill_custom_conversation_columns', 10, 2 );
+add_action( 'manage_conversation_posts_custom_column', 'dovira_fill_custom_conversation_columns', 10, 2 );
 
+/**
+ * Outputs the microdata markup in JSON-LD format for the veterinary clinic,
+ * including details about its main departments, their addresses, phone numbers,
+ * opening hours, and descriptions.
+ *
+ * @return void
+ */
+function dovira_add_micro_markup(): void {
+
+	if ( is_front_page() ) {
+		$contacts     = dovira_get_acf_field( 'contacts_cities', 'option' );
+		$micro_markup = [
+			"@context" => "https://schema.org",
+			"@type"    => "VeterinaryCare",
+			"name"     => "Ветеринарна клініка",
+			"url"      => get_home_url(),
+		];
+		if ( ! empty( $contacts ) ) {
+			foreach ( $contacts as $contact ) {
+				$micro_markup['department'][] = [
+					"@type"        => "VeterinaryCare",
+					"name"         => 'Філія ' . $contact['city'],
+					"address"      => [
+						"@type"           => "PostalAddress",
+						"addressLocality" => $contact['city'],
+						"streetAddress"   => $contact['address']
+					],
+					"telephone"    => array_map( function ( $phone ) {
+						return $phone['number'];
+					}, $contact['phones'] ),
+					"openingHours" => $contact['schedule'],
+					"description"  => str_replace( [ "\r", "\n" ], ['', ' '], strip_tags( $contact['note'] ) ),
+				];
+			}
+		}
+
+		echo '<script type="application/ld+json">' . json_encode( $micro_markup, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>';
+	}
+}
+
+add_action( 'wp_head', 'dovira_add_micro_markup' );
 
 
