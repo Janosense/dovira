@@ -694,12 +694,45 @@ function dovira_add_micro_markup(): void {
 						return $phone['number'];
 					}, $contact['phones'] ),
 					"openingHours" => $contact['schedule'],
-					"description"  => str_replace( [ "\r", "\n" ], ['', ' '], strip_tags( $contact['note'] ) ),
+					"description"  => str_replace( [ "\r", "\n" ], [ '', ' ' ], strip_tags( $contact['note'] ) ),
 				];
 			}
 		}
 
 		echo '<script type="application/ld+json">' . json_encode( $micro_markup, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>';
+	}
+
+	if ( is_singular( 'service' ) ) {
+		global $post;
+		$micro_markup = [
+			'@context'        => 'https://schema.org',
+			'@type'           => 'BreadcrumbList',
+			'itemListElement' => [
+				[
+					'@type'    => 'ListItem',
+					'position' => 1,
+					'name'     => 'Головна',
+					'item'     => 'https://dovira.vet/'
+				],
+				[
+					'@type'    => 'ListItem',
+					'position' => 2,
+					'name'     => 'Послуги',
+					'item'     => 'https://dovira.vet/services/'
+				],
+			]
+		];
+
+		if ( ! empty( $post ) ) {
+			$micro_markup['itemListElement'][] = [
+				'@type'    => 'ListItem',
+				'position' => 3,
+				'name'     => $post->post_title,
+			];
+
+			echo '<script type="application/ld+json">' . json_encode( $micro_markup, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>';
+		}
+
 	}
 }
 
