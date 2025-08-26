@@ -738,4 +738,17 @@ function dovira_add_micro_markup(): void {
 
 add_action( 'wp_head', 'dovira_add_micro_markup' );
 
+/**
+ * Redirects the user to the lowercase version of the current URL if it is not already lowercase.
+ *
+ * @return void
+ */
+function dovira_redirect_to_lowercase_url(): void {
+	if ( $_SERVER['REQUEST_URI'] !== strtolower( $_SERVER['REQUEST_URI'] ) ) {
+		wp_redirect( strtolower( $_SERVER['REQUEST_URI'] ), 301 );
+	}
+}
+
+add_action( 'template_redirect', 'dovira_redirect_to_lowercase_url' );
+
 
