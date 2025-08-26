@@ -49,7 +49,8 @@ return [
 		'taxonomies'          => [],
 		'has_archive'         => false,
 		'rewrite'             => [
-			'slug' => 'Employees',
+			'slug' => 'team',
+			'with_front' => false,
 		],
 		'query_var'           => true,
 		'can_export'          => true,

@@ -47,10 +47,11 @@ return [
 		'map_meta_cap'        => true,
 		'hierarchical'        => true,
 		'taxonomies'          => [],
-		'supports'            => ['title', 'editor', 'page-attributes'],
+		'supports'            => [ 'title', 'editor', 'page-attributes' ],
 		'has_archive'         => false,
 		'rewrite'             => [
-			'slug' => 'services',
+			'slug'       => 'services',
+			'with_front' => false,
 		],
 		'query_var'           => true,
 		'can_export'          => true,
