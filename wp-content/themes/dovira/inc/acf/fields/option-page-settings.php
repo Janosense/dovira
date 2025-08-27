@@ -15,21 +15,25 @@ function acf_add_options_page_fonts_fields(): void {
 
 	$fields = new FieldsBuilder( 'settings' );
 
-	$fields->addTab( 'contacts', [
+	$fields->addTab( 'contacts_tab', [
 		'label' => __( 'Contacts', 'dovira' ),
 	] );
 
-	$fields->addText('contacts_main_phone', array(
-		'label'  => __( 'Main Phone', 'dovira' ),
-	));
+	$fields->addText( 'contacts_main_phone', array(
+		'label' => __( 'Main Phone', 'dovira' ),
+	) );
+//
+//	$fields->addEmail( 'contacts_email', array(
+//		'label' => __( 'Main Email', 'dovira' ),
+//	) );
 
-	$fields->addText('contacts_telegram', array(
-		'label'  => __( 'Telegram', 'dovira' ),
-	));
+	$fields->addText( 'contacts_telegram', array(
+		'label' => __( 'Telegram', 'dovira' ),
+	) );
 
-	$fields->addText('contacts_viber', array(
-		'label'  => __( 'Viber', 'dovira' ),
-	));
+	$fields->addText( 'contacts_viber', array(
+		'label' => __( 'Viber', 'dovira' ),
+	) );
 
 	$fields->addRepeater( 'contacts_cities', array(
 		'label'  => __( 'Cities', 'dovira' ),
@@ -61,6 +65,53 @@ function acf_add_options_page_fonts_fields(): void {
 	       ->addTextarea( 'map_iframe', array(
 		       'label' => __( 'Map iframe', 'dovira' ),
 		       'rows'  => 3,
+	       ) )
+	       ->addEmail( 'email', array(
+		       'label' => __( 'Email', 'dovira' ),
+	       ) );
+
+	$fields->addTab( 'social_links_tab', [
+		'label' => __( 'Social links', 'dovira' ),
+	] );
+
+	$fields->addRepeater( 'social_links', array(
+		'label' => __( 'Social links', 'dovira' ),
+	) )
+	       ->addURL( 'url', array(
+		       'label' => __( 'Social network URL', 'dovira' ),
+	       ) )
+	       ->addTrueFalse( 'is_icon_image_file', array(
+		       'label'         => __( 'Image or SVG tag?', 'dovira' ),
+		       'ui'            => 1,
+		       'ui_on_text'    => __( 'Image', 'dovira' ),
+		       'ui_off_text'   => __( 'SVG tag', 'dovira' ),
+		       'default_value' => 1
+	       ) )
+	       ->addImage( 'icon_image', array(
+		       'label'             => __( 'Social network Icon', 'dovira' ),
+		       'required'          => 1,
+		       'conditional_logic' => array(
+			       array(
+				       array(
+					       'field'    => 'is_icon_image_file',
+					       'operator' => '==',
+					       'value'    => 1,
+				       ),
+			       ),
+		       )
+	       ) )
+	       ->addTextarea( 'icon_svg_tag', array(
+		       'label'             => __( 'Social network Icon', 'dovira' ),
+		       'required'          => 1,
+		       'conditional_logic' => array(
+			       array(
+				       array(
+					       'field'    => 'is_icon_image_file',
+					       'operator' => '==',
+					       'value'    => 0
+				       ),
+			       ),
+		       ),
 	       ) );
 
 	$fields->setLocation( 'options_page', '==', 'acf-options-settings' );

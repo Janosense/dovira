@@ -148,3 +148,8 @@
     }
   }
 }
+
+.footer__address-email {
+  font-size: 16px;
+  color: var(--color-gray-dark);
+}

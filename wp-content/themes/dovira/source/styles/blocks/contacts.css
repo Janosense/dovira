@@ -84,10 +84,14 @@
   }
 }
 
-.contacts__email,
 .contacts__phones {
   display: flex;
   flex-direction: column;
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   & a {
     display: inline-block;
@@ -96,6 +100,19 @@
     font-size: 20px;
     text-decoration: none;
     opacity: 0.7;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.contacts__email {
+  & a {
+    display: inline-block;
+    margin-bottom: 4px;
+    color: var(--color-black);
+    font-size: 18px;
 
     &:last-child {
       margin-bottom: 0;

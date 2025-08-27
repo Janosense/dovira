@@ -111,12 +111,9 @@ endif;
 								</div>
 							<?php endif; ?>
 						<?php endif; ?>
-						<?php if ( ! empty( $contact['emails'] ) ) :
-							$emails = explode( "\r\n", $contact['emails'] ); ?>
-							<div class="contacts__phones">
-								<?php foreach ( $emails as $email ) : ?>
-									<a href="mailto:<?= $email; ?>"><?= $email; ?></a>
-								<?php endforeach; ?>
+						<?php if ( ! empty( $contact['email'] ) ) : ?>
+							<div class="contacts__email">
+								<a href="mailto:<?= $contact['email']; ?>"><?= $contact['email']; ?></a>
 							</div>
 						<?php endif; ?>
 					</div>
