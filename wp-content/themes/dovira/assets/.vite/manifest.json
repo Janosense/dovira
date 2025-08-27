@@ -1,15 +1,15 @@
 {
   "source/admin.js": {
-    "file": "admin.Bun8ZGG8.js",
+    "file": "admin.32gy1Vq_.js",
     "name": "admin",
     "src": "source/admin.js",
     "isEntry": true,
     "css": [
-      "admin.6feABUdr.css"
+      "admin.CcYm5D48.css"
     ]
   },
   "source/main.js": {
-    "file": "main.hUfNWnFN.js",
+    "file": "main.DQiWxXXZ.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -28,7 +28,7 @@
       "source/scripts/modules/toggle-footer-calls.js"
     ],
     "css": [
-      "main.6D3GkthE.css"
+      "main.DytHBMXv.css"
     ]
   },
   "source/scripts/modules/authentication.js": {
