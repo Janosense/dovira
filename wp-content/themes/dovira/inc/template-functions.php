@@ -634,8 +634,10 @@ add_action( 'wpcf7_submit', 'dovira_wpcf7_submit_action', 10, 2 );
 function dovira_add_custom_conversation_columns( array $columns ): array {
 	unset( $columns['date'] );
 
-	$columns['is_processed'] = __( 'Is processed?', 'dovira' );
-	$columns['custom_date']  = __( 'Date', 'dovira' );
+	$columns['is_processed']        = __( 'Is processed?', 'dovira' );
+	$columns['responsible_persons'] = __( 'Responsible persons', 'dovira' );
+	$columns['custom_date']         = __( 'Date', 'dovira' );
+	$columns['processing_date']     = __( 'Processing date', 'dovira' );
 
 	return $columns;
 }
@@ -657,6 +659,28 @@ function dovira_fill_custom_conversation_columns( string $column_name, int $post
 		case 'custom_date':
 			echo get_the_date( 'd.m.Y H:i', $post_id );
 			break;
+		case 'responsible_persons':
+			$responsible_persons = get_post_meta( $post_id, 'responsible_persons', true );
+			if ( ! empty( $responsible_persons ) ) {
+				$responsible_persons_str = '';
+				foreach ( $responsible_persons as $responsible_person ) {
+					$responsible_persons_str .= $responsible_person['name'] . '<br>';
+				}
+				echo $responsible_persons_str;
+
+			} else {
+				echo '-';
+			}
+			break;
+		case 'processing_date':
+			$processing_date = get_post_meta( $post_id, 'processing_date', true );
+			if ( $processing_date ) {
+				echo date( 'd.m.Y H:i', $processing_date );
+			} else {
+				echo '-';
+			}
+			break;
+
 	}
 
 }
@@ -751,4 +775,42 @@ function dovira_redirect_to_lowercase_url(): void {
 
 add_action( 'template_redirect', 'dovira_redirect_to_lowercase_url' );
 
+
+add_filter( 'the_editor_content', 'set_default_editor_content', 10, 2 );
+
+function set_default_editor_content( $content, $default_editor ) {
+	global $post;
+	if ( ! empty( $post ) && $post->post_type === 'conversation' && ! empty( $post->post_title ) ) {
+		$current_user = wp_get_current_user();
+		if ( $current_user->exists() ) {
+			$responsible_persons = get_post_meta( $post->ID, 'responsible_persons', true );
+			if ( empty( $responsible_persons ) ) {
+				$responsible_persons = [];
+			}
+
+			if ( ! isset( $responsible_persons[ $current_user->ID ] ) ) {
+				$responsible_persons[ $current_user->ID ] = [
+					'name'  => $current_user->first_name . ' ' . $current_user->last_name,
+					'email' => $current_user->user_email,
+				];
+			}
+
+			update_post_meta( $post->ID, 'responsible_persons', $responsible_persons );
+		}
+	}
+
+	return $content;
+}
+
+function dovira_save_post_conversation_action( $post_id, $post, $update ) {
+	if ( $post->post_status === 'publish' && ! wp_is_post_revision( $post_id ) && ! empty( $_POST['acf'] ) ) {
+		if ( isset( $_POST['acf']['field_conversation_is_processed'] ) && $_POST['acf']['field_conversation_is_processed'] === '1' ) {
+			update_post_meta( $post_id, 'processing_date', time() );
+		} else if ( isset( $_POST['acf']['field_conversation_is_processed'] ) && $_POST['acf']['field_conversation_is_processed'] === '0' ) {
+			update_post_meta( $post_id, 'processing_date', 0 );
+		}
+	}
+}
+
+add_action( 'save_post_conversation', 'dovira_save_post_conversation_action', 10, 3 );
 
