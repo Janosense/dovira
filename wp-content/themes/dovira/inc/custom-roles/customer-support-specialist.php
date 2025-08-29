@@ -70,7 +70,7 @@ function remove_admin_bar_items_for_customer_support(): void {
 
 add_action( 'wp_before_admin_bar_render', 'remove_admin_bar_items_for_customer_support', 999 );
 
-function redirect_customer_support_after_login( string $redirect_to, string $request, WP_User $user ): string {
+function redirect_customer_support_after_login( string $redirect_to, string $request, WP_User|WP_Error $user ): string {
 	if ( isset( $user->roles ) && is_array( $user->roles ) && in_array( 'customer_support_specialist', $user->roles ) ) {
 		return admin_url( 'edit.php?post_type=conversation' );
 	}
