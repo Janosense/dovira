@@ -44,3 +44,8 @@ require_once TEMPLATE_DIR . '/inc/utils.php';
  * REST API extensions
  */
 require TEMPLATE_DIR . '/inc/rest-api.php';
+
+/**
+ * Custom Roles
+ */
+require_once TEMPLATE_DIR . '/inc/custom-roles.php';

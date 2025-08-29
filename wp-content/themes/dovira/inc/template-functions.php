@@ -813,4 +813,3 @@ function dovira_save_post_conversation_action( $post_id, $post, $update ) {
 }
 
 add_action( 'save_post_conversation', 'dovira_save_post_conversation_action', 10, 3 );
-
