@@ -805,7 +805,7 @@ function set_default_editor_content( $content, $default_editor ) {
 function dovira_save_post_conversation_action( $post_id, $post, $update ) {
 	if ( $post->post_status === 'publish' && ! wp_is_post_revision( $post_id ) && ! empty( $_POST['acf'] ) ) {
 		if ( isset( $_POST['acf']['field_conversation_is_processed'] ) && $_POST['acf']['field_conversation_is_processed'] === '1' ) {
-			update_post_meta( $post_id, 'processing_date', time() );
+			update_post_meta( $post_id, 'processing_date', time() + 10800 );
 		} else if ( isset( $_POST['acf']['field_conversation_is_processed'] ) && $_POST['acf']['field_conversation_is_processed'] === '0' ) {
 			update_post_meta( $post_id, 'processing_date', 0 );
 		}
