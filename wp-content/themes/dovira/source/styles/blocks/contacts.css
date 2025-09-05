@@ -135,3 +135,37 @@
   padding-top: 0!important;
   margin: 12px 0;
 }
+
+.contacts__instagram {
+  padding-top: 8px;
+
+  & a {
+    display: inline-flex;
+    align-items: center;
+    column-gap: 6px;
+    margin-top: 6px;
+    font-size: 16px;
+    color: var(--color-black);
+    text-decoration: none;
+
+    & svg {
+      display: block;
+      width: 16px;
+      height: 16px;
+      fill: var(--color-black);
+      transition: fill 0.4s ease;
+    }
+
+    @media (hover: hover) {
+      transition: all 0.4s ease;
+
+      &:hover {
+        color: var(--color-violet-light);
+
+        & svg {
+          fill: var(--color-violet-light);
+        }
+      }
+    }
+  }
+}

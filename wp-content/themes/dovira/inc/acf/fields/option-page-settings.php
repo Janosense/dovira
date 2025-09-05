@@ -68,6 +68,9 @@ function acf_add_options_page_fonts_fields(): void {
 	       ) )
 	       ->addEmail( 'email', array(
 		       'label' => __( 'Email', 'dovira' ),
+	       ) )
+	       ->addUrl( 'instagram_link', array(
+		       'label' => __( 'Instagram link', 'dovira' ),
 	       ) );
 
 	$fields->addTab( 'social_links_tab', [
