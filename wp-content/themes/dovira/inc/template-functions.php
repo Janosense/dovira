@@ -17,7 +17,7 @@ if ( ! function_exists( 'starter_theme_setup' ) ) {
          * Make theme available for translation.
          * Translations can be filed in the /languages/ directory.
          */
-		load_theme_textdomain( 'dovira', TEMPLATE_DIR_URI . '/languages' );
+		load_theme_textdomain( 'dovira', get_template_directory() . '/languages' );
 
 		/*
 		 * Let WordPress manage the document title.
@@ -110,7 +110,7 @@ if ( ! function_exists( 'starter_theme_setup' ) ) {
 
 	}
 }
-add_action( 'after_setup_theme', 'starter_theme_setup' );
+add_action( 'after_setup_theme', 'starter_theme_setup', 1 );
 
 
 /**

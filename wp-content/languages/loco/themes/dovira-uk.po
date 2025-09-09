@@ -1,0 +1,1763 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Dovira\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-09 14:21+0000\n"
+"PO-Revision-Date: 2025-09-09 16:26+0000\n"
+"Last-Translator: \n"
+"Language-Team: Українська\n"
+"Language: uk\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10 >= 2 && "
+"n%10<=4 &&(n%100<10||n%100 >= 20)? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.0; wp-6.8.2; php-8.3.23\n"
+"X-Domain: dovira"
+
+#: inc/acf/blocks/gallery/fields.php:99
+msgid "1"
+msgstr "1"
+
+#: inc/acf/blocks/text-form/fields.php:162
+#: inc/acf/blocks/contacts/fields.php:128
+#: inc/acf/blocks/text-image/fields.php:143
+msgid "1:1"
+msgstr "1:1"
+
+#: inc/acf/blocks/services/fields.php:123 inc/acf/blocks/news/fields.php:123
+#: inc/acf/blocks/gallery/fields.php:100
+#: inc/acf/blocks/entities-grid/fields.php:138
+#: inc/acf/blocks/links-group/fields.php:124
+msgid "2"
+msgstr "2"
+
+#: inc/acf/blocks/text-form/fields.php:163
+#: inc/acf/blocks/contacts/fields.php:129
+#: inc/acf/blocks/text-image/fields.php:144
+msgid "2:3"
+msgstr "2:3"
+
+#: inc/acf/blocks/services/fields.php:124 inc/acf/blocks/news/fields.php:124
+#: inc/acf/blocks/gallery/fields.php:101
+#: inc/acf/blocks/entities-grid/fields.php:139
+#: inc/acf/blocks/links-group/fields.php:125
+msgid "3"
+msgstr "3"
+
+#: inc/acf/blocks/text-form/fields.php:164
+#: inc/acf/blocks/contacts/fields.php:130
+#: inc/acf/blocks/text-image/fields.php:145
+msgid "3:2"
+msgstr "3:2"
+
+#: inc/acf/blocks/services/fields.php:125 inc/acf/blocks/news/fields.php:125
+#: inc/acf/blocks/gallery/fields.php:102
+#: inc/acf/blocks/entities-grid/fields.php:140
+#: inc/acf/blocks/links-group/fields.php:126
+msgid "4"
+msgstr "4"
+
+#: inc/acf/blocks/gallery/fields.php:103
+#: inc/acf/blocks/entities-grid/fields.php:141
+msgid "5"
+msgstr "5"
+
+#: inc/acf/blocks/entities-grid/fields.php:142
+msgid "6"
+msgstr "6"
+
+#: inc/acf/blocks/accordion/fields.php:93
+msgid "Accordion"
+msgstr "Акордіон"
+
+#: inc/post-types/conversation.php:10
+msgid "Add Conversation"
+msgstr "Додати Звернення"
+
+#: inc/post-types/employee.php:10
+msgid "Add Employee"
+msgstr "Додати Працівника"
+
+#: inc/taxonomies/city.php:17
+msgid "Add new City"
+msgstr "Додати нове Місто"
+
+#: inc/post-types/conversation.php:11
+msgid "Add new Conversation"
+msgstr "Додати нове Звернення"
+
+#: inc/post-types/employee.php:11
+msgid "Add new Employee"
+msgstr "Додати нового Працівника"
+
+#: inc/post-types/service.php:11
+msgid "Add new Service"
+msgstr "Додати нову Послугу"
+
+#: inc/post-types/service.php:10
+msgid "Add Service"
+msgstr "Додати Послугу"
+
+#: inc/acf/blocks/contacts/fields.php:86
+msgid "Additional information"
+msgstr "Додаткова інформаія"
+
+#: inc/acf/fields/option-page-settings.php:53
+#: inc/acf/blocks/contacts-simple/fields.php:129
+#: inc/acf/blocks/contacts/fields.php:74
+msgid "Address"
+msgstr "Адреса"
+
+#: inc/acf/blocks/text-form/fields.php:125
+#: inc/acf/blocks/contacts/fields.php:91
+#: inc/acf/blocks/text-image/fields.php:128
+msgid "Align"
+msgstr "Вирівнювання"
+
+#: inc/taxonomies/city.php:11
+msgid "All Cities"
+msgstr "Всі міста"
+
+#: inc/post-types/conversation.php:20
+msgid "All Conversations"
+msgstr "Всі Звернення"
+
+#: inc/post-types/employee.php:20
+msgid "All Employees"
+msgstr "Всі Працівники"
+
+#: inc/post-types/service.php:20
+msgid "All Services"
+msgstr "Всі Послуги"
+
+#: inc/post-types/service.php:33 inc/post-types/employee.php:33
+#: inc/post-types/conversation.php:33
+msgid "Attributes"
+msgstr "Атрибути"
+
+#: inc/acf/blocks/entity-links/fields.php:168
+#: inc/acf/blocks/files/fields.php:171 inc/acf/blocks/employees/fields.php:160
+#: inc/acf/blocks/services/fields.php:174 inc/acf/blocks/news/fields.php:171
+#: inc/acf/blocks/contacts-simple/fields.php:144
+#: inc/acf/blocks/accordion/fields.php:115
+#: inc/acf/blocks/gallery/fields.php:125
+#: inc/acf/blocks/entities-grid/fields.php:174
+#: inc/acf/blocks/text-form/fields.php:203 inc/acf/blocks/about/fields.php:119
+#: inc/acf/blocks/contacts/fields.php:169
+#: inc/acf/blocks/rich-text/fields.php:145
+#: inc/acf/blocks/text-image/fields.php:175
+#: inc/acf/blocks/links-group/fields.php:163 inc/acf/blocks/hero/fields.php:155
+msgid "Background color"
+msgstr "Фоновий колір"
+
+#: inc/acf/blocks/entity-links/fields.php:172
+#: inc/acf/blocks/files/fields.php:175 inc/acf/blocks/employees/fields.php:164
+#: inc/acf/blocks/services/fields.php:178 inc/acf/blocks/news/fields.php:175
+#: inc/acf/blocks/contacts-simple/fields.php:148
+#: inc/acf/blocks/accordion/fields.php:119
+#: inc/acf/blocks/text-form/fields.php:207 inc/acf/blocks/about/fields.php:123
+#: inc/acf/blocks/contacts/fields.php:173
+#: inc/acf/blocks/rich-text/fields.php:149
+#: inc/acf/blocks/links-group/fields.php:167 inc/acf/blocks/hero/fields.php:206
+msgid "Background image"
+msgstr "Фонове зображення"
+
+#: inc/acf/blocks/entity-links/fields.php:159
+#: inc/acf/blocks/files/fields.php:167 inc/acf/blocks/employees/fields.php:156
+#: inc/acf/blocks/services/fields.php:170 inc/acf/blocks/news/fields.php:167
+#: inc/acf/blocks/contacts-simple/fields.php:140
+#: inc/acf/blocks/accordion/fields.php:111
+#: inc/acf/blocks/gallery/fields.php:121
+#: inc/acf/blocks/entities-grid/fields.php:170
+#: inc/acf/blocks/text-form/fields.php:199 inc/acf/blocks/about/fields.php:115
+#: inc/acf/blocks/contacts/fields.php:165
+#: inc/acf/blocks/rich-text/fields.php:141
+#: inc/acf/blocks/text-image/fields.php:171
+#: inc/acf/blocks/links-group/fields.php:159 inc/acf/blocks/hero/fields.php:151
+msgid "BG"
+msgstr "Фон"
+
+#: inc/acf/blocks/employees/fields.php:99 inc/acf/blocks/services/fields.php:99
+#: inc/acf/blocks/news/fields.php:99 inc/acf/blocks/text-form/fields.php:117
+msgid "Black"
+msgstr "Чорний"
+
+#: inc/acf/blocks/text-form/fields.php:118
+msgid "Black border"
+msgstr "Чорна рамка"
+
+#: inc/acf/blocks/entity-links/fields.php:13 inc/acf/blocks/files/fields.php:13
+#: inc/acf/blocks/employees/fields.php:13 inc/acf/blocks/services/fields.php:13
+#: inc/acf/blocks/news/fields.php:13
+#: inc/acf/blocks/contacts-simple/fields.php:13
+#: inc/acf/blocks/gallery/fields.php:13
+#: inc/acf/blocks/entities-grid/fields.php:13
+#: inc/acf/blocks/text-form/fields.php:13 inc/acf/blocks/about/fields.php:13
+#: inc/acf/blocks/contacts/fields.php:13 inc/acf/blocks/rich-text/fields.php:13
+#: inc/acf/blocks/text-image/fields.php:13
+#: inc/acf/blocks/links-group/fields.php:13 inc/acf/blocks/hero/fields.php:13
+msgid "Block name"
+msgstr "Назва Блоку"
+
+#: inc/acf/blocks/text-form/fields.php:193
+#: inc/acf/blocks/contacts/fields.php:159
+#: inc/acf/blocks/text-image/fields.php:165 inc/acf/blocks/hero/fields.php:114
+msgid "Bottom"
+msgstr "Низ"
+
+#: inc/acf/blocks/entity-links/fields.php:223
+#: inc/acf/blocks/files/fields.php:226 inc/acf/blocks/employees/fields.php:220
+#: inc/acf/blocks/services/fields.php:229 inc/acf/blocks/news/fields.php:226
+#: inc/acf/blocks/contacts-simple/fields.php:199
+#: inc/acf/blocks/accordion/fields.php:170
+#: inc/acf/blocks/gallery/fields.php:176
+#: inc/acf/blocks/entities-grid/fields.php:225
+#: inc/acf/blocks/text-form/fields.php:258 inc/acf/blocks/about/fields.php:174
+#: inc/acf/blocks/contacts/fields.php:224
+#: inc/acf/blocks/rich-text/fields.php:200
+#: inc/acf/blocks/text-image/fields.php:226
+#: inc/acf/blocks/links-group/fields.php:218 inc/acf/blocks/hero/fields.php:214
+msgid "Bottom Indent"
+msgstr "Відступ знизу"
+
+#: inc/acf/blocks/entity-links/fields.php:72 inc/acf/blocks/files/fields.php:72
+#: inc/acf/blocks/files/fields.php:151 inc/acf/blocks/employees/fields.php:72
+#: inc/acf/blocks/services/fields.php:72 inc/acf/blocks/news/fields.php:72
+#: inc/acf/blocks/contacts-simple/fields.php:72
+#: inc/acf/blocks/accordion/fields.php:72 inc/acf/blocks/gallery/fields.php:72
+#: inc/acf/blocks/entities-grid/fields.php:72
+#: inc/acf/blocks/entities-grid/fields.php:163
+#: inc/acf/blocks/text-form/fields.php:72 inc/acf/blocks/about/fields.php:72
+#: inc/acf/blocks/rich-text/fields.php:72
+#: inc/acf/blocks/text-image/fields.php:72
+#: inc/acf/blocks/links-group/fields.php:72 inc/acf/blocks/hero/fields.php:72
+msgid "Caption"
+msgstr "Підзаголовок"
+
+#: inc/acf/blocks/entity-links/fields.php:78 inc/acf/blocks/files/fields.php:78
+#: inc/acf/blocks/employees/fields.php:78 inc/acf/blocks/services/fields.php:78
+#: inc/acf/blocks/news/fields.php:78
+#: inc/acf/blocks/contacts-simple/fields.php:78
+#: inc/acf/blocks/accordion/fields.php:78 inc/acf/blocks/gallery/fields.php:78
+#: inc/acf/blocks/entities-grid/fields.php:78
+#: inc/acf/blocks/text-form/fields.php:78 inc/acf/blocks/about/fields.php:78
+#: inc/acf/blocks/rich-text/fields.php:78
+#: inc/acf/blocks/text-image/fields.php:78
+#: inc/acf/blocks/links-group/fields.php:78 inc/acf/blocks/hero/fields.php:78
+msgid "Caption color"
+msgstr "Колір підзаголовка"
+
+#: inc/acf/blocks/entity-links/fields.php:86
+#: inc/acf/blocks/entity-links/fields.php:110
+#: inc/acf/blocks/files/fields.php:86 inc/acf/blocks/files/fields.php:110
+#: inc/acf/blocks/employees/fields.php:86
+#: inc/acf/blocks/employees/fields.php:109
+#: inc/acf/blocks/employees/fields.php:124
+#: inc/acf/blocks/services/fields.php:86 inc/acf/blocks/services/fields.php:109
+#: inc/acf/blocks/news/fields.php:86 inc/acf/blocks/news/fields.php:109
+#: inc/acf/blocks/contacts-simple/fields.php:86
+#: inc/acf/blocks/contacts-simple/fields.php:110
+#: inc/acf/blocks/accordion/fields.php:86 inc/acf/blocks/gallery/fields.php:86
+#: inc/acf/blocks/entities-grid/fields.php:86
+#: inc/acf/blocks/entities-grid/fields.php:110
+#: inc/acf/blocks/entities-grid/fields.php:124
+#: inc/acf/blocks/text-form/fields.php:182 inc/acf/blocks/about/fields.php:86
+#: inc/acf/blocks/contacts/fields.php:148
+#: inc/acf/blocks/rich-text/fields.php:86
+#: inc/acf/blocks/rich-text/fields.php:110
+#: inc/acf/blocks/rich-text/fields.php:134
+#: inc/acf/blocks/text-image/fields.php:154
+#: inc/acf/blocks/links-group/fields.php:86
+#: inc/acf/blocks/links-group/fields.php:110
+#: inc/acf/blocks/links-group/fields.php:152 inc/acf/blocks/hero/fields.php:100
+msgid "Center"
+msgstr "По центру"
+
+#: inc/acf/blocks/files/fields.php:159
+msgid "Certificate"
+msgstr "Сертифікат"
+
+#: inc/acf/blocks/news/fields.php:134
+msgid "Choose manually"
+msgstr "Обрати вручну"
+
+#: inc/taxonomies/city.php:19 inc/acf/fields/post-type-service.php:48
+#: inc/acf/fields/option-page-settings.php:39
+msgid "Cities"
+msgstr "Міста"
+
+#: inc/taxonomies/city.php:6 inc/taxonomies/city.php:8
+#: inc/taxonomies/city.php:9 inc/acf/fields/option-page-settings.php:43
+#: inc/acf/blocks/contacts-simple/fields.php:126
+#: inc/acf/blocks/contacts/fields.php:37
+msgid "City"
+msgstr "Місто"
+
+#: inc/acf/blocks/text-form/fields.php:132
+#: inc/acf/blocks/contacts/fields.php:98
+msgid "Column"
+msgstr "Колонка"
+
+#: inc/acf/blocks/text-form/fields.php:137
+#: inc/acf/blocks/contacts/fields.php:103
+msgid "Column max width"
+msgstr "Макс. ширина колонки"
+
+#: inc/acf/fields/option-page-settings.php:19
+#: inc/acf/blocks/contacts-simple/fields.php:118
+#: inc/acf/blocks/contacts-simple/fields.php:122
+#: inc/acf/blocks/contacts/fields.php:29 inc/acf/blocks/contacts/fields.php:33
+msgid "Contacts"
+msgstr "Контакти"
+
+#: inc/post-types/conversation.php:6 inc/post-types/conversation.php:8
+#: inc/post-types/conversation.php:9 inc/post-types/conversation.php:31
+msgid "Conversation"
+msgstr "Звернення"
+
+#: inc/post-types/conversation.php:21
+msgid "Conversation archives"
+msgstr "Архів Звернень"
+
+#: inc/post-types/conversation.php:24
+msgid "Conversation Featured image"
+msgstr "Зображення Звернення"
+
+#: inc/acf/fields/post-type-conversation.php:7
+msgid "Conversation information"
+msgstr "Інформація Звернення"
+
+#: inc/post-types/conversation.php:19
+msgid "Conversations"
+msgstr "Звернення"
+
+#: inc/post-types/conversation.php:30
+msgid "Conversations list"
+msgstr "Список Звернень"
+
+#: inc/post-types/conversation.php:29
+msgid "Conversations list navigation"
+msgstr "Список Звернень"
+
+#: inc/post-types/conversation.php:16
+msgid "Conversations not found"
+msgstr "Звернення не знайдено"
+
+#: inc/post-types/conversation.php:17
+msgid "Conversations not found in trash"
+msgstr "Звернення не знайдено в корзині"
+
+#: inc/acf/blocks/news/fields.php:139
+msgid "Count news"
+msgstr "Кількість Новин"
+
+#: inc/acf/blocks/entity-links/fields.php:93 inc/acf/blocks/files/fields.php:93
+#: inc/acf/blocks/employees/fields.php:93 inc/acf/blocks/services/fields.php:93
+#: inc/acf/blocks/news/fields.php:93
+#: inc/acf/blocks/contacts-simple/fields.php:93
+#: inc/acf/blocks/entities-grid/fields.php:93
+#: inc/acf/blocks/rich-text/fields.php:93
+#: inc/acf/blocks/text-image/fields.php:94
+#: inc/acf/blocks/links-group/fields.php:93
+msgid "CTA"
+msgstr "CTA (посилання)"
+
+#: inc/acf/blocks/entity-links/fields.php:107
+#: inc/acf/blocks/files/fields.php:107 inc/acf/blocks/employees/fields.php:106
+#: inc/acf/blocks/services/fields.php:106 inc/acf/blocks/news/fields.php:106
+#: inc/acf/blocks/contacts-simple/fields.php:107
+#: inc/acf/blocks/entities-grid/fields.php:107
+#: inc/acf/blocks/rich-text/fields.php:107
+#: inc/acf/blocks/links-group/fields.php:107
+msgid "CTA alignment"
+msgstr "Вирівнювання CTA (посилання)"
+
+#: inc/acf/blocks/text-image/fields.php:109
+msgid "CTA Color"
+msgstr "Колір CTA (посилання)"
+
+#: inc/acf/blocks/entity-links/fields.php:97 inc/acf/blocks/files/fields.php:97
+#: inc/acf/blocks/employees/fields.php:97 inc/acf/blocks/services/fields.php:97
+#: inc/acf/blocks/news/fields.php:97
+#: inc/acf/blocks/contacts-simple/fields.php:97
+#: inc/acf/blocks/entities-grid/fields.php:97
+#: inc/acf/blocks/rich-text/fields.php:97
+#: inc/acf/blocks/text-image/fields.php:98
+#: inc/acf/blocks/links-group/fields.php:97
+msgid "CTA Style"
+msgstr "Стиль CTA (посилання)"
+
+#: inc/acf/blocks/hero/fields.php:123
+msgid "CTAs"
+msgstr "CTAs (посилання)"
+
+#: inc/acf/blocks/entity-links/fields.php:124
+#: inc/acf/blocks/entity-links/fields.php:130
+#: inc/acf/blocks/entity-links/fields.php:142
+msgid "Custom Links"
+msgstr "Кастомні посилання"
+
+#: inc/custom-roles/customer-support-specialist.php:4
+msgid "Customer Support Specialist"
+msgstr "Спеціаліст з підтримки клієнтів"
+
+#: inc/acf/blocks/entity-links/fields.php:99 inc/acf/blocks/files/fields.php:99
+#: inc/acf/blocks/contacts-simple/fields.php:99
+#: inc/acf/blocks/entities-grid/fields.php:99
+#: inc/acf/blocks/rich-text/fields.php:99
+#: inc/acf/blocks/text-image/fields.php:101
+#: inc/acf/blocks/links-group/fields.php:99 inc/acf/blocks/hero/fields.php:133
+#: inc/acf/blocks/hero/fields.php:145
+msgid "Cyan"
+msgstr "Блактний"
+
+#: inc/acf/blocks/entity-links/fields.php:101
+#: inc/acf/blocks/files/fields.php:101
+#: inc/acf/blocks/contacts-simple/fields.php:101
+#: inc/acf/blocks/entities-grid/fields.php:101
+#: inc/acf/blocks/rich-text/fields.php:101
+#: inc/acf/blocks/text-image/fields.php:103
+#: inc/acf/blocks/links-group/fields.php:101
+msgid "Cyan Border"
+msgstr "Блакитна рамка"
+
+#: inc/template-functions.php:639
+msgid "Date"
+msgstr "Дата"
+
+#: inc/acf/fields/post-type-employee.php:51
+#: inc/acf/fields/post-type-service.php:16
+#: inc/acf/fields/post-type-service.php:40
+msgid "Description"
+msgstr "Опис"
+
+#: inc/acf/blocks/files/fields.php:160
+msgid "Diploma"
+msgstr "Диплом"
+
+#: inc/acf/blocks/files/fields.php:161
+msgid "Document"
+msgstr "Документ"
+
+#. Name of the theme
+msgid "Dovira"
+msgstr "Довіра"
+
+#: inc/taxonomies/city.php:15
+msgid "Edit City"
+msgstr "Редагувати Місто"
+
+#: inc/post-types/conversation.php:12
+msgid "Edit Conversation"
+msgstr "Редагувати Звернення"
+
+#: inc/post-types/employee.php:12
+msgid "Edit Employee"
+msgstr "Редагувати Працівника"
+
+#: inc/post-types/service.php:12
+msgid "Edit Service"
+msgstr "Редагувати Послугу"
+
+#: inc/acf/fields/post-type-conversation.php:36
+#: inc/acf/fields/option-page-settings.php:70
+msgid "Email"
+msgstr "Емейл"
+
+#: inc/acf/blocks/contacts/fields.php:82
+msgid "Emails"
+msgstr "Емейли"
+
+#: inc/post-types/employee.php:6 inc/post-types/employee.php:8
+#: inc/post-types/employee.php:9 inc/post-types/employee.php:31
+msgid "Employee"
+msgstr "Працівник"
+
+#: inc/post-types/employee.php:21
+msgid "Employee archives"
+msgstr "Архів Працівників"
+
+#: inc/post-types/employee.php:24
+msgid "Employee Featured image"
+msgstr "Зображення Працівника"
+
+#: inc/acf/fields/post-type-employee.php:7
+msgid "Employee information"
+msgstr "Інформація Працівника"
+
+#: inc/post-types/employee.php:19 inc/acf/blocks/employees/fields.php:117
+#: inc/acf/blocks/employees/fields.php:139
+msgid "Employees"
+msgstr "Працівники"
+
+#: inc/post-types/employee.php:30
+msgid "Employees list"
+msgstr "Список Працівників"
+
+#: inc/post-types/employee.php:29
+msgid "Employees list navigation"
+msgstr "Список Працівників"
+
+#: inc/post-types/employee.php:16
+msgid "Employees not found"
+msgstr "Працівників не знайдено"
+
+#: inc/post-types/employee.php:17
+msgid "Employees not found in trash"
+msgstr "Працівників не знайдено"
+
+#: inc/acf/blocks/entities-grid/fields.php:117
+#: inc/acf/blocks/entities-grid/fields.php:148
+msgid "Entities"
+msgstr "Сутності"
+
+#: inc/acf/blocks/entities-grid/fields.php:131
+msgid "Entities Color"
+msgstr "Колір Сутності"
+
+#: inc/acf/blocks/entities-grid/fields.php:121
+msgid "Entities Text alignment"
+msgstr "Вирівнювання тексту Сутності"
+
+#: inc/acf/blocks/entity-links/fields.php:122
+msgid "Entity"
+msgstr "Сутність"
+
+#: inc/acf/blocks/entities-grid/fields.php:166
+msgid "Entity CTA"
+msgstr "CTA (посилання) Сутності"
+
+#: inc/acf/fields/post-type-employee.php:28
+msgid "Facebook"
+msgstr "Facebook"
+
+#: inc/acf/fields/post-type-employee.php:63
+msgid "Fact"
+msgstr "Факт"
+
+#: inc/acf/fields/post-type-employee.php:56
+msgid "Facts"
+msgstr "Факти"
+
+#: inc/acf/blocks/files/fields.php:154
+msgid "File"
+msgstr "Файл"
+
+#: inc/acf/blocks/files/fields.php:157
+msgid "File type"
+msgstr "Тип Файлу"
+
+#: inc/acf/blocks/files/fields.php:118 inc/acf/blocks/files/fields.php:144
+msgid "Files"
+msgstr "Файли"
+
+#: inc/post-types/conversation.php:28
+msgid "Filter Conversations list"
+msgstr "Фільтрувати Звернення"
+
+#: inc/post-types/employee.php:28
+msgid "Filter Employees list"
+msgstr "Фільтрувати Працівників"
+
+#: inc/post-types/service.php:28
+msgid "Filter Services list"
+msgstr "Фільтрувати Послуги"
+
+#: inc/template-functions.php:106
+msgid "Footer menu Column 1"
+msgstr "Меню підвалу колонка 1"
+
+#: inc/template-functions.php:107
+msgid "Footer menu Column 2"
+msgstr "Меню підвалу колонка 2"
+
+#: inc/acf/blocks/text-form/fields.php:94
+msgid "Form"
+msgstr "Форма"
+
+#: inc/acf/blocks/text-form/fields.php:115
+msgid "Form CTA Style"
+msgstr "Стиль CTA (посилання) Форми"
+
+#: inc/acf/blocks/text-form/fields.php:154
+msgid "Form/Text"
+msgstr "Форма/Текст"
+
+#: inc/acf/blocks/hero/fields.php:88
+msgid "Full (100% screen height)"
+msgstr "Повна (100% висоти екрану)"
+
+#: inc/acf/blocks/gallery/fields.php:93 inc/acf/blocks/gallery/fields.php:117
+msgid "Gallery"
+msgstr "Галерея"
+
+#: inc/acf/blocks/entity-links/fields.php:17 inc/acf/blocks/files/fields.php:17
+#: inc/acf/blocks/employees/fields.php:17 inc/acf/blocks/services/fields.php:17
+#: inc/acf/blocks/news/fields.php:17
+#: inc/acf/blocks/contacts-simple/fields.php:17
+#: inc/acf/blocks/accordion/fields.php:17 inc/acf/blocks/gallery/fields.php:17
+#: inc/acf/blocks/entities-grid/fields.php:17
+#: inc/acf/blocks/text-form/fields.php:17 inc/acf/blocks/about/fields.php:17
+#: inc/acf/blocks/contacts/fields.php:17 inc/acf/blocks/rich-text/fields.php:17
+#: inc/acf/blocks/text-image/fields.php:17
+#: inc/acf/blocks/links-group/fields.php:17 inc/acf/blocks/hero/fields.php:17
+msgid "General"
+msgstr "Загальні"
+
+#: inc/acf/blocks/entity-links/fields.php:184
+#: inc/acf/blocks/files/fields.php:187 inc/acf/blocks/employees/fields.php:181
+#: inc/acf/blocks/services/fields.php:190 inc/acf/blocks/news/fields.php:187
+#: inc/acf/blocks/contacts-simple/fields.php:160
+#: inc/acf/blocks/accordion/fields.php:131
+#: inc/acf/blocks/gallery/fields.php:137
+#: inc/acf/blocks/entities-grid/fields.php:186
+#: inc/acf/blocks/text-form/fields.php:219 inc/acf/blocks/about/fields.php:135
+#: inc/acf/blocks/contacts/fields.php:185
+#: inc/acf/blocks/rich-text/fields.php:161
+#: inc/acf/blocks/text-image/fields.php:187
+#: inc/acf/blocks/links-group/fields.php:179 inc/acf/blocks/hero/fields.php:167
+msgid "Gradient tone"
+msgstr "Колір Градієнту"
+
+#: inc/acf/blocks/entity-links/fields.php:40
+#: inc/acf/blocks/entity-links/fields.php:57 inc/acf/blocks/files/fields.php:40
+#: inc/acf/blocks/files/fields.php:57 inc/acf/blocks/employees/fields.php:40
+#: inc/acf/blocks/employees/fields.php:57 inc/acf/blocks/services/fields.php:40
+#: inc/acf/blocks/services/fields.php:57 inc/acf/blocks/news/fields.php:40
+#: inc/acf/blocks/news/fields.php:57
+#: inc/acf/blocks/contacts-simple/fields.php:40
+#: inc/acf/blocks/contacts-simple/fields.php:57
+#: inc/acf/blocks/accordion/fields.php:40
+#: inc/acf/blocks/accordion/fields.php:57 inc/acf/blocks/gallery/fields.php:40
+#: inc/acf/blocks/gallery/fields.php:57
+#: inc/acf/blocks/entities-grid/fields.php:40
+#: inc/acf/blocks/entities-grid/fields.php:57
+#: inc/acf/blocks/text-form/fields.php:40
+#: inc/acf/blocks/text-form/fields.php:57 inc/acf/blocks/about/fields.php:40
+#: inc/acf/blocks/about/fields.php:57 inc/acf/blocks/contacts/fields.php:46
+#: inc/acf/blocks/contacts/fields.php:59 inc/acf/blocks/rich-text/fields.php:40
+#: inc/acf/blocks/rich-text/fields.php:57
+#: inc/acf/blocks/text-image/fields.php:40
+#: inc/acf/blocks/text-image/fields.php:57
+#: inc/acf/blocks/links-group/fields.php:40
+#: inc/acf/blocks/links-group/fields.php:57 inc/acf/blocks/hero/fields.php:40
+#: inc/acf/blocks/hero/fields.php:57
+msgid "H1"
+msgstr "H1"
+
+#: inc/acf/blocks/entity-links/fields.php:41
+#: inc/acf/blocks/entity-links/fields.php:58 inc/acf/blocks/files/fields.php:41
+#: inc/acf/blocks/files/fields.php:58 inc/acf/blocks/employees/fields.php:41
+#: inc/acf/blocks/employees/fields.php:58 inc/acf/blocks/services/fields.php:41
+#: inc/acf/blocks/services/fields.php:58 inc/acf/blocks/news/fields.php:41
+#: inc/acf/blocks/news/fields.php:58
+#: inc/acf/blocks/contacts-simple/fields.php:41
+#: inc/acf/blocks/contacts-simple/fields.php:58
+#: inc/acf/blocks/accordion/fields.php:41
+#: inc/acf/blocks/accordion/fields.php:58 inc/acf/blocks/gallery/fields.php:41
+#: inc/acf/blocks/gallery/fields.php:58
+#: inc/acf/blocks/entities-grid/fields.php:41
+#: inc/acf/blocks/entities-grid/fields.php:58
+#: inc/acf/blocks/text-form/fields.php:41
+#: inc/acf/blocks/text-form/fields.php:58 inc/acf/blocks/about/fields.php:41
+#: inc/acf/blocks/about/fields.php:58 inc/acf/blocks/contacts/fields.php:47
+#: inc/acf/blocks/contacts/fields.php:60 inc/acf/blocks/rich-text/fields.php:41
+#: inc/acf/blocks/rich-text/fields.php:58
+#: inc/acf/blocks/text-image/fields.php:41
+#: inc/acf/blocks/text-image/fields.php:58
+#: inc/acf/blocks/links-group/fields.php:41
+#: inc/acf/blocks/links-group/fields.php:58 inc/acf/blocks/hero/fields.php:41
+#: inc/acf/blocks/hero/fields.php:58
+msgid "H2"
+msgstr "H2"
+
+#: inc/acf/blocks/entity-links/fields.php:42
+#: inc/acf/blocks/entity-links/fields.php:59 inc/acf/blocks/files/fields.php:42
+#: inc/acf/blocks/files/fields.php:59 inc/acf/blocks/employees/fields.php:42
+#: inc/acf/blocks/employees/fields.php:59 inc/acf/blocks/services/fields.php:42
+#: inc/acf/blocks/services/fields.php:59 inc/acf/blocks/news/fields.php:42
+#: inc/acf/blocks/news/fields.php:59
+#: inc/acf/blocks/contacts-simple/fields.php:42
+#: inc/acf/blocks/contacts-simple/fields.php:59
+#: inc/acf/blocks/accordion/fields.php:42
+#: inc/acf/blocks/accordion/fields.php:59 inc/acf/blocks/gallery/fields.php:42
+#: inc/acf/blocks/gallery/fields.php:59
+#: inc/acf/blocks/entities-grid/fields.php:42
+#: inc/acf/blocks/entities-grid/fields.php:59
+#: inc/acf/blocks/text-form/fields.php:42
+#: inc/acf/blocks/text-form/fields.php:59 inc/acf/blocks/about/fields.php:42
+#: inc/acf/blocks/about/fields.php:59 inc/acf/blocks/contacts/fields.php:48
+#: inc/acf/blocks/contacts/fields.php:61 inc/acf/blocks/rich-text/fields.php:42
+#: inc/acf/blocks/rich-text/fields.php:59
+#: inc/acf/blocks/text-image/fields.php:42
+#: inc/acf/blocks/text-image/fields.php:59
+#: inc/acf/blocks/links-group/fields.php:42
+#: inc/acf/blocks/links-group/fields.php:59 inc/acf/blocks/hero/fields.php:42
+#: inc/acf/blocks/hero/fields.php:59
+msgid "H3"
+msgstr "H3"
+
+#: inc/acf/blocks/entity-links/fields.php:43
+#: inc/acf/blocks/entity-links/fields.php:60 inc/acf/blocks/files/fields.php:43
+#: inc/acf/blocks/files/fields.php:60 inc/acf/blocks/employees/fields.php:43
+#: inc/acf/blocks/employees/fields.php:60 inc/acf/blocks/services/fields.php:43
+#: inc/acf/blocks/services/fields.php:60 inc/acf/blocks/news/fields.php:43
+#: inc/acf/blocks/news/fields.php:60
+#: inc/acf/blocks/contacts-simple/fields.php:43
+#: inc/acf/blocks/contacts-simple/fields.php:60
+#: inc/acf/blocks/accordion/fields.php:43
+#: inc/acf/blocks/accordion/fields.php:60 inc/acf/blocks/gallery/fields.php:43
+#: inc/acf/blocks/gallery/fields.php:60
+#: inc/acf/blocks/entities-grid/fields.php:43
+#: inc/acf/blocks/entities-grid/fields.php:60
+#: inc/acf/blocks/text-form/fields.php:43
+#: inc/acf/blocks/text-form/fields.php:60 inc/acf/blocks/about/fields.php:43
+#: inc/acf/blocks/about/fields.php:60 inc/acf/blocks/contacts/fields.php:49
+#: inc/acf/blocks/contacts/fields.php:62 inc/acf/blocks/rich-text/fields.php:43
+#: inc/acf/blocks/rich-text/fields.php:60
+#: inc/acf/blocks/text-image/fields.php:43
+#: inc/acf/blocks/text-image/fields.php:60
+#: inc/acf/blocks/links-group/fields.php:43
+#: inc/acf/blocks/links-group/fields.php:60 inc/acf/blocks/hero/fields.php:43
+#: inc/acf/blocks/hero/fields.php:60
+msgid "H4"
+msgstr "H4"
+
+#: inc/acf/blocks/entity-links/fields.php:44
+#: inc/acf/blocks/entity-links/fields.php:61 inc/acf/blocks/files/fields.php:44
+#: inc/acf/blocks/files/fields.php:61 inc/acf/blocks/employees/fields.php:44
+#: inc/acf/blocks/employees/fields.php:61 inc/acf/blocks/services/fields.php:44
+#: inc/acf/blocks/services/fields.php:61 inc/acf/blocks/news/fields.php:44
+#: inc/acf/blocks/news/fields.php:61
+#: inc/acf/blocks/contacts-simple/fields.php:44
+#: inc/acf/blocks/contacts-simple/fields.php:61
+#: inc/acf/blocks/accordion/fields.php:44
+#: inc/acf/blocks/accordion/fields.php:61 inc/acf/blocks/gallery/fields.php:44
+#: inc/acf/blocks/gallery/fields.php:61
+#: inc/acf/blocks/entities-grid/fields.php:44
+#: inc/acf/blocks/entities-grid/fields.php:61
+#: inc/acf/blocks/text-form/fields.php:44
+#: inc/acf/blocks/text-form/fields.php:61 inc/acf/blocks/about/fields.php:44
+#: inc/acf/blocks/about/fields.php:61 inc/acf/blocks/contacts/fields.php:50
+#: inc/acf/blocks/contacts/fields.php:63 inc/acf/blocks/rich-text/fields.php:44
+#: inc/acf/blocks/rich-text/fields.php:61
+#: inc/acf/blocks/text-image/fields.php:44
+#: inc/acf/blocks/text-image/fields.php:61
+#: inc/acf/blocks/links-group/fields.php:44
+#: inc/acf/blocks/links-group/fields.php:61 inc/acf/blocks/hero/fields.php:44
+#: inc/acf/blocks/hero/fields.php:61
+msgid "H5"
+msgstr "H5"
+
+#: inc/acf/blocks/entity-links/fields.php:45
+#: inc/acf/blocks/entity-links/fields.php:62 inc/acf/blocks/files/fields.php:45
+#: inc/acf/blocks/files/fields.php:62 inc/acf/blocks/employees/fields.php:45
+#: inc/acf/blocks/employees/fields.php:62 inc/acf/blocks/services/fields.php:45
+#: inc/acf/blocks/services/fields.php:62 inc/acf/blocks/news/fields.php:45
+#: inc/acf/blocks/news/fields.php:62
+#: inc/acf/blocks/contacts-simple/fields.php:45
+#: inc/acf/blocks/contacts-simple/fields.php:62
+#: inc/acf/blocks/accordion/fields.php:45
+#: inc/acf/blocks/accordion/fields.php:62 inc/acf/blocks/gallery/fields.php:45
+#: inc/acf/blocks/gallery/fields.php:62
+#: inc/acf/blocks/entities-grid/fields.php:45
+#: inc/acf/blocks/entities-grid/fields.php:62
+#: inc/acf/blocks/text-form/fields.php:45
+#: inc/acf/blocks/text-form/fields.php:62 inc/acf/blocks/about/fields.php:45
+#: inc/acf/blocks/about/fields.php:62 inc/acf/blocks/contacts/fields.php:51
+#: inc/acf/blocks/contacts/fields.php:64 inc/acf/blocks/rich-text/fields.php:45
+#: inc/acf/blocks/rich-text/fields.php:62
+#: inc/acf/blocks/text-image/fields.php:45
+#: inc/acf/blocks/text-image/fields.php:62
+#: inc/acf/blocks/links-group/fields.php:45
+#: inc/acf/blocks/links-group/fields.php:62 inc/acf/blocks/hero/fields.php:45
+#: inc/acf/blocks/hero/fields.php:62
+msgid "H6"
+msgstr "H6"
+
+#: inc/acf/blocks/entity-links/fields.php:83 inc/acf/blocks/files/fields.php:83
+#: inc/acf/blocks/employees/fields.php:83 inc/acf/blocks/services/fields.php:83
+#: inc/acf/blocks/news/fields.php:83
+#: inc/acf/blocks/contacts-simple/fields.php:83
+#: inc/acf/blocks/accordion/fields.php:83 inc/acf/blocks/gallery/fields.php:83
+#: inc/acf/blocks/entities-grid/fields.php:83
+#: inc/acf/blocks/about/fields.php:83 inc/acf/blocks/rich-text/fields.php:83
+#: inc/acf/blocks/links-group/fields.php:83
+msgid "Header Text alignment"
+msgstr "Вирівнбвання тексту шапки"
+
+#: inc/acf/blocks/entity-links/fields.php:29 inc/acf/blocks/files/fields.php:29
+#: inc/acf/blocks/employees/fields.php:29 inc/acf/blocks/services/fields.php:29
+#: inc/acf/blocks/news/fields.php:29
+#: inc/acf/blocks/contacts-simple/fields.php:29
+#: inc/acf/blocks/accordion/fields.php:29 inc/acf/blocks/gallery/fields.php:29
+#: inc/acf/blocks/entities-grid/fields.php:29
+#: inc/acf/blocks/text-form/fields.php:29 inc/acf/blocks/about/fields.php:29
+#: inc/acf/blocks/rich-text/fields.php:29
+#: inc/acf/blocks/text-image/fields.php:29
+#: inc/acf/blocks/links-group/fields.php:29 inc/acf/blocks/hero/fields.php:29
+msgid "Heading"
+msgstr "Заголовок"
+
+#: inc/acf/blocks/entity-links/fields.php:33 inc/acf/blocks/files/fields.php:33
+#: inc/acf/blocks/employees/fields.php:33 inc/acf/blocks/services/fields.php:33
+#: inc/acf/blocks/news/fields.php:33
+#: inc/acf/blocks/contacts-simple/fields.php:33
+#: inc/acf/blocks/accordion/fields.php:33 inc/acf/blocks/gallery/fields.php:33
+#: inc/acf/blocks/entities-grid/fields.php:33
+#: inc/acf/blocks/text-form/fields.php:33 inc/acf/blocks/about/fields.php:33
+#: inc/acf/blocks/contacts/fields.php:40 inc/acf/blocks/rich-text/fields.php:33
+#: inc/acf/blocks/text-image/fields.php:33
+#: inc/acf/blocks/links-group/fields.php:33 inc/acf/blocks/hero/fields.php:34
+msgid "Heading Color"
+msgstr "Колір Заголовку"
+
+#: inc/acf/blocks/entity-links/fields.php:38 inc/acf/blocks/files/fields.php:38
+#: inc/acf/blocks/employees/fields.php:38 inc/acf/blocks/services/fields.php:38
+#: inc/acf/blocks/news/fields.php:38
+#: inc/acf/blocks/contacts-simple/fields.php:38
+#: inc/acf/blocks/accordion/fields.php:38 inc/acf/blocks/gallery/fields.php:38
+#: inc/acf/blocks/entities-grid/fields.php:38
+#: inc/acf/blocks/text-form/fields.php:38 inc/acf/blocks/about/fields.php:38
+#: inc/acf/blocks/contacts/fields.php:44 inc/acf/blocks/rich-text/fields.php:38
+#: inc/acf/blocks/text-image/fields.php:38
+#: inc/acf/blocks/links-group/fields.php:38 inc/acf/blocks/hero/fields.php:38
+msgid "Heading Level (SEO)"
+msgstr "Рівень Заголовку (SEO)"
+
+#: inc/acf/blocks/entity-links/fields.php:55 inc/acf/blocks/files/fields.php:55
+#: inc/acf/blocks/employees/fields.php:55 inc/acf/blocks/services/fields.php:55
+#: inc/acf/blocks/news/fields.php:55
+#: inc/acf/blocks/contacts-simple/fields.php:55
+#: inc/acf/blocks/accordion/fields.php:55 inc/acf/blocks/gallery/fields.php:55
+#: inc/acf/blocks/entities-grid/fields.php:55
+#: inc/acf/blocks/text-form/fields.php:55 inc/acf/blocks/about/fields.php:55
+#: inc/acf/blocks/contacts/fields.php:57 inc/acf/blocks/rich-text/fields.php:55
+#: inc/acf/blocks/text-image/fields.php:55
+#: inc/acf/blocks/links-group/fields.php:55 inc/acf/blocks/hero/fields.php:55
+msgid "Heading Level (Style)"
+msgstr "Рівень Заголовку (Стиль)"
+
+#: inc/acf/blocks/entity-links/fields.php:199
+#: inc/acf/blocks/files/fields.php:202 inc/acf/blocks/employees/fields.php:196
+#: inc/acf/blocks/services/fields.php:205 inc/acf/blocks/news/fields.php:202
+#: inc/acf/blocks/contacts-simple/fields.php:175
+#: inc/acf/blocks/accordion/fields.php:146
+#: inc/acf/blocks/gallery/fields.php:152
+#: inc/acf/blocks/entities-grid/fields.php:201
+#: inc/acf/blocks/text-form/fields.php:234 inc/acf/blocks/about/fields.php:150
+#: inc/acf/blocks/contacts/fields.php:200
+#: inc/acf/blocks/rich-text/fields.php:176
+#: inc/acf/blocks/text-image/fields.php:202
+#: inc/acf/blocks/links-group/fields.php:194 inc/acf/blocks/hero/fields.php:86
+#: inc/acf/blocks/hero/fields.php:182
+msgid "Height"
+msgstr "Висота"
+
+#: inc/acf/blocks/hero/fields.php:97
+msgid "Horizontal alignment"
+msgstr "Горизонтальне вирівнбвання"
+
+#: inc/acf/blocks/entities-grid/fields.php:157
+msgid "Icon Width"
+msgstr "Ширина Іконки"
+
+#: inc/acf/blocks/entities-grid/fields.php:153
+msgid "Icon/Image File"
+msgstr "Іконка/Зображення"
+
+#: inc/acf/fields/post-type-service.php:11
+#: inc/acf/fields/option-page-settings.php:89
+#: inc/acf/blocks/text-image/fields.php:122
+msgid "Image"
+msgstr "Зображення"
+
+#: inc/acf/fields/option-page-settings.php:87
+msgid "Image or SVG tag?"
+msgstr "Зображення чи SVG?"
+
+#: inc/acf/blocks/text-image/fields.php:135
+msgid "Image/Text"
+msgstr "Зображення/Текст"
+
+#: inc/post-types/conversation.php:22
+msgid "Insert into Conversation"
+msgstr "Вставити в Звернення"
+
+#: inc/post-types/employee.php:22
+msgid "Insert into Employee"
+msgstr "Вставити в Працівника"
+
+#: inc/post-types/service.php:22
+msgid "Insert into Service"
+msgstr "Вставити в Послугу"
+
+#: inc/acf/fields/post-type-employee.php:31
+msgid "Instagram"
+msgstr "Instagram"
+
+#: inc/acf/fields/option-page-settings.php:73
+msgid "Instagram link"
+msgstr "Посилання на Instagram"
+
+#: inc/acf/blocks/files/fields.php:122
+msgid "Is all Files visible?"
+msgstr "Чи всі файли видимі?"
+
+#: inc/acf/fields/post-type-employee.php:38
+msgid "Is contact CTA enabled"
+msgstr "CTA контакту ввімкнено?"
+
+#: inc/acf/fields/post-type-service.php:54
+msgid "Is price general?"
+msgstr "Ціна загальна?"
+
+#: inc/template-functions.php:637 inc/acf/fields/post-type-conversation.php:11
+msgid "Is processed?"
+msgstr "Опрацьовано?"
+
+#: inc/acf/blocks/entity-links/fields.php:21 inc/acf/blocks/files/fields.php:21
+#: inc/acf/blocks/employees/fields.php:21 inc/acf/blocks/services/fields.php:21
+#: inc/acf/blocks/news/fields.php:21
+#: inc/acf/blocks/contacts-simple/fields.php:21
+#: inc/acf/blocks/accordion/fields.php:21 inc/acf/blocks/gallery/fields.php:21
+#: inc/acf/blocks/entities-grid/fields.php:21
+#: inc/acf/blocks/text-form/fields.php:21 inc/acf/blocks/about/fields.php:21
+#: inc/acf/blocks/contacts/fields.php:21 inc/acf/blocks/rich-text/fields.php:21
+#: inc/acf/blocks/text-image/fields.php:21
+#: inc/acf/blocks/links-group/fields.php:21 inc/acf/blocks/hero/fields.php:21
+msgid "Is Visible?"
+msgstr "Блок видимий?"
+
+#: inc/acf/fields/post-type-service.php:96
+msgid "Keywords"
+msgstr "Ключові слова"
+
+#: inc/acf/blocks/hero/fields.php:89
+msgid "Large (75% screen height)"
+msgstr "Велика (75% висоти екрану)"
+
+#: inc/acf/blocks/entity-links/fields.php:85
+#: inc/acf/blocks/entity-links/fields.php:109
+#: inc/acf/blocks/files/fields.php:85 inc/acf/blocks/files/fields.php:109
+#: inc/acf/blocks/employees/fields.php:85
+#: inc/acf/blocks/employees/fields.php:108
+#: inc/acf/blocks/employees/fields.php:123
+#: inc/acf/blocks/services/fields.php:85 inc/acf/blocks/services/fields.php:108
+#: inc/acf/blocks/news/fields.php:85 inc/acf/blocks/news/fields.php:108
+#: inc/acf/blocks/contacts-simple/fields.php:85
+#: inc/acf/blocks/contacts-simple/fields.php:109
+#: inc/acf/blocks/accordion/fields.php:85 inc/acf/blocks/gallery/fields.php:85
+#: inc/acf/blocks/entities-grid/fields.php:85
+#: inc/acf/blocks/entities-grid/fields.php:109
+#: inc/acf/blocks/entities-grid/fields.php:123
+#: inc/acf/blocks/text-form/fields.php:181 inc/acf/blocks/about/fields.php:85
+#: inc/acf/blocks/contacts/fields.php:147
+#: inc/acf/blocks/rich-text/fields.php:85
+#: inc/acf/blocks/rich-text/fields.php:109
+#: inc/acf/blocks/rich-text/fields.php:133
+#: inc/acf/blocks/text-image/fields.php:153
+#: inc/acf/blocks/links-group/fields.php:85
+#: inc/acf/blocks/links-group/fields.php:109
+#: inc/acf/blocks/links-group/fields.php:151 inc/acf/blocks/hero/fields.php:99
+msgid "Left"
+msgstr "Ліворуч"
+
+#: inc/acf/blocks/links-group/fields.php:137
+msgid "Link"
+msgstr "Посилання"
+
+#: inc/acf/fields/post-type-service.php:44
+msgid "Linked page"
+msgstr "Звʼязана сторінка"
+
+#: inc/acf/fields/post-type-employee.php:34
+msgid "Linkedin"
+msgstr "Linkedin"
+
+#: inc/acf/blocks/entity-links/fields.php:118
+#: inc/acf/blocks/links-group/fields.php:118
+#: inc/acf/blocks/links-group/fields.php:133
+msgid "Links"
+msgstr "Посилання"
+
+#: inc/acf/fields/option-page-settings.php:23
+msgid "Main Phone"
+msgstr "Головний телефон"
+
+#: inc/acf/fields/option-page-settings.php:66
+#: inc/acf/blocks/contacts/fields.php:70
+msgid "Map iframe"
+msgstr "iframe Мапи"
+
+#: inc/acf/blocks/contacts/fields.php:120
+msgid "Map/Text"
+msgstr "Мапа/Текст"
+
+#: inc/acf/blocks/hero/fields.php:90
+msgid "Medium (50% screen height)"
+msgstr "Середня (50% висоти екрану)"
+
+#: inc/acf/fields/post-type-conversation.php:40
+msgid "Message"
+msgstr "Повідомлення"
+
+#: inc/acf/blocks/text-form/fields.php:192
+#: inc/acf/blocks/contacts/fields.php:158
+#: inc/acf/blocks/text-image/fields.php:164 inc/acf/blocks/hero/fields.php:113
+msgid "Middle"
+msgstr "Посередені"
+
+#: inc/acf/blocks/hero/fields.php:210
+msgid "Mobile background image"
+msgstr "Мобільне фонове зображення"
+
+#: inc/acf/fields/post-type-conversation.php:23
+msgid "Name"
+msgstr "Назва"
+
+#: inc/taxonomies/city.php:18
+msgid "New City name"
+msgstr "Нова назва Міста"
+
+#: inc/post-types/conversation.php:13
+msgid "New Conversation"
+msgstr "Нове звернення"
+
+#: inc/post-types/employee.php:13
+msgid "New Employee"
+msgstr "Новий Працівник"
+
+#: inc/post-types/service.php:13
+msgid "New Service"
+msgstr "Нова Послуга"
+
+#: inc/acf/blocks/news/fields.php:117 inc/acf/blocks/news/fields.php:153
+msgid "News"
+msgstr "Новини"
+
+#: inc/acf/fields/post-type-conversation.php:14
+#: inc/acf/fields/post-type-employee.php:41
+#: inc/acf/fields/post-type-service.php:57
+#: inc/acf/blocks/entity-links/fields.php:24
+#: inc/acf/blocks/entity-links/fields.php:179
+#: inc/acf/blocks/files/fields.php:24 inc/acf/blocks/files/fields.php:125
+#: inc/acf/blocks/files/fields.php:182 inc/acf/blocks/employees/fields.php:24
+#: inc/acf/blocks/employees/fields.php:134
+#: inc/acf/blocks/employees/fields.php:176
+#: inc/acf/blocks/services/fields.php:24 inc/acf/blocks/services/fields.php:134
+#: inc/acf/blocks/services/fields.php:142
+#: inc/acf/blocks/services/fields.php:185 inc/acf/blocks/news/fields.php:24
+#: inc/acf/blocks/news/fields.php:182
+#: inc/acf/blocks/contacts-simple/fields.php:24
+#: inc/acf/blocks/contacts-simple/fields.php:155
+#: inc/acf/blocks/accordion/fields.php:24
+#: inc/acf/blocks/accordion/fields.php:126 inc/acf/blocks/gallery/fields.php:24
+#: inc/acf/blocks/gallery/fields.php:112 inc/acf/blocks/gallery/fields.php:132
+#: inc/acf/blocks/entities-grid/fields.php:24
+#: inc/acf/blocks/entities-grid/fields.php:181
+#: inc/acf/blocks/text-form/fields.php:24
+#: inc/acf/blocks/text-form/fields.php:214 inc/acf/blocks/about/fields.php:24
+#: inc/acf/blocks/about/fields.php:130 inc/acf/blocks/contacts/fields.php:24
+#: inc/acf/blocks/contacts/fields.php:180
+#: inc/acf/blocks/rich-text/fields.php:24
+#: inc/acf/blocks/rich-text/fields.php:156
+#: inc/acf/blocks/text-image/fields.php:24
+#: inc/acf/blocks/text-image/fields.php:182
+#: inc/acf/blocks/links-group/fields.php:24
+#: inc/acf/blocks/links-group/fields.php:174 inc/acf/blocks/hero/fields.php:24
+#: inc/acf/blocks/hero/fields.php:162
+msgid "No"
+msgstr "Ні"
+
+#: inc/acf/blocks/entity-links/fields.php:225
+#: inc/acf/blocks/files/fields.php:228 inc/acf/blocks/employees/fields.php:222
+#: inc/acf/blocks/services/fields.php:231 inc/acf/blocks/news/fields.php:228
+#: inc/acf/blocks/contacts-simple/fields.php:201
+#: inc/acf/blocks/accordion/fields.php:172
+#: inc/acf/blocks/gallery/fields.php:178
+#: inc/acf/blocks/entities-grid/fields.php:227
+#: inc/acf/blocks/text-form/fields.php:260 inc/acf/blocks/about/fields.php:176
+#: inc/acf/blocks/contacts/fields.php:226
+#: inc/acf/blocks/rich-text/fields.php:202
+#: inc/acf/blocks/text-image/fields.php:228
+#: inc/acf/blocks/links-group/fields.php:220 inc/acf/blocks/hero/fields.php:216
+msgid "None"
+msgstr "Нічого"
+
+#: inc/acf/fields/post-type-conversation.php:19
+#: inc/acf/fields/option-page-settings.php:58
+msgid "Note"
+msgstr "Примітка"
+
+#: inc/acf/blocks/services/fields.php:121 inc/acf/blocks/news/fields.php:121
+#: inc/acf/blocks/gallery/fields.php:97
+#: inc/acf/blocks/entities-grid/fields.php:136
+#: inc/acf/blocks/links-group/fields.php:122
+msgid "Number of columns"
+msgstr "Кількість колонок"
+
+#: inc/acf/blocks/files/fields.php:130
+msgid "Number of visible Files"
+msgstr "Кількість видимих Файлів"
+
+#: inc/taxonomies/city.php:13
+msgid "Parent City"
+msgstr "Батьківське Місто"
+
+#: inc/taxonomies/city.php:14
+msgid "Parent City:"
+msgstr "Батьківське Місто:"
+
+#: inc/post-types/conversation.php:18
+msgid "Parent Conversation:"
+msgstr "Батьківське Звернення:"
+
+#: inc/post-types/employee.php:18
+msgid "Parent Employee:"
+msgstr "Батьківський Працівник:"
+
+#: inc/post-types/service.php:18
+msgid "Parent Service:"
+msgstr "Батьківська Послуга:"
+
+#: inc/acf/blocks/about/fields.php:105
+msgid "Period"
+msgstr "Період"
+
+#: inc/acf/fields/post-type-conversation.php:27
+msgid "Pet name"
+msgstr "Імʼя домашнього улюбленця"
+
+#: inc/acf/fields/post-type-conversation.php:31
+msgid "Phone"
+msgstr "Телефон"
+
+#: inc/acf/fields/option-page-settings.php:49
+msgid "Phone Number"
+msgstr "Номер телефону"
+
+#: inc/acf/fields/option-page-settings.php:46
+#: inc/acf/blocks/contacts-simple/fields.php:135
+#: inc/acf/blocks/contacts/fields.php:78
+msgid "Phones"
+msgstr "Телефони"
+
+#: inc/acf/fields/post-type-employee.php:11
+msgid "Photo"
+msgstr "Фото"
+
+#: inc/acf/fields/post-type-employee.php:16
+msgid "Position"
+msgstr "Посада"
+
+#: inc/acf/blocks/entity-links/fields.php:125
+#: inc/acf/blocks/entity-links/fields.php:146
+msgid "Posts"
+msgstr "Записи"
+
+#: inc/acf/fields/post-type-service.php:62
+msgid "Price"
+msgstr "Ціна"
+
+#: inc/acf/fields/post-type-service.php:32
+msgid "Prices"
+msgstr "Ціни"
+
+#: inc/acf/fields/post-type-service.php:75
+msgid "Prices by city:"
+msgstr "Ціни по містах:"
+
+#: inc/acf/blocks/hero/fields.php:127
+msgid "Primary CTA"
+msgstr "Головне CTA (посилання)"
+
+#: inc/acf/blocks/hero/fields.php:131
+msgid "Primary CTA Style"
+msgstr "Стиль Головного CTA (посилання)"
+
+#: inc/template-functions.php:105
+msgid "Primary menu"
+msgstr "Головне меню"
+
+#: inc/template-functions.php:640
+msgid "Processing date"
+msgstr "Дата обробки"
+
+#: inc/acf/fields/post-type-employee.php:20
+msgid "Quote"
+msgstr "Цитата"
+
+#: inc/post-types/conversation.php:26
+msgid "Remove Conversation Featured image"
+msgstr "Видалити Зображення"
+
+#: inc/post-types/employee.php:26
+msgid "Remove Employee Featured image"
+msgstr "Видалити Зображення"
+
+#: inc/post-types/service.php:26
+msgid "Remove Service Featured image"
+msgstr "Видалити Зображення"
+
+#: inc/template-functions.php:638
+msgid "Responsible persons"
+msgstr "Відповідальна особа"
+
+#: inc/acf/blocks/entity-links/fields.php:87
+#: inc/acf/blocks/entity-links/fields.php:111
+#: inc/acf/blocks/files/fields.php:87 inc/acf/blocks/files/fields.php:111
+#: inc/acf/blocks/employees/fields.php:87
+#: inc/acf/blocks/employees/fields.php:110
+#: inc/acf/blocks/employees/fields.php:125
+#: inc/acf/blocks/services/fields.php:87 inc/acf/blocks/services/fields.php:110
+#: inc/acf/blocks/news/fields.php:87 inc/acf/blocks/news/fields.php:110
+#: inc/acf/blocks/contacts-simple/fields.php:87
+#: inc/acf/blocks/contacts-simple/fields.php:111
+#: inc/acf/blocks/accordion/fields.php:87 inc/acf/blocks/gallery/fields.php:87
+#: inc/acf/blocks/entities-grid/fields.php:87
+#: inc/acf/blocks/entities-grid/fields.php:111
+#: inc/acf/blocks/entities-grid/fields.php:125
+#: inc/acf/blocks/text-form/fields.php:183 inc/acf/blocks/about/fields.php:87
+#: inc/acf/blocks/contacts/fields.php:149
+#: inc/acf/blocks/rich-text/fields.php:87
+#: inc/acf/blocks/rich-text/fields.php:111
+#: inc/acf/blocks/rich-text/fields.php:135
+#: inc/acf/blocks/text-image/fields.php:155
+#: inc/acf/blocks/links-group/fields.php:87
+#: inc/acf/blocks/links-group/fields.php:111
+#: inc/acf/blocks/links-group/fields.php:153 inc/acf/blocks/hero/fields.php:101
+msgid "Right"
+msgstr "Праворуч"
+
+#: inc/acf/blocks/text-form/fields.php:131
+#: inc/acf/blocks/contacts/fields.php:97
+msgid "Row"
+msgstr "Рядок"
+
+#: inc/acf/fields/option-page-settings.php:63
+#: inc/acf/blocks/contacts-simple/fields.php:132
+msgid "Schedule"
+msgstr "Розклад"
+
+#: inc/taxonomies/city.php:10
+msgid "Search Cities"
+msgstr "Пошук Міст"
+
+#: inc/post-types/conversation.php:15
+msgid "Search Conversations"
+msgstr "Пошук Зверненнь"
+
+#: inc/post-types/employee.php:15
+msgid "Search Employees"
+msgstr "Пошук Працівників"
+
+#: inc/post-types/service.php:15
+msgid "Search Services"
+msgstr "Пошук Послуг"
+
+#: inc/acf/blocks/hero/fields.php:139
+msgid "Secondary CTA"
+msgstr "Другорядне CTA (посилання)"
+
+#: inc/acf/blocks/hero/fields.php:143
+msgid "Secondary CTA Style"
+msgstr "Стиль другорядного CTA (посилання)"
+
+#: inc/acf/blocks/text-form/fields.php:108
+msgid "Select Form"
+msgstr "Оберіть Форму"
+
+#: inc/post-types/service.php:6 inc/post-types/service.php:8
+#: inc/post-types/service.php:9 inc/post-types/service.php:31
+msgid "Service"
+msgstr "Послуга"
+
+#: inc/post-types/service.php:21
+msgid "Service archives"
+msgstr "Архів Послуг"
+
+#: inc/post-types/service.php:24
+msgid "Service Featured image"
+msgstr "Зображення Послуги"
+
+#: inc/acf/fields/post-type-service.php:7
+msgid "Service information"
+msgstr "Інформація Послуги"
+
+#: inc/post-types/service.php:19 inc/acf/blocks/services/fields.php:117
+#: inc/acf/blocks/services/fields.php:156
+msgid "Services"
+msgstr "Послуги"
+
+#: inc/post-types/service.php:30
+msgid "Services list"
+msgstr "Список Послуг"
+
+#: inc/post-types/service.php:29
+msgid "Services list navigation"
+msgstr "Список Послуг"
+
+#: inc/post-types/service.php:16
+msgid "Services not found"
+msgstr "Послуги не знайдено"
+
+#: inc/post-types/service.php:17
+msgid "Services not found in trash"
+msgstr "Послуги не знайдено в корзині"
+
+#: inc/post-types/conversation.php:25
+msgid "Set Conversation Featured image"
+msgstr "Встановити Зображення"
+
+#: inc/post-types/employee.php:25
+msgid "Set Employee Featured image"
+msgstr "Встановити Зображення"
+
+#: inc/post-types/service.php:25
+msgid "Set Service Featured image"
+msgstr "Встановити Зображення"
+
+#: inc/acf/blocks/employees/fields.php:131
+msgid "Show All Employees?"
+msgstr "Показати всіх Працівників?"
+
+#: inc/acf/blocks/services/fields.php:131
+msgid "Show all services?"
+msgstr "Показати всі Послуги?"
+
+#: inc/acf/blocks/entity-links/fields.php:176
+#: inc/acf/blocks/files/fields.php:179 inc/acf/blocks/employees/fields.php:173
+#: inc/acf/blocks/services/fields.php:182 inc/acf/blocks/news/fields.php:179
+#: inc/acf/blocks/contacts-simple/fields.php:152
+#: inc/acf/blocks/accordion/fields.php:123
+#: inc/acf/blocks/gallery/fields.php:129
+#: inc/acf/blocks/entities-grid/fields.php:178
+#: inc/acf/blocks/text-form/fields.php:211 inc/acf/blocks/about/fields.php:127
+#: inc/acf/blocks/contacts/fields.php:177
+#: inc/acf/blocks/rich-text/fields.php:153
+#: inc/acf/blocks/text-image/fields.php:179
+#: inc/acf/blocks/links-group/fields.php:171 inc/acf/blocks/hero/fields.php:159
+msgid "Show Gradient layer?"
+msgstr "Показати щар градієнту?"
+
+#: inc/acf/blocks/news/fields.php:131
+msgid "Show latest news?"
+msgstr "Показати останні новини?"
+
+#: inc/acf/blocks/services/fields.php:139
+msgid "Show search?"
+msgstr "Показати пошук?"
+
+#: inc/acf/blocks/text-image/fields.php:100
+msgid "Simple"
+msgstr "Простий"
+
+#: inc/acf/blocks/entity-links/fields.php:226
+#: inc/acf/blocks/files/fields.php:229 inc/acf/blocks/employees/fields.php:223
+#: inc/acf/blocks/services/fields.php:232 inc/acf/blocks/news/fields.php:229
+#: inc/acf/blocks/contacts-simple/fields.php:202
+#: inc/acf/blocks/accordion/fields.php:173
+#: inc/acf/blocks/gallery/fields.php:179
+#: inc/acf/blocks/entities-grid/fields.php:228
+#: inc/acf/blocks/text-form/fields.php:261 inc/acf/blocks/about/fields.php:177
+#: inc/acf/blocks/contacts/fields.php:227
+#: inc/acf/blocks/rich-text/fields.php:203
+#: inc/acf/blocks/text-image/fields.php:229
+#: inc/acf/blocks/links-group/fields.php:221 inc/acf/blocks/hero/fields.php:217
+msgid "Small"
+msgstr "Маленький"
+
+#: inc/acf/blocks/hero/fields.php:91
+msgid "Small (Auto block height)"
+msgstr "Маленька (Автоматична)"
+
+#: inc/acf/fields/post-type-employee.php:25
+#: inc/acf/fields/option-page-settings.php:77
+#: inc/acf/fields/option-page-settings.php:81
+msgid "Social links"
+msgstr "Соціальні мережі"
+
+#: inc/acf/fields/option-page-settings.php:94
+#: inc/acf/fields/option-page-settings.php:107
+msgid "Social network Icon"
+msgstr "Іконка соц. мережі"
+
+#: inc/acf/fields/option-page-settings.php:84
+msgid "Social network URL"
+msgstr "URL соц. мережі"
+
+#: inc/acf/blocks/entity-links/fields.php:227
+#: inc/acf/blocks/files/fields.php:230 inc/acf/blocks/employees/fields.php:224
+#: inc/acf/blocks/services/fields.php:233 inc/acf/blocks/news/fields.php:230
+#: inc/acf/blocks/contacts-simple/fields.php:203
+#: inc/acf/blocks/accordion/fields.php:174
+#: inc/acf/blocks/gallery/fields.php:180
+#: inc/acf/blocks/entities-grid/fields.php:229
+#: inc/acf/blocks/text-form/fields.php:262 inc/acf/blocks/about/fields.php:178
+#: inc/acf/blocks/contacts/fields.php:228
+#: inc/acf/blocks/rich-text/fields.php:204
+#: inc/acf/blocks/text-image/fields.php:230
+#: inc/acf/blocks/links-group/fields.php:222 inc/acf/blocks/hero/fields.php:218
+msgid "Standard"
+msgstr "Стандарт"
+
+#. Name of the template
+#: templates/sub-service.php:2
+msgid "Sub-Service"
+msgstr "Підпослуга"
+
+#: inc/acf/fields/option-page-settings.php:90
+msgid "SVG tag"
+msgstr "SVG тег"
+
+#: inc/acf/fields/option-page-settings.php:31
+msgid "Telegram"
+msgstr "Telegram"
+
+#: inc/acf/blocks/text-form/fields.php:83 inc/acf/blocks/about/fields.php:111
+#: inc/acf/blocks/rich-text/fields.php:118
+#: inc/acf/blocks/rich-text/fields.php:122
+#: inc/acf/blocks/text-image/fields.php:83
+msgid "Text"
+msgstr "Текст"
+
+#: inc/acf/blocks/employees/fields.php:121
+#: inc/acf/blocks/text-form/fields.php:179
+#: inc/acf/blocks/contacts/fields.php:145
+#: inc/acf/blocks/rich-text/fields.php:131
+#: inc/acf/blocks/text-image/fields.php:151
+#: inc/acf/blocks/links-group/fields.php:140
+#: inc/acf/blocks/links-group/fields.php:149
+msgid "Text alignment"
+msgstr "Вирівнювання тексту"
+
+#: inc/acf/blocks/entity-links/fields.php:163
+#: inc/acf/blocks/employees/fields.php:168
+#: inc/acf/blocks/text-form/fields.php:89
+#: inc/acf/blocks/rich-text/fields.php:126
+#: inc/acf/blocks/text-image/fields.php:89
+msgid "Text color"
+msgstr "Колір тексту"
+
+#: inc/acf/blocks/text-form/fields.php:153
+msgid "Text/Form"
+msgstr "Текст/Форма"
+
+#: inc/acf/blocks/text-form/fields.php:151
+msgid "Text/Form order"
+msgstr "Текст/Форма - порядок"
+
+#: inc/acf/blocks/text-image/fields.php:134
+msgid "Text/Image"
+msgstr "Текст/Зображення"
+
+#: inc/acf/blocks/text-image/fields.php:132
+msgid "Text/Image order"
+msgstr "Текст/Зображення - порядок"
+
+#: inc/acf/blocks/text-form/fields.php:160
+#: inc/acf/blocks/contacts/fields.php:126
+#: inc/acf/blocks/text-image/fields.php:141
+msgid "Text/Image Width Ratio"
+msgstr "Текст/Зображення відношення сторін"
+
+#: inc/acf/blocks/contacts/fields.php:119
+msgid "Text/Map"
+msgstr "Текст/Папа"
+
+#: inc/acf/blocks/contacts/fields.php:117
+msgid "Text/Map order"
+msgstr "Текст/Папа - порядок "
+
+#: inc/acf/fields/post-type-employee.php:46
+#: inc/acf/fields/post-type-employee.php:60
+#: inc/acf/fields/post-type-service.php:37 inc/acf/blocks/files/fields.php:148
+#: inc/acf/blocks/entities-grid/fields.php:160
+#: inc/acf/blocks/about/fields.php:108
+msgid "Title"
+msgstr "Заголовок"
+
+#: inc/acf/blocks/entity-links/fields.php:202
+#: inc/acf/blocks/files/fields.php:205 inc/acf/blocks/employees/fields.php:199
+#: inc/acf/blocks/services/fields.php:208 inc/acf/blocks/news/fields.php:205
+#: inc/acf/blocks/contacts-simple/fields.php:178
+#: inc/acf/blocks/accordion/fields.php:149
+#: inc/acf/blocks/gallery/fields.php:155
+#: inc/acf/blocks/entities-grid/fields.php:204
+#: inc/acf/blocks/text-form/fields.php:237 inc/acf/blocks/about/fields.php:153
+#: inc/acf/blocks/contacts/fields.php:203
+#: inc/acf/blocks/rich-text/fields.php:179
+#: inc/acf/blocks/text-image/fields.php:205
+#: inc/acf/blocks/links-group/fields.php:197 inc/acf/blocks/hero/fields.php:185
+msgid "To Bottom"
+msgstr "Вниз"
+
+#: inc/acf/blocks/entity-links/fields.php:204
+#: inc/acf/blocks/files/fields.php:207 inc/acf/blocks/employees/fields.php:201
+#: inc/acf/blocks/services/fields.php:210 inc/acf/blocks/news/fields.php:207
+#: inc/acf/blocks/contacts-simple/fields.php:180
+#: inc/acf/blocks/accordion/fields.php:151
+#: inc/acf/blocks/gallery/fields.php:157
+#: inc/acf/blocks/entities-grid/fields.php:206
+#: inc/acf/blocks/text-form/fields.php:239 inc/acf/blocks/about/fields.php:155
+#: inc/acf/blocks/contacts/fields.php:205
+#: inc/acf/blocks/rich-text/fields.php:181
+#: inc/acf/blocks/text-image/fields.php:207
+#: inc/acf/blocks/links-group/fields.php:199 inc/acf/blocks/hero/fields.php:187
+msgid "To Bottom Left"
+msgstr "Вниз - Ліворуч"
+
+#: inc/acf/blocks/entity-links/fields.php:207
+#: inc/acf/blocks/files/fields.php:210 inc/acf/blocks/employees/fields.php:204
+#: inc/acf/blocks/services/fields.php:213 inc/acf/blocks/news/fields.php:210
+#: inc/acf/blocks/contacts-simple/fields.php:183
+#: inc/acf/blocks/accordion/fields.php:154
+#: inc/acf/blocks/gallery/fields.php:160
+#: inc/acf/blocks/entities-grid/fields.php:209
+#: inc/acf/blocks/text-form/fields.php:242 inc/acf/blocks/about/fields.php:158
+#: inc/acf/blocks/contacts/fields.php:208
+#: inc/acf/blocks/rich-text/fields.php:184
+#: inc/acf/blocks/text-image/fields.php:210
+#: inc/acf/blocks/links-group/fields.php:202 inc/acf/blocks/hero/fields.php:190
+msgid "To Bottom Right"
+msgstr "Вниз - Праворуч"
+
+#: inc/acf/blocks/entity-links/fields.php:203
+#: inc/acf/blocks/files/fields.php:206 inc/acf/blocks/employees/fields.php:200
+#: inc/acf/blocks/services/fields.php:209 inc/acf/blocks/news/fields.php:206
+#: inc/acf/blocks/contacts-simple/fields.php:179
+#: inc/acf/blocks/accordion/fields.php:150
+#: inc/acf/blocks/gallery/fields.php:156
+#: inc/acf/blocks/entities-grid/fields.php:205
+#: inc/acf/blocks/text-form/fields.php:238 inc/acf/blocks/about/fields.php:154
+#: inc/acf/blocks/contacts/fields.php:204
+#: inc/acf/blocks/rich-text/fields.php:180
+#: inc/acf/blocks/text-image/fields.php:206
+#: inc/acf/blocks/links-group/fields.php:198 inc/acf/blocks/hero/fields.php:186
+msgid "To Left"
+msgstr "Ліворуч"
+
+#: inc/acf/blocks/entity-links/fields.php:206
+#: inc/acf/blocks/files/fields.php:209 inc/acf/blocks/employees/fields.php:203
+#: inc/acf/blocks/services/fields.php:212 inc/acf/blocks/news/fields.php:209
+#: inc/acf/blocks/contacts-simple/fields.php:182
+#: inc/acf/blocks/accordion/fields.php:153
+#: inc/acf/blocks/gallery/fields.php:159
+#: inc/acf/blocks/entities-grid/fields.php:208
+#: inc/acf/blocks/text-form/fields.php:241 inc/acf/blocks/about/fields.php:157
+#: inc/acf/blocks/contacts/fields.php:207
+#: inc/acf/blocks/rich-text/fields.php:183
+#: inc/acf/blocks/text-image/fields.php:209
+#: inc/acf/blocks/links-group/fields.php:201 inc/acf/blocks/hero/fields.php:189
+msgid "To Right"
+msgstr "Праворуч"
+
+#: inc/acf/blocks/entity-links/fields.php:201
+#: inc/acf/blocks/files/fields.php:204 inc/acf/blocks/employees/fields.php:198
+#: inc/acf/blocks/services/fields.php:207 inc/acf/blocks/news/fields.php:204
+#: inc/acf/blocks/contacts-simple/fields.php:177
+#: inc/acf/blocks/accordion/fields.php:148
+#: inc/acf/blocks/gallery/fields.php:154
+#: inc/acf/blocks/entities-grid/fields.php:203
+#: inc/acf/blocks/text-form/fields.php:236 inc/acf/blocks/about/fields.php:152
+#: inc/acf/blocks/contacts/fields.php:202
+#: inc/acf/blocks/rich-text/fields.php:178
+#: inc/acf/blocks/text-image/fields.php:204
+#: inc/acf/blocks/links-group/fields.php:196 inc/acf/blocks/hero/fields.php:184
+msgid "To Top"
+msgstr "Вверх"
+
+#: inc/acf/blocks/entity-links/fields.php:205
+#: inc/acf/blocks/files/fields.php:208 inc/acf/blocks/employees/fields.php:202
+#: inc/acf/blocks/services/fields.php:211 inc/acf/blocks/news/fields.php:208
+#: inc/acf/blocks/contacts-simple/fields.php:181
+#: inc/acf/blocks/accordion/fields.php:152
+#: inc/acf/blocks/gallery/fields.php:158
+#: inc/acf/blocks/entities-grid/fields.php:207
+#: inc/acf/blocks/text-form/fields.php:240 inc/acf/blocks/about/fields.php:156
+#: inc/acf/blocks/contacts/fields.php:206
+#: inc/acf/blocks/rich-text/fields.php:182
+#: inc/acf/blocks/text-image/fields.php:208
+#: inc/acf/blocks/links-group/fields.php:200 inc/acf/blocks/hero/fields.php:188
+msgid "To Top Left"
+msgstr "Вверх - Ліворуч"
+
+#: inc/acf/blocks/entity-links/fields.php:208
+#: inc/acf/blocks/files/fields.php:211 inc/acf/blocks/employees/fields.php:205
+#: inc/acf/blocks/services/fields.php:214 inc/acf/blocks/news/fields.php:211
+#: inc/acf/blocks/contacts-simple/fields.php:184
+#: inc/acf/blocks/accordion/fields.php:155
+#: inc/acf/blocks/gallery/fields.php:161
+#: inc/acf/blocks/entities-grid/fields.php:210
+#: inc/acf/blocks/text-form/fields.php:243 inc/acf/blocks/about/fields.php:159
+#: inc/acf/blocks/contacts/fields.php:209
+#: inc/acf/blocks/rich-text/fields.php:185
+#: inc/acf/blocks/text-image/fields.php:211
+#: inc/acf/blocks/links-group/fields.php:203 inc/acf/blocks/hero/fields.php:191
+msgid "To Top Right"
+msgstr "Вверх - Праворуч"
+
+#: inc/acf/blocks/text-form/fields.php:191
+#: inc/acf/blocks/contacts/fields.php:157
+#: inc/acf/blocks/text-image/fields.php:163 inc/acf/blocks/hero/fields.php:112
+msgid "Top"
+msgstr "Верх"
+
+#: inc/taxonomies/city.php:16
+msgid "Update City"
+msgstr "Оновити місто"
+
+#: inc/post-types/conversation.php:23
+msgid "Uploaded to this Conversation"
+msgstr "Завантажено в Звернення"
+
+#: inc/post-types/employee.php:23
+msgid "Uploaded to this Employee"
+msgstr "Завантажено в Працівника"
+
+#: inc/post-types/service.php:23
+msgid "Uploaded to this Service"
+msgstr "Завантажено в Послугу"
+
+#: inc/post-types/conversation.php:27
+msgid "Use Conversation Featured image"
+msgstr "Використати Зображення"
+
+#: inc/post-types/employee.php:27
+msgid "Use Employee Featured image"
+msgstr "Використати Зображення"
+
+#: inc/acf/blocks/gallery/fields.php:109
+msgid "Use full width?"
+msgstr "Використати всю ширину?"
+
+#: inc/post-types/service.php:27
+msgid "Use Service Featured image"
+msgstr "Використати Зображення"
+
+#: inc/acf/blocks/text-form/fields.php:189
+#: inc/acf/blocks/contacts/fields.php:155
+#: inc/acf/blocks/text-image/fields.php:161 inc/acf/blocks/hero/fields.php:110
+msgid "Vertical alignment"
+msgstr "Вертикальне вирівнювання"
+
+#: inc/acf/fields/option-page-settings.php:35
+msgid "Viber"
+msgstr "Viber"
+
+#: inc/acf/blocks/hero/fields.php:82
+msgid "View"
+msgstr "Вид"
+
+#: inc/taxonomies/city.php:12
+msgid "View City"
+msgstr "Переглянути Місто"
+
+#: inc/post-types/conversation.php:14
+msgid "View Conversation"
+msgstr "Переглянути Звернення"
+
+#: inc/post-types/conversation.php:32
+msgid "View Conversations"
+msgstr "Переглянути Звернення"
+
+#: inc/post-types/employee.php:14
+msgid "View Employee"
+msgstr "Переглянути Працівника"
+
+#: inc/post-types/employee.php:32
+msgid "View Employees"
+msgstr "Переглянути Працівників"
+
+#: inc/post-types/service.php:14
+msgid "View Service"
+msgstr "Переглянути Послугу"
+
+#: inc/post-types/service.php:32
+msgid "View Services"
+msgstr "Переглянути Послуги"
+
+#: inc/acf/blocks/text-form/fields.php:129
+#: inc/acf/blocks/contacts/fields.php:95
+msgid "View: Row/Column"
+msgstr "Вид: Рядок/Колонка"
+
+#: inc/acf/blocks/employees/fields.php:101
+#: inc/acf/blocks/services/fields.php:101 inc/acf/blocks/news/fields.php:101
+#: inc/acf/blocks/text-form/fields.php:120
+#: inc/acf/blocks/links-group/fields.php:143
+msgid "Violet"
+msgstr "Фіолетовий"
+
+#: inc/acf/blocks/entity-links/fields.php:100
+#: inc/acf/blocks/files/fields.php:100 inc/acf/blocks/employees/fields.php:100
+#: inc/acf/blocks/services/fields.php:100 inc/acf/blocks/news/fields.php:100
+#: inc/acf/blocks/contacts-simple/fields.php:100
+#: inc/acf/blocks/entities-grid/fields.php:100
+#: inc/acf/blocks/text-form/fields.php:119
+#: inc/acf/blocks/rich-text/fields.php:100
+#: inc/acf/blocks/text-image/fields.php:102
+#: inc/acf/blocks/links-group/fields.php:100
+#: inc/acf/blocks/links-group/fields.php:142 inc/acf/blocks/hero/fields.php:134
+#: inc/acf/blocks/hero/fields.php:146
+msgid "White"
+msgstr "Білий"
+
+#: inc/acf/blocks/entity-links/fields.php:102
+#: inc/acf/blocks/files/fields.php:102
+#: inc/acf/blocks/contacts-simple/fields.php:102
+#: inc/acf/blocks/entities-grid/fields.php:102
+#: inc/acf/blocks/rich-text/fields.php:102
+#: inc/acf/blocks/text-image/fields.php:104
+#: inc/acf/blocks/links-group/fields.php:102
+msgid "White Border"
+msgstr "Біла рамка"
+
+#: inc/acf/blocks/about/fields.php:102
+msgid "Year"
+msgstr "Рік"
+
+#: inc/acf/blocks/about/fields.php:94 inc/acf/blocks/about/fields.php:98
+msgid "Years"
+msgstr "Роки"
+
+#: inc/acf/fields/post-type-conversation.php:13
+#: inc/acf/fields/post-type-employee.php:40
+#: inc/acf/fields/post-type-service.php:56
+#: inc/acf/blocks/entity-links/fields.php:23
+#: inc/acf/blocks/entity-links/fields.php:178
+#: inc/acf/blocks/files/fields.php:23 inc/acf/blocks/files/fields.php:124
+#: inc/acf/blocks/files/fields.php:181 inc/acf/blocks/employees/fields.php:23
+#: inc/acf/blocks/employees/fields.php:133
+#: inc/acf/blocks/employees/fields.php:175
+#: inc/acf/blocks/services/fields.php:23 inc/acf/blocks/services/fields.php:133
+#: inc/acf/blocks/services/fields.php:141
+#: inc/acf/blocks/services/fields.php:184 inc/acf/blocks/news/fields.php:23
+#: inc/acf/blocks/news/fields.php:133 inc/acf/blocks/news/fields.php:181
+#: inc/acf/blocks/contacts-simple/fields.php:23
+#: inc/acf/blocks/contacts-simple/fields.php:154
+#: inc/acf/blocks/accordion/fields.php:23
+#: inc/acf/blocks/accordion/fields.php:125 inc/acf/blocks/gallery/fields.php:23
+#: inc/acf/blocks/gallery/fields.php:111 inc/acf/blocks/gallery/fields.php:131
+#: inc/acf/blocks/entities-grid/fields.php:23
+#: inc/acf/blocks/entities-grid/fields.php:180
+#: inc/acf/blocks/text-form/fields.php:23
+#: inc/acf/blocks/text-form/fields.php:213 inc/acf/blocks/about/fields.php:23
+#: inc/acf/blocks/about/fields.php:129 inc/acf/blocks/contacts/fields.php:23
+#: inc/acf/blocks/contacts/fields.php:179
+#: inc/acf/blocks/rich-text/fields.php:23
+#: inc/acf/blocks/rich-text/fields.php:155
+#: inc/acf/blocks/text-image/fields.php:23
+#: inc/acf/blocks/text-image/fields.php:181
+#: inc/acf/blocks/links-group/fields.php:23
+#: inc/acf/blocks/links-group/fields.php:173 inc/acf/blocks/hero/fields.php:23
+#: inc/acf/blocks/hero/fields.php:161
+msgid "Yes"
+msgstr "Так"
+
+#. Author of the theme
+msgid "Анонім"
+msgstr "Анонім"
