@@ -7,6 +7,10 @@ function acf_add_post_type_questionary_fields(): void {
 		'title' => __( 'Questionary information', 'dovira' ),
 	) );
 
+	$fields->addTextarea('admin_note', array(
+		'label'    => __( 'Note', 'dovira' ),
+	));
+
 	// Owner information
 	$fields->addText( 'name', array(
 		'label'    => __( 'Name', 'dovira' ),
