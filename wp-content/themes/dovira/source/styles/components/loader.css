@@ -2,7 +2,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 1001;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,11 +18,11 @@
 }
 
 .loader--dark {
-	background-color: rgba(0, 0, 0, 0.8);
+	background-color: rgba(0, 0, 0, 0.5);
 }
 
 .loader--light {
-	background-color: rgba(255, 255, 255, 0.8);
+	background-color: rgba(255, 255, 255, 0.5);
 }
 
 .loader--active {
@@ -40,6 +40,7 @@
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
 }
+
 .loader__component::after {
   content: '';
   box-sizing: border-box;
@@ -51,7 +52,7 @@
   height: 56px;
   border-radius: 50%;
   border: 3px solid transparent;
-  border-bottom-color: #1995AD;;
+  border-bottom-color: var(--color-violet-light);;
 }
 
 @keyframes rotation {

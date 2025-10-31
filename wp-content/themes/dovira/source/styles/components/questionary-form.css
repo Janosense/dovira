@@ -167,3 +167,29 @@
 .questionary-form__submit {
   width: 100%;
 }
+
+.questionary-form__message {
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  border-radius: 8px;
+
+  @media (min-width: 768px) {
+    padding: 20px 24px;
+    font-size: 18px;
+  }
+}
+
+.questionary-form__message--success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.questionary-form__message--error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}

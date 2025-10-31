@@ -252,6 +252,9 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 					</div>
 					<button class="button button--black questionary-form__submit" type="submit">Записатись</button>
 				</form>
+				<div class="loader loader--light loader--fixed">
+					<span class="loader__component"></span>
+				</div>
 			</div>
 		</div>
 	</section>
@@ -260,6 +263,12 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 		const inputs = document.querySelectorAll('.questionary-form__text-field');
 		if (inputs) {
 			inputs.forEach(input => {
+				if (input.value.length > 0) {
+					input.classList.add('questionary-form__text-field--active');
+				} else {
+					input.classList.remove('questionary-form__text-field--active');
+				}
+
 				input.addEventListener('change', function () {
 					if (input.value.length > 0) {
 						input.classList.add('questionary-form__text-field--active');

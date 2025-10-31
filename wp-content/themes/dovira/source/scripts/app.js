@@ -11,6 +11,7 @@
   const {initSwiper} = await import('@scripts/modules/init-swiper');
   const {toggleEmployeesCity} = await import('@scripts/modules/toggle-employees-city');
   const {toggleFooterCalls} = await import('@scripts/modules/toggle-footer-calls');
+  const {questionaryFormHandler} = await import('@scripts/modules/questionary-form-handler.js');
 
   initAnimations();
   initFancybox();
@@ -24,4 +25,5 @@
   initSwiper()
   toggleEmployeesCity();
   toggleFooterCalls();
+  questionaryFormHandler();
 })();
