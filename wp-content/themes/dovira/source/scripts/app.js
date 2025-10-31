@@ -12,6 +12,7 @@
   const {toggleEmployeesCity} = await import('@scripts/modules/toggle-employees-city');
   const {toggleFooterCalls} = await import('@scripts/modules/toggle-footer-calls');
   const {questionaryFormHandler} = await import('@scripts/modules/questionary-form-handler.js');
+  const {initImask} = await import('@scripts/modules/init-imask.js');
 
   initAnimations();
   initFancybox();
@@ -26,4 +27,5 @@
   toggleEmployeesCity();
   toggleFooterCalls();
   questionaryFormHandler();
+  initImask()
 })();

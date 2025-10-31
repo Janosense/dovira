@@ -9,7 +9,7 @@
     ]
   },
   "source/main.js": {
-    "file": "main.CpBDDujC.js",
+    "file": "main.CDXWDg8A.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -26,7 +26,8 @@
       "source/scripts/modules/init-swiper.js",
       "source/scripts/modules/toggle-employees-city.js",
       "source/scripts/modules/toggle-footer-calls.js",
-      "source/scripts/modules/questionary-form-handler.js"
+      "source/scripts/modules/questionary-form-handler.js",
+      "source/scripts/modules/init-imask.js"
     ],
     "css": [
       "main.Bcgmfkgd.css"
@@ -54,6 +55,12 @@
     "file": "_chunk.DAhmmDnK.js",
     "name": "init-fancybox",
     "src": "source/scripts/modules/init-fancybox.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/init-imask.js": {
+    "file": "_chunk.D1OVUXSa.js",
+    "name": "init-imask",
+    "src": "source/scripts/modules/init-imask.js",
     "isDynamicEntry": true
   },
   "source/scripts/modules/init-service-price-lists.js": {

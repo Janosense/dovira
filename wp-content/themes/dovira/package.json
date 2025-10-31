@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@fancyapps/ui": "^5.0.36",
+    "imask": "^7.6.1",
     "swiper": "^11.2.1"
   }
 }
