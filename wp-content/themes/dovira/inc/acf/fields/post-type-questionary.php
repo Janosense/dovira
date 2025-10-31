@@ -3,7 +3,7 @@
 use StoutLogic\AcfBuilder\FieldsBuilder;
 
 function acf_add_post_type_questionary_fields(): void {
-	$fields = new FieldsBuilder( 'questionary', array(
+	$fields = new FieldsBuilder( 'post-type-questionary', array(
 		'title' => __( 'Questionary information', 'dovira' ),
 	) );
 

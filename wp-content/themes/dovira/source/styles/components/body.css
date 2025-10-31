@@ -36,4 +36,12 @@ body {
       padding-top: 0;
     }
   }
+
+  &:not(.home) {
+    padding-top: 104px;
+
+    @media (min-width: 1280px) {
+      padding-top: 0;
+    }
+  }
 }
