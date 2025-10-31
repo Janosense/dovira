@@ -58,7 +58,7 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 			<?php endif; ?>
 			<div class="questionary__form-holder">
 				<form action="#" class="questionary__form questionary-form">
-					<?php wp_nonce_field( 'questionary_save_action', 'questionary_nonce' ); ?>
+					<?php wp_nonce_field( 'wp_rest' ); ?>
 					<div class="questionary-form__row">
 						<div class="questionary-form__item">
 							<label>

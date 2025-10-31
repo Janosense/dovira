@@ -32,6 +32,14 @@
   }
 }
 
+.questionary-form__item--error {
+  .questionary-form__radio-field + span,
+  .questionary-form__text-field-label,
+  .questionary-form__item-title {
+    color: var(--color-violet-light);
+  }
+}
+
 .questionary-form__item-title {
   display: block;
   margin-bottom: 20px;
@@ -169,15 +177,14 @@
 }
 
 .questionary-form__message {
-  padding: 16px 20px;
-  margin-bottom: 24px;
+  padding: 12px 16px;
+  margin-bottom: 40px;
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
   border-radius: 8px;
 
   @media (min-width: 768px) {
-    padding: 20px 24px;
     font-size: 18px;
   }
 }
@@ -189,7 +196,7 @@
 }
 
 .questionary-form__message--error {
-  color: #721c24;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  color: var(--color-violet-light);
+  background-color: rgba(192, 111, 148, 0.12);
+  border: 1px solid var(--color-violet-light);
 }

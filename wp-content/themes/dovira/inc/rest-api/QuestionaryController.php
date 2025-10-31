@@ -38,15 +38,6 @@ class QuestionaryController extends WP_REST_Controller {
 	public function save_questionary( WP_REST_Request $request ) {
 		$params = $request->get_params();
 
-		// Verify nonce
-		if ( ! isset( $params['questionary_nonce'] ) || ! wp_verify_nonce( $params['questionary_nonce'], 'questionary_save_action' ) ) {
-			return new WP_Error(
-				'invalid_nonce',
-				__( 'Security verification failed', 'dovira' ),
-				[ 'status' => 403 ]
-			);
-		}
-
 		// Validate required fields
 		$required_fields = [ 'name', 'phone', 'animal', 'pet-sex', 'pet-old', 'pet-weight', 'vaccination-date', 'street', 'castration', 'donor-before', 'blood-take', 'chronic-diseases', 'pills' ];
 		foreach ( $required_fields as $field ) {
