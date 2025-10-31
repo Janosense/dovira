@@ -1,0 +1,169 @@
+.questionary-form {
+  display: block;
+}
+
+.questionary-form__row {
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: flex-end;
+    column-gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr 1fr;
+    margin-bottom: 60px;
+  }
+}
+
+.questionary-form__item {
+  position: relative;
+  margin-bottom: 24px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (min-width: 1024px) {
+    margin-bottom: 0;
+  }
+}
+
+.questionary-form__item-title {
+  display: block;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 400;
+
+  @media (min-width: 1024px) {
+    font-size: 20px;
+  }
+}
+
+.questionary-form__item-title--required {
+  position: relative;
+  &::after {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 4px;
+    background-color: var(--color-violet-light);
+    border-radius: 50%;
+    vertical-align: top;
+  }
+}
+
+.questionary-form__text-field {
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 12px 0;
+  box-sizing: border-box;
+  color: var(--color-black);
+  background-color: var(--color-transparent);
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  border-radius: 0;
+  outline: none;
+
+  &.questionary-form__text-field--active,
+  &:focus {
+    & + .questionary-form__text-field-label {
+      transform: translateY(-24px) scale(0.9);
+    }
+  }
+
+  &:required + .questionary-form__text-field-label::after {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 4px;
+    background-color: var(--color-violet-light);
+    border-radius: 50%;
+    vertical-align: top;
+  }
+}
+
+.questionary-form__text-field-label {
+  position: absolute;
+  left: 0;
+  bottom: 12px;
+  color: #727270;
+  opacity: 0.8;
+  transition: all 0.2s ease-in;
+  transform-origin: left;
+  pointer-events: none;
+}
+
+.questionary-form__radio-group {
+  display: flex;
+  column-gap: 32px;
+}
+
+.questionary-form__radio-field {
+  display: none;
+
+  & + span {
+    position: relative;
+    display: block;
+    padding-left: 32px;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1;
+    color: #727270;
+    cursor: pointer;
+    transition: color 0.2s ease-in;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: 2px;
+      display: block;
+      width: 26px;
+      height: 24px;
+      background-image: url("/wp-content/themes/dovira/assets/images/icon-pet-hand.svg");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      opacity: 0;
+      transition: opacity 0.2s ease-in;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: calc(50% - 8px);
+      left: 0;
+      display: block;
+      width: 16px;
+      height: 16px;
+      border: 1px solid rgba(39, 39, 39, 0.3);
+      border-radius: 4px;
+    }
+  }
+
+  &:checked {
+    & + span {
+      color: var(--color-black);
+
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+.questionary-form__submit {
+  width: 100%;
+}

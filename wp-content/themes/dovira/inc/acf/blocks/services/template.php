@@ -1,6 +1,6 @@
 <?php
 /**
- * Entities Grid Block Template.
+ * Services Block Template.
  *
  * @var array $block The block settings and attributes.
  * @var string $content The block inner HTML (empty).
@@ -45,7 +45,7 @@ endif;
 
 ?>
 <?php if ( $is_visible || $is_preview ) : ?>
-	<!-- GALLERY start -->
+	<!-- SERVICES start -->
 	<section
 		class="section section--mb-<?= $margin_bottom; ?> <?php if ( ! empty( $background_color ) ) : ?>section--with-bg<?php endif; ?> services <?php if ( ! $is_visible ) : ?>is-not-visible<?php endif; ?>"
 		<?php if ( ! empty( $background_color ) ) : ?>style="background-color: <?= $background_color; ?>;"<?php endif; ?>>
@@ -133,5 +133,5 @@ endif;
 			<?php endif; ?>
 		</div>
 	</section>
-	<!-- GALLERY end -->
+	<!-- SERVICES end -->
 <?php endif; ?>

@@ -42,6 +42,33 @@
   justify-content: flex-end;
 }
 
+.hero--blood-bank {
+  & .heading {
+    @media (min-width: 768px) {
+      font-size: 72px;
+    }
+
+    @media (min-width: 1024px) {
+      font-size: 72px;
+    }
+
+    @media (min-width: 1280px) {
+      font-size: 80px;
+    }
+
+    @media (min-width: 1440px) {
+      font-size: 100px;
+    }
+  }
+
+  & .caption {
+    @media (min-width: 768px) {
+      font-size: 18px;
+      line-height: 130%;
+    }
+  }
+}
+
 .hero__wrapper {
   position: relative;
   padding: 0 24px;

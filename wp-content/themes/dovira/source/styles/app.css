@@ -35,6 +35,7 @@
 @import "@styles/components/sub-service.css";
 @import "@styles/components/footer-calls.css";
 @import "@styles/components/not-found.css";
+@import "@styles/components/questionary-form.css";
 
 /* Blocks */
 @import "@styles/blocks/hero.css";
@@ -53,3 +54,4 @@
 @import "@styles/blocks/contacts-simple.css";
 @import "@styles/blocks/entity-links.css";
 @import "@styles/blocks/about.css";
+@import "@styles/blocks/questionary.css";

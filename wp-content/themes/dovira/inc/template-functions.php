@@ -371,6 +371,7 @@ function dovira_allowed_block_types( bool|array $allowed_blocks, WP_Block_Editor
 			'acf/hero',
 			'acf/links-group',
 			'acf/news',
+			'acf/questionary',
 			'acf/rich-text',
 			'acf/services',
 			'acf/text-form',

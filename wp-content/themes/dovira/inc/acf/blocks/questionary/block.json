@@ -1,0 +1,19 @@
+{
+	"name": "acf/questionary",
+	"title": "Questionary",
+	"description": "",
+	"category": "",
+	"icon": "pets",
+	"keywords": [
+		"questionary",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

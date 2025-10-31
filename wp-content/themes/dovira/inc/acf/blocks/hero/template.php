@@ -37,7 +37,7 @@ $margin_bottom           = dovira_get_acf_field( 'margin_bottom' );
 	<!-- HERO start -->
 	<section id="<?= $block_id; ?>"
 			 class="section section--mb-<?= $margin_bottom; ?> hero hero--<?= $height; ?> hero--<?= $horizontal_align; ?>
-		<?php if ( ! $is_visible ) : ?>is-not-visible<?php endif; ?>"
+		<?php if ( ! $is_visible ) : ?>is-not-visible<?php endif; ?> <?= $block['className'] ?? ''; ?>"
 			 <?php if ( ! empty( $background_color ) ) : ?>style="background-color: <?= $background_color; ?>;"<?php endif; ?>>
 		<?php if ( ! empty( $background_image ) ) :
 			$css_class = ! empty( $background_image_mobile ) ? 'hero__background-image hero__background-image--desktop' : 'hero__background-image hero__background-image--responsive';
