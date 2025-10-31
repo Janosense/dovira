@@ -9,7 +9,7 @@
     ]
   },
   "source/main.js": {
-    "file": "main.8hZdgdsb.js",
+    "file": "main.CpBDDujC.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -25,10 +25,11 @@
       "source/scripts/modules/init-service-price-lists.js",
       "source/scripts/modules/init-swiper.js",
       "source/scripts/modules/toggle-employees-city.js",
-      "source/scripts/modules/toggle-footer-calls.js"
+      "source/scripts/modules/toggle-footer-calls.js",
+      "source/scripts/modules/questionary-form-handler.js"
     ],
     "css": [
-      "main.B-OLVoVy.css"
+      "main.Bcgmfkgd.css"
     ]
   },
   "source/scripts/modules/authentication.js": {
@@ -65,6 +66,12 @@
     "file": "_chunk.B684riAg.js",
     "name": "init-swiper",
     "src": "source/scripts/modules/init-swiper.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/questionary-form-handler.js": {
+    "file": "_chunk.D33b9NDg.js",
+    "name": "questionary-form-handler",
+    "src": "source/scripts/modules/questionary-form-handler.js",
     "isDynamicEntry": true
   },
   "source/scripts/modules/reset-progress.js": {
