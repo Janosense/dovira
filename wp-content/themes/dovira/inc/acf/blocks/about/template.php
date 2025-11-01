@@ -60,7 +60,7 @@ $years               = dovira_get_acf_field( 'years' );
 			<?php if ( ! empty( $years ) ) : ?>
 				<div class="about__swiper about__swiper--years swiper" id="swiper-about-years">
 					<div class="swiper-wrapper">
-						<?php foreach ( $years as $year ): ?>
+						<?php foreach ( array_reverse( $years ) as $year ): ?>
 							<div class="swiper-slide"><?= $year['year']; ?></div>
 						<?php endforeach; ?>
 					</div>
@@ -71,21 +71,21 @@ $years               = dovira_get_acf_field( 'years' );
 				</div>
 			<?php endif; ?>
 			<?php if ( ! empty( $years ) ) : ?>
-			<div class="wrapper wrapper--tight">
-				<div class="about__swiper about__swiper--content swiper" id="swiper-about-content">
-					<div class="swiper-wrapper">
-						<?php foreach ( $years as $year ): ?>
-							<div class="swiper-slide">
-								<?php if ( ! empty( $year['period'] ) ) : ?>
-									<span class="about__period"><?= $year['period']; ?></span>
-								<?php endif; ?>
-								<h2 class="about__title heading heading--h3"><?= $year['title']; ?></h2>
-								<div class="about__text"><?= $year['text']; ?></div>
-							</div>
-						<?php endforeach; ?>
+				<div class="wrapper wrapper--tight">
+					<div class="about__swiper about__swiper--content swiper" id="swiper-about-content">
+						<div class="swiper-wrapper">
+							<?php foreach ( array_reverse( $years ) as $year ): ?>
+								<div class="swiper-slide">
+									<?php if ( ! empty( $year['period'] ) ) : ?>
+										<span class="about__period"><?= $year['period']; ?></span>
+									<?php endif; ?>
+									<h2 class="about__title heading heading--h3"><?= $year['title']; ?></h2>
+									<div class="about__text"><?= $year['text']; ?></div>
+								</div>
+							<?php endforeach; ?>
+						</div>
 					</div>
 				</div>
-			</div>
 			<?php endif; ?>
 		</div>
 	</section>

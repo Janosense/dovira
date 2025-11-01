@@ -1,9 +1,10 @@
 import Swiper from 'swiper';
-import { Navigation, Thumbs } from 'swiper/modules';
+import { Navigation, Thumbs, Autoplay } from 'swiper/modules';
 
 const initSwiper = () => {
   const swiper = new Swiper("#swiper-about-years", {
-    loop: true,
+    modules: [Autoplay],
+    loop: false,
     spaceBetween: 10,
     slidesPerView: 2,
     freeMode: true,
@@ -22,8 +23,8 @@ const initSwiper = () => {
     }
   });
   const swiper2 = new Swiper("#swiper-about-content", {
-    modules: [Navigation, Thumbs],
-    loop: true,
+    modules: [Navigation, Thumbs, Autoplay],
+    loop: false,
     spaceBetween: 10,
     navigation: {
       nextEl: ".swiper-button-next",
