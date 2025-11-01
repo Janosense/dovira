@@ -2,19 +2,12 @@
 <main>
 	<div class="not-found">
 		<div class="wrapper not-found__wrapper">
-			<p class="not-found__message">404<br>
-				<span>Сторінку не знайдено</span></p>
-			<ul class="not-found__list">
-				<li>
-					<a href="/">Головна</a>
-				</li>
-				<li>
-					<a href="/services/">Послуги</a>
-				</li>
-				<li>
-					<a href="/contacts/">Контакти</a>
-				</li>
-			</ul>
+			<img src="/wp-content/themes/dovira/assets/images/404.svg" alt="404" class="not-found__img">
+			<div class="not-found__content">
+				<h4>Ой! Хвостик заніс нас не туди</h4>
+				<p>Схоже, ця сторінка втекла гуляти. <br>Але ми поруч і допоможемо знайти потрібний шлях.</p>
+				<a href="<?= home_url(); ?>" class="button button--black">Повернутись на головну</a>
+			</div>
 		</div>
 	</div>
 
