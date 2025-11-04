@@ -376,6 +376,7 @@ function dovira_allowed_block_types( bool|array $allowed_blocks, WP_Block_Editor
 			'acf/services',
 			'acf/text-form',
 			'acf/text-image',
+			'acf/vacancies',
 		);
 	}
 

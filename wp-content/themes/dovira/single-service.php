@@ -48,7 +48,7 @@
 			<header class="section__header">
 				<h1 class="heading heading--h1"><?php the_title(); ?></h1>
 				<?php if ( ! empty( $description ) ) : ?>
-					<p class="text"><?= $description; ?></p>
+					<div class="text"><?= $description; ?></div>
 				<?php endif; ?>
 			</header>
 			<?php if ( ! empty( $prices_data ) ) : ?>

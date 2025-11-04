@@ -36,6 +36,9 @@
 @import "@styles/components/footer-calls.css";
 @import "@styles/components/not-found.css";
 @import "@styles/components/questionary-form.css";
+@import "@styles/components/city-toggle.css";
+@import "@styles/components/vacancy.css";
+@import "@styles/components/contact-form7.css";
 
 /* Blocks */
 @import "@styles/blocks/hero.css";
@@ -55,3 +58,4 @@
 @import "@styles/blocks/entity-links.css";
 @import "@styles/blocks/about.css";
 @import "@styles/blocks/questionary.css";
+@import "@styles/blocks/vacancies.css";

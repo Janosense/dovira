@@ -1,0 +1,223 @@
+.vacancy {
+  padding-bottom: 40px;
+
+  @media (min-width: 768px) {
+    padding-bottom: 48px;
+  }
+
+  @media (min-width: 1280px) {
+    padding-bottom: 64px;
+  }
+
+  @media (min-width: 1440px) {
+    padding-bottom: 100px;
+  }
+}
+
+.vacancy__wrapper {
+  @media (min-width: 1024px) {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 40px;
+  }
+
+  @media (min-width: 1440px) {
+    grid-template-columns: 2fr 4fr;
+    column-gap: 80px;
+  }
+}
+
+.vacancy__layer {
+  margin-bottom: 24px;
+
+  @media (min-width: 1024px) {
+    margin-bottom: 0;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.vacancy__text {
+  font-size: 16px;
+  line-height: 1.4;
+
+  @media (min-width: 1280px) {
+    font-size: 18px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    margin: 28px 0 20px;
+    font-size: 22px;
+
+    @media (min-width: 768px) {
+      font-size: 23.6px;
+    }
+
+    @media (min-width: 1280px) {
+      margin: 32px 0 24px;
+      font-size: 29.5px;
+    }
+
+    @media (min-width: 1920px) {
+      font-size: 33px;
+    }
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  p {
+    margin: 0 0 16px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  ul {
+    list-style-type: none;
+    margin: 0 0 16px;
+    padding: 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    li {
+      margin-bottom: 4px;
+      position: relative;
+      padding-left: 16px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 8px;
+        left: 0;
+        display: block;
+        width: 6px;
+        height: 6px;
+        background-color: var(--color-violet-light);
+        border-radius: 50%;
+      }
+    }
+  }
+}
+
+.vacancy__locations {
+  display: flex;
+  column-gap: 12px;
+  padding-top: 24px;
+}
+
+.vacancy__location {
+  display: flex;
+  align-items: center;
+  column-gap: 6px;
+  padding: 8px;
+  background-color: var(--color-white);
+  line-height: 1;
+  border-radius: 4px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.vacancy__salary {
+  padding-top: 24px;
+}
+
+.vacancy__salary--mobile {
+  display: block;
+
+  @media (min-width: 1024px) {
+    display: none;
+  }
+}
+
+.vacancy__salary--desktop {
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: block;
+  }
+}
+
+.vacancy__salary-value {
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--color-violet-light);
+
+  @media (min-width: 1280px) {
+    font-size: 32px;
+  }
+
+  @media (min-width: 1440px) {
+    font-size: 36px;
+  }
+}
+
+.vacancy__contacts {
+
+  & .heading {
+    margin: 28px 0 20px;
+
+    @media (min-width: 1024px) {
+      margin: 32px 0 24px;
+    }
+  }
+}
+
+.vacancy__contacts--mobile {
+  display: block;
+
+  @media (min-width: 1024px) {
+    display: none;
+  }
+}
+
+.vacancy__contacts--desktop {
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: block;
+  }
+}
+
+.vacancy__contacts-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+
+  & li.vacancy__contacts-item {
+    padding-left: 0;
+    margin-bottom: 4px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.vacancy__form-holder {
+  & .heading {
+    margin: 28px 0 20px;
+
+    @media (min-width: 1024px) {
+      margin: 32px 0 24px;
+    }
+  }
+}

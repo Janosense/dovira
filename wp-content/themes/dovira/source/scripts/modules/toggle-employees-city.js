@@ -1,20 +1,21 @@
 const toggleEmployeesCity = () => {
-  const employees = document.querySelectorAll('.employees__item');
-  const toggles = document.querySelectorAll('.employees__city-toggle');
+  const cityToggle = document.querySelectorAll('.city-toggle__button');
+  const items = document.querySelectorAll('ul[data-city-toggle-list] > li');
 
-  if (toggles.length > 0 && employees.length > 0) {
+  if (cityToggle.length > 0 && items.length > 0) {
     let activeToggleIndex = 0;
-    let activeCity = toggles[activeToggleIndex].dataset.city;
-    toggles.forEach((toggle, index) => {
+    let activeCity = cityToggle[activeToggleIndex].dataset.city;
+    cityToggle.forEach((toggle, index) => {
+
       toggle.addEventListener('click', (e) => {
-        if (!toggle.classList.contains('employees__city-toggle--active')) {
-          toggles[activeToggleIndex].classList.remove('employees__city-toggle--active');
-          toggle.classList.add('employees__city-toggle--active');
+        if (!toggle.classList.contains('city-toggle__button--active')) {
+          cityToggle[activeToggleIndex].classList.remove('city-toggle__button--active');
+          toggle.classList.add('city-toggle__button--active');
 
           activeToggleIndex = index;
           activeCity = toggle.dataset.city;
 
-          employees.forEach((employee) => {
+          items.forEach((employee) => {
             if (employee.dataset.city.indexOf(activeCity) !== -1) {
               employee.style.display = 'block';
             } else {

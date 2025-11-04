@@ -1,0 +1,19 @@
+{
+	"name": "acf/vacancies",
+	"title": "Vacancies",
+	"description": "",
+	"category": "",
+	"icon": "businesswoman",
+	"keywords": [
+		"vacancies",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

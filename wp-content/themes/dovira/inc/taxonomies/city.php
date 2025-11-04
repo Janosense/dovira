@@ -1,7 +1,7 @@
 <?php
 return [
 	'taxonomy'    => 'service-city',
-	'object_type' => ['service', 'employee'],
+	'object_type' => ['service', 'employee', 'vacancy'],
 	'args'        => [
 		'label'                 => __( 'City', 'dovira' ),
 		'labels'                => [

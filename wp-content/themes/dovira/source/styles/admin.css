@@ -5,7 +5,7 @@
 /* Components */
 @import "@styles/components/wrapper.css";
 @import "@styles/components/heading.css";
-@import "@styles/components/caption";
+@import "@styles/components/caption.css";
 @import "@styles/components/gradient-layer.css";
 @import "@styles/components/main-nav.css";
 @import "@styles/components/button.css";
@@ -16,6 +16,9 @@
 @import "@styles/components/text.css";
 @import "@styles/components/questions.css";
 @import "@styles/components/answers.css";
+@import "@styles/components/city-toggle.css";
+@import "@styles/components/vacancy.css";
+@import "@styles/components/contact-form7.css";
 
 /* Blocks */
 @import "@styles/blocks/hero.css";
@@ -32,6 +35,7 @@
 @import "@styles/blocks/news.css";
 @import "@styles/blocks/services.css";
 @import "@styles/blocks/contacts-simple.css";
+@import "@styles/blocks/vacancies.css";
 
 div.acf-block-preview {
   max-width: none!important;
