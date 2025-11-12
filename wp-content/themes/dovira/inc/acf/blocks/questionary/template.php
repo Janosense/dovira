@@ -68,7 +68,7 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 						</div>
 						<div class="questionary-form__item">
 							<label>
-								<input type="text" name="phone" class="questionary-form__text-field" required>
+								<input type="tel" name="phone" class="questionary-form__text-field" required>
 								<span class="questionary-form__text-field-label">Ваш номер телефону</span>
 							</label>
 						</div>

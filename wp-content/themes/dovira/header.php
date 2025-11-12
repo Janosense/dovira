@@ -6,6 +6,8 @@
  *
  * @link https://developer.wordpress.org/themes/basics/template-files/#template-partials
  *
+ * @var $args array
+ *
  * @package WordPress
  * @subpackage Starter theme
  * @since 1.0.0
@@ -56,4 +58,10 @@
 </noscript>
 <!-- End Google Tag Manager (noscript) -->
 <?php wp_body_open(); ?>
-<?php get_template_part( 'template-parts/header/site-header' ); ?>
+<?php
+
+if ( isset( $args['mode'] ) && $args['mode'] === 'simple' ) :
+	get_template_part( 'template-parts/header/site-header-simple' );
+else :
+	get_template_part( 'template-parts/header/site-header' );
+endif; ?>

@@ -1,5 +1,7 @@
 <?php
 
+require_once TEMPLATE_DIR . '/inc/utils/application.php';
+
 /**
  * Vite manifest parser which returns a path to the entry file
  *

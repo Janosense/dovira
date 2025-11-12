@@ -33,7 +33,7 @@ return [
 			'attributes'            => __( 'Attributes', 'link11' ),
 		],
 		'description'         => '',
-		'public'              => false,
+		'public'              => true,
 		'publicly_queryable'  => true,
 		'exclude_from_search' => true,
 		'show_ui'             => true,

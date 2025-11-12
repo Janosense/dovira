@@ -1,9 +1,8 @@
 import IMask from 'imask';
 
 const initImask = () => {
-  const elements = document.querySelectorAll('input[name="phone"]');
+  const elements = document.querySelectorAll('input[type="tel"]');
   if (elements.length) {
-    console.log(elements);
     elements.forEach((element) => {
       const maskOptions = {
         mask: '(000) 000-00-00'

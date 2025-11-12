@@ -40,17 +40,6 @@
   margin-bottom: 44px;
 }
 
-.vacancy__description {
-  padding: 20px;
-  box-sizing: border-box;
-  background-color: var(--color-white);
-  border-radius: 11px;
-
-  @media (min-width: 1280px) {
-    padding: 32px;
-  }
-}
-
 .vacancies__icon-holder {
   display: flex;
   align-items: center;

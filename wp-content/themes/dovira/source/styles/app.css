@@ -39,6 +39,7 @@
 @import "@styles/components/city-toggle.css";
 @import "@styles/components/vacancy.css";
 @import "@styles/components/contact-form7.css";
+@import "@styles/components/application.css";
 
 /* Blocks */
 @import "@styles/blocks/hero.css";

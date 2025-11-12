@@ -7,12 +7,13 @@ function acf_add_post_type_application_fields(): void {
 		'title' => __( 'Application information', 'dovira' ),
 	) );
 
-	$fields->addTrueFalse( 'is_processed', array(
-		'label'         => __( 'Is processed?', 'dovira' ),
-		'ui'            => 1,
-		'ui_on_text'    => __( 'Yes', 'dovira' ),
-		'ui_off_text'   => __( 'No', 'dovira' ),
-		'default_value' => 0
+	$fields->addSelect( 'status', array(
+		'label'   => __( 'Status', 'dovira' ),
+		'choices' => array(
+			'new'                 => __( 'New', 'dovira' ),
+			'interview_scheduled' => __( 'Interview scheduled', 'dovira' ),
+			'rejected'            => __( 'Rejected', 'dovira' ),
+		),
 	) );
 
 	$fields->addTextarea( 'note', array(
