@@ -12,19 +12,36 @@ $file       = get_field( 'file', $post->ID );
 $email      = get_field( 'email', $post->ID );
 $phone      = get_field( 'phone', $post->ID );
 $note       = get_field( 'note', $post->ID );
+$status     = get_field( 'status', $post->ID );
+
 if ( $vacancy_id ) :
 	$vacancy = get_post( $vacancy_id );
 endif;
+$status_names_map = [
+	'new'                 => 'Нова заявка',
+	'in_processing'       => 'В обробці',
+	'interview_scheduled' => 'Заплановано співбесіду',
+	'rejected'            => 'Відхилено',
+	'closed'              => 'Закрито',
+];
 ?>
 <main>
 	<div class="application">
 		<div class="wrapper">
+			<h1 class="heading heading--h3 application__heading">Заявка на вакансію "<?= $vacancy->post_title; ?>"</h1>
 			<div class="application__content">
+				<?php if ( ! empty( $status ) ) : ?>
+					<div class="application__row">
+						<div
+							class="application__status application__status--<?= $status; ?>"><?= $status_names_map[ $status ]; ?></div>
+					</div>
+				<?php endif; ?>
 				<div class="application__row">
 					<span class="application__row-title">Імʼя, Прізвище:</span>
 					<h1 class="application__heading">
 						<span><?= $post->post_title; ?></span>
-						<button type="button" class="application__copy-button"><img src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
+						<button type="button" class="application__copy-button"><img
+								src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
 					</h1>
 				</div>
 				<?php if ( isset( $vacancy ) && ! empty( $vacancy ) ) : ?>
@@ -32,7 +49,8 @@ endif;
 						<span class="application__row-title">Вакансія:</span>
 						<div class="application__row-value application__row-value--small">
 							<span><?= $vacancy->post_title; ?></span>
-							<button type="button" class="application__copy-button"><img src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
+							<button type="button" class="application__copy-button"><img
+									src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
 						</div>
 					</div>
 				<?php endif; ?>
@@ -41,7 +59,8 @@ endif;
 						<span class="application__row-title">Email:</span>
 						<div class="application__row-value application__row-value--small">
 							<span><?= $email; ?></span>
-							<button type="button" class="application__copy-button"><img src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
+							<button type="button" class="application__copy-button"><img
+									src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
 						</div>
 					</div>
 				<?php endif; ?>
@@ -50,7 +69,8 @@ endif;
 						<span class="application__row-title">Телефон:</span>
 						<div class="application__row-value application__row-value--small">
 							<span><?= $phone; ?></span>
-							<button type="button" class="application__copy-button"><img src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
+							<button type="button" class="application__copy-button"><img
+									src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
 						</div>
 					</div>
 				<?php endif; ?>
@@ -59,7 +79,8 @@ endif;
 						<span class="application__row-title">Примітки адміністратора:</span>
 						<div class="application__row-value application__row-value--text">
 							<span><?= $note; ?></span>
-							<button type="button" class="application__copy-button"><img src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
+							<button type="button" class="application__copy-button"><img
+									src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
 						</div>
 					</div>
 				<?php endif; ?>

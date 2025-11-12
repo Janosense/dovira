@@ -9,6 +9,10 @@
   }
 }
 
+.application__heading {
+  margin-bottom: 32px;
+}
+
 .application__row {
   margin-bottom: 32px;
 
@@ -26,6 +30,41 @@
 .application__row-value {
   display: block;
   font-size: 28px;
+}
+
+.application__status {
+  display: inline-flex;
+  margin-top: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  font-size: 16px;
+}
+
+.application__status--new {
+  background-color: rgba(0, 128, 0, 0.05);
+  border-color: green;
+  color: green;
+}
+
+.application__status--rejected {
+  background-color: rgba(255, 0, 0, 0.1);
+  border-color: darkred;
+  color: darkred;
+}
+
+.application__status--interview_scheduled,
+.application__status--in_processing {
+  background-color: rgba(0, 191, 255, 0.05);
+  border-color: #0073e1;
+  color: #0073e1;
+}
+
+.application__status--closed {
+  background-color: rgba(128, 128, 128, 0.1);
+  border-color: dimgray;
+  color: dimgray;
 }
 
 .application__cv {

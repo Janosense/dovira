@@ -11,8 +11,10 @@ function acf_add_post_type_application_fields(): void {
 		'label'   => __( 'Status', 'dovira' ),
 		'choices' => array(
 			'new'                 => __( 'New', 'dovira' ),
+			'in_processing'       => __( 'In processing', 'dovira' ),
 			'interview_scheduled' => __( 'Interview scheduled', 'dovira' ),
 			'rejected'            => __( 'Rejected', 'dovira' ),
+			'closed'              => __( 'Closed', 'dovira' ),
 		),
 	) );
 

@@ -25,12 +25,13 @@ function dovira_wpcf7_before_send_mail( $form, &$abort, $submission ): void {
 				$post_id = wp_insert_post( $post_data );
 
 				if ( ! is_wp_error( $post_id ) ) {
+					update_field( 'status', 'new', $post_id );
 					update_field( 'first_name', sanitize_text_field( $_POST['your-first-name'] ), $post_id );
 					update_field( 'last_name', sanitize_text_field( $_POST['your-last-name'] ), $post_id );
 					update_field( 'phone', sanitize_text_field( $_POST['your-phone'] ), $post_id );
 					update_field( 'email', sanitize_text_field( $_POST['your-email'] ), $post_id );
 					$vacancy_id = sanitize_text_field( $_POST['vacancy'] );
-					$vacancy = get_post( $vacancy_id );
+					$vacancy    = get_post( $vacancy_id );
 					update_field( 'vacancy', $vacancy_id, $post_id );
 
 					if ( isset( $_FILES['cv'] ) && ! empty( $_FILES['cv'] ) ) {
