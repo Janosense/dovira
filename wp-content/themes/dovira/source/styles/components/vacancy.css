@@ -153,6 +153,8 @@
 }
 
 .vacancy__salary-value {
+  display: inline-block;
+  margin-right: 4px;
   font-weight: 700;
   font-size: 28px;
   color: var(--color-violet-light);

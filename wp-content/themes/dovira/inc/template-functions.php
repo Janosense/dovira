@@ -556,7 +556,7 @@ add_filter( 'wp_img_tag_add_auto_sizes', '__return_false' );
  *
  * @return void
  */
-function wp_kama_save_post_action( $post_id, $post, $update ) {
+function dovira_save_post_action( $post_id, $post, $update ) {
 	if ( $post->post_status === 'publish' && ! wp_is_post_revision( $post_id ) && ! empty( $_POST['acf'] ) ) {
 		if ( ! empty( $_POST['acf']['field_service_prices'] ) && is_array( $_POST['acf']['field_service_prices'] ) ) {
 			$key_words_services = '';
@@ -571,7 +571,7 @@ function wp_kama_save_post_action( $post_id, $post, $update ) {
 	}
 }
 
-add_action( 'save_post_service', 'wp_kama_save_post_action', 10, 3 );
+add_action( 'save_post_service', 'dovira_save_post_action', 10, 3 );
 
 
 /**
@@ -583,49 +583,143 @@ add_action( 'save_post_service', 'wp_kama_save_post_action', 10, 3 );
  * @return void
  */
 function dovira_wpcf7_submit_action( $that, $result ) {
-	if ( $result['status'] === 'mail_sent' ) {
-		$post_data = array(
-			'post_title'  => sanitize_text_field( $_POST['your-name'] ) . ' | ' . sanitize_text_field( $_POST['your-phone'] ),
-			'post_status' => 'publish',
-			'post_author' => 1,
-			'post_type'   => 'conversation',
-		);
+	if ( $result['status'] === 'mail_sent' || getenv( 'IS_DDEV_PROJECT' ) == 'true' ) {
+		switch ( $result['contact_form_id'] ) {
+			case 6: // Contact Form
+				$post_data = array(
+					'post_title'  => sanitize_text_field( $_POST['your-name'] ) . ' | ' . sanitize_text_field( $_POST['your-phone'] ),
+					'post_status' => 'publish',
+					'post_author' => 1,
+					'post_type'   => 'conversation',
+				);
 
-		$post_id = wp_insert_post( $post_data );
+				$post_id = wp_insert_post( $post_data );
 
-		if ( ! is_wp_error( $post_id ) ) {
-			update_field( 'name', sanitize_text_field( $_POST['your-name'] ), $post_id );
-			update_field( 'pet_name', sanitize_text_field( $_POST['pet-name'] ), $post_id );
-			update_field( 'phone', sanitize_text_field( $_POST['your-phone'] ), $post_id );
-			update_field( 'email', sanitize_text_field( $_POST['your-email'] ), $post_id );
-			update_field( 'message', sanitize_text_field( $_POST['your-message'] ), $post_id );
+				if ( ! is_wp_error( $post_id ) ) {
+					update_field( 'name', sanitize_text_field( $_POST['your-name'] ), $post_id );
+					update_field( 'pet_name', sanitize_text_field( $_POST['pet-name'] ), $post_id );
+					update_field( 'phone', sanitize_text_field( $_POST['your-phone'] ), $post_id );
+					update_field( 'email', sanitize_text_field( $_POST['your-email'] ), $post_id );
+					update_field( 'message', sanitize_text_field( $_POST['your-message'] ), $post_id );
 
-			$connected_chats = get_option( 'telegram_bot_chats', [] );
-			if ( ! empty( $connected_chats ) ) {
-				$url     = 'https://api.telegram.org/bot7768117564:AAFS45iz5R_-VKnFGj5WzaIAHUtiXfdbiTs/sendMessage';
-				$message = 'Надійшло нове звернення з контактної форми. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
-				$args    = [
-					'timeout'     => 45,
-					'redirection' => 5,
-					'body'        => [
-						'text'                 => $message,
-						'parse_mode'           => 'html',
-						'link_preview_options' => json_encode( [
-							'is_disabled' => true,
-						], JSON_THROW_ON_ERROR ),
-					],
-				];
-
-				foreach ( $connected_chats as $chat_id ) {
-					$args['body']['chat_id'] = $chat_id;
-					wp_remote_get( $url, $args );
+//					$connected_chats = get_option( 'telegram_bot_chats', [] );
+//					if ( ! empty( $connected_chats ) ) {
+//						$url     = 'https://api.telegram.org/bot7768117564:AAFS45iz5R_-VKnFGj5WzaIAHUtiXfdbiTs/sendMessage';
+//						$message = 'Надійшло нове звернення з контактної форми. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
+//						$args    = [
+//							'timeout'     => 45,
+//							'redirection' => 5,
+//							'body'        => [
+//								'text'                 => $message,
+//								'parse_mode'           => 'html',
+//								'link_preview_options' => json_encode( [
+//									'is_disabled' => true,
+//								], JSON_THROW_ON_ERROR ),
+//							],
+//						];
+//
+//						foreach ( $connected_chats as $chat_id ) {
+//							$args['body']['chat_id'] = $chat_id;
+//							wp_remote_get( $url, $args );
+//						}
+//					}
 				}
-			}
+				break;
+			case 1280: // Vacancy Form
+				$post_data = array(
+					'post_title'  => sanitize_text_field( $_POST['your-first-name'] ) . ' ' . sanitize_text_field( $_POST['your-last-name'] ),
+					'post_status' => 'publish',
+					'post_author' => 1,
+					'post_type'   => 'application',
+				);
+
+				$post_id = wp_insert_post( $post_data );
+
+				if ( ! is_wp_error( $post_id ) ) {
+					update_field( 'first_name', sanitize_text_field( $_POST['your-first-name'] ), $post_id );
+					update_field( 'last_name', sanitize_text_field( $_POST['your-last-name'] ), $post_id );
+					update_field( 'phone', sanitize_text_field( $_POST['your-phone'] ), $post_id );
+					update_field( 'email', sanitize_text_field( $_POST['your-email'] ), $post_id );
+					update_field( 'vacancy', sanitize_text_field( $_POST['vacancy'] ), $post_id );
+
+					if ( isset( $_FILES['cv'] ) && ! empty( $_FILES['cv'] ) ) {
+						require_once ABSPATH . 'wp-admin/includes/image.php';
+						require_once ABSPATH . 'wp-admin/includes/file.php';
+						require_once ABSPATH . 'wp-admin/includes/media.php';
+
+						$file_array = [
+							'name'     => $_FILES['cv']['name'],
+							'tmp_name' => $_FILES['cv']['tmp_name'],
+							'size'     => $_FILES['cv']['size'],
+						];
+
+						$attachment_id = media_handle_sideload( $file_array, $post_id );
+
+						if ( ! is_wp_error( $attachment_id ) ) {
+							update_field( 'file', $attachment_id, $post_id );
+						} else {
+							update_field( 'file_error', $attachment_id->get_error_message(), $post_id );
+						}
+					}
+				}
+				break;
 		}
 	}
 }
 
-add_action( 'wpcf7_submit', 'dovira_wpcf7_submit_action', 10, 2 );
+//add_action( 'wpcf7_submit', 'dovira_wpcf7_submit_action', 10, 2 );
+
+
+function dovira_wpcf7_before_send_mail( $form, &$abort, $submission ) {
+	if ( ! empty( $form ) ) {
+		switch ( $form->id() ) {
+			case 1280:
+				$post_data = array(
+					'post_title'  => sanitize_text_field( $_POST['your-first-name'] ) . ' ' . sanitize_text_field( $_POST['your-last-name'] ),
+					'post_status' => 'publish',
+					'post_author' => 1,
+					'post_type'   => 'application',
+				);
+
+				$post_id = wp_insert_post( $post_data );
+
+				if ( ! is_wp_error( $post_id ) ) {
+					update_field( 'first_name', sanitize_text_field( $_POST['your-first-name'] ), $post_id );
+					update_field( 'last_name', sanitize_text_field( $_POST['your-last-name'] ), $post_id );
+					update_field( 'phone', sanitize_text_field( $_POST['your-phone'] ), $post_id );
+					update_field( 'email', sanitize_text_field( $_POST['your-email'] ), $post_id );
+					update_field( 'vacancy', sanitize_text_field( $_POST['vacancy'] ), $post_id );
+
+					if ( isset( $_FILES['cv'] ) && ! empty( $_FILES['cv'] ) ) {
+						require_once ABSPATH . 'wp-admin/includes/image.php';
+						require_once ABSPATH . 'wp-admin/includes/file.php';
+						require_once ABSPATH . 'wp-admin/includes/media.php';
+
+						$uploaded_files = $submission->uploaded_files();
+
+						$file_array = [
+							'name'     => $_FILES['cv']['name'],
+							'type'     => $_FILES['cv']['type'],
+							'tmp_name' => $uploaded_files['cv'][0],
+							'error'    => $_FILES['cv']['error'],
+							'size'     => $_FILES['cv']['size'],
+						];
+
+						$attachment_id = media_handle_sideload( $file_array, $post_id );
+
+						if ( ! is_wp_error( $attachment_id ) ) {
+							update_field( 'file', $attachment_id, $post_id );
+						} else {
+							update_field( 'file_error', $attachment_id->get_error_message(), $post_id );
+						}
+					}
+				}
+				break;
+		}
+	}
+}
+
+add_action( 'wpcf7_before_send_mail', 'dovira_wpcf7_before_send_mail', 10, 3 );
 
 
 /**
@@ -815,3 +909,15 @@ function dovira_save_post_conversation_action( $post_id, $post, $update ) {
 }
 
 add_action( 'save_post_conversation', 'dovira_save_post_conversation_action', 10, 3 );
+
+function dovira_custom_shortcode_atts_wpcf7_filter( $out, $pairs, $attributes ) {
+	$my_attribute = 'vacancy';
+
+	if ( isset( $attributes[ $my_attribute ] ) ) {
+		$out[ $my_attribute ] = $attributes[ $my_attribute ];
+	}
+
+	return $out;
+}
+
+add_filter( 'shortcode_atts_wpcf7', 'dovira_custom_shortcode_atts_wpcf7_filter', 10, 3 );

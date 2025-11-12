@@ -10,6 +10,7 @@ require_once TEMPLATE_DIR . '/inc/acf/fields/post-type-employee.php';
 require_once TEMPLATE_DIR . '/inc/acf/fields/post-type-conversation.php';
 require_once TEMPLATE_DIR . '/inc/acf/fields/post-type-questionary.php';
 require_once TEMPLATE_DIR . '/inc/acf/fields/post-type-vacancy.php';
+require_once TEMPLATE_DIR . '/inc/acf/fields/post-type-application.php';
 
 
 add_action( 'acf/init', function() {

@@ -51,14 +51,16 @@
 							$salary = dovira_get_acf_field( 'static_salary' );
 							if ( ! empty( $salary ) ) :?>
 								<div class="vacancy__salary vacancy__salary--desktop">
-									<span class="vacancy__salary-value"><?= $salary; ?></span>грн
+									<span
+										class="vacancy__salary-value"><?= number_format( (int) $salary, 0, '.', ' ' ); ?></span>грн
 								</div>
 							<?php endif; ?>
 						<?php elseif ( $salary_type === 'from' ):
 							$salary_from = dovira_get_acf_field( 'salary_from' );
 							if ( ! empty( $salary_from ) ) :?>
 								<div class="vacancy__salary vacancy__salary--desktop">
-									від <span class="vacancy__salary-value"><?= $salary_from; ?></span>грн
+									від <span
+										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span>грн
 								</div>
 							<?php endif; ?>
 						<?php elseif ( $salary_type === 'range' ):
@@ -66,8 +68,10 @@
 							$salary_to = dovira_get_acf_field( 'salary_to' );
 							if ( ! empty( $salary_from ) && ! empty( $salary_to ) ) :?>
 								<div class="vacancy__salary vacancy__salary--desktop">
-									<span class="vacancy__salary-value"><?= $salary_from; ?></span> - <span
-										class="vacancy__salary-value"><?= $salary_to; ?></span>грн
+									<span
+										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span>
+									- <span
+										class="vacancy__salary-value"><?= number_format( (int) $salary_to, 0, '.', ' ' ); ?></span>грн
 								</div>
 							<?php endif; ?>
 						<?php endif; ?>
@@ -90,14 +94,16 @@
 							$salary = dovira_get_acf_field( 'static_salary' );
 							if ( ! empty( $salary ) ) :?>
 								<div class="vacancy__salary vacancy__salary--mobile">
-									<span class="vacancy__salary-value"><?= $salary; ?></span>грн
+									<span
+										class="vacancy__salary-value"><?= number_format( (int) $salary, 0, '.', ' ' ); ?></span>грн
 								</div>
 							<?php endif; ?>
 						<?php elseif ( $salary_type === 'from' ):
 							$salary_from = dovira_get_acf_field( 'salary_from' );
 							if ( ! empty( $salary_from ) ) :?>
 								<div class="vacancy__salary vacancy__salary--mobile">
-									від <span class="vacancy__salary-value"><?= $salary_from; ?></span>грн
+									від <span
+										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span>грн
 								</div>
 							<?php endif; ?>
 						<?php elseif ( $salary_type === 'range' ):
@@ -105,8 +111,10 @@
 							$salary_to = dovira_get_acf_field( 'salary_to' );
 							if ( ! empty( $salary_from ) && ! empty( $salary_to ) ) :?>
 								<div class="vacancy__salary vacancy__salary--mobile">
-									<span class="vacancy__salary-value"><?= $salary_from; ?></span> - <span
-										class="vacancy__salary-value"><?= $salary_to; ?></span>грн
+									<span
+										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span>
+									- <span
+										class="vacancy__salary-value"><?= number_format( (int) $salary_to, 0, '.', ' ' ); ?></span>грн
 								</div>
 							<?php endif; ?>
 						<?php endif; ?>
@@ -122,9 +130,15 @@
 						<?php endif; ?>
 						<div class="vacancy__form-holder contacts-form7">
 							<h3 class="heading heading--h5 contacts-form7__heading">Надіслати резюме:</h3>
-							<?= do_shortcode('[contact-form-7 id="d9a986d" title="Заявка на вакансію"]'); ?>
+							<?php if ( getenv( 'IS_DDEV_PROJECT' ) == 'true' ) : ?>
+								<?= do_shortcode( '[contact-form-7 id="1321657" title="Форма заявки на вакансію" vacancy="' . $post->ID . '"]' ); ?>
+							<?php else : ?>
+								<?= do_shortcode( '[contact-form-7 id="21a1b33" title="Форма заявки на вакансію" vacancy="' . $post->ID . '"]' ); ?>
+							<?php endif; ?>
 							<div class="contacts-form7__google-disclaimer">
-								Цей сайт захищено reCAPTCHA, а також застосовуються <a href="https://policies.google.com/privacy">Політика конфіденційності</a> та <a href="https://policies.google.com/terms">Умови надання послуг</a> Google.
+								Цей сайт захищено reCAPTCHA, а також застосовуються <a
+									href="https://policies.google.com/privacy">Політика конфіденційності</a> та <a
+									href="https://policies.google.com/terms">Умови надання послуг</a> Google.
 							</div>
 						</div>
 					</div>
