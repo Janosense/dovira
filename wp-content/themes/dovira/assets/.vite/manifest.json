@@ -9,7 +9,7 @@
     ]
   },
   "source/main.js": {
-    "file": "main.CVj79lI2.js",
+    "file": "main.Dmh-dvNE.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -17,14 +17,11 @@
       "source/scripts/modules/init-animations.js",
       "source/scripts/modules/init-fancybox.js",
       "source/scripts/modules/toggle-accordion.js",
-      "source/scripts/modules/check-test.js",
-      "source/scripts/modules/authentication.js",
-      "source/scripts/modules/reset-progress.js",
       "source/scripts/modules/toggle-mobile-nav.js",
       "source/scripts/modules/services-search.js",
       "source/scripts/modules/init-service-price-lists.js",
       "source/scripts/modules/init-swiper.js",
-      "source/scripts/modules/toggle-employees-city.js",
+      "source/scripts/modules/toggle-cities.js",
       "source/scripts/modules/toggle-footer-calls.js",
       "source/scripts/modules/questionary-form-handler.js",
       "source/scripts/modules/init-imask.js"
@@ -32,18 +29,6 @@
     "css": [
       "main.C-VWnjaj.css"
     ]
-  },
-  "source/scripts/modules/authentication.js": {
-    "file": "_chunk.byVXYLG0.js",
-    "name": "authentication",
-    "src": "source/scripts/modules/authentication.js",
-    "isDynamicEntry": true
-  },
-  "source/scripts/modules/check-test.js": {
-    "file": "_chunk.CN4RzRgn.js",
-    "name": "check-test",
-    "src": "source/scripts/modules/check-test.js",
-    "isDynamicEntry": true
   },
   "source/scripts/modules/init-animations.js": {
     "file": "_chunk.Delbh4B0.js",
@@ -81,12 +66,6 @@
     "src": "source/scripts/modules/questionary-form-handler.js",
     "isDynamicEntry": true
   },
-  "source/scripts/modules/reset-progress.js": {
-    "file": "_chunk.lQQwxjPn.js",
-    "name": "reset-progress",
-    "src": "source/scripts/modules/reset-progress.js",
-    "isDynamicEntry": true
-  },
   "source/scripts/modules/services-search.js": {
     "file": "_chunk.5MuT46-h.js",
     "name": "services-search",
@@ -99,10 +78,10 @@
     "src": "source/scripts/modules/toggle-accordion.js",
     "isDynamicEntry": true
   },
-  "source/scripts/modules/toggle-employees-city.js": {
-    "file": "_chunk.qo8rD_iI.js",
-    "name": "toggle-employees-city",
-    "src": "source/scripts/modules/toggle-employees-city.js",
+  "source/scripts/modules/toggle-cities.js": {
+    "file": "_chunk.VDwgvQnE.js",
+    "name": "toggle-cities",
+    "src": "source/scripts/modules/toggle-cities.js",
     "isDynamicEntry": true
   },
   "source/scripts/modules/toggle-footer-calls.js": {
