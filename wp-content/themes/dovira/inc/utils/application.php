@@ -85,3 +85,99 @@ function dovira_wpcf7_before_send_mail( $form, &$abort, $submission ): void {
 }
 
 add_action( 'wpcf7_before_send_mail', 'dovira_wpcf7_before_send_mail', 10, 3 );
+
+/**
+ * Adds custom columns to the Application post type admin list.
+ *
+ * @param array $columns The default columns.
+ *
+ * @return array Modified columns array.
+ */
+function dovira_add_custom_application_columns( array $columns ): array {
+	unset( $columns['date'] );
+
+	$columns['status']              = __( 'Status', 'dovira' );
+	$columns['vacancy']             = __( 'Vacancy', 'dovira' );
+	$columns['responsible_persons'] = __( 'Responsible persons', 'dovira' );
+	$columns['custom_date']         = __( 'Date', 'dovira' );
+	$columns['processing_date']     = __( 'Processing Date', 'dovira' );
+
+	return $columns;
+}
+
+add_filter( 'manage_application_posts_columns', 'dovira_add_custom_application_columns' );
+
+/**
+ * Fills the custom columns with data for the Application post type.
+ *
+ * @param string $column_name The name of the column.
+ * @param int    $post_id     The post ID.
+ *
+ * @return void
+ */
+function dovira_fill_custom_application_columns( string $column_name, int $post_id ): void {
+	switch ( $column_name ) {
+		case 'status':
+			$status = get_post_meta( $post_id, 'status', true );
+			if ( ! empty( $status ) ) {
+				switch ( $status ) {
+					case 'new':
+						echo "<span class='entity-status entity-status--new'>Нова</span>";
+						break;
+					case 'in_progress':
+						echo "<span class='entity-status entity-status--in-progress'>В процесі</span>";
+						break;
+					case 'completed':
+						echo "<span class='entity-status entity-status--completed'>Завершена</span>";
+						break;
+					case 'rejected':
+						echo "<span class='entity-status entity-status--rejected'>Відхилена</span>";
+						break;
+					default:
+						echo esc_html( $status );
+						break;
+				}
+			} else {
+				echo '-';
+			}
+			break;
+		case 'vacancy':
+			$vacancy_id = get_post_meta( $post_id, 'vacancy', true );
+			if ( ! empty( $vacancy_id ) ) {
+				$vacancy = get_post( $vacancy_id );
+				if ( $vacancy ) {
+					echo esc_html( $vacancy->post_title );
+				} else {
+					echo '-';
+				}
+			} else {
+				echo '-';
+			}
+			break;
+		case 'responsible_persons':
+			$responsible_persons = get_post_meta( $post_id, 'responsible_persons', true );
+			if ( ! empty( $responsible_persons ) ) {
+				$responsible_persons_str = '';
+				foreach ( $responsible_persons as $responsible_person ) {
+					$responsible_persons_str .= $responsible_person['name'] . '<br>';
+				}
+				echo $responsible_persons_str;
+			} else {
+				echo '-';
+			}
+			break;
+		case 'custom_date':
+			echo get_the_date( 'd.m.Y H:i', $post_id );
+			break;
+		case 'processing_date':
+			$processing_date = get_post_meta( $post_id, 'processing_date', true );
+			if ( $processing_date ) {
+				echo date( 'd.m.Y H:i', $processing_date );
+			} else {
+				echo '-';
+			}
+			break;
+	}
+}
+
+add_action( 'manage_application_posts_custom_column', 'dovira_fill_custom_application_columns', 10, 2 );
