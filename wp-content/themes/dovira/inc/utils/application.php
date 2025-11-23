@@ -111,34 +111,33 @@ add_filter( 'manage_application_posts_columns', 'dovira_add_custom_application_c
  * Fills the custom columns with data for the Application post type.
  *
  * @param string $column_name The name of the column.
- * @param int    $post_id     The post ID.
+ * @param int $post_id The post ID.
  *
  * @return void
  */
 function dovira_fill_custom_application_columns( string $column_name, int $post_id ): void {
 	switch ( $column_name ) {
 		case 'status':
-			$status = get_post_meta( $post_id, 'status', true );
-			if ( ! empty( $status ) ) {
-				switch ( $status ) {
-					case 'new':
-						echo "<span class='entity-status entity-status--new'>Нова</span>";
-						break;
-					case 'in_progress':
-						echo "<span class='entity-status entity-status--in-progress'>В процесі</span>";
-						break;
-					case 'completed':
-						echo "<span class='entity-status entity-status--completed'>Завершена</span>";
-						break;
-					case 'rejected':
-						echo "<span class='entity-status entity-status--rejected'>Відхилена</span>";
-						break;
-					default:
-						echo esc_html( $status );
-						break;
-				}
-			} else {
-				echo '-';
+			$status = get_field( 'status', $post_id );
+			switch ( $status ) {
+				case 'new':
+					echo "<span class='entity-status entity-status--" . $status . "'>" . __( 'New Application', 'dovira' ) . "</span>";
+					break;
+				case 'in_processing':
+					echo "<span class='entity-status entity-status--" . $status . "'>" . __( 'In processing', 'dovira' ) . "</span>";
+					break;
+				case 'interview_scheduled':
+					echo "<span class='entity-status entity-status--" . $status . "'>" . __( 'Interview scheduled', 'dovira' ) . "</span>";
+					break;
+				case 'rejected':
+					echo "<span class='entity-status entity-status--" . $status . "'>" . __( 'Rejected', 'dovira' ) . "</span>";
+					break;
+				case 'closed':
+					echo "<span class='entity-status entity-status--" . $status . "'>" . __( 'Closed', 'dovira' ) . "</span>";
+					break;
+				default:
+					echo "<span class='entity-status entity-status--new'>" . __( 'New Application', 'dovira' ) . "</span>";
+					break;
 			}
 			break;
 		case 'vacancy':
@@ -181,3 +180,15 @@ function dovira_fill_custom_application_columns( string $column_name, int $post_
 }
 
 add_action( 'manage_application_posts_custom_column', 'dovira_fill_custom_application_columns', 10, 2 );
+
+function dovira_save_post_application_action( $post_id, $post, $update ) {
+	if ( $post->post_status === 'publish' && ! wp_is_post_revision( $post_id ) && ! empty( $_POST['acf'] ) ) {
+		if ( isset( $_POST['acf']['field_application_status'] ) && $_POST['acf']['field_application_status'] !== 'new' ) {
+			update_post_meta( $post_id, 'processing_date', time() + 10800 );
+		} else if ( isset( $_POST['acf']['field_conversation_is_processed'] ) && $_POST['acf']['field_conversation_is_processed'] === 'new' ) {
+			update_post_meta( $post_id, 'processing_date', 0 );
+		}
+	}
+}
+
+add_action( 'save_post_application', 'dovira_save_post_application_action', 10, 3 );

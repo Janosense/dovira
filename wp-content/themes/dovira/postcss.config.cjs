@@ -13,7 +13,17 @@ module.exports = {
     },
     'postcss-prefix-selector': {
       prefix: '.acf-block-preview',
-      exclude: ['body', 'div', 'div.acf-block-preview', '.entity-status', '.entity-status--new', '.entity-status--processed'],
+      exclude: [
+        'body',
+        'div',
+        'div.acf-block-preview',
+        '.entity-status',
+        '.entity-status--new',
+        '.entity-status--processed',
+        '.entity-status--in_processing',
+        '.entity-status--interview_scheduled',
+        '.entity-status--rejected',
+      ],
       skipGlobalSelectors: true,
       ignoreFiles: ['app.css'],
     },
