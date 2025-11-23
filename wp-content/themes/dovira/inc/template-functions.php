@@ -710,3 +710,17 @@ function dovira_custom_shortcode_atts_wpcf7_filter( $out, $pairs, $attributes ) 
 }
 
 add_filter( 'shortcode_atts_wpcf7', 'dovira_custom_shortcode_atts_wpcf7_filter', 10, 3 );
+
+/**
+ * @param array $vars
+ *
+ * @return array
+ */
+function dovira_add_query_vars( array $vars ): array {
+	$vars[] = 'status';
+	$vars[] = 'vacancy';
+
+	return $vars;
+}
+
+add_filter( 'query_vars', 'dovira_add_query_vars' );

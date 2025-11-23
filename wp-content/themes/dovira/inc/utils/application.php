@@ -181,7 +181,19 @@ function dovira_fill_custom_application_columns( string $column_name, int $post_
 
 add_action( 'manage_application_posts_custom_column', 'dovira_fill_custom_application_columns', 10, 2 );
 
-function dovira_save_post_application_action( $post_id, $post, $update ) {
+/**
+ * Handles specific actions for the "application" custom post type upon saving.
+ *
+ * This method updates metadata for posts based on certain Advanced Custom Fields (ACF) values.
+ * It sets or resets the processing date based on the status of the application or conversation.
+ *
+ * @param int $post_id The ID of the post being saved.
+ * @param WP_Post $post The post object being saved.
+ * @param bool $update Whether this is an update to an existing post.
+ *
+ * @return void
+ */
+function dovira_save_post_application_action( $post_id, $post, $update ):void {
 	if ( $post->post_status === 'publish' && ! wp_is_post_revision( $post_id ) && ! empty( $_POST['acf'] ) ) {
 		if ( isset( $_POST['acf']['field_application_status'] ) && $_POST['acf']['field_application_status'] !== 'new' ) {
 			update_post_meta( $post_id, 'processing_date', time() + 10800 );
@@ -192,3 +204,162 @@ function dovira_save_post_application_action( $post_id, $post, $update ) {
 }
 
 add_action( 'save_post_application', 'dovira_save_post_application_action', 10, 3 );
+
+
+/**
+ * Adds a filter dropdown for vacancies to the applications list in the admin panel.
+ *
+ * This function generates and displays a select dropdown of available vacancies
+ * for filtering the applications list based on the selected vacancy. The dropdown
+ * retrieves all published vacancies with the 'is_open' meta key set to true.
+ *
+ * @param string $post_type The current post type being displayed in the admin list.
+ *                          The functionality applies only if the post type is 'application'.
+ *
+ * @return void
+ */
+function dovira_add_applications_list_filter_by_vacancy( string $post_type ):void {
+	if ( $post_type === 'application' ) {
+
+		$vacancies = get_posts( [
+			'post_type'   => 'vacancy',
+			'numberposts' => - 1,
+			'post_status' => 'publish',
+			'orderby'     => 'title',
+			'meta_query'  => [
+				[
+					'key'   => 'is_open',
+					'value' => 1,
+				]
+			]
+		] );
+
+
+		$selected_vacancy = 'all';
+
+		if ( isset( $_GET['vacancy_id'] ) && ! empty( $_GET['vacancy_id'] ) ) {
+			$selected_vacancy = $_GET['vacancy_id'];
+		}
+
+		$select   = "<select name='vacancy_id'>";
+		$selected = selected( $selected_vacancy, 'all', false );
+		$select   .= "<option {$selected} value='all'>" . __( 'All vacancies', 'dovira' ) . "</option>";
+
+		if ( ! empty( $vacancies ) ) {
+			foreach ( $vacancies as $vacancy ) {
+				$selected = selected( $selected_vacancy, $vacancy->ID, false );
+				$select   .= "<option {$selected} value='" . $vacancy->ID . "'>" . $vacancy->post_title . "</option>";
+			}
+		}
+
+		$select .= "</select>";
+
+		echo $select;
+	}
+}
+
+add_action( 'restrict_manage_posts', 'dovira_add_applications_list_filter_by_vacancy' );
+
+
+/**
+ * Adds a filter dropdown for application statuses on the application list page.
+ *
+ * This function generates a dropdown menu for filtering applications by their statuses
+ * and displays it on the application list page if the current post type is `application`.
+ *
+ * @param string $post_type The current post type being displayed in the admin list table.
+ *
+ * @return void
+ */
+function dovira_add_applications_list_filter_by_status( string $post_type ):void {
+	if ( $post_type === 'application' ) {
+
+		$statuses = [
+			'new'                 => __( 'New', 'dovira' ),
+			'in_processing'       => __( 'In processing', 'dovira' ),
+			'interview_scheduled' => __( 'Interview scheduled', 'dovira' ),
+			'rejected'            => __( 'Rejected', 'dovira' ),
+			'closed'              => __( 'Closed', 'dovira' ),
+		];
+
+
+		$selected_status = 'all';
+
+		if ( isset( $_GET['status'] ) && ! empty( $_GET['status'] ) ) {
+			$selected_status = $_GET['status'];
+		}
+
+		$select   = "<select name='status'>";
+		$selected = selected( $selected_status, 'all', false );
+		$select   .= "<option {$selected} value='all'>" . __( 'All statuses', 'dovira' ) . "</option>";
+
+		if ( ! empty( $statuses ) ) {
+			foreach ( $statuses as $key => $status ) {
+				$selected = selected( $selected_status, $key, false );
+				$select   .= "<option {$selected} value='" . $key . "'>" . $status . "</option>";
+			}
+		}
+
+		$select .= "</select>";
+
+		echo $select;
+	}
+}
+
+add_action( 'restrict_manage_posts', 'dovira_add_applications_list_filter_by_status' );
+
+/**
+ * @param WP_Query $query
+ */
+function dovira_add_applications_list_filter_handler( WP_Query $query ) : void {
+
+	$current_screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+	if ( ! is_admin() || empty( $current_screen ) || $current_screen->post_type !== 'application' || $current_screen->id !== 'edit-application' ) {
+		return;
+	}
+
+	if ( $query->is_main_query() ) {
+
+		$filter_fields = [];
+
+		if ( isset( $_GET['status'] ) && ! empty( $_GET['status'] ) && $_GET['status'] !== 'all' ) {
+			$filter_fields['status'] = [
+				'value'   => $_GET['status'],
+				'compare' => '=',
+			];
+		}
+
+		if ( isset( $_GET['vacancy_id'] ) && ! empty( $_GET['vacancy_id'] ) && $_GET['vacancy_id'] !== 'all' ) {
+			$filter_fields['vacancy_id'] = [
+				'value'   => (int) $_GET['vacancy_id'],
+				'compare' => '=',
+			];
+		}
+
+		if ( ! empty( $filter_fields ) ) {
+			$meta_query    = [];
+			$meta_keys_map = [
+				'status'      => 'status',
+				'vacancy_id'      => 'vacancy',
+			];
+
+			if ( count( $filter_fields ) > 1 ) {
+				$meta_query['relation'] = 'AND';
+			}
+
+			foreach ( $filter_fields as $field => $field_data ) {
+
+				$meta_query[] = [
+					'key'     => $meta_keys_map[ $field ],
+					'value'   => $field_data['value'],
+					'compare' => $field_data['compare'],
+				];
+			}
+
+			$query->set( 'meta_query', $meta_query );
+		}
+	}
+}
+
+add_action( 'parse_query', 'dovira_add_applications_list_filter_handler' );
