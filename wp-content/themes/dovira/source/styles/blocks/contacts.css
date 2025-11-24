@@ -130,10 +130,25 @@
   color: var(--color-gray);
 }
 
+.contacts__schedules {
+  padding: 16px 0;
+}
+
 .contacts__schedule {
   max-width: 100% !important;
   padding-top: 0!important;
   margin: 12px 0;
+
+  & span {
+    display: block;
+    padding-top: 4px;
+    font-size: 18px;
+    color: var(--color-gray);
+
+    @media (min-width: 1280px) {
+      font-size: 22px;
+    }
+  }
 }
 
 .contacts__instagram {

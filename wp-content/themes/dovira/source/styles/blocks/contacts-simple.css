@@ -56,7 +56,23 @@
 }
 
 .contacts-simple__content {
+  display: block;
   line-height: 1.4;
+
+  & span {
+    display: block;
+    padding-top: 4px;
+    font-size: 14px;
+    opacity: 0.6;
+  }
+}
+
+.contacts-simple__content--schedule {
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .contacts-simple__address-instagram {

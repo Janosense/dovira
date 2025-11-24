@@ -62,6 +62,9 @@ function acf_add_options_page_fonts_fields(): void {
 	       ->addText( 'schedule', array(
 		       'label' => __( 'Schedule', 'dovira' ),
 	       ) )
+	       ->addText( 'schedule_shop', array(
+		       'label' => __( 'Schedule Shop', 'dovira' ),
+	       ) )
 	       ->addTextarea( 'map_iframe', array(
 		       'label' => __( 'Map iframe', 'dovira' ),
 		       'rows'  => 3,
