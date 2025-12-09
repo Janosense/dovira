@@ -1,0 +1,179 @@
+.questionary__content {
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: var(--color-white);
+  border-radius: 11px;
+
+  @media (min-width: 1280px) {
+    padding: 32px;
+  }
+}
+
+.questionary__heading {
+  margin-bottom: 32px;
+}
+
+.questionary__section {
+  margin-bottom: 48px;
+
+  @media (min-width: 1024px) {
+    margin-bottom: 60px;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  & .heading {
+    margin-bottom: 24px;
+    color: var(--color-violet-light);
+  }
+}
+
+.questionary__section-title {
+  margin: 0 0 24px;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-violet-light);
+
+  @media (min-width: 1280px) {
+    font-size: 28px;
+  }
+}
+
+.questionary__row {
+  margin-bottom: 24px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 32px;
+  }
+}
+
+.questionary__row-title {
+  display: block;
+  font-size: 18px;
+  color: var(--color-gray);
+  margin-bottom: 4px;
+
+  @media (min-width: 1280px) {
+    font-size: 22px;
+  }
+}
+
+.questionary__row-value {
+  display: block;
+  font-size: 22px;
+
+  @media (min-width: 1280px) {
+    font-size: 28px;
+  }
+}
+
+.questionary__row-value--text {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.questionary__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  font-size: 18px;
+  font-weight: 500;
+
+  @media (min-width: 1280px) {
+    font-size: 22px;
+  }
+}
+
+.questionary__badge--yes {
+  background-color: rgba(0, 128, 0, 0.05);
+  border-color: green;
+  color: green;
+}
+
+.questionary__badge--no {
+  background-color: rgba(128, 128, 128, 0.08);
+  border-color: #999;
+  color: #666;
+}
+
+.questionary__copy-button {
+  -webkit-appearance: none;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin: 0 0 0 4px;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 0;
+  background-color: var(--color-white);
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+
+  @media (hover: hover) {
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  & img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  @media print {
+    display: none;
+  }
+}
+
+.questionary__copy-message {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 10;
+  display: block;
+  margin: 20px 0 0!important;
+  padding: 12px 20px!important;
+  box-sizing: border-box;
+  background-color: rgba(192, 111, 148, 0.17);
+  color: var(--color-violet-light);
+  border: none!important;
+  border-radius: 50px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+
+  @media print {
+    display: none;
+  }
+}
+
+.questionary__copy-message--active {
+  opacity: 1;
+}
+
+.questionary__actions {
+  padding: 20px;
+
+  @media (min-width: 1280px) {
+    padding: 32px;
+  }
+
+  @media print {
+    display: none;
+  }
+}

@@ -119,17 +119,3 @@ $status_names_map = [
 	});
 
 </script>
-
-<?php $applications = get_posts([
-	'post_type' => 'application',
-	'numberposts' => -1,
-	'meta_query' => [
-		[
-			'key' => 'status',
-			'value' => 'new'
-		]
-	]
-]);
-$test = $applications;
-
-?>
