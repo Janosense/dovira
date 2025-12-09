@@ -55,6 +55,13 @@
   }
 }
 
+.questionary__item--full {
+  @media (min-width: 768px) {
+    grid-column-start: 1;
+    grid-column-end: 4;
+  }
+}
+
 .questionary__row-title {
   display: block;
   font-size: 18px;
@@ -76,22 +83,28 @@
 }
 
 .questionary__row-value--text {
-  white-space: pre-wrap;
   line-height: 1.5;
+}
+
+.questionary__row-value--admin-note {
+  font-size: 16px;
+
+  @media (min-width: 1280px) {
+    font-size: 18px;
+  }
 }
 
 .questionary__badge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 16px;
+  padding: 4px 12px;
   border-radius: 8px;
   border-width: 1px;
   border-style: solid;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 16px;
 
   @media (min-width: 1280px) {
-    font-size: 22px;
+    font-size: 18px;
   }
 }
 

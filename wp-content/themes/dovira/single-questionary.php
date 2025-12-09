@@ -64,10 +64,8 @@ $blood_group_labels = [
 					<div class="questionary__row">
 						<div class="questionary__item questionary__item--full">
 							<span class="questionary__row-title">Примітки адміністратора:</span>
-							<div class="questionary__row-value questionary__row-value--text">
+							<div class="questionary__row-value questionary__row-value--text questionary__row-value--admin-note">
 								<span><?= nl2br( esc_html( $admin_note ) ); ?></span>
-								<button type="button" class="questionary__copy-button"><img
-										src="/wp-content/themes/dovira/assets/images/icon-copy.svg" alt="Copy"></button>
 							</div>
 						</div>
 					</div>
@@ -195,7 +193,7 @@ $blood_group_labels = [
 					</div>
 					<div class="questionary__row">
 						<?php if ( ! empty( $blood_group ) ) : ?>
-							<div class="questionary__item>
+							<div class="questionary__item">
 								<span class="questionary__row-title">Група крові:</span>
 								<div class="questionary__row-value">
 									<span><?= esc_html( $blood_group_labels[ $blood_group ] ?? $blood_group ); ?></span>
