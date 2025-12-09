@@ -22,6 +22,10 @@ function acf_add_post_type_questionary_fields(): void {
 		'required' => true,
 	) );
 
+	$fields->addText( 'city', array(
+		'label'    => __( 'City', 'dovira' ),
+	) );
+
 	$fields->addEmail( 'email', array(
 		'label' => __( 'Email', 'dovira' ),
 	) );
