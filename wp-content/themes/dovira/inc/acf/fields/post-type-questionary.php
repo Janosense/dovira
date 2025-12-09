@@ -94,7 +94,6 @@ function acf_add_post_type_questionary_fields(): void {
 		'ui_on_text'    => __( 'Yes', 'dovira' ),
 		'ui_off_text'   => __( 'No', 'dovira' ),
 		'default_value' => 0,
-		'required'      => true,
 	) );
 
 	$fields->addTrueFalse( 'cat_contact', array(
@@ -111,7 +110,6 @@ function acf_add_post_type_questionary_fields(): void {
 		'ui_on_text'    => __( 'Yes', 'dovira' ),
 		'ui_off_text'   => __( 'No', 'dovira' ),
 		'default_value' => 0,
-		'required'      => true,
 	) );
 
 	$fields->addTrueFalse( 'donor_before', array(
@@ -120,7 +118,6 @@ function acf_add_post_type_questionary_fields(): void {
 		'ui_on_text'    => __( 'Yes', 'dovira' ),
 		'ui_off_text'   => __( 'No', 'dovira' ),
 		'default_value' => 0,
-		'required'      => true,
 	) );
 
 	$fields->addTrueFalse( 'blood_take', array(
@@ -129,7 +126,6 @@ function acf_add_post_type_questionary_fields(): void {
 		'ui_on_text'    => __( 'Yes', 'dovira' ),
 		'ui_off_text'   => __( 'No', 'dovira' ),
 		'default_value' => 0,
-		'required'      => true,
 	) );
 
 	$fields->addTrueFalse( 'chronic_diseases', array(
@@ -138,7 +134,6 @@ function acf_add_post_type_questionary_fields(): void {
 		'ui_on_text'    => __( 'Yes', 'dovira' ),
 		'ui_off_text'   => __( 'No', 'dovira' ),
 		'default_value' => 0,
-		'required'      => true,
 	) );
 
 	$fields->addTrueFalse( 'pills', array(
@@ -147,7 +142,6 @@ function acf_add_post_type_questionary_fields(): void {
 		'ui_on_text'    => __( 'Yes', 'dovira' ),
 		'ui_off_text'   => __( 'No', 'dovira' ),
 		'default_value' => 0,
-		'required'      => true,
 	) );
 
 	$fields->addText( 'pet_name', array(
