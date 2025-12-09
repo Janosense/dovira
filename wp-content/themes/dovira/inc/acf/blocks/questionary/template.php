@@ -81,6 +81,14 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 					</div>
 					<div class="questionary-form__row">
 						<div class="questionary-form__item">
+							<label>
+								<input type="text" name="city" class="questionary-form__text-field" required>
+								<span class="questionary-form__text-field-label">Ваше місто</span>
+							</label>
+						</div>
+					</div>
+					<div class="questionary-form__row">
+						<div class="questionary-form__item">
 							<span class="questionary-form__item-title questionary-form__item-title--required">Вид тварини:</span>
 							<div class="questionary-form__radio-group">
 								<label>

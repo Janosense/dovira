@@ -43,6 +43,21 @@ const validateRequiredTextFields = (form) => {
 	return isValid;
 };
 
+const validateRequiredSelectFields = (form) => {
+  let isValid = true;
+  const selectFields = form.querySelectorAll('.questionary-form__select-field[required]');
+
+  selectFields.forEach((field) => {
+    const formItem = field.closest('.questionary-form__item');
+    if (field.value.trim() === '' || field.value === 'all-choose' || field.value === 'choose') {
+      formItem.classList.add('questionary-form__item--error');
+      isValid = false;
+    }
+  });
+
+  return isValid;
+};
+
 const validateRequiredRadioGroups = (form) => {
 	let isValid = true;
 	const radioGroups = {};
@@ -114,6 +129,14 @@ const questionaryFormHandler = () => {
 		});
 	});
 
+  // Add event listeners to select fields to remove error class on select
+  const selectFields = form.querySelectorAll('.questionary-form__select-field');
+  selectFields.forEach((field) => {
+    field.addEventListener('change', () => {
+      removeErrorClass(field);
+    });
+  });
+
   submitButton.addEventListener('click', async (event) => {
 		event.preventDefault();
 
@@ -123,8 +146,9 @@ const questionaryFormHandler = () => {
 		// Validate form
 		const isTextFieldsValid = validateRequiredTextFields(form);
 		const isRadioGroupsValid = validateRequiredRadioGroups(form);
+		const isSelectFieldsValid = validateRequiredSelectFields(form);
 
-		if (!isTextFieldsValid || !isRadioGroupsValid) {
+		if (!isTextFieldsValid || !isRadioGroupsValid || !isSelectFieldsValid) {
 			showMessage(form, 'Будь ласка, заповніть всі обовʼязкові поля', 'error');
 
 			// Scroll to first error
