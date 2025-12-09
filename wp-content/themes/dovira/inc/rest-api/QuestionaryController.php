@@ -121,6 +121,28 @@ class QuestionaryController extends WP_REST_Controller {
 			update_field( 'pet_name', sanitize_text_field( $params['pet-name'] ), $post_id );
 		}
 
+		$connected_chats = get_option( 'telegram_bot_chats', [] );
+		if ( ! empty( $connected_chats ) ) {
+			$url     = 'https://api.telegram.org/bot7768117564:AAFS45iz5R_-VKnFGj5WzaIAHUtiXfdbiTs/sendMessage';
+			$message = 'Надійшла нова анкета до Банку крові. <a href="https://dovira.vet/wp-admin/edit.php?post_type=questionary">Всі анкети тут</a>';
+			$args    = [
+				'timeout'     => 45,
+				'redirection' => 5,
+				'body'        => [
+					'text'                 => $message,
+					'parse_mode'           => 'html',
+					'link_preview_options' => json_encode( [
+						'is_disabled' => true,
+					], JSON_THROW_ON_ERROR ),
+				],
+			];
+
+			foreach ( $connected_chats as $chat_id ) {
+				$args['body']['chat_id'] = $chat_id;
+				wp_remote_get( $url, $args );
+			}
+		}
+
 		return new WP_REST_Response( [
 			'success' => true,
 			'message' => __( 'Questionary saved successfully', 'dovira' ),
