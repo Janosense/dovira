@@ -7,9 +7,9 @@ function acf_add_post_type_questionary_fields(): void {
 		'title' => __( 'Questionary information', 'dovira' ),
 	) );
 
-	$fields->addTextarea('admin_note', array(
-		'label'    => __( 'Note', 'dovira' ),
-	));
+	$fields->addTextarea( 'admin_note', array(
+		'label' => __( 'Note', 'dovira' ),
+	) );
 
 	// Owner information
 	$fields->addText( 'name', array(
@@ -41,6 +41,25 @@ function acf_add_post_type_questionary_fields(): void {
 		'choices'  => array(
 			'female' => __( 'Female', 'dovira' ),
 			'male'   => __( 'Male', 'dovira' ),
+		),
+		'required' => true,
+	) );
+
+	$fields->addSelect( 'blood_group', array(
+		'label'    => __( 'Blood group', 'dovira' ),
+		'choices'  => array(
+			'all-dont-know' => __( 'Don\'t know', 'dovira' ),
+			'cat-a'         => __( 'Cat - A', 'dovira' ),
+			'cat-b'         => __( 'Cat - B', 'dovira' ),
+			'cat-AB'        => __( 'Cat - AB', 'dovira' ),
+			'dog-dea-1.1'   => __( 'Dog - DEA 1.1', 'dovira' ),
+			'dog-dea-1.2'   => __( 'Dog - DEA 1.2', 'dovira' ),
+			'dog-dea-1.3'   => __( 'Dog - DEA 1.3', 'dovira' ),
+			'dog-dea-2'     => __( 'Dog - DEA 2', 'dovira' ),
+			'dog-dea-3'     => __( 'Dog - DEA 3', 'dovira' ),
+			'dog-dea-4'     => __( 'Dog - DEA 4', 'dovira' ),
+			'dog-dea-5'     => __( 'Dog - DEA 5', 'dovira' ),
+			'dog-dea-7'     => __( 'Dog - DEA 7', 'dovira' ),
 		),
 		'required' => true,
 	) );

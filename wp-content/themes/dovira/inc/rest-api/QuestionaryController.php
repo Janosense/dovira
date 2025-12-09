@@ -39,7 +39,21 @@ class QuestionaryController extends WP_REST_Controller {
 		$params = $request->get_params();
 
 		// Validate required fields
-		$required_fields = [ 'name', 'phone', 'animal', 'pet-sex', 'pet-old', 'pet-weight', 'vaccination-date', 'street', 'castration', 'donor-before', 'blood-take', 'chronic-diseases', 'pills' ];
+		$required_fields = [
+			'name',
+			'phone',
+			'animal',
+			'pet-sex',
+			'pet-old',
+			'pet-weight',
+			'vaccination-date',
+			'street',
+			'castration',
+			'donor-before',
+			'blood-take',
+			'chronic-diseases',
+			'pills'
+		];
 		foreach ( $required_fields as $field ) {
 			if ( empty( $params[ $field ] ) && $params[ $field ] !== '0' && $params[ $field ] !== 'no' ) {
 				return new WP_Error(
@@ -82,6 +96,7 @@ class QuestionaryController extends WP_REST_Controller {
 		// Pet information
 		update_field( 'animal', sanitize_text_field( $params['animal'] ), $post_id );
 		update_field( 'pet_sex', sanitize_text_field( $params['pet-sex'] ), $post_id );
+		update_field( 'blood_group', sanitize_text_field( $params['blood-group'] ), $post_id );
 		if ( ! empty( $params['pet-type'] ) ) {
 			update_field( 'pet_type', sanitize_text_field( $params['pet-type'] ), $post_id );
 		}

@@ -19,6 +19,20 @@
   }
 }
 
+.questionary-form__row--4 {
+  @media (min-width: 1280px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+}
+
+.questionary-form__row--blood-group {
+  display: none;
+}
+
+.questionary-form__row--blood-group.is-visible {
+  display: grid;
+}
+
 .questionary-form__item {
   position: relative;
   margin-bottom: 24px;
@@ -53,6 +67,7 @@
 
 .questionary-form__item-title--required {
   position: relative;
+
   &::after {
     content: "";
     display: inline-block;
@@ -65,6 +80,11 @@
   }
 }
 
+.questionary-form__item-title--select {
+  margin-bottom: 0;
+}
+
+.questionary-form__select-field,
 .questionary-form__text-field {
   -webkit-appearance: none;
   display: block;
@@ -100,6 +120,20 @@
     border-radius: 50%;
     vertical-align: top;
   }
+}
+
+.questionary-form__select-field {
+  -webkit-appearance: auto;
+  color: #727270;
+  opacity: 0.8;
+
+  &:checked {
+    color: red;
+  }
+}
+
+.questionary-form__select-field--active {
+  color: var(--color-black);
 }
 
 .questionary-form__text-field-label {
