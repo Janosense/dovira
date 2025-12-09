@@ -92,6 +92,7 @@ class QuestionaryController extends WP_REST_Controller {
 		if ( ! empty( $params['email'] ) ) {
 			update_field( 'email', sanitize_email( $params['email'] ), $post_id );
 		}
+		update_field( 'city', sanitize_text_field( ucfirst( $params['city'] ) ), $post_id );
 
 		// Pet information
 		update_field( 'animal', sanitize_text_field( $params['animal'] ), $post_id );
