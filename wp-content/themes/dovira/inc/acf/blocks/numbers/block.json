@@ -1,0 +1,19 @@
+{
+	"name": "acf/numbers",
+	"title": "Numbers",
+	"description": "",
+	"category": "",
+	"icon": "editor-code",
+	"keywords": [
+		"numbers",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

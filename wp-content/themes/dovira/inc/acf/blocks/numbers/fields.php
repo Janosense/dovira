@@ -1,15 +1,15 @@
 <?php
 /**
- * Rich Text Block Fields.
+ * Numbers Block Fields.
  *
  * @package dovira
  */
 
 use StoutLogic\AcfBuilder\FieldsBuilder;
 
-$fields = new FieldsBuilder( 'rich-text' );
+$fields = new FieldsBuilder( 'numbers' );
 
-$fields->addMessage( 'block-name', '<span style="font-weight: bold; font-size: 32px">RICH TEXT</span>', array(
+$fields->addMessage( 'block-name', '<span style="font-weight: bold; font-size: 32px">NUMBERS</span>', array(
 	'label' => __( 'Block name', 'dovira' ),
 ) );
 
@@ -26,8 +26,8 @@ $fields->addTrueFalse( 'is_visible', array(
 ) );
 
 $fields->addNumber( 'container_max_width', array(
-	'label'         => __( 'Container max width', 'dovira' ),
-));
+	'label' => __( 'Container max width', 'dovira' ),
+) );
 
 $fields->addText( 'heading', array(
 	'label' => __( 'Heading', 'dovira' ),
@@ -118,28 +118,32 @@ $fields->addSelect( 'cta_align', array(
 ) );
 
 
-$fields->addTab( 'text_tab', array(
-	'label' => __( 'Text', 'dovira' ),
+$fields->addTab( 'numbers_tab', array(
+	'label' => __( 'Numbers', 'dovira' ),
 ) );
 
-$fields->addWysiwyg( 'text', array(
-	'label' => __( 'Text', 'dovira' ),
-) );
-
-$fields->addColorPicker( 'text_color', array(
-	'label'         => __( 'Text color', 'dovira' ),
-	'default_value' => '#000000',
-) );
-
-$fields->addSelect( 'text_align', array(
-	'label'         => __( 'Text alignment', 'dovira' ),
-	'choices'       => array(
-		'left'   => __( 'Left', 'dovira' ),
-		'center' => __( 'Center', 'dovira' ),
-		'right'  => __( 'Right', 'dovira' ),
-	),
-	'default_value' => 'left',
-) );
+$fields->addRepeater( 'numbers', array(
+	'label'  => __( 'Years', 'dovira' ),
+	'layout' => 'block',
+) )
+       ->addText( 'title', array(
+	       'label' => __( 'Title', 'dovira' ),
+       ) )
+       ->addTextarea( 'text', array(
+	       'label' => __( 'Text', 'dovira' ),
+       ) )
+       ->addColorPicker( 'number_color', array(
+	       'label'         => __( 'Number color', 'dovira' ),
+	       'default_value' => '#c06f94'
+       ) )
+       ->addColorPicker( 'text_color', array(
+	       'label'         => __( 'Number color', 'dovira' ),
+	       'default_value' => '#3c3c3c'
+       ) )
+       ->addColorPicker( 'background_color', array(
+	       'label'         => __( 'background color', 'dovira' ),
+	       'default_value' => '#ffffff'
+       ) );
 
 $fields->addTab( 'background', array(
 	'label' => __( 'BG', 'dovira' ),
@@ -210,6 +214,6 @@ $fields->addSelect( 'margin_bottom', array(
 	'default_value' => 'standard',
 ) );
 
-$fields->setLocation( 'block', '==', 'acf/rich-text' );
+$fields->setLocation( 'block', '==', 'acf/numbers' );
 
 return $fields;

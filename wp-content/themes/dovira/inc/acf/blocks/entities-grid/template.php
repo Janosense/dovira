@@ -61,16 +61,18 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 						<li class="entities-grid__item">
 							<?php if ( ! empty( $entity['cta'] ) ) : echo '<a href="' . $entity['cta']['url'] . '" target="' . $entity['cta']['target'] . '" class="entities-grid__link">'; endif; ?>
 							<div class="entities-grid__image-holder">
-								<?php if ( strpos( $entity['image']['mime_type'], 'svg' ) !== false ) : ?>
-									<div class="entities-grid__icon"
-										 style="width: <?= $entity['image_width']; ?>px; height: <?= $entity['image_width']; ?>px;">
-										<img src="<?= $entity['image']['url']; ?>" alt="">
-									</div>
-								<?php else: ?>
-									<?= wp_get_attachment_image( $entity['image']['id'], 'full', false, array(
-										'class' => 'entities-grid__image',
-										'alt' => $entity['title'],
-									) ); ?>
+								<?php if ( ! empty( $entity['image'] ) ) : ?>
+									<?php if ( strpos( $entity['image']['mime_type'], 'svg' ) !== false ) : ?>
+										<div class="entities-grid__icon"
+											 style="width: <?= $entity['image_width']; ?>px; height: <?= $entity['image_width']; ?>px;">
+											<img src="<?= $entity['image']['url']; ?>" alt="">
+										</div>
+									<?php else: ?>
+										<?= wp_get_attachment_image( $entity['image']['id'], 'full', false, array(
+											'class' => 'entities-grid__image',
+											'alt'   => $entity['title'],
+										) ); ?>
+									<?php endif; ?>
 								<?php endif; ?>
 							</div>
 							<div class="entities-grid__content-holder">

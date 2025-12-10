@@ -19,9 +19,6 @@ $heading_style       = dovira_get_acf_field( 'heading_style' );
 $caption             = dovira_get_acf_field( 'caption' );
 $caption_color       = dovira_get_acf_field( 'caption_color' );
 $header_text_align   = dovira_get_acf_field( 'header_text_align' );
-$text                = dovira_get_acf_field( 'text' );
-$text_color          = dovira_get_acf_field( 'text_color' );
-$text_align          = dovira_get_acf_field( 'text_align' );
 $show_gradient_layer = dovira_get_acf_field( 'show_gradient_layer' );
 $gradient_tone       = dovira_get_acf_field( 'gradient_tone' );
 $gradient_direction  = dovira_get_acf_field( 'gradient_direction' );
@@ -31,14 +28,15 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 $cta                 = dovira_get_acf_field( 'cta' );
 $cta_align           = dovira_get_acf_field( 'cta_align' );
 $cta_style           = dovira_get_acf_field( 'cta_style' );
-$container_max_width          = dovira_get_acf_field( 'container_max_width' );
+$container_max_width = dovira_get_acf_field( 'container_max_width' );
+$numbers             = dovira_get_acf_field( 'numbers' );
 
 ?>
 <?php if ( $is_visible || $is_preview ) : ?>
-	<!-- RICH TEXT start -->
+	<!-- NUMBERS start -->
 	<section id="<?= $block_id; ?>"
-		class="section section--mb-<?= $margin_bottom; ?> <?php if ( ! empty( $background_color ) ) : ?>section--with-bg<?php endif; ?> rich-text <?php if ( ! $is_visible ) : ?>is-not-visible<?php endif; ?>"
-		<?php if ( ! empty( $background_color ) ) : ?>style="background-color: <?= $background_color; ?>;"<?php endif; ?>>
+			 class="section section--mb-<?= $margin_bottom; ?> <?php if ( ! empty( $background_color ) ) : ?>section--with-bg<?php endif; ?> numbers <?php if ( ! $is_visible ) : ?>is-not-visible<?php endif; ?>"
+			 <?php if ( ! empty( $background_color ) ) : ?>style="background-color: <?= $background_color; ?>;"<?php endif; ?>>
 		<?php if ( ! empty( $background_image ) ) :
 			echo wp_get_attachment_image( $background_image['id'], 'full', false, array(
 				'class' => 'section__background-image',
@@ -50,24 +48,38 @@ $container_max_width          = dovira_get_acf_field( 'container_max_width' );
 				 style="background: linear-gradient(to <?= str_replace( '_', ' ', $gradient_direction ); ?>, <?= $gradient_tone; ?>, rgba(0,0,0,0) )"
 				 aria-hidden="true"></div>
 		<?php endif; ?>
-		<div class="wrapper rich-text__wrapper" <?php if (! empty( $container_max_width )) : ?>style="max-width: <?= $container_max_width; ?>px"<?php endif; ?>>
+		<div class="wrapper numbers__wrapper"
+			 <?php if ( ! empty( $container_max_width ) ) : ?>style="max-width: <?= $container_max_width; ?>px"<?php endif; ?>>
 			<?php if ( ! empty( $heading ) || ! empty( $caption ) ) : ?>
 				<header class="section__header section__header--align-<?= $header_text_align; ?>">
 					<?php if ( ! empty( $heading ) ) : ?>
 						<?= '<' . $heading_level . ' class="heading heading--' . $heading_style . '" style="color: ' . $heading_color . ';">' . $heading . '</' . $heading_level . '>'; ?>
 					<?php endif; ?>
 					<?php if ( ! empty( $caption ) ) : ?>
-						<p class="rich-text__caption caption" style="color: <?= $caption_color; ?>;">
+						<p class="numbers__caption caption" style="color: <?= $caption_color; ?>;">
 							<?= $caption; ?>
 						</p>
 					<?php endif; ?>
 				</header>
 			<?php endif; ?>
-			<?php if ( ! empty( $text ) ) : ?>
-				<div class="rich-text__content rich-text__content--align-<?= $text_align; ?>"
-					 style="color:<?= $text_color; ?>;">
-					<?= $text; ?>
-				</div>
+			<?php if ( ! empty( $numbers ) ) : ?>
+				<ul class="numbers__list">
+					<?php
+					$counter = 1;
+					foreach ( $numbers as $number ) : ?>
+						<li class="numbers__item" style="background-color:<?= $number['background_color']; ?>;">
+							<span class="numbers__number" style="color:<?= $number['number_color']; ?>;"><?= $counter ++; ?></span>
+							<div class="numbers__text-content">
+								<?php if ( ! empty( $number['title'] ) ) : ?>
+									<h3 class="heading heading--h5" style="color:<?= $number['text_color']; ?>;"><?= $number['title']; ?></h3>
+								<?php endif; ?>
+								<?php if ( ! empty( $number['text'] ) ) : ?>
+									<p class="numbers__caption caption" style="color:<?= $number['text_color']; ?>;"><?= $number['text']; ?></p>
+								<?php endif; ?>
+							</div>
+						</li>
+					<?php endforeach; ?>
+				</ul>
 			<?php endif; ?>
 			<?php if ( ! empty( $cta ) ) : ?>
 				<div class="section__cta-holder section__cta-holder--align-<?= $cta_align; ?>">
@@ -79,5 +91,5 @@ $container_max_width          = dovira_get_acf_field( 'container_max_width' );
 			<?php endif; ?>
 		</div>
 	</section>
-	<!-- RICH TEXT end -->
+	<!-- NUMBERS end -->
 <?php endif; ?>
