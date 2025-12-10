@@ -77,7 +77,7 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 							</div>
 							<div class="entities-grid__content-holder">
 								<?php if ( ! empty( $entity['title'] ) ) : ?>
-									<h3 class="entities-grid__title"><?= $entity['title']; ?></h3>
+									<h3 class="heading heading--h5"><?= $entity['title']; ?></h3>
 								<?php endif; ?>
 								<?php if ( ! empty( $entity['caption'] ) ) : ?>
 									<p class="entities-grid__text text"><?= $entity['caption']; ?></p>
