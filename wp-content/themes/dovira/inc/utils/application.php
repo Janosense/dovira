@@ -58,6 +58,7 @@ function dovira_wpcf7_before_send_mail( $form, &$abort, $submission ): void {
 						}
 					}
 
+					$connected_chats = get_option( 'telegram_bot_chats', [] );
 					if ( ! empty( $connected_chats ) ) {
 						$url     = 'https://api.telegram.org/bot7768117564:AAFS45iz5R_-VKnFGj5WzaIAHUtiXfdbiTs/sendMessage';
 						$message = 'Надійшла нова Заявка на вакансію "' . $vacancy->post_title . '". <a href="https://dev.dovira.vet/wp-admin/edit.php?post_type=application">Всі Заявки тут</a>';
