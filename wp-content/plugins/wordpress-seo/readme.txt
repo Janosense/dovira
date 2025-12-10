@@ -4,8 +4,8 @@ Donate link: https://yoa.st/1up
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 Tags: SEO, XML sitemap, Content analysis, Readability, Schema
-Tested up to: 6.8
-Stable tag: 26.2
+Tested up to: 6.9
+Stable tag: 26.5
 Requires PHP: 7.4
 
 Improve your SEO with real-time feedback, schema, and clear guidance. Upgrade for AI tools, Google Docs integration, and 24/7 support, no hidden fees.
@@ -302,52 +302,41 @@ Your question has most likely been answered on our help center: [yoast.com/help/
 8. The inclusive language analysis in Yoast SEO.
 
 == Changelog ==
-= 26.2 =
 
-Release date: 2025-10-21
+= 26.5 =
 
-Yoast SEO 26.2 brings more enhancements and bugfixes. [Find more information about our software releases and updates here](https://yoa.st/releases).
+Release date: 2025-12-02
 
-#### Enhancements
-
-* Adds a `Pronouns` field to the user profile and includes these pronouns in the Schema.org output. Props to [jdevalk](https://github.com/jdevalk).
-* Adds edit buttons next to the _keyphrase in meta description_, _keyphrase in slug_, and _keyphrase in SEO title_ assessments when there is no keyphrase and/or no meta description, slug, or SEO title.
-* Improves the _transition words_ assessment for Arabic by expanding the list of recognized transition words. Props to [Reem76-ar](https://github.com/Reem76-ar).
-* Introduces Content blocks collapsible inside Yoast Metabox and Sidebar to improve Yoast custom blocks discoverability.
-
-#### Other
-
-* Adapts the behavior of the `Contact our support team` button in the `Support` page to our new Premium and WooCommerce SEO subscription plans.
-* Disables opcache invalidation on plugin upgrade for a subset of the userbase.
-
-= 26.1.1 =
-
-Release date: 2025-10-08
-
-#### Other
-
-* Updates an outdated piece of copy.
-
-= 26.1 =
-
-Release date: 2025-10-07
-
-Yoast SEO 26.1 brings more enhancements and bugfixes. [Find more information about our software releases and updates here](https://yoa.st/releases).
+**New:** Yoast SEO includes the necessary updates to support the Site Kit by Google integration for all Premium users, with Yoast SEO (free) support following soon. [Read the full release post here](https://yoa.st/54u).
 
 #### Enhancements
 
-* Improves the UX of the `llms.txt` settings page, by informing the user that they have to save their changes in order for the file to be generated.
-* Introduces the option to add an Ahrefs verification code via the Yoast Settings page.
+* Integrates the Yoast SEO tab into the Elementor Editor's Elements panel sidebar to provide enhanced access to SEO settings.
+* Makes the _keyphrase density assessment_ and _keyphrase in subheadings assessment_  available when no content has been added.
 
 #### Bugfixes
 
-* Fixes a bug where the `llms.txt` opt-in would hide behind the WordPress sidebar when on RTL language.
+* Fixes a bug where table backgrounds in the RSS settings and Semrush related keyphrases tables would expand beyond the rounded corners in Firefox.
 
 #### Other
 
-* Introduces the `Yoast\WP\SEO\should_invalidate_opcache` filter that disables opcache invalidation on plugin upgrade.
-* Lets users know about the new `Yoast SEO AI+` plan and related features.
-* Updates the `Site features` page to include icons instead of images.
+* Relocates the introduction notification to point to the Yoast SEO tab within the Elements panel sidebar of the Elementor Editor for better user guidance.
+* Sets the _WordPress tested up to_ version to 6.9.
+
+= 26.4 =
+
+Release date: 2025-11-18
+
+#### Bugfixes
+
+* Fixes a bug for users who have the Site Kit integration enabled, where a fatal error would be thrown for edge cases, like when custom code intervened with the default WP login flow.
+* Fixes a bug in the Settings page where the advanced tab would close when selecting one of its options or other options after visiting the advanced tab.
+
+#### Other
+
+* Adds a button for using AI to generate custom an SEO title or meta description in the pre-publish sidebar of the block editor, if all recent posts have been using default SEO data.
+* Adds the Yoast siblings and subpages premium blocks to the Yoast custom blocks menu tab in pages.
+* Improves performance when author archives are disabled and an author is created. Props to [ErikBrendel](https://github.com/ErikBrendel).
 
 = Earlier versions =
 For the changelog of earlier versions, please refer to [the changelog on yoast.com](https://yoa.st/yoast-seo-changelog).
