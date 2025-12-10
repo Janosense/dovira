@@ -133,7 +133,7 @@
 							<?php if ( getenv( 'IS_DDEV_PROJECT' ) == 'true' ) : ?>
 								<?= do_shortcode( '[contact-form-7 id="1321657" title="Форма заявки на вакансію" vacancy="' . $post->ID . '"]' ); ?>
 							<?php else : ?>
-								<?= do_shortcode( '[contact-form-7 id="21a1b33" title="Форма заявки на вакансію" vacancy="' . $post->ID . '"]' ); ?>
+								<?= do_shortcode( '[contact-form-7 id="f8f78c9" title="Форма заявки на вакансію" vacancy="' . $post->ID . '"]' ); ?>
 							<?php endif; ?>
 							<div class="contacts-form7__google-disclaimer">
 								Цей сайт захищено reCAPTCHA, а також застосовуються <a
