@@ -14,7 +14,7 @@
 function dovira_wpcf7_before_send_mail( $form, &$abort, $submission ): void {
 	if ( ! empty( $form ) ) {
 		switch ( $form->id() ) {
-			case 1280:
+			case 1399:
 				$post_data = array(
 					'post_title'  => sanitize_text_field( $_POST['your-first-name'] ) . ' ' . sanitize_text_field( $_POST['your-last-name'] ),
 					'post_status' => 'publish',
