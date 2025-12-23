@@ -11,8 +11,14 @@ function dovira_wpcf7_submit_action( $that, $result ) {
 	if ( $result['status'] === 'mail_sent' || getenv( 'IS_DDEV_PROJECT' ) == 'true' ) {
 		switch ( $result['contact_form_id'] ) {
 			case 6: // Contact Form
+			case 1430: // Franchising Form
+				$post_title = sanitize_text_field( $_POST['your-name'] ) . ' | ' . sanitize_text_field( $_POST['your-phone'] );
+				if ( $result['contact_form_id'] === 1430 ) {
+					$post_title = 'Франшиза: ' . $post_title;
+				}
+
 				$post_data = array(
-					'post_title'  => sanitize_text_field( $_POST['your-name'] ) . ' | ' . sanitize_text_field( $_POST['your-phone'] ),
+					'post_title'  => $post_title,
 					'post_status' => 'publish',
 					'post_author' => 1,
 					'post_type'   => 'conversation',
@@ -22,7 +28,10 @@ function dovira_wpcf7_submit_action( $that, $result ) {
 
 				if ( ! is_wp_error( $post_id ) ) {
 					update_field( 'name', sanitize_text_field( $_POST['your-name'] ), $post_id );
-					update_field( 'pet_name', sanitize_text_field( $_POST['pet-name'] ), $post_id );
+					if ( $result['contact_form_id'] === 6 ) {
+						update_field( 'pet_name', sanitize_text_field( $_POST['pet-name'] ), $post_id );
+					}
+
 					update_field( 'phone', sanitize_text_field( $_POST['your-phone'] ), $post_id );
 					update_field( 'email', sanitize_text_field( $_POST['your-email'] ), $post_id );
 					update_field( 'message', sanitize_text_field( $_POST['your-message'] ), $post_id );
@@ -30,7 +39,13 @@ function dovira_wpcf7_submit_action( $that, $result ) {
 					$connected_chats = get_option( 'telegram_bot_chats', [] );
 					if ( ! empty( $connected_chats ) ) {
 						$url     = 'https://api.telegram.org/bot7768117564:AAFS45iz5R_-VKnFGj5WzaIAHUtiXfdbiTs/sendMessage';
-						$message = 'Надійшло нове звернення з контактної форми. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
+						if ( $result['contact_form_id'] === 1430 ) {
+							$message = 'Надійшло нове звернення з форми заявки на Франшизу. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
+						} else {
+							$message = 'Надійшло нове звернення з контактної форми. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
+
+						}
+
 						$args    = [
 							'timeout'     => 45,
 							'redirection' => 5,

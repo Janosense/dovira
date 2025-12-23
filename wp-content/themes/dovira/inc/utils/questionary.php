@@ -59,15 +59,9 @@ function dovira_fill_custom_questionary_columns( string $column_name, int $post_
 					'all-dont-know' => __( 'Don\'t know', 'dovira' ),
 					'cat-a'         => __( 'A', 'dovira' ),
 					'cat-b'         => __( 'B', 'dovira' ),
-					'cat-AB'        => __( 'AB', 'dovira' ),
-					'dog-dea-1.1'   => __( 'DEA 1.1', 'dovira' ),
-					'dog-dea-1.2'   => __( 'DEA 1.2', 'dovira' ),
-					'dog-dea-1.3'   => __( 'DEA 1.3', 'dovira' ),
-					'dog-dea-2'     => __( 'DEA 2', 'dovira' ),
-					'dog-dea-3'     => __( 'DEA 3', 'dovira' ),
-					'dog-dea-4'     => __( 'DEA 4', 'dovira' ),
-					'dog-dea-5'     => __( 'DEA 5', 'dovira' ),
-					'dog-dea-7'     => __( 'DEA 7', 'dovira' ),
+					'cat-ab'        => __( 'AB', 'dovira' ),
+					'dog-dea-1-plus'   => __( 'DEA 1+', 'dovira' ),
+					'dog-dea-1-minus'   => __( 'DEA 1-', 'dovira' ),
 				);
 				echo isset( $blood_group_labels[ $blood_group ] ) ? esc_html( $blood_group_labels[ $blood_group ] ) : esc_html( $blood_group );
 			} else {

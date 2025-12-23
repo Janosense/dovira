@@ -127,24 +127,26 @@
 
 .footer__copy {
   color: var(--color-gray);
-  line-height: 1.9;
 
   & span {
     display: block;
   }
+}
 
-  @media (min-width: 768px) {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-  }
+.footer__copy-note {
+  display: block;
+  padding-top: 12px;
+  font-size: 10px;
 
   @media (min-width: 1280px) {
-    justify-content: flex-start;
-    column-gap: 120px;
+    font-size: 12px;
+  }
 
-    & span:nth-child(2) {
-      margin-left: auto;
+  & a {
+    color: inherit;
+
+    &:hover {
+      color: var(--color-violet-light);
     }
   }
 }

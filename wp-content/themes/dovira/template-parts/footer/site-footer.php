@@ -80,6 +80,8 @@ $social_links = dovira_get_acf_field( 'social_links', 'option' );
 			<div class="footer__col">
 				<div class="footer__copy">
 					<span>© <?= get_bloginfo( 'name' ); ?>, <?= date( 'Y' ); ?></span>
+					<span class="footer__copy-note">Ми використовуємо файли cookie, щоб забезпечити вам найкращий досвід перегляду, персоналізувати наш контент, аналізувати трафік сайту та показувати вам релевантну рекламу.<br>Для отримання додаткової інформації, будь ласка, ознайомтеся з нашою <a
+							href="/cookies/">політикою використання cookies</a></span>
 				</div>
 			</div>
 		</div>

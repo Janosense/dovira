@@ -132,14 +132,8 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 								<option value="cat-a" data-animal="cat">A</option>
 								<option value="cat-b" data-animal="cat">B</option>
 								<option value="cat-ab" data-animal="cat">AB</option>
-								<option value="dog-dea-1.1" data-animal="dog">DEA 1.1</option>
-								<option value="dog-dea-1.2" data-animal="dog">DEA 1.2</option>
-								<option value="dog-dea-1.3" data-animal="dog">DEA 1.3</option>
-								<option value="dog-dea-2" data-animal="dog">DEA 2</option>
-								<option value="dog-dea-3" data-animal="dog">DEA 3</option>
-								<option value="dog-dea-4" data-animal="dog">DEA 4</option>
-								<option value="dog-dea-5" data-animal="dog">DEA 5</option>
-								<option value="dog-dea-7" data-animal="dog">DEA 7</option>
+								<option value="dog-dea-1-plus" data-animal="dog">DEA 1+</option>
+								<option value="dog-dea-1-minus" data-animal="dog">DEA 1-</option>
 							</select>
 						</div>
 					</div>
