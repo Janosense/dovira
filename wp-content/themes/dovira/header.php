@@ -25,20 +25,24 @@
 		rel="stylesheet">
 
 	<!-- Google Tag Manager -->
-	<script>(function (w, d, s, l, i) {
-			w[l] = w[l] || [];
-			w[l].push({
-				'gtm.start':
-					new Date().getTime(), event: 'gtm.js'
-			});
-			var f = d.getElementsByTagName(s)[0],
-				j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
-			j.async = true;
-			j.src =
-				'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-			f.parentNode.insertBefore(j, f);
-		})(window, document, 'script', 'dataLayer', 'GTM-NP5JF53Z');</script>
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+				new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+			'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+		})(window,document,'script','dataLayer','GTM-53M4V7M5');</script>
 	<!-- End Google Tag Manager -->
+
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-HKYZFG0E2W"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'G-HKYZFG0E2W');
+	</script>
+	<!-- Google tag (gtag.js) end -->
+
 
 	<?php wp_head(); ?>
 	<link rel="icon" type="image/png" href="/wp-content/themes/dovira/source/images/favicon/favicon-96x96.png?v=1.0.2"
@@ -51,12 +55,6 @@
 	<link rel="manifest" href="/wp-content/themes/dovira/source/images/favicon/site.webmanifest?v=1.0.2"/>
 </head>
 <body <?php body_class(); ?>>
-<!-- Google Tag Manager (noscript) -->
-<noscript>
-	<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NP5JF53Z"
-			height="0" width="0" style="display:none;visibility:hidden"></iframe>
-</noscript>
-<!-- End Google Tag Manager (noscript) -->
 <?php wp_body_open(); ?>
 <?php
 
