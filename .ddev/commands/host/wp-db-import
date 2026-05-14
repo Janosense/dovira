@@ -7,5 +7,5 @@
 set -e
 
 ddev import-db --file=mysql.sql
-ddev wp search-replace 'https://dovira.vet/' 'https://dovira.ddev.site' --all-tables
+ddev wp search-replace 'https://dovira.vet' 'https://dovira.ddev.site' --all-tables
 ddev wp user create local-administrator local-administrator@dovira.ddev.site --role=administrator --user_pass=password
