@@ -660,7 +660,7 @@ function dovira_redirect_to_lowercase_url(): void {
 	}
 }
 
-add_action( 'template_redirect', 'dovira_redirect_to_lowercase_url' );
+//add_action( 'template_redirect', 'dovira_redirect_to_lowercase_url' );
 
 
 /**
