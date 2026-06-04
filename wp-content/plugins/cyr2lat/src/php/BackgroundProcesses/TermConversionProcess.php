@@ -8,6 +8,7 @@
 namespace CyrToLat\BackgroundProcesses;
 
 use CyrToLat\Main;
+use CyrToLat\Slugs\TermSlugService;
 use stdClass;
 
 /**
@@ -18,16 +19,23 @@ class TermConversionProcess extends ConversionProcess {
 	/**
 	 * Site locale.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $locale;
+	private ?string $locale;
 
 	/**
 	 * Current term to convert.
 	 *
 	 * @var stdClass
 	 */
-	private $term;
+	private stdClass $term;
+
+	/**
+	 * Term slug service.
+	 *
+	 * @var TermSlugService
+	 */
+	private TermSlugService $term_slug_service;
 
 	/**
 	 * Process action name
@@ -39,11 +47,13 @@ class TermConversionProcess extends ConversionProcess {
 	/**
 	 * TermConversionProcess constructor.
 	 *
-	 * @param Main $main Plugin main class.
+	 * @param Main                 $main              Plugin main class.
+	 * @param TermSlugService|null $term_slug_service Term slug service.
 	 */
-	public function __construct( Main $main ) {
-		$this->action = constant( 'CYR_TO_LAT_TERM_CONVERSION_ACTION' );
-		$this->locale = get_locale();
+	public function __construct( Main $main, ?TermSlugService $term_slug_service = null ) {
+		$this->action            = constant( 'CYR_TO_LAT_TERM_CONVERSION_ACTION' );
+		$this->locale            = get_locale();
+		$this->term_slug_service = $term_slug_service ?? new TermSlugService( $main );
 
 		parent::__construct( $main );
 	}
@@ -65,7 +75,7 @@ class TermConversionProcess extends ConversionProcess {
 		$slug       = urldecode( $term->slug );
 
 		add_filter( 'locale', [ $this, 'filter_term_locale' ] );
-		$transliterated_slug = $this->main->transliterate( $slug );
+		$transliterated_slug = $this->term_slug_service->filter_term_slug( $slug );
 		remove_filter( 'locale', [ $this, 'filter_term_locale' ] );
 
 		if ( $transliterated_slug !== $slug ) {

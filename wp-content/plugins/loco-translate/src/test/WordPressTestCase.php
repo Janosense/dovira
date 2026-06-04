@@ -1,38 +1,31 @@
 <?php
 /**
- * Test case extending the WordPress base
+ * Test case extending the WordPress base.
+ * The IDE isn't picking up assertion methods, because of the way this inheritance chain is working.
+ * @mixin PHPUnit\Framework\TestCase
  */
 abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
 
-    /**
-     * @var string
-     */
-    private $locale = 'en_US';
+    private string $locale = 'en_US';
 
     /**
-     * @var array [ location, status ]
+     * @var null|array [ location, status ]
      */
-    private $redirect;
+    private ?array $redirect = null;
 
-    /**
-     * @var string
-     */
-    private $fs_method;
+    private ?string $fs_method = null;
 
     /**
      * @var bool
      */
-    private $fs_allow = true;
+    private bool $fs_allow = true;
 
     /**
      * @var Loco_data_Cookie[]
      */
-    private $cookies_set;
+    private ?array $cookies_set = null;
 
-    /**
-     * @var Loco_output_Buffer
-     */
-    private $buffer;
+    private ?Loco_output_Buffer $buffer = null;
     
     
     /**
@@ -145,6 +138,10 @@ abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
         if( Loco_error_AdminNotices::destroy() ){
             throw new Exception('Refusing to start test with errors in buffer');
         }
+        // Set permissive writeable directories for all tests
+        Loco_data_Settings::get()->populate([
+            'fs_basedir' => dirname(ABSPATH),
+        ])->persist();
     }
     
     
@@ -185,16 +182,13 @@ abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
     /**
      * Capture cookie and prevent actual http sending
      */
-    public function captureCookie( Loco_data_Cookie $cookie ){
+    public function captureCookie( Loco_data_Cookie $cookie ):bool {
         $this->cookies_set[ $cookie->getName() ] = $cookie;
         return false;
     }
 
 
-    /**
-     * @return Loco_data_Cookie
-     */
-    public function assertCookieSet( $name, $message = '' ){
+    public function assertCookieSet( string $name, string $message = '' ):Loco_data_Cookie{
         $this->assertArrayHasKey( $name, $this->cookies_set, $message );
         $cookie = $this->cookies_set[ $name ];
         $this->assertInstanceOf( 'Loco_data_Cookie', $cookie, $message );
@@ -211,7 +205,7 @@ abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
         $router = new Loco_mvc_AdminRouter;
         $router->on_admin_menu();
         $screen = get_current_screen();
-        $action = isset($_GET['action']) ? $_GET['action'] : null;
+        $action = $_GET['action'] ?? '';
         $router->initPage( $screen, $action );
         $html = get_echo( [$router,'renderPage'] );
         // ensure further hooks fired as WordPress continues to render admin footer
@@ -230,7 +224,7 @@ abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
      * Invoke Ajax controller without full hook set up.
      * @return string JSON
      */
-    protected function renderAjax(){
+    protected function renderAjax():string {
         wp_magic_quotes(); // <- I hate this, but it's what WP does!
         $router = new Loco_mvc_AjaxRouter;
         $router->on_init();
@@ -261,7 +255,7 @@ abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
     /**
      * @return Loco_test_WordPressTestCase
      */
-    public function disable_file_mods(){
+    public function disable_file_mods():self {
         $this->fs_allow = false;
         return $this;
     } 
@@ -283,7 +277,7 @@ abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
      * Filters DISALLOW_FILE_MODS for WP < 4.8
      * @internal
      */
-    public function filter_fs_disallow(){
+    public function filter_fs_disallow():bool {
         return ! $this->fs_allow;
     }    
 
@@ -293,7 +287,7 @@ abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
      * @internal
      * @noinspection PhpUnusedParameterInspection
      */
-    public function filter_fs_allow_context( $context, ?Loco_fs_File $file = null ){
+    public function filter_fs_allow_context( $context, ?Loco_fs_File $file = null ):string {
         return 'loco_test';
     }
 
@@ -453,9 +447,8 @@ abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
 
     /**
      * Temporarily set test data root to content directory 
-     * @return void
      */
-    public function enable_test_content_dir(){
+    public function enable_test_content_dir():void {
         remove_all_filters('loco_constant_WP_CONTENT_DIR');
         add_filter('loco_constant_WP_CONTENT_DIR', [$this,'_filter_wp_content_dir'], 10, 0 );
     }
@@ -464,7 +457,7 @@ abstract class Loco_test_WordPressTestCase extends WP_UnitTestCase {
     /**
      * @internal
      */
-    public function _filter_wp_content_dir(){
+    public function _filter_wp_content_dir():string {
         return LOCO_TEST_DATA_ROOT;
     }
 

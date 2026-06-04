@@ -1,4 +1,5 @@
 <?php
+
 // phpcs:disable Yoast.NamingConventions.NamespaceName.TooLong -- Needed in the folder structure.
 namespace Yoast\WP\SEO\AI_Generator\User_Interface;
 
@@ -11,6 +12,7 @@ use Yoast\WP\SEO\AI_HTTP_Request\Domain\Exceptions\Too_Many_Requests_Exception;
 use Yoast\WP\SEO\AI_HTTP_Request\Domain\Exceptions\WP_Request_Exception;
 use Yoast\WP\SEO\AI_HTTP_Request\Domain\Request;
 use Yoast\WP\SEO\Conditionals\AI_Conditional;
+use Yoast\WP\SEO\Conditionals\Old_Premium_AI_Conditional;
 use Yoast\WP\SEO\Main;
 use Yoast\WP\SEO\Routes\Route_Interface;
 
@@ -66,7 +68,7 @@ class Get_Usage_Route implements Route_Interface {
 	 * @return array<string> The conditionals.
 	 */
 	public static function get_conditionals() {
-		return [ AI_Conditional::class ];
+		return [ AI_Conditional::class, Old_Premium_AI_Conditional::class ];
 	}
 
 	/**
@@ -101,7 +103,7 @@ class Get_Usage_Route implements Route_Interface {
 				],
 				'callback'            => [ $this, 'get_usage' ],
 				'permission_callback' => [ $this, 'check_permissions' ],
-			]
+			],
 		);
 	}
 
@@ -123,8 +125,7 @@ class Get_Usage_Route implements Route_Interface {
 			$action_path     = $this->get_action_path( $is_woo_product_entity );
 			$response        = $this->request_handler->handle( new Request( $action_path, [], $request_headers, false ) );
 			$data            = \json_decode( $response->get_body() );
-
-		}  catch ( Remote_Request_Exception | WP_Request_Exception $e ) {
+		} catch ( Remote_Request_Exception | WP_Request_Exception $e ) {
 			$message = [
 				'errorMessage'    => $e->getMessage(),
 				'errorIdentifier' => $e->get_error_identifier(),
@@ -135,7 +136,7 @@ class Get_Usage_Route implements Route_Interface {
 			}
 			return new WP_REST_Response(
 				$message,
-				$e->getCode()
+				$e->getCode(),
 			);
 		}
 

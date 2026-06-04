@@ -1,10 +1,10 @@
 === Cyr-To-Lat ===
 Contributors: SergeyBiryukov, mihdan, kaggdesign, karevn, webvitaly
-Tags: cyrillic, slugs, translation, transliteration
-Requires at least: 5.3
-Tested up to: 6.9
-Requires PHP: 7.2
-Stable tag: 6.6.0
+Tags: transliteration, cyrillic, slugs, translation, multilingual
+Requires at least: 6.0
+Tested up to: 7.0
+Requires PHP: 7.4
+Stable tag: 7.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,13 +12,15 @@ Convert Non-Latin characters in post, page and term slugs to Latin characters.
 
 == Description ==
 
-Converts Cyrillic characters in post, page and term slugs to Latin characters. Useful for creating human-readable URLs.
+Converts Cyrillic characters in post, page, and term slugs to Latin characters. Useful for creating human-readable URLs.
 
 = Features =
-* The only plugin with a fully editable transliteration table. Allows to add/remove and edit pairs like 'Я' => 'Ya', or even 'Пиво' => 'Beer'
-* Converts any number of existing post, page and term slugs in background processes
+* The only plugin with a fully editable transliteration table. Allows adding/removing and editing pairs like 'Я' => 'Ya', or even 'Пиво' => 'Beer'
+* Converts post, page, custom post type, and term slugs through explicit WordPress save and REST/Gutenberg paths
+* Converts any number of existing post, page, and term slugs in background processes or with WP-CLI
 * Saves existing post and page permalinks integrity
 * Performs transliteration of attachment file names
+* Supports WooCommerce product, product taxonomy, global attribute, local attribute, variation, and frontend cart slug flows without automatic migration of existing attributes
 * The plugin supports Russian, Belorussian, Ukrainian, Bulgarian, Macedonian, Serbian, Greek, Armenian, Georgian, Kazakh, Hebrew, and Chinese characters
 * [Has many advantages over similar plugins](https://kagg.eu/en/the-benefits-of-cyr-to-lat/)
 * [Officially compatible with WPML](https://wpml.org/plugin/cyr-to-lat/)
@@ -47,6 +49,16 @@ Sponsored by [Blackfire](https://www.blackfire.io/).
 
 1. Upload the ` cyr2lat ` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
+
+= Upgrade notes for 7.0 =
+
+Version 7.0 is an architecture-focused release. It keeps the existing transliteration table, locale filters, post and term conversion tools, and WP-CLI command stable while moving slug handling to explicit services.
+
+Existing posts, pages, terms, filenames, and WooCommerce product data are not destructively rewritten during the plugin upgrade. Use the Converter page or `wp cyr2lat regenerate` when you intentionally want to regenerate existing post and term slugs.
+
+WooCommerce attributes created before 7.0 are not automatically migrated. Existing global `pa_*` taxonomies and existing local or variation attribute keys should be reviewed separately; any future migration must use a dedicated dry-run-first workflow.
+
+Cyr-To-Lat 7.0.1 keeps legacy WooCommerce local variation attributes, including `Any` variations, aligned between the product form, add-to-cart request, and cart session.
 
 == Frequently Asked Questions ==
 
@@ -115,6 +127,20 @@ function my_ctl_pre_sanitize_title( $result, $title ) {
 }
 add_filter( 'ctl_pre_sanitize_title', 10, 2 );
 `
+
+= How can I control the legacy sanitize_title bridge? =
+
+Version 7.0 uses explicit slug handlers for posts, terms, WooCommerce attributes, and other known save paths. A legacy `sanitize_title` bridge remains as a compatibility fallback for broad calls that older integrations may still rely on.
+
+You can disable the broad fallback with this code:
+
+`
+add_filter( 'ctl_enable_legacy_sanitize_title_bridge', '__return_false' );
+`
+
+The filter receives the current default value, `$title`, `$raw_title`, and `$context`. Explicit known contexts, such as WordPress save handling, continue to use the dedicated 7.0 slug paths.
+
+For debugging unknown bridge calls, define `CYR_TO_LAT_DEBUG_LEGACY_SANITIZE_TITLE_BRIDGE` as `true`. This diagnostic log is disabled by default and is not enabled by `WP_DEBUG`.
 
 = How can I define my own transliteration of filenames? =
 
@@ -202,6 +228,12 @@ Where
   `-post_type` is a list of post types,
   `-post_status` is a list of post statuses.
 
+= What WooCommerce attribute behavior is supported in 7.0? =
+
+Cyr-To-Lat 7.0 explicitly handles new and updated WooCommerce product slugs, product category and tag slugs, global attribute slugs, global attribute term slugs, local product attribute keys, variation attribute keys, frontend add-to-cart requests, cart session loading, REST/API saves, and admin save flows.
+
+Existing WooCommerce attributes are not automatically migrated during plugin upgrade. This means existing global `pa_*` taxonomies, local product attribute keys, and variation attribute keys keep their current stored values until you intentionally change them. A future migration tool should be separate and dry-run-first so store owners can review the impact before any rewrite.
+
 = How can I regenerate thumbnails safely? =
 
 Regeneration of thumbnails with the command `wp media regenerate` can break links in old posts as file names become transliterated.
@@ -221,93 +253,35 @@ Yes, you can!
 
 = Where do I report security bugs found in this plugin? =
 
-Please report security bugs found in the source code of the undefined plugin through the [Patchstack Vulnerability Disclosure  Program](https://patchstack.com/database/vdp/b6b7bcdc-2668-4aed-9226-8e3b5e809ab0). The Patchstack team will assist you with verification, CVE assignment, and notify the developers of this plugin.
+Please report security vulnerabilities by email to:
+
+**security@kagg.eu**
+
+When reporting a vulnerability, please include as much information as possible to help us reproduce and investigate the issue, such as:
+
+- A clear description of the vulnerability
+- Steps to reproduce
+- Proof-of-concept or exploit code (if available)
+- Affected versions
+
+We will review your report and respond as quickly as possible.
 
 == Changelog ==
 
-= 6.6.0 (30.11.2025) =
-* Fixed the deprecated function message in Main.php with WordPress 6.9.
-* Tested with PHP 8.4.
-* Tested with WordPress 6.9.
-* Tested with WooCommerce 10.3.
+= 7.0.2 (24.05.2026) =
+* Fixed legacy WooCommerce local variation attributes with punctuation in attribute names after upgrading from versions before 7.0.
 
-= 6.5.0 (24.10.2025) =
-* Fixed transliteration of tags during editing.
+= 7.0.1 (20.05.2026) =
+* Changed legacy sanitize_title bridge diagnostics to use the dedicated CYR_TO_LAT_DEBUG_LEGACY_SANITIZE_TITLE_BRIDGE constant instead of WP_DEBUG.
+* Fixed legacy WooCommerce local variation attributes, including `Any` variations, after upgrading from versions before 7.0.
+* Fixed duplicate WooCommerce product slugs when an existing product is updated with an empty slug.
 
-= 6.4.1 (03.05.2025) =
-* Fixed the layout of messages on the Tables page.
-* Tested with WordPress 6.8.
-* Tested with WooCommerce 9.8.
-
-= 6.3.0 (22.12.2024) =
-* Added a warning message on the Tables page when the active table does not match the site locale.
-* Removed fix for translation after WordPress 6.5+ due to performance issues.
-
-= 6.2.3 (24.11.2024) =
-* Fixed deprecation error with PHP 8.4.
-* Tested with PHP 8.4.
-
-= 6.2.2 (15.11.2024) =
-* Fixed _load_textdomain_just_in_time notice with WordPress 6.7.
-* Some translations were empty with WordPress 6.5+.
-
-= 6.2.1 (13.11.2024) =
-* Fixed layout of the Converter page.
-* Fixed issues reported by Plugin Check Plugin.
-
-= 6.2.0 (13.11.2024) =
-* Dropped support for PHP 7.0 and 7.1. The minimum required PHP version is now 7.2.
-* The minimum required WordPress version is now 5.3.
-* Fixed the notice about the _load_textdomain_just_in_time function being called incorrectly.
-* Tested with WordPress 6.7.
-* Tested with WooCommerce 9.4.
-
-= 6.1.0 (09.03.2024) =
-* Tested with WordPress 6.5.
-* Tested with WooCommerce 8.6.
-* Fixed error on the System Info tab when post types or post statuses are not set.
-
-= 6.0.8 (14.02.2024) =
-* Improved detection of the Gutenberg editor.
-* Fixed processing of product attributes.
-
-= 6.0.7 (11.02.2024) =
-* Tested with WooCommerce 8.5.
-* Added redirect from the cyrillic post title when creating a new post.
-* Added description of post types and post statuses on the Converter page.
-* Fixed displaying all file descriptions in the Theme Editor in the current locale.
-* Fixed PHP warning in the SettingsBase.
-* Fixed the output of variable product attributes.
-
-= 6.0.6 (14.01.2024) =
-* Tested with WordPress 6.4.
-* Tested with WooCommerce 8.4.
-* Tested with PHP 8.3.
-* Fixed documentation on ctl_allow filter.
-* Fixed the improper display of the "rate plugin" message on options.php.
-
-= 6.0.5 (09.10.2023) =
-* Fixed displaying file descriptions in the Theme Editor; now in the current locale.
-
-= 6.0.4 (23.09.2023) =
-* Fixed disappeared file descriptions on the Theme File Editor page.
-
-= 6.0.3 (29.07.2023) =
-* Fixed the fatal error with Jetpack sync.
-
-= 6.0.2 (26.07.2023) =
-* Fixed fatal error in admin_footer_text().
-
-= 6.0.1 (26.07.2023) =
-* Fixed the fatal error on the System Info page with empty options.
-
-= 6.0.0 (26.07.2023) =
-* Dropped support of PHP 5.6. The Minimum required PHP version is 7.0 now.
-* Tested with WordPress 6.3.
-* Tested with WooCommerce 7.9.
-* Added System Info tab.
-* Added filter 'ctl_allow'
-* Fixed console error when saving table data.
-* Fixed the current table setting on the Tables page with WPML.
+= 7.0.0 (18.05.2026) =
+* Refactored slug handling into explicit services for posts, terms, filenames, WooCommerce attributes, variation attributes, background conversion, and WP-CLI paths.
+* Improved Gutenberg coverage through REST/backend slug handling.
+* Improved WooCommerce support for product, taxonomy, global attribute, local attribute, variation, frontend cart, REST/API, and admin save flows.
+* Added the `ctl_enable_legacy_sanitize_title_bridge` compatibility filter for broad legacy `sanitize_title` behavior.
+* Documented that existing WooCommerce attributes are not automatically migrated in 7.0; future migration work must be a separate dry-run-first workflow.
+* Documented the backend-first testing strategy without required Codeception or Playwright release dependencies.
 
 [See changelog for all versions](https://plugins.svn.wordpress.org/cyr2lat/trunk/changelog.txt).

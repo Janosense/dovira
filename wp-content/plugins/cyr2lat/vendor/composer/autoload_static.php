@@ -4,21 +4,21 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit852898dddb2f9299496130ba434fc131
+class ComposerStaticInitbbd5821bd2e88d1df4a56030279d398e
 {
     public static $files = array (
         '08eca214f4d3690babeee667e1bd7ede' => __DIR__ . '/../..' . '/src/php/includes/deprecated.php',
     );
 
     public static $prefixLengthsPsr4 = array (
-        'C' => 
+        'C' =>
         array (
             'CyrToLat\\' => 9,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'CyrToLat\\' => 
+        'CyrToLat\\' =>
         array (
             0 => __DIR__ . '/../..' . '/src/php',
         ),
@@ -44,7 +44,18 @@ class ComposerStaticInit852898dddb2f9299496130ba434fc131
         'CyrToLat\\Settings\\Settings' => __DIR__ . '/../..' . '/src/php/Settings/Settings.php',
         'CyrToLat\\Settings\\SystemInfo' => __DIR__ . '/../..' . '/src/php/Settings/SystemInfo.php',
         'CyrToLat\\Settings\\Tables' => __DIR__ . '/../..' . '/src/php/Settings/Tables.php',
+        'CyrToLat\\Slugs\\BaseService' => __DIR__ . '/../..' . '/src/php/Slugs/BaseService.php',
+        'CyrToLat\\Slugs\\FilenameService' => __DIR__ . '/../..' . '/src/php/Slugs/FilenameService.php',
+        'CyrToLat\\Slugs\\GlobalAttributeService' => __DIR__ . '/../..' . '/src/php/Slugs/GlobalAttributeService.php',
+        'CyrToLat\\Slugs\\LegacySanitizeTitleBridge' => __DIR__ . '/../..' . '/src/php/Slugs/LegacySanitizeTitleBridge.php',
+        'CyrToLat\\Slugs\\LocalAttributeService' => __DIR__ . '/../..' . '/src/php/Slugs/LocalAttributeService.php',
+        'CyrToLat\\Slugs\\OldSlugRedirectService' => __DIR__ . '/../..' . '/src/php/Slugs/OldSlugRedirectService.php',
+        'CyrToLat\\Slugs\\PostSlugService' => __DIR__ . '/../..' . '/src/php/Slugs/PostSlugService.php',
+        'CyrToLat\\Slugs\\TermSlugService' => __DIR__ . '/../..' . '/src/php/Slugs/TermSlugService.php',
+        'CyrToLat\\Slugs\\VariationAttributeService' => __DIR__ . '/../..' . '/src/php/Slugs/VariationAttributeService.php',
         'CyrToLat\\Symfony\\Polyfill\\Mbstring\\Mbstring' => __DIR__ . '/../..' . '/libs/polyfill-mbstring/Mbstring.php',
+        'CyrToLat\\Transliteration\\SlugContext' => __DIR__ . '/../..' . '/src/php/Transliteration/SlugContext.php',
+        'CyrToLat\\Transliteration\\Transliterator' => __DIR__ . '/../..' . '/src/php/Transliteration/Transliterator.php',
         'CyrToLat\\WPCli' => __DIR__ . '/../..' . '/src/php/WPCli.php',
         'CyrToLat\\WP_Background_Processing\\WP_Async_Request' => __DIR__ . '/../..' . '/libs/wp-background-processing/wp-async-request.php',
         'CyrToLat\\WP_Background_Processing\\WP_Background_Process' => __DIR__ . '/../..' . '/libs/wp-background-processing/wp-background-process.php',
@@ -53,9 +64,9 @@ class ComposerStaticInit852898dddb2f9299496130ba434fc131
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit852898dddb2f9299496130ba434fc131::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit852898dddb2f9299496130ba434fc131::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit852898dddb2f9299496130ba434fc131::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitbbd5821bd2e88d1df4a56030279d398e::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitbbd5821bd2e88d1df4a56030279d398e::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitbbd5821bd2e88d1df4a56030279d398e::$classMap;
 
         }, null, ClassLoader::class);
     }

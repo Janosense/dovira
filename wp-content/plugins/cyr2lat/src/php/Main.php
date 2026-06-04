@@ -18,15 +18,24 @@ use CyrToLat\BackgroundProcesses\TermConversionProcess;
 use CyrToLat\Settings\Converter as SettingsConverter;
 use CyrToLat\Settings\SystemInfo as SettingsSystemInfo;
 use CyrToLat\Settings\Tables as SettingsTables;
+use CyrToLat\Slugs\FilenameService;
+use CyrToLat\Slugs\GlobalAttributeService;
+use CyrToLat\Slugs\LegacySanitizeTitleBridge;
+use CyrToLat\Slugs\LocalAttributeService;
+use CyrToLat\Slugs\OldSlugRedirectService;
+use CyrToLat\Slugs\PostSlugService;
+use CyrToLat\Slugs\TermSlugService;
+use CyrToLat\Slugs\VariationAttributeService;
+use CyrToLat\Transliteration\Transliterator;
+use JsonException;
 use Polylang;
 use SitePress;
+use stdClass;
 use WP_CLI;
 use WP_Error;
 use WP_Post;
 use wpdb;
-use Exception;
 use CyrToLat\Settings\Settings;
-use CyrToLat\Symfony\Polyfill\Mbstring\Mbstring;
 
 /**
  * Class Main
@@ -38,98 +47,126 @@ class Main {
 	 *
 	 * @var Request
 	 */
-	protected $request;
+	protected Request $request;
 
 	/**
 	 * Plugin settings.
 	 *
 	 * @var Settings
 	 */
-	protected $settings;
+	protected Settings $settings;
+
+	/**
+	 * Transliterator instance.
+	 *
+	 * @var Transliterator
+	 */
+	protected Transliterator $transliterator;
 
 	/**
 	 * Process posts instance.
 	 *
-	 * @var PostConversionProcess
+	 * @var PostConversionProcess|null
 	 */
-	protected $process_all_posts;
+	protected ?PostConversionProcess $process_all_posts = null;
 
 	/**
 	 * Process terms instance.
 	 *
-	 * @var TermConversionProcess
+	 * @var TermConversionProcess|null
 	 */
-	protected $process_all_terms;
+	protected ?TermConversionProcess $process_all_terms = null;
 
 	/**
 	 * Admin Notices instance.
 	 *
 	 * @var AdminNotices
 	 */
-	protected $admin_notices;
+	protected AdminNotices $admin_notices;
 
 	/**
 	 * Converter instance.
 	 *
-	 * @var Converter
+	 * @var Converter|null
 	 */
-	protected $converter;
+	protected ?Converter $converter = null;
 
 	/**
 	 * WP_CLI instance.
 	 *
-	 * @var WPCli
+	 * @var WPCli|null
 	 */
-	protected $cli;
+	protected ?WPCli $cli = null;
 
 	/**
 	 * ACF instance.
 	 *
-	 * @var ACF
+	 * @var ACF|null
 	 */
-	protected $acf;
+	protected ?ACF $acf = null;
 
 	/**
-	 * Flag showing that we are processing a term.
+	 * Term slug service.
 	 *
-	 * @var bool
+	 * @var TermSlugService|null
 	 */
-	private $is_term = false;
+	private ?TermSlugService $term_slug_service = null;
 
 	/**
-	 * Taxonomies saved in pre_insert_term or get_terms_args filter.
+	 * Global attribute service.
 	 *
-	 * @var string[]|null
+	 * @var GlobalAttributeService|null
 	 */
-	private $taxonomies;
+	protected ?GlobalAttributeService $global_attribute_service = null;
+
+	/**
+	 * Local attribute service.
+	 *
+	 * @var LocalAttributeService|null
+	 */
+	protected ?LocalAttributeService $local_attribute_service = null;
+
+	/**
+	 * Variation attribute service.
+	 *
+	 * @var VariationAttributeService|null
+	 */
+	private ?VariationAttributeService $variation_attribute_service = null;
+
+	/**
+	 * Legacy sanitize title bridge.
+	 *
+	 * @var LegacySanitizeTitleBridge|null
+	 */
+	private ?LegacySanitizeTitleBridge $legacy_sanitize_title_bridge = null;
 
 	/**
 	 * Polylang locale.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $pll_locale;
+	private ?string $pll_locale = null;
 
 	/**
 	 * WPML locale.
 	 *
 	 * @var string|null
 	 */
-	protected $wpml_locale;
+	protected ?string $wpml_locale = null;
 
 	/**
 	 * WPML languages.
 	 *
 	 * @var array
 	 */
-	protected $wpml_languages;
+	protected array $wpml_languages = [];
 
 	/**
-	 * Current request is frontend.
+	 * The current request is frontend.
 	 *
 	 * @var bool|null
 	 */
-	protected $is_frontend;
+	protected ?bool $is_frontend = null;
 
 	/**
 	 * Init plugin.
@@ -150,7 +187,6 @@ class Main {
 
 		$this->init_multilingual();
 		$this->init_classes();
-		$this->init_cli();
 		$this->init_hooks();
 	}
 
@@ -216,6 +252,8 @@ class Main {
 			return;
 		}
 
+		$this->transliterator = new Transliterator( $this->settings );
+
 		$this->process_all_posts = new PostConversionProcess( $this );
 		$this->process_all_terms = new TermConversionProcess( $this );
 		$this->converter         = new Converter(
@@ -231,30 +269,6 @@ class Main {
 	}
 
 	/**
-	 * Init in CLI mode.
-	 *
-	 * @return void
-	 */
-	protected function init_cli(): void {
-		if ( ! $this->request->is_cli() ) {
-			return;
-		}
-
-		$this->cli = new WPCli( $this->converter );
-
-		try {
-			/**
-			 * Method WP_CLI::add_command() accepts a class as callable.
-			 *
-			 * @noinspection PhpParamsInspection
-			 */
-			WP_CLI::add_command( 'cyr2lat', $this->cli );
-		} catch ( Exception $ex ) {
-			return;
-		}
-	}
-
-	/**
 	 * Init hooks.
 	 */
 	protected function init_hooks(): void {
@@ -263,25 +277,55 @@ class Main {
 			add_action( 'woocommerce_after_template_part', [ $this, 'woocommerce_after_template_part_filter' ] );
 		}
 
+		add_filter( 'woocommerce_available_variation', [ $this, 'normalize_wc_available_variation_attributes' ], 10, 3 );
+		add_filter( 'woocommerce_cart_item_data_to_validate', [ $this, 'normalize_wc_cart_item_data_to_validate' ], 10, 2 );
+		add_filter( 'woocommerce_add_cart_item', [ $this, 'normalize_wc_cart_item_variation_attributes' ] );
+		add_action( 'woocommerce_product_read', [ $this, 'normalize_wc_read_product_attribute_keys' ], 10, 2 );
+		add_filter( 'woocommerce_product_get_attributes', [ $this, 'normalize_wc_product_get_attribute_keys' ], 10, 2 );
+		add_filter( 'woocommerce_product_object_query', [ $this, 'normalize_wc_product_object_query_variation_attributes' ], 10, 2 );
+		add_action( 'wp_loaded', [ $this, 'normalize_wc_add_to_cart_request_attributes' ], 15 );
+
 		if ( ! $this->request->is_allowed() ) {
 			return;
 		}
 
 		add_filter( 'sanitize_title', [ $this, 'sanitize_title' ], 9, 3 );
 		add_filter( 'sanitize_file_name', [ $this, 'sanitize_filename' ], 10, 2 );
-		add_filter( 'wp_insert_post_data', [ $this, 'sanitize_post_name' ], 10, 2 );
+		add_filter( 'wp_insert_post_data', [ $this, 'sanitize_post_name' ], 10, 4 );
+		add_filter( 'get_sample_permalink', [ $this, 'sanitize_sample_permalink' ], 10, 5 );
 		add_filter( 'pre_insert_term', [ $this, 'pre_insert_term_filter' ], PHP_INT_MAX, 2 );
+		add_filter( 'pre_term_slug', [ $this, 'sanitize_term_slug' ], 8 );
+		add_filter( 'wp_unique_term_slug_is_bad_slug', [ $this, 'filter_unique_term_slug_is_bad_slug' ], 10, 3 );
+		add_filter( 'sanitize_taxonomy_name', [ $this, 'sanitize_wc_taxonomy_name' ], 10, 2 );
 		add_filter( 'post_updated', [ $this, 'check_for_changed_slugs' ], 10, 3 );
-
-		if ( ! $this->is_frontend || class_exists( SitePress::class ) ) {
-			add_filter( 'get_terms_args', [ $this, 'get_terms_args_filter' ], PHP_INT_MAX, 2 );
-		}
+		add_action( 'woocommerce_before_product_object_save', [ $this, 'normalize_wc_product_attribute_keys' ] );
+		add_action( 'woocommerce_product_attributes_updated', [ $this, 'normalize_wc_product_attribute_meta' ] );
 
 		add_action( 'before_woocommerce_init', [ $this, 'declare_wc_compatibility' ] );
+
+		if ( $this->request->is_cli() ) {
+			add_action( 'cli_init', [ $this, 'action_cli_init' ] );
+		}
 	}
 
 	/**
-	 * Get Settings instance.
+	 * Action cli init.
+	 *
+	 * @return void
+	 */
+	public function action_cli_init(): void {
+		$this->cli = new WPCli( $this->converter );
+
+		/**
+		 * Method WP_CLI::add_command() accepts a class as callable.
+		 *
+		 * @noinspection PhpParamsInspection
+		 */
+		WP_CLI::add_command( 'cyr2lat', $this->cli );
+	}
+
+	/**
+	 * Get a Settings instance.
 	 *
 	 * @return Settings
 	 */
@@ -296,61 +340,31 @@ class Main {
 	 * @param string|mixed $raw_title The title prior to sanitization.
 	 * @param string|mixed $context   The context for which the title is being sanitized.
 	 *
-	 * @return string|mixed
+	 * @return string
 	 * @noinspection PhpUnusedParameterInspection
 	 * @noinspection PhpMissingReturnTypeInspection
 	 * @noinspection ReturnTypeCanBeDeclaredInspection
 	 */
-	public function sanitize_title( $title, $raw_title = '', $context = '' ) {
-		global $wpdb;
+	public function sanitize_title( $title, $raw_title = '', $context = '' ): string {
+		$title     = (string) $title;
+		$raw_title = (string) $raw_title;
+		$context   = (string) $context;
 
-		if (
-			! $title ||
-			// Fix the bug with `_wp_old_slug` redirect.
-			'query' === $context ||
-			! $this->transliterate_on_pre_term_slug_filter( (string) $title )
-		) {
-			return $title;
+		$term_title = $this->term_slug_service()->filter_sanitize_title( $title );
+
+		if ( false !== $term_title ) {
+			return $term_title;
 		}
 
-		$title = urldecode( (string) $title );
-		$pre   = apply_filters( 'ctl_pre_sanitize_title', false, $title );
+		$local_attribute_title = $this->local_attribute_service()->sanitize_title( $title, $raw_title, $context );
 
-		if ( false !== $pre ) {
-			return $pre;
+		if ( null !== $local_attribute_title ) {
+			return $local_attribute_title;
 		}
 
-		if ( $this->is_term ) {
-			// Make sure we search in the db only once being called from wp_insert_term().
-			$this->is_term = false;
+		$wc_title = $this->global_attribute_service()->sanitize_title( $title, $raw_title, $context );
 
-			// Fix a case when showing previously created categories in cyrillic with WPML.
-			if ( $this->is_frontend && class_exists( SitePress::class ) ) {
-				return $title;
-			}
-
-			$sql = $wpdb->prepare(
-				"SELECT slug FROM $wpdb->terms t LEFT JOIN $wpdb->term_taxonomy tt
-							ON t.term_id = tt.term_id
-							WHERE t.slug = %s",
-				rawurlencode( $title )
-			);
-
-			if ( $this->taxonomies ) {
-				$sql .= ' AND tt.taxonomy IN (' . $this->prepare_in( $this->taxonomies ) . ')';
-			}
-
-			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$term = $wpdb->get_var( $sql );
-			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
-
-			if ( ! empty( $term ) ) {
-				return $term;
-			}
-		}
-
-		return $this->is_wc_attribute( $title ) ? $title : $this->transliterate( $title );
+		return $wc_title ?? $this->legacy_sanitize_title_bridge()->sanitize_title( $title, $raw_title, $context );
 	}
 
 	/**
@@ -370,73 +384,398 @@ class Main {
 	 * @return void
 	 */
 	public function woocommerce_after_template_part_filter(): void {
+		if ( $this->request->is_allowed() ) {
+			return;
+		}
+
 		remove_filter( 'sanitize_title', [ $this, 'sanitize_title' ], 9 );
 	}
 
 	/**
-	 * Check if title is an attribute taxonomy.
+	 * Normalize WooCommerce product attribute keys.
 	 *
-	 * @param string $title Title.
+	 * @param object $product Product.
 	 *
-	 * @return bool
-	 * @noinspection PhpUndefinedFunctionInspection
+	 * @return void
 	 */
-	protected function is_wc_attribute_taxonomy( string $title ): bool {
-		$title = preg_replace( '/^pa_/', '', $title );
-
-		foreach ( wc_get_attribute_taxonomies() as $attribute_taxonomy ) {
-			if ( $title === $attribute_taxonomy->attribute_name ) {
-				return true;
-			}
-		}
-
-		return false;
+	public function normalize_wc_product_attribute_keys( object $product ): void {
+		$this->local_attribute_service()->normalize_product_attributes( $product );
+		$this->variation_attribute_service()->normalize_variation_attributes( $product );
 	}
 
 	/**
-	 * Check if title is a product not converted attribute.
+	 * Normalize persisted WooCommerce product attribute metadata.
 	 *
-	 * @param string $title Title.
+	 * @param object $product Product.
 	 *
-	 * @return bool
-	 * @noinspection PhpUndefinedFunctionInspection
+	 * @return void
 	 */
-	protected function is_wc_product_not_converted_attribute( string $title ): bool {
-
-		global $product;
-
-		if ( ! is_a( $product, 'WC_Product' ) ) {
-			return false;
-		}
-
-		// We have to get attributes from postmeta here to see the converted slug.
-		$attributes = (array) get_post_meta( $product->get_id(), '_product_attributes', true );
-
-		foreach ( $attributes as $slug => $attribute ) {
-			$name = $attribute['name'] ?? '';
-
-			if ( $name === $title && sanitize_title_with_dashes( $title ) === $slug ) {
-				return true;
-			}
-		}
-
-		return false;
+	public function normalize_wc_product_attribute_meta( object $product ): void {
+		$this->local_attribute_service()->normalize_product_attribute_meta( $product );
 	}
 
 	/**
-	 * Check if title is an attribute.
+	 * Normalize WooCommerce product attribute keys after reading persisted data.
 	 *
-	 * @param string $title Title.
+	 * @param int    $product_id Product ID.
+	 * @param object $product    Product.
 	 *
-	 * @return bool
+	 * @return void
+	 * @noinspection PhpUnusedParameterInspection
+	 */
+	public function normalize_wc_read_product_attribute_keys( int $product_id, object $product ): void {
+		$this->local_attribute_service()->normalize_read_product_attributes( $product );
+		$this->variation_attribute_service()->normalize_read_variation_attributes( $product );
+	}
+
+	/**
+	 * Normalize WooCommerce product attribute keys when WooCommerce reads attributes from cached objects.
+	 *
+	 * @param array|mixed $attributes Product attributes.
+	 * @param object      $product    Product.
+	 *
+	 * @return array|mixed
+	 * @noinspection PhpUnusedParameterInspection
+	 */
+	public function normalize_wc_product_get_attribute_keys( $attributes, object $product ) {
+		if ( ! is_array( $attributes ) ) {
+			return $attributes;
+		}
+
+		$attributes = $this->local_attribute_service()->normalize_read_product_attribute_array( $product, $attributes );
+
+		if ( method_exists( $product, 'get_type' ) && 'variation' === $product->get_type() ) {
+			return $this->variation_attribute_service()->normalize_read_variation_attribute_array( $product, $attributes );
+		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Normalize WooCommerce variation attribute keys in product object query results.
+	 *
+	 * @param array|mixed $products   Products.
+	 * @param array       $query_vars Query vars.
+	 *
+	 * @return array|mixed
+	 * @noinspection PhpUnusedParameterInspection
+	 */
+	public function normalize_wc_product_object_query_variation_attributes( $products, array $query_vars ) {
+		if ( ! is_array( $products ) ) {
+			return $products;
+		}
+
+		foreach ( $products as $product ) {
+			if ( is_object( $product ) && method_exists( $product, 'get_type' ) && 'variation' === $product->get_type() ) {
+				$this->variation_attribute_service()->normalize_read_variation_attributes( $product );
+			}
+		}
+
+		return $products;
+	}
+
+	/**
+	 * Normalize WooCommerce available variation attribute keys for frontend matching.
+	 *
+	 * @param array|mixed $variation_data Available variation data.
+	 * @param object      $product        Variable product.
+	 * @param object      $variation      Variation product.
+	 *
+	 * @return array|mixed
+	 * @noinspection PhpUnusedParameterInspection
+	 */
+	public function normalize_wc_available_variation_attributes( $variation_data, object $product, object $variation ) {
+		return $this->variation_attribute_service()->normalize_available_variation_attributes( $variation_data, $variation );
+	}
+
+	/**
+	 * Normalize WooCommerce cart item data used for session hash validation.
+	 *
+	 * @param array|mixed $data    Cart item data to validate.
+	 * @param object      $product Product object.
+	 *
+	 * @return array|mixed
+	 */
+	public function normalize_wc_cart_item_data_to_validate( $data, object $product ) {
+		if ( ! is_array( $data ) || ! isset( $data['attributes'] ) || ! is_array( $data['attributes'] ) ) {
+			return $data;
+		}
+
+		$variation_data = $this->variation_attribute_service()->normalize_available_variation_attributes(
+			[
+				'attributes' => $data['attributes'],
+			],
+			$product
+		);
+
+		if ( is_array( $variation_data ) && isset( $variation_data['attributes'] ) && is_array( $variation_data['attributes'] ) ) {
+			$data['attributes'] = $variation_data['attributes'];
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Normalize WooCommerce cart item variation keys after add-to-cart.
+	 *
+	 * @param array|mixed $cart_item Cart item.
+	 *
+	 * @return array|mixed
+	 */
+	public function normalize_wc_cart_item_variation_attributes( $cart_item ) {
+		if ( ! is_array( $cart_item ) || empty( $cart_item['variation_id'] ) || empty( $cart_item['variation'] ) || ! is_array( $cart_item['variation'] ) ) {
+			return $cart_item;
+		}
+
+		$variation_data = $this->variation_attribute_service()->normalize_available_variation_attributes(
+			[
+				'attributes' => $cart_item['variation'],
+			],
+			new \WC_Product_Variation( (int) $cart_item['variation_id'] )
+		);
+
+		if ( is_array( $variation_data ) && isset( $variation_data['attributes'] ) && is_array( $variation_data['attributes'] ) ) {
+			$cart_item['variation'] = $variation_data['attributes'];
+		}
+
+		return $cart_item;
+	}
+
+	/**
+	 * Normalize submitted WooCommerce local attribute keys before add-to-cart validation.
+	 *
+	 * Old variable products can keep URL-encoded local attribute keys in meta.
+	 * The frontend renders the transliterated request key, but WooCommerce's
+	 * variable add-to-cart handler still validates against the legacy key when
+	 * the broad sanitize_title bridge is inactive.
+	 *
+	 * @return void
 	 * @noinspection PhpUndefinedFunctionInspection
 	 */
-	protected function is_wc_attribute( string $title ): bool {
-		if ( ! function_exists( 'WC' ) ) {
+	public function normalize_wc_add_to_cart_request_attributes(): void {
+		$product_id = $this->wc_add_to_cart_product_id();
+
+		if ( $product_id <= 0 ) {
+			return;
+		}
+
+		$attributes = $this->wc_add_to_cart_product_attributes( $product_id );
+
+		if ( [] === $attributes ) {
+			return;
+		}
+
+		$raw_attribute_request_keys = $this->raw_wc_local_variation_request_keys_by_name( $product_id );
+
+		foreach ( $attributes as $attribute_key => $attribute ) {
+			$this->normalize_wc_add_to_cart_request_attribute( (string) $attribute_key, $attribute, $raw_attribute_request_keys );
+		}
+	}
+
+	/**
+	 * Get the submitted WooCommerce add-to-cart product ID.
+	 *
+	 * @return int
+	 */
+	private function wc_add_to_cart_product_id(): int {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return isset( $_REQUEST['add-to-cart'] ) ? absint( wp_unslash( $_REQUEST['add-to-cart'] ) ) : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	}
+
+	/**
+	 * Get WooCommerce add-to-cart product attributes.
+	 *
+	 * @param int $product_id Product ID.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private function wc_add_to_cart_product_attributes( int $product_id ): array {
+		if ( ! function_exists( 'wc_get_product' ) ) {
+			return [];
+		}
+
+		$product = wc_get_product( $product_id );
+
+		if ( ! is_object( $product ) || ! method_exists( $product, 'get_attributes' ) ) {
+			return [];
+		}
+
+		$attributes = $product->get_attributes( 'edit' );
+
+		return is_array( $attributes ) ? $attributes : [];
+	}
+
+	/**
+	 * Normalize a submitted WooCommerce local variation attribute request.
+	 *
+	 * @param string                            $attribute_key              Product attribute key.
+	 * @param mixed                             $attribute                  Product attribute object.
+	 * @param array<string, array<int, string>> $raw_attribute_request_keys Raw request keys by attribute name.
+	 *
+	 * @return void
+	 */
+	private function normalize_wc_add_to_cart_request_attribute( string $attribute_key, $attribute, array $raw_attribute_request_keys ): void {
+		if ( ! $this->is_wc_local_variation_attribute_for_request( $attribute ) ) {
+			return;
+		}
+
+		$attribute_name         = method_exists( $attribute, 'get_name' ) ? (string) $attribute->get_name() : $attribute_key;
+		$normalized_request_key = $this->variation_attribute_service()->normalized_local_variation_request_key( $attribute_key );
+		$normalized_name_key    = $this->variation_attribute_service()->normalized_local_variation_request_key( $attribute_name );
+		$request_value          = $this->wc_add_to_cart_request_value( [ $normalized_request_key, $normalized_name_key ] );
+
+		if ( null === $request_value ) {
+			return;
+		}
+
+		$target_keys = array_merge(
+			[
+				'attribute_' . $attribute_key,
+				'attribute_' . $this->variation_attribute_service()->encoded_product_attribute_key( $attribute_name ),
+			],
+			$raw_attribute_request_keys[ rawurldecode( $attribute_name ) ] ?? []
+		);
+
+		foreach ( array_unique( $target_keys ) as $target_key ) {
+			$this->set_wc_add_to_cart_request_value( $target_key, $request_value );
+		}
+	}
+
+	/**
+	 * Check whether a WooCommerce attribute participates in local variation add-to-cart requests.
+	 *
+	 * @param mixed $attribute Product attribute.
+	 *
+	 * @return bool
+	 */
+	private function is_wc_local_variation_attribute_for_request( $attribute ): bool {
+		if ( ! is_object( $attribute ) ) {
 			return false;
 		}
 
-		return $this->is_wc_attribute_taxonomy( $title ) || $this->is_wc_product_not_converted_attribute( $title );
+		if ( method_exists( $attribute, 'is_taxonomy' ) && $attribute->is_taxonomy() ) {
+			return false;
+		}
+
+		return ! method_exists( $attribute, 'get_variation' ) || $attribute->get_variation();
+	}
+
+	/**
+	 * Get raw local variation request keys from persisted product attribute metadata.
+	 *
+	 * @param int $product_id Product ID.
+	 *
+	 * @return array<string, array<int, string>>
+	 */
+	private function raw_wc_local_variation_request_keys_by_name( int $product_id ): array {
+		$raw_attributes = get_post_meta( $product_id, '_product_attributes', true );
+
+		if ( ! is_array( $raw_attributes ) ) {
+			return [];
+		}
+
+		$result = [];
+
+		foreach ( $raw_attributes as $attribute_key => $attribute ) {
+			if ( ! is_array( $attribute ) || ! empty( $attribute['is_taxonomy'] ) || empty( $attribute['is_variation'] ) ) {
+				continue;
+			}
+
+			$attribute_name              = rawurldecode( (string) ( $attribute['name'] ?? $attribute_key ) );
+			$result[ $attribute_name ][] = 'attribute_' . (string) $attribute_key;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Return the first submitted WooCommerce add-to-cart attribute value.
+	 *
+	 * @param array<int, string> $request_keys Request keys.
+	 *
+	 * @return mixed|null
+	 */
+	private function wc_add_to_cart_request_value( array $request_keys ) {
+		foreach ( array_unique( $request_keys ) as $request_key ) {
+			if ( isset( $_REQUEST[ $request_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				return $_REQUEST[ $request_key ]; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Set a WooCommerce add-to-cart attribute value across request bags.
+	 *
+	 * @param string $request_key Request key.
+	 * @param mixed  $value       Request value.
+	 *
+	 * @return void
+	 */
+	private function set_wc_add_to_cart_request_value( string $request_key, $value ): void {
+		if ( '' === $request_key || isset( $_REQUEST[ $request_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		$_REQUEST[ $request_key ] = $value; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$_POST[ $request_key ]    = $value; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	}
+
+	/**
+	 * Get global attribute service.
+	 *
+	 * @return GlobalAttributeService
+	 */
+	private function global_attribute_service(): GlobalAttributeService {
+		if ( null === $this->global_attribute_service ) {
+			$this->global_attribute_service = new GlobalAttributeService( $this );
+		}
+
+		return $this->global_attribute_service;
+	}
+
+	/**
+	 * Get local attribute service.
+	 *
+	 * @return LocalAttributeService
+	 */
+	private function local_attribute_service(): LocalAttributeService {
+		if ( null === $this->local_attribute_service ) {
+			$this->local_attribute_service = new LocalAttributeService( $this, $this->variation_attribute_service() );
+		}
+
+		return $this->local_attribute_service;
+	}
+
+	/**
+	 * Get variation attribute service.
+	 *
+	 * @return VariationAttributeService
+	 */
+	private function variation_attribute_service(): VariationAttributeService {
+		if ( null === $this->variation_attribute_service ) {
+			$this->variation_attribute_service = new VariationAttributeService( $this );
+		}
+
+		return $this->variation_attribute_service;
+	}
+
+	/**
+	 * Get legacy sanitize title bridge.
+	 *
+	 * @return LegacySanitizeTitleBridge
+	 */
+	private function legacy_sanitize_title_bridge(): LegacySanitizeTitleBridge {
+		if ( null === $this->legacy_sanitize_title_bridge ) {
+			$this->legacy_sanitize_title_bridge = new LegacySanitizeTitleBridge(
+				$this,
+				$this->term_slug_service()
+			);
+		}
+
+		return $this->legacy_sanitize_title_bridge;
 	}
 
 	/**
@@ -451,22 +790,7 @@ class Main {
 	 * @noinspection ReturnTypeCanBeDeclaredInspection
 	 */
 	public function sanitize_filename( $filename, $filename_raw ) {
-		global $wp_version;
-
-		$pre = apply_filters( 'ctl_pre_sanitize_filename', false, $filename );
-
-		if ( false !== $pre ) {
-			return (string) $pre;
-		}
-
-		$filename = (string) $filename;
-		$is_utf8  = version_compare( $wp_version, '6.9-RC1', '>=' ) ? 'wp_is_valid_utf8' : 'seems_utf8';
-
-		if ( $is_utf8( $filename ) ) {
-			$filename = (string) Mbstring::mb_strtolower( $filename );
-		}
-
-		return $this->transliterate( $filename );
+		return ( new FilenameService( $this->transliterator ) )->sanitize_filename( $filename, $filename_raw );
 	}
 
 	/**
@@ -479,54 +803,6 @@ class Main {
 	}
 
 	/**
-	 * Fix string encoding on macOS.
-	 *
-	 * @param string $str   String.
-	 * @param array  $table Conversion table.
-	 *
-	 * @return string
-	 */
-	private function fix_mac_string( string $str, array $table ): string {
-		$fix_table = ConversionTables::get_fix_table_for_mac();
-
-		$fix = [];
-		foreach ( $fix_table as $key => $value ) {
-			if ( isset( $table[ $key ] ) ) {
-				$fix[ $value ] = $table[ $key ];
-			}
-		}
-
-		return strtr( $str, $fix );
-	}
-
-	/**
-	 * Split Chinese string by hyphens.
-	 *
-	 * @param string $str   String.
-	 * @param array  $table Conversion table.
-	 *
-	 * @return string
-	 */
-	protected function split_chinese_string( string $str, array $table ): string {
-		if ( ! $this->settings->is_chinese_locale() || mb_strlen( $str ) < 4 ) {
-			return $str;
-		}
-
-		$chars = Mbstring::mb_str_split( $str );
-		$str   = '';
-
-		foreach ( $chars as $char ) {
-			if ( isset( $table[ $char ] ) ) {
-				$str .= '-' . $char . '-';
-			} else {
-				$str .= $char;
-			}
-		}
-
-		return $str;
-	}
-
-	/**
 	 * Transliterate string using a table.
 	 *
 	 * @param string $str String.
@@ -534,74 +810,44 @@ class Main {
 	 * @return string
 	 */
 	public function transliterate( string $str ): string {
-		$table = (array) apply_filters( 'ctl_table', $this->settings->get_table() );
-
-		$str = $this->fix_mac_string( $str, $table );
-		$str = $this->split_chinese_string( $str, $table );
-
-		return strtr( $str, $table );
+		return $this->transliterator->transliterate( $str );
 	}
 
 	/**
-	 * Check if the Block Editor is active.
-	 * Must only be used after the plugins_loaded action is fired.
+	 * Sanitize post name.
 	 *
-	 * @return bool
-	 * @noinspection PhpUndefinedFunctionInspection
-	 */
-	private function is_gutenberg_editor_active(): bool {
-		// Gutenberg plugin is installed and activated.
-		// This filter was removed in WP 5.5.
-		if ( has_filter( 'replace_editor', 'gutenberg_init' ) ) {
-			return true;
-		}
-
-		if ( ! function_exists( 'is_plugin_active' ) ) {
-			// @codeCoverageIgnoreStart
-			include_once ABSPATH . 'wp-admin/includes/plugin.php';
-			// @codeCoverageIgnoreEnd
-		}
-
-		if ( is_plugin_active( 'classic-editor/classic-editor.php' ) ) {
-			return in_array( get_option( 'classic-editor-replace' ), [ 'no-replace', 'block' ], true );
-		}
-
-		if ( is_plugin_active( 'disable-gutenberg/disable-gutenberg.php' ) ) {
-			return ! disable_gutenberg();
-		}
-
-		return true;
-	}
-
-	/**
-	 * Gutenberg support
+	 * @param array|mixed $data                An array of slashed, sanitized, and processed post data.
+	 * @param array       $postarr             An array of sanitized (and slashed) but otherwise unmodified post data.
+	 * @param array       $unsanitized_postarr An array of slashed yet *unsanitized* and unprocessed post data as
+	 *                                         originally passed to wp_insert_post().
+	 * @param bool        $update              Whether this is an existing post being updated.
 	 *
-	 * @param array|mixed $data    An array of slashed post data.
-	 * @param array|mixed $postarr An array of sanitized, but otherwise unmodified post data.
-	 *
-	 * @return array|mixed
+	 * @return array
 	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public function sanitize_post_name( $data, $postarr = [] ) {
-		global $current_screen;
+	public function sanitize_post_name( $data, array $postarr = [], array $unsanitized_postarr = [], bool $update = false ): array {
+		$data = (array) $data;
 
-		if ( ! $this->is_gutenberg_editor_active() ) {
-			return $data;
-		}
+		return (
+		( new PostSlugService( $this ) )
+			->filter_post_data( $data, $postarr, $unsanitized_postarr, $update )
+		);
+	}
 
-		// Run code only on post edit screen.
-		if ( ! ( $current_screen && 'post' === $current_screen->base ) ) {
-			return $data;
-		}
-
-		if (
-			! $data['post_name'] && $data['post_title'] &&
-			! in_array( $data['post_status'], [ 'auto-draft', 'revision' ], true )
-		) {
-			$data['post_name'] = sanitize_title( $data['post_title'] );
-		}
-
-		return $data;
+	/**
+	 * Sanitize sample permalink slugs.
+	 *
+	 * @param array|mixed $permalink Sample permalink data.
+	 * @param int         $post_id   Post ID.
+	 * @param string|null $title     Post title.
+	 * @param string|null $name      Post name.
+	 * @param object      $post      Post object.
+	 *
+	 * @return array|mixed
+	 */
+	public function sanitize_sample_permalink( $permalink, int $post_id, ?string $title, ?string $name, object $post ) {
+		return ( new PostSlugService( $this ) )
+			->filter_sample_permalink( $permalink, $post_id, $title, $name, $post );
 	}
 
 	/**
@@ -613,33 +859,73 @@ class Main {
 	 * @return string|int|WP_Error
 	 */
 	public function pre_insert_term_filter( $term, string $taxonomy ) {
-		if (
-			0 === $term ||
-			is_wp_error( $term ) ||
-			'' === trim( $term )
-		) {
-			return $term;
-		}
-
-		$this->is_term    = true;
-		$this->taxonomies = [ $taxonomy ];
-
-		return $term;
+		return $this->term_slug_service()->pre_insert_term_filter( $term, $taxonomy );
 	}
 
 	/**
-	 * Filters the terms query arguments.
+	 * Sanitize term slug through the explicit term slug service.
 	 *
-	 * @param array|mixed $args       An array of get_terms() arguments.
-	 * @param string[]    $taxonomies An array of taxonomy names.
+	 * @param string|mixed $slug Term slug.
 	 *
-	 * @return array|mixed
+	 * @return string|mixed
 	 */
-	public function get_terms_args_filter( $args, array $taxonomies ) {
-		$this->is_term    = true;
-		$this->taxonomies = $taxonomies;
+	public function sanitize_term_slug( $slug ) {
+		if ( ! is_string( $slug ) ) {
+			return $slug;
+		}
 
-		return $args;
+		return $this->term_slug_service()->filter_term_slug( $slug );
+	}
+
+	/**
+	 * Let the term slug service repair WordPress duplicate checks for encoded slugs.
+	 *
+	 * @param bool|mixed $is_bad_slug Whether the slug needs a suffix.
+	 * @param string     $slug        Term slug.
+	 * @param object     $term        Term object.
+	 *
+	 * @return bool
+	 */
+	public function filter_unique_term_slug_is_bad_slug( $is_bad_slug, string $slug, object $term ): bool {
+		return $this->term_slug_service()->filter_unique_term_slug_is_bad_slug( (bool) $is_bad_slug, $slug, $term );
+	}
+
+	/**
+	 * Sanitize an explicit slug value without using the broad legacy bridge.
+	 *
+	 * @param string $slug Slug.
+	 *
+	 * @return string
+	 */
+	public function sanitize_explicit_slug( string $slug ): string {
+		$slug = $this->transliterate( $slug );
+
+		return sanitize_title_with_dashes( $slug );
+	}
+
+	/**
+	 * Sanitize WooCommerce taxonomy names through the explicit attribute service.
+	 *
+	 * @param string|mixed $taxonomy     Sanitized taxonomy.
+	 * @param string|mixed $raw_taxonomy Raw taxonomy.
+	 *
+	 * @return string|mixed
+	 */
+	public function sanitize_wc_taxonomy_name( $taxonomy, $raw_taxonomy ) {
+		return $this->global_attribute_service()->filter_taxonomy_name( $taxonomy, $raw_taxonomy );
+	}
+
+	/**
+	 * Get term slug service.
+	 *
+	 * @return TermSlugService
+	 */
+	private function term_slug_service(): TermSlugService {
+		if ( null === $this->term_slug_service ) {
+			$this->term_slug_service = new TermSlugService( $this );
+		}
+
+		return $this->term_slug_service;
 	}
 
 	/**
@@ -675,6 +961,7 @@ class Main {
 		}
 
 		$pll_get_post_language = $this->pll_locale_filter_with_classic_editor();
+
 		if ( $pll_get_post_language ) {
 			$this->pll_locale = $pll_get_post_language;
 
@@ -682,6 +969,7 @@ class Main {
 		}
 
 		$pll_get_term_language = $this->pll_locale_filter_with_term();
+
 		if ( $pll_get_term_language ) {
 			$this->pll_locale = $pll_get_term_language;
 
@@ -707,7 +995,12 @@ class Main {
 		 * @var WP_REST_Server $rest_server
 		 */
 		$rest_server = rest_get_server();
-		$data        = json_decode( $rest_server::get_raw_data(), false );
+
+		try {
+			$data = json_decode( $rest_server::get_raw_data(), false, 512, JSON_THROW_ON_ERROR );
+		} catch ( JsonException $e ) {
+			$data = new stdClass();
+		}
 
 		return $data->lang ?? false;
 	}
@@ -805,11 +1098,7 @@ class Main {
 		$language_code        = wpml_get_current_language();
 		$this->wpml_languages = (array) apply_filters( 'wpml_active_languages', [] );
 
-		return (
-		isset( $this->wpml_languages[ $language_code ] ) ?
-			$this->wpml_languages[ $language_code ]['default_locale'] :
-			null
-		);
+		return $this->wpml_languages[ $language_code ]['default_locale'] ?? null;
 	}
 
 	/**
@@ -826,10 +1115,7 @@ class Main {
 	public function wpml_language_has_switched( $language_code, $cookie_lang, string $original_language ): void {
 		$language_code = (string) $language_code;
 
-		$this->wpml_locale =
-			isset( $this->wpml_languages[ $language_code ] ) ?
-				$this->wpml_languages[ $language_code ]['default_locale'] :
-				null;
+		$this->wpml_locale = $this->wpml_languages[ $language_code ]['default_locale'] ?? null;
 	}
 
 	/**
@@ -843,24 +1129,9 @@ class Main {
 	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public function check_for_changed_slugs( $post_id, $post, $post_before ): void {
-		// Don't bother if it hasn't changed.
-		if ( $post->post_name === $post_before->post_name ) {
-			return;
-		}
+		$service = new OldSlugRedirectService( $this->transliterator );
 
-		// We're only concerned with published, non-hierarchical objects.
-		if ( ! ( 'publish' === $post->post_status || ( 'attachment' === get_post_type( $post ) && 'inherit' === $post->post_status ) ) || is_post_type_hierarchical( $post->post_type ) ) {
-			return;
-		}
-
-		// Modify $post_before->post_name when cyr2lat converted the title.
-		if (
-			empty( $post_before->post_name ) &&
-			$post->post_title !== $post->post_name &&
-			$post->post_name === $this->transliterate( $post->post_title )
-		) {
-			$post_before->post_name = rawurlencode( $post->post_title );
-		}
+		$service->check_for_changed_slugs( (int) $post_id, $post, $post_before );
 	}
 
 	/**
@@ -903,25 +1174,5 @@ class Main {
 		}
 
 		return $prepared_in;
-	}
-
-	/**
-	 * Check if we should transliterate the tag on pre_term_slug filter.
-	 *
-	 * @param string $title Title.
-	 *
-	 * @return bool
-	 */
-	protected function transliterate_on_pre_term_slug_filter( string $title ): bool {
-		global $wp_query;
-
-		$tag_var = $wp_query->query_vars['tag'] ?? null;
-
-		return ! (
-			$tag_var === $title &&
-			doing_filter( 'pre_term_slug' ) &&
-			// Transliterate on pre_term_slug with Polylang and WPML only.
-			! ( class_exists( 'Polylang' ) || class_exists( 'SitePress' ) )
-		);
 	}
 }

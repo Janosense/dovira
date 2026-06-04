@@ -8,6 +8,7 @@
 namespace CyrToLat\BackgroundProcesses;
 
 use CyrToLat\Main;
+use CyrToLat\Slugs\PostSlugService;
 use stdClass;
 
 /**
@@ -18,16 +19,23 @@ class PostConversionProcess extends ConversionProcess {
 	/**
 	 * Site locale.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $locale;
+	private ?string $locale;
 
 	/**
 	 * Current post to convert.
 	 *
 	 * @var stdClass
 	 */
-	private $post;
+	private stdClass $post;
+
+	/**
+	 * Post slug service.
+	 *
+	 * @var PostSlugService
+	 */
+	private PostSlugService $post_slug_service;
 
 	/**
 	 * Process action name
@@ -39,11 +47,13 @@ class PostConversionProcess extends ConversionProcess {
 	/**
 	 * PostConversionProcess constructor.
 	 *
-	 * @param Main $main Plugin main class.
+	 * @param Main                 $main              Plugin main class.
+	 * @param PostSlugService|null $post_slug_service Post slug service.
 	 */
-	public function __construct( Main $main ) {
-		$this->action = constant( 'CYR_TO_LAT_POST_CONVERSION_ACTION' );
-		$this->locale = get_locale();
+	public function __construct( Main $main, ?PostSlugService $post_slug_service = null ) {
+		$this->action            = constant( 'CYR_TO_LAT_POST_CONVERSION_ACTION' );
+		$this->locale            = get_locale();
+		$this->post_slug_service = $post_slug_service ?? new PostSlugService( $main );
 
 		parent::__construct( $main );
 	}
@@ -62,9 +72,18 @@ class PostConversionProcess extends ConversionProcess {
 		$this->post        = $post;
 		$decoded_post_name = urldecode( $post->post_name );
 
+		$post_data = [
+			'ID'          => $post->ID,
+			'post_name'   => $post->post_name,
+			'post_status' => $post->post_status ?? '',
+			'post_type'   => $post->post_type,
+		];
+
 		add_filter( 'locale', [ $this, 'filter_post_locale' ] );
-		$transliterated_name = $this->main->transliterate( $decoded_post_name );
+		$filtered_post_data = $this->post_slug_service->filter_post_data( $post_data, $post_data, $post_data, true );
 		remove_filter( 'locale', [ $this, 'filter_post_locale' ] );
+
+		$transliterated_name = (string) ( $filtered_post_data['post_name'] ?? $decoded_post_name );
 
 		if ( $transliterated_name !== $decoded_post_name ) {
 			update_post_meta( $post->ID, '_wp_old_slug', $post->post_name );
@@ -154,7 +173,7 @@ class PostConversionProcess extends ConversionProcess {
 	}
 
 	/**
-	 * Get transliterated filename with path.
+	 * Get a transliterated filename with a path.
 	 *
 	 * @param string $file Filename.
 	 *
@@ -168,7 +187,7 @@ class PostConversionProcess extends ConversionProcess {
 	}
 
 	/**
-	 * Rename file.
+	 * Rename a file.
 	 * Return false if rename failed.
 	 *
 	 * @param string $file     Full filename.
@@ -210,7 +229,7 @@ class PostConversionProcess extends ConversionProcess {
 	 * @return string|mixed
 	 */
 	public function filter_post_locale() {
-		// This is common filter for WPML and Polylang, since Polylang supports wpml_post_language_details filter.
+		// This is a common filter for WPML and Polylang, since Polylang supports the wpml_post_language_details filter.
 		$wpml_post_language_details = apply_filters( 'wpml_post_language_details', false, $this->post->ID );
 
 		return $wpml_post_language_details['locale'] ?? $this->locale;

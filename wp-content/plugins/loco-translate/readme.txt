@@ -3,8 +3,8 @@ Contributors: timwhitlock
 Tags: translation, language, multilingual, l10n, i18n
 Requires at least: 6.6
 Requires PHP: 7.4
-Tested up to: 6.8.1
-Stable tag: 2.8.0
+Tested up to: 7.0
+Stable tag: 2.8.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,6 +100,40 @@ We don't collect your data or track you. See the [plugin privacy notice](https:/
 
 
 == Changelog ==
+
+= 2.8.5 =
+* Added `fs_basedir` setting to restrict writeable locations
+* POT creation disallows file name tampering. Thanks Stranger825.
+* Bumped WordPress compatibility to 7.0
+
+= 2.8.4 =
+* Fixed error in LLM prompt where formality was ignored
+* Redacting API keys that aren't needed by client-side code
+* Fixed the redundant display of the filter field for empty tables
+
+= 2.8.3 =
+* Bumped WordPress compatibility to 6.9.4
+* Additional restrictions on viewing source code refs
+* Fix for CVE-2026-4146: Thanks Jack Pas (Dark.)
+
+= 2.8.2 =
+* Fix for LLMs retaining escaped forward slashes
+* Bumped WordPress compatibility to 6.9.1
+* New security features for viewing source code refs:
+* - Access permission via `code_view` setting
+* - JSON schemas must validate as blocks|theme.json
+* - PHP/JS sources must contain extractable strings
+
+= 2.8.1 =
+* DeepL uses `quality_optimized` with `loco_deepl_model` filter
+* DeepL beta languages enabled when next-gen model is used
+* `http_request_timeout` filter returns maximum value
+* Splitting chat completion jobs into maximum 5KB batches
+* Added support for other chat completion APIs via `vendor` config field
+* Fixed single colon usage bug during chat completions 
+* Autoloader no longer throws when Loco_ class not found
+* Refreshing Ajax nonces on WordPress heartbeat 
+* Bumped WordPress compatibility to 6.9
 
 = 2.8.0 =
 * Bugfix for PHP 8.0 compatibility
@@ -577,7 +611,7 @@ We don't collect your data or track you. See the [plugin privacy notice](https:/
 
 == Upgrade Notice ==
 
-= 2.8.0 =
+= 2.8.5 =
 * Various improvements and bug fixes
 
 

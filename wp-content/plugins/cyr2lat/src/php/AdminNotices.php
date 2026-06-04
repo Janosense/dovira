@@ -19,7 +19,7 @@ class AdminNotices {
 	 *
 	 * @var array
 	 */
-	private $notices = [];
+	private array $notices = [];
 
 	/**
 	 * AdminNotices constructor.
@@ -29,7 +29,7 @@ class AdminNotices {
 	}
 
 	/**
-	 * Add admin notice.
+	 * Add an admin notice.
 	 *
 	 * @param string $message    Message to show.
 	 * @param string $class_name Message class: notice notice-success notice-error notice-warning notice-info
@@ -68,7 +68,7 @@ class AdminNotices {
 	}
 
 	/**
-	 * Is current admin screen allowed to show the notice.
+	 * Is the current admin screen allowed to show the notice?
 	 *
 	 * @param array $notice Notice.
 	 *

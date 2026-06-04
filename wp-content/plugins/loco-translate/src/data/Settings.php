@@ -12,6 +12,7 @@
  * @property array $jsx_alias Registered extensions for scanning JavaScript/JSX files (disabled by default)
  * @property bool $fs_persist Whether to remember file system credentials in session
  * @property int $fs_protect Prevent modification of files in system folders (0:off, 1:warn, 2:block)
+ * @property string $fs_basedir Line break separated list of directory paths (relative to ABSPATH) where *writes* are permitted
  * @property int $pot_protect Prevent modification of POT files (0:off, 1:warn, 2:block)
  * @property int $pot_expected Whether to allow missing templates and sync to source (0:off, 1:warn, 2:block) 
  * @property string $max_php_size Skip PHP source files this size or larger
@@ -20,7 +21,8 @@
  * @property bool $jed_pretty Whether to pretty print JSON JED files
  * @property bool $jed_clean Whether to clean up redundant JSON files during compilation
  * @property bool $ajax_files Whether to submit PO data as concrete files (requires Blob support in Ajax)
- * 
+ * @property int $code_view Access level for source code snippet viewer (0:disabled, 1:admins only, 2:all users)
+ *
  * @property string $deepl_api_key API key for DeepL Translator
  * @property string $google_api_key API key for Google Translate
  * @property string $lecto_api_key API key for Lecto Translation API
@@ -36,16 +38,14 @@ class Loco_data_Settings extends Loco_data_Serializable {
 
     /**
      * Global instance of this plugin's settings
-     * @var Loco_data_Settings
      */
-    private static $current;
+    private static ?Loco_data_Settings $current = null;
 
 
     /**
      * Available options and their defaults
-     * @var array
      */
-    private static $defaults =  [
+    private static array $defaults =  [
         'version' => '',
         'gen_hash' => false,
         'use_fuzzy' => true,
@@ -56,6 +56,7 @@ class Loco_data_Settings extends Loco_data_Serializable {
         'jsx_alias' => [],
         'fs_persist' => false,
         'fs_protect' => 1,
+        'fs_basedir' => 'wp-content',
         'pot_protect' => 1,
         'pot_expected' => 1,
         'max_php_size' => '100K',
@@ -64,6 +65,7 @@ class Loco_data_Settings extends Loco_data_Serializable {
         'jed_pretty' => false,
         'jed_clean' => false,
         'ajax_files' => true,
+        'code_view' => 1,
         'deepl_api_key' => '',
         'google_api_key' => '',
         'microsoft_api_key' => '',
@@ -191,9 +193,8 @@ class Loco_data_Settings extends Loco_data_Serializable {
      * Populate ALL settings from raw postdata.
      * @param array $data Posted setting values
      * @param array|null $filter Optional filter to restrict modifiable values
-     * @return Loco_data_Settings
      */
-    public function populate( array $data, $filter = null ){
+    public function populate( array $data, ?array $filter = null ):self{
         // set all keys present in posted data
         foreach( $data as $prop => $value ){
             try {
@@ -232,13 +233,13 @@ class Loco_data_Settings extends Loco_data_Serializable {
      * @param string $default Optional default
      * @return string php, js, json, twig or $default
      */
-    public function ext2type( $ext, $default = 'php' ){
+    public function ext2type( string $ext, string $default = 'php' ):string {
         $types = ['php'=>'php', 'js'=>'js', 'json'=>'json', 'twig'=>'twig'] // <- canonical
                + array_fill_keys( $this->php_alias, 'php')
                + array_fill_keys( $this->jsx_alias, 'js')
         ;
         $ext = strtolower($ext);
-        return isset($types[$ext]) ? $types[$ext] : $default;
+        return $types[ $ext ] ?? $default;
     }
    
 }

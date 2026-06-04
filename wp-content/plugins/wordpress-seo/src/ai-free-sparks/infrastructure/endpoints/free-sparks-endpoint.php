@@ -1,9 +1,10 @@
 <?php
+
 // phpcs:disable Yoast.NamingConventions.NamespaceName.TooLong -- Needed in the folder structure.
 namespace Yoast\WP\SEO\AI_Free_Sparks\Infrastructure\Endpoints;
 
 use Yoast\WP\SEO\AI_Free_Sparks\User_Interface\Free_Sparks_Route;
-use Yoast\WP\SEO\Routes\Endpoint_Interface;
+use Yoast\WP\SEO\Routes\Endpoint\Endpoint_Interface;
 
 /**
  * Represents the free sparks endpoint.

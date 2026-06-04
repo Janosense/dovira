@@ -4,8 +4,8 @@ Donate link: https://yoa.st/1up
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 Tags: SEO, XML sitemap, Content analysis, Readability, Schema
-Tested up to: 6.9
-Stable tag: 26.5
+Tested up to: 7.0
+Stable tag: 27.7
 Requires PHP: 7.4
 
 Improve your SEO with real-time feedback, schema, and clear guidance. Upgrade for AI tools, Google Docs integration, and 24/7 support, no hidden fees.
@@ -14,10 +14,10 @@ Improve your SEO with real-time feedback, schema, and clear guidance. Upgrade fo
 
 ## Yoast SEO: The #1 WordPress SEO Plugin
 
-Since 2008, **Yoast SEO** has helped millions of websites worldwide improve their visibility and SEO performance.  
+Since 2008, **Yoast SEO** has helped millions of websites worldwide improve their visibility and SEO performance.
 Our mission is **SEO for Everyone** — from small local businesses to some of the most visited sites on the web.
 
-Yoast SEO gives you everything you need to manage your on-site SEO effectively.  
+Yoast SEO gives you everything you need to manage your on-site SEO effectively.
 The [Yoast SEO Premium](https://yoa.st/1v8) plugin and its extensions unlock even more advanced and AI-powered tools.
 
 ---
@@ -34,10 +34,10 @@ Empower search engines to better understand your website using **Schema.org stru
 
 ### Quick and easy setup
 
-Setting up Yoast SEO is quick and straightforward — no technical background required.  
+Setting up Yoast SEO is quick and straightforward — no technical background required.
 Our step-by-step configuration wizard walks you through essential setup details so Yoast SEO can generate accurate **structured data** that helps search engines understand your site.
 
-Switching from another SEO plugin like Rank Math or AIOSEO? Migration is seamless.  
+Switching from another SEO plugin like Rank Math or AIOSEO? Migration is seamless.
 Import your existing SEO data and settings safely with our built-in import/export tools.
 
 ---
@@ -115,7 +115,7 @@ Yoast SEO works seamlessly with popular WordPress tools to enhance your workflow
 
 ## Yoast SEO Premium – AI-powered SEO for WordPress
 
-[Yoast SEO Premium](https://yoa.st/1v8) enhances everything in Yoast SEO with advanced automation, AI tools, and professional support.  
+[Yoast SEO Premium](https://yoa.st/1v8) enhances everything in Yoast SEO with advanced automation, AI tools, and professional support.
 Trusted by millions, it helps you optimize efficiently for both traditional and AI-driven search.
 
 **Tackle your SEO challenges:**
@@ -170,12 +170,12 @@ Built for WooCommerce, trusted by thousands of online stores worldwide.
 Yoast SEO is built with developers in mind. With modern APIs, hooks, and a unified indexables system, you can extend or integrate SEO functionality across custom themes, plugins, or headless setups.
 
 ### REST API
-Retrieve SEO metadata for any post or URL, including meta tags, Open Graph, Twitter Cards, and Schema.org data.  
+Retrieve SEO metadata for any post or URL, including meta tags, Open Graph, Twitter Cards, and Schema.org data.
 [Learn more about the REST API](https://yoa.st/53l).
 
 ### Surfaces API
-Access SEO data directly in code via `YoastSEO()->meta->for_current_page()`.  
-Supports titles, descriptions, canonicals, and schema.  
+Access SEO data directly in code via `YoastSEO()->meta->for_current_page()`.
+Supports titles, descriptions, canonicals, and schema.
 [Read the Surfaces API documentation](https://yoa.st/53m).
 
 ### Metadata API
@@ -185,7 +185,7 @@ Use the [Metadata API](https://yoa.st/53n) to filter, override, or extend meta t
 The [Schema API](https://yoa.st/53o) lets you modify or extend Schema.org graph pieces, including Article, Organization, Person, Breadcrumb, and WebPage entities.
 
 ### Block Editor compatibility
-Yoast SEO integrates directly with the WordPress Block Editor (Gutenberg).  
+Yoast SEO integrates directly with the WordPress Block Editor (Gutenberg).
 It outputs schema for HowTo and FAQ blocks by default, and developers can extend schema for custom blocks.
 
 ### Indexables
@@ -195,7 +195,7 @@ At the core of Yoast SEO lies the [indexables system](https://yoa.st/53q), unify
 
 ## Ongoing support and education
 
-Yoast is powered by expert developers, testers, and SEO specialists who keep improving the plugin.  
+Yoast is powered by expert developers, testers, and SEO specialists who keep improving the plugin.
 We're committed to helping users grow their SEO skills with resources such as:
 
 - [Yoast SEO Academy](https://yoa.st/3ri): Free and premium SEO courses (included in all paid plans).
@@ -206,7 +206,7 @@ We're committed to helping users grow their SEO skills with resources such as:
 **Yoast SEO** — built to make search optimization accessible, reliable, and ready for the future of AI search.
 
 == Installation ==
-Starting with Yoast SEO consists of just two steps: installing and setting up the plugin. Yoast SEO is designed to work with your site’s specific needs, so don’t forget to go through the Yoast SEO first-time configuration as explained in the ‘after activation’ step! For the most up-to-date guidance on how to install Yoast SEO products, [please visit our help center](https://yoast.com/help/yoast-installation-manuals/#h-yoast-seo-and-yoast-seo-premium-for-wordpress). 
+Starting with Yoast SEO consists of just two steps: installing and setting up the plugin. Yoast SEO is designed to work with your site’s specific needs, so don’t forget to go through the Yoast SEO first-time configuration as explained in the ‘after activation’ step! For the most up-to-date guidance on how to install Yoast SEO products, [please visit our help center](https://yoast.com/help/yoast-installation-manuals/#h-yoast-seo-and-yoast-seo-premium-for-wordpress).
 
 == Frequently Asked Questions ==
 
@@ -303,40 +303,40 @@ Your question has most likely been answered on our help center: [yoast.com/help/
 
 == Changelog ==
 
-= 26.5 =
+= 27.7 =
 
-Release date: 2025-12-02
+Release date: 2026-05-27
 
-**New:** Yoast SEO includes the necessary updates to support the Site Kit by Google integration for all Premium users, with Yoast SEO (free) support following soon. [Read the full release post here](https://yoa.st/54u).
+Yoast SEO 27.7 brings more enhancements and bugfixes. [Find more information about our software releases and updates here](https://yoa.st/releases).
+
+#### Bugfixes
+
+* Fixes a bug in Schema aggregator where products Schema pieces had incorrect `@id` values for `mainEntityOfPage` and `image` properties.
+* Fixes a bug where a `FocusTrap` warning was thrown and the X button did not receive focus when the replace content confirmation modal from the AI Content Planner was opened.
+* Fixes a bug where a warning was triggered in the console when editing a post with the Content Planner feature enabled.
+* Fixes a bug where only the first piece was returned when indexables were not available.
+* Fixes a bug where the AI features section was rendered twice on the user profile page.
+* Fixes a bug where the block editor was crashing when some AI features were triggering errors.
+* Fixes a bug where the Content Planner inline banner was displayed when editing a template or template part.
+
+#### Other
+
+* Makes the Academy, Upgrade and Brand insights links visible to more user roles.
+
+= 27.6 =
+
+Release date: 2026-05-12
+
+Introduces Yoast AI Content Planner to Yoast SEO Premium, giving five site-specific post ideas and a structured starter draft the moment you open a new post. Haven't used your free AI sparks yet? Give it a try on us. [Read the full release post here](https://yoa.st/56n).
 
 #### Enhancements
 
-* Integrates the Yoast SEO tab into the Elementor Editor's Elements panel sidebar to provide enhanced access to SEO settings.
-* Makes the _keyphrase density assessment_ and _keyphrase in subheadings assessment_  available when no content has been added.
-
-#### Bugfixes
-
-* Fixes a bug where table backgrounds in the RSS settings and Semrush related keyphrases tables would expand beyond the rounded corners in Firefox.
+* Adds the Content Planner feature, which allows users to get AI-powered content suggestions and structured outlines for new posts directly from the block editor. This is available as part of the free sparks allowance in Yoast SEO Free.
 
 #### Other
 
-* Relocates the introduction notification to point to the Yoast SEO tab within the Elements panel sidebar of the Elementor Editor for better user guidance.
-* Sets the _WordPress tested up to_ version to 6.9.
-
-= 26.4 =
-
-Release date: 2025-11-18
-
-#### Bugfixes
-
-* Fixes a bug for users who have the Site Kit integration enabled, where a fatal error would be thrown for edge cases, like when custom code intervened with the default WP login flow.
-* Fixes a bug in the Settings page where the advanced tab would close when selecting one of its options or other options after visiting the advanced tab.
-
-#### Other
-
-* Adds a button for using AI to generate custom an SEO title or meta description in the pre-publish sidebar of the block editor, if all recent posts have been using default SEO data.
-* Adds the Yoast siblings and subpages premium blocks to the Yoast custom blocks menu tab in pages.
-* Improves performance when author archives are disabled and an author is created. Props to [ErikBrendel](https://github.com/ErikBrendel).
+* Improves documentation in a docblock. Props to [@MukundaKatta](https://github.com/MukundaKatta).
+* Introduces a shared contributor guide for humans and AI coding tools.
 
 = Earlier versions =
 For the changelog of earlier versions, please refer to [the changelog on yoast.com](https://yoa.st/yoast-seo-changelog).

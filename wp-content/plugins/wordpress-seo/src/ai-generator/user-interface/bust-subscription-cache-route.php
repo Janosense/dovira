@@ -1,10 +1,12 @@
 <?php
+
 // phpcs:disable Yoast.NamingConventions.NamespaceName.TooLong -- Needed in the folder structure.
 namespace Yoast\WP\SEO\AI_Generator\User_Interface;
 
 use WP_REST_Response;
 use WPSEO_Addon_Manager;
 use Yoast\WP\SEO\Conditionals\AI_Conditional;
+use Yoast\WP\SEO\Conditionals\Old_Premium_AI_Conditional;
 use Yoast\WP\SEO\Main;
 use Yoast\WP\SEO\Routes\Route_Interface;
 
@@ -46,7 +48,7 @@ class Bust_Subscription_Cache_Route implements Route_Interface {
 	 * @return array<string> The conditionals.
 	 */
 	public static function get_conditionals() {
-		return [ AI_Conditional::class ];
+		return [ AI_Conditional::class, Old_Premium_AI_Conditional::class ];
 	}
 
 	/**
@@ -72,7 +74,7 @@ class Bust_Subscription_Cache_Route implements Route_Interface {
 				'args'                => [],
 				'callback'            => [ $this, 'bust_subscription_cache' ],
 				'permission_callback' => [ $this, 'check_permissions' ],
-			]
+			],
 		);
 	}
 

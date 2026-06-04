@@ -7,6 +7,7 @@ use WPSEO_Admin_Asset_Manager;
 use WPSEO_Tracking_Server_Data;
 use WPSEO_Utils;
 use Yoast\WP\SEO\Conditionals\Admin_Conditional;
+use Yoast\WP\SEO\Conditionals\User_Can_Manage_Wpseo_Options_Conditional;
 use Yoast\WP\SEO\Config\Migration_Status;
 use Yoast\WP\SEO\Helpers\Options_Helper;
 use Yoast\WP\SEO\Integrations\Academy_Integration;
@@ -190,7 +191,7 @@ class HelpScout_Beacon implements Integration_Interface {
 			( $this->ask_consent ) ? 'wpseoHelpScoutBeaconConsent' : 'wpseoHelpScoutBeacon',
 			\esc_html( $this->pages_ids[ $this->page ] ),
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaping done in format_json_encode.
-			WPSEO_Utils::format_json_encode( (array) $this->get_session_data() )
+			WPSEO_Utils::format_json_encode( (array) $this->get_session_data() ),
 		);
 	}
 
@@ -242,7 +243,7 @@ class HelpScout_Beacon implements Integration_Interface {
 				'Active plugins'       => $this->get_active_plugins(),
 				'Must-use and dropins' => $this->get_mustuse_and_dropins(),
 				'Indexables status'    => $this->get_indexables_status(),
-			]
+			],
 		);
 
 		if ( ! empty( $this->products ) ) {
@@ -319,7 +320,7 @@ class HelpScout_Beacon implements Integration_Interface {
 
 		$product_info = \sprintf(
 			'Expiration date %1$s',
-			$plugin->expiry_date
+			$plugin->expiry_date,
 		);
 
 		return $product_info;
@@ -356,7 +357,7 @@ class HelpScout_Beacon implements Integration_Interface {
 			'%1$s (Version %2$s, %3$s)',
 			\esc_html( $theme->display( 'Name' ) ),
 			\esc_html( $theme->display( 'Version' ) ),
-			\esc_attr( $theme->display( 'ThemeURI' ) )
+			\esc_attr( $theme->display( 'ThemeURI' ) ),
 		);
 
 		if ( \is_child_theme() ) {
@@ -389,7 +390,7 @@ class HelpScout_Beacon implements Integration_Interface {
 				\esc_html( $plugin_data['Name'] ),
 				\esc_html( $plugin_data['Version'] ),
 				$plugin_update_available,
-				\esc_attr( $plugin_data['PluginURI'] )
+				\esc_attr( $plugin_data['PluginURI'] ),
 			);
 		}
 
@@ -452,7 +453,7 @@ class HelpScout_Beacon implements Integration_Interface {
 		$language_settings = \sprintf(
 			'Site locale: %1$s, user locale: %2$s',
 			( \is_string( $site_locale ) ) ? \esc_html( $site_locale ) : 'unknown',
-			( \is_string( $user_locale ) ) ? \esc_html( $user_locale ) : 'unknown'
+			( \is_string( $user_locale ) ) ? \esc_html( $user_locale ) : 'unknown',
 		);
 
 		return $language_settings;
@@ -464,7 +465,7 @@ class HelpScout_Beacon implements Integration_Interface {
 	 * @return array<string> The array of conditionals.
 	 */
 	public static function get_conditionals() {
-		return [ Admin_Conditional::class ];
+		return [ Admin_Conditional::class, User_Can_Manage_Wpseo_Options_Conditional::class ];
 	}
 
 	/**
