@@ -724,3 +724,23 @@ function dovira_add_query_vars( array $vars ): array {
 }
 
 add_filter( 'query_vars', 'dovira_add_query_vars' );
+
+/**
+ * @param string $output The HTML output of the language switcher.
+ * @param array $args An array of arguments passed to the language switcher.
+ *
+ * @return string
+ */
+function dovira_change_language_switcher_names( string $output, array $args ): string {
+	$output = str_replace( [
+		'Українська',
+		'Русский',
+	], [
+		'Укр',
+		'Рус',
+	], $output );
+
+	return $output;
+}
+
+add_filter( 'pll_the_languages', 'dovira_change_language_switcher_names', 10, 2 );

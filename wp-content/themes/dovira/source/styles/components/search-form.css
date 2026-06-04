@@ -9,7 +9,7 @@
 
   @media (min-width: 1024px) {
     display: block;
-    margin-left: auto;
+    margin-left: 20px;
   }
 
   @media (min-width: 1280px) {

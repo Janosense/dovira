@@ -1,0 +1,40 @@
+.language-switcher {
+  list-style-type: none;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+.language-switcher--mobile {
+  column-gap: 12px;
+  opacity: 0;
+  transition: all 0.5s ease;
+  transform: translateY(-12px);
+  transition-delay: 1s;
+
+  @media (min-width: 1024px) {
+    display: none;
+  }
+}
+
+.language-switcher--desktop {
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: flex;
+    column-gap: 6px;
+    font-size: 12px;
+    margin-left: auto;
+  }
+}
+
+.language-switcher a {
+  color: var(--color-gray);
+  text-decoration: none
+}
+
+.language-switcher li.current-lang a {
+  color: var(--color-violet-light);
+
+}

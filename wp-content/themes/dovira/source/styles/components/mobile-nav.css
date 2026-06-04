@@ -29,6 +29,7 @@
   transform: translateY(0);
   pointer-events: auto;
 
+  .language-switcher--mobile,
   .mobile-nav__cta,
   .mobile-nav__list li {
     opacity: 1!important;
