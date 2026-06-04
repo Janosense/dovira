@@ -3,6 +3,7 @@
 require_once TEMPLATE_DIR . '/inc/utils/conversation.php';
 require_once TEMPLATE_DIR . '/inc/utils/application.php';
 require_once TEMPLATE_DIR . '/inc/utils/questionary.php';
+require_once TEMPLATE_DIR . '/inc/utils/polylang-string-translations.php';
 
 /**
  * Vite manifest parser which returns a path to the entry file

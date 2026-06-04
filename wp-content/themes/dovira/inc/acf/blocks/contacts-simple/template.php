@@ -74,7 +74,7 @@ endif;
 							<h3 class="contacts-simple__title"><?= $contact['city']; ?></h3>
 							<div class="contacts-simple__row">
 								<div class="contacts-simple__col">
-									<span class="contacts-simple__subtitle">Адреса</span>
+									<span class="contacts-simple__subtitle"><?= pll__( 'Address' ); ?></span>
 									<span class="contacts-simple__content"><?= $contact['address']; ?></span>
 									<?php if ( ! empty( $contact['instagram_link'] ) ) : ?>
 										<a href="<?= $contact['instagram_link']; ?>"
@@ -92,20 +92,20 @@ endif;
 									<?php endif; ?>
 								</div>
 								<div class="contacts-simple__col">
-									<span class="contacts-simple__subtitle">Графік роботи</span>
+									<span class="contacts-simple__subtitle"><?= pll__( 'Schedule' ); ?></span>
 									<div class="contacts-simple__content contacts-simple__content--schedule">
-										<span>Ветклініка</span>
+										<span><?= pll__( 'Vetclinic' ); ?></span>
 										<?= $contact['schedule']; ?>
 									</div>
 									<?php if ( ! empty( $contact['schedule_shop'] ) ) : ?>
 										<div class="contacts-simple__content contacts-simple__content--schedule">
-											<span>Зоомагазин</span>
+											<span><?= pll__( 'Pet shop' ); ?></span>
 											<?= $contact['schedule_shop']; ?>
 										</div>
 									<?php endif; ?>
 								</div>
 								<div class="contacts-simple__col">
-									<span class="contacts-simple__subtitle">Номери телефону</span>
+									<span class="contacts-simple__subtitle"><?= pll__( 'Phones' ); ?></span>
 									<span class="contacts-simple__content">
 										<?php if ( is_array( $contact['phones'] ) ):
 											foreach ( $contact['phones'] as $phone ) :
