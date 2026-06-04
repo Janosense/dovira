@@ -51,6 +51,11 @@ require TEMPLATE_DIR . '/inc/rest-api.php';
 require_once TEMPLATE_DIR . '/inc/custom-roles.php';
 
 /**
+ * Polylang integration
+ */
+require_once TEMPLATE_DIR . '/inc/polylang.php';
+
+/**
  * WP-CLI commands
  */
 if ( defined( 'WP_CLI' ) && WP_CLI ) {

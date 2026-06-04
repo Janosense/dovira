@@ -86,7 +86,7 @@ endif;
 							<button
 								data-city="<?= $city->slug; ?>"
 								class="city-toggle__button <?php if ( $toggles_index === 0 ): ?>city-toggle__button--active<?php endif; ?>"
-								type="button"><?= $city->name; ?>
+								type="button"><?= dovira_translate_string( $city->name ); ?>
 							</button>
 							<?php $toggles_index ++;
 						endforeach; ?>

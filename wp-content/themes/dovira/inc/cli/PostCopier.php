@@ -23,6 +23,17 @@ class PostCopier {
 	private const TRANSLATED_META = [ '_yoast_wpseo_title', '_yoast_wpseo_metadesc' ];
 
 	/**
+	 * Post types whose ACF content lives in post meta: all meta is copied
+	 * over and translated "pm:*" values overwrite the copies.
+	 */
+	public const META_BASED_POST_TYPES = [ 'service', 'vacancy' ];
+
+	/**
+	 * Meta keys never copied to the translation.
+	 */
+	private const META_BLACKLIST = [ '_edit_lock', '_edit_last', '_wp_old_slug' ];
+
+	/**
 	 * @param WP_Post               $source       Source post (in the source language).
 	 * @param string                $content      Rebuilt, translated post_content.
 	 * @param array<string, string> $translations Translation map (includes "meta:*" paths).
@@ -59,11 +70,15 @@ class PostCopier {
 			throw new RuntimeException( 'Failed to save translated post: ' . $post_id->get_error_message() );
 		}
 
-		foreach ( self::COPY_META as $key ) {
-			$value = get_post_meta( $source->ID, $key, true );
+		if ( in_array( $source->post_type, self::META_BASED_POST_TYPES, true ) ) {
+			$this->copy_all_meta( $source->ID, $post_id, $translations );
+		} else {
+			foreach ( self::COPY_META as $key ) {
+				$value = get_post_meta( $source->ID, $key, true );
 
-			if ( $value !== '' && $value !== false ) {
-				update_post_meta( $post_id, $key, $value );
+				if ( $value !== '' && $value !== false ) {
+					update_post_meta( $post_id, $key, $value );
+				}
 			}
 		}
 
@@ -73,6 +88,8 @@ class PostCopier {
 			}
 		}
 
+		$this->copy_taxonomy_terms( $source, $post_id );
+
 		pll_set_post_language( $post_id, $to );
 		pll_save_post_translations( [
 			$from => $source->ID,
@@ -80,6 +97,55 @@ class PostCopier {
 		] );
 
 		return $post_id;
+	}
+
+	/**
+	 * Copies all post meta from the source, then overwrites the keys that
+	 * were translated (the "pm:" entries of the translation map).
+	 *
+	 * @param int                   $source_id
+	 * @param int                   $post_id
+	 * @param array<string, string> $translations
+	 */
+	private function copy_all_meta( int $source_id, int $post_id, array $translations ): void {
+		foreach ( get_post_meta( $source_id ) as $key => $values ) {
+			if ( in_array( $key, self::META_BLACKLIST, true ) || str_starts_with( $key, '_pll_' ) ) {
+				continue;
+			}
+
+			// The all-meta form returns raw (still serialized) values;
+			// unserialize so update_post_meta() re-serializes exactly once.
+			update_post_meta( $post_id, $key, wp_slash( maybe_unserialize( $values[0] ?? '' ) ) );
+		}
+
+		foreach ( $translations as $path => $value ) {
+			if ( str_starts_with( $path, MetaExtractor::PREFIX ) ) {
+				update_post_meta( $post_id, substr( $path, strlen( MetaExtractor::PREFIX ) ), wp_slash( $value ) );
+			}
+		}
+	}
+
+	/**
+	 * Copies taxonomy term assignments verbatim. Terms are shared across
+	 * languages here (service-city is not a translated taxonomy), so the
+	 * same term IDs are assigned. Polylang's internal taxonomies are managed
+	 * by pll_set_post_language()/pll_save_post_translations() and skipped.
+	 *
+	 * @param WP_Post $source
+	 * @param int     $post_id
+	 */
+	private function copy_taxonomy_terms( WP_Post $source, int $post_id ): void {
+		foreach ( get_object_taxonomies( $source->post_type ) as $taxonomy ) {
+			if ( in_array( $taxonomy, [ 'language', 'post_translations' ], true ) ) {
+				continue;
+			}
+
+			$term_ids = wp_get_object_terms( $source->ID, $taxonomy, [ 'fields' => 'ids' ] );
+
+			if ( ! is_wp_error( $term_ids ) && ! empty( $term_ids ) ) {
+				wp_set_object_terms( $post_id, $term_ids, $taxonomy );
+			}
+		}
 	}
 
 	/**

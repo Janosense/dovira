@@ -86,7 +86,7 @@ $cities = get_terms( array(
 						<button
 							data-city="<?= $city->slug; ?>"
 							class="city-toggle__button <?php if ( $toggles_index === 0 ): ?>city-toggle__button--active<?php endif; ?>"
-							type="button"><?= $city->name; ?>
+							type="button"><?= dovira_translate_string( $city->name ); ?>
 						</button>
 						<?php $toggles_index ++;
 					endforeach; ?>
@@ -119,7 +119,7 @@ $cities = get_terms( array(
 														d="M10 11.2168C11.4497 11.2168 12.625 10.0415 12.625 8.5918C12.625 7.14205 11.4497 5.9668 10 5.9668C8.55025 5.9668 7.375 7.14205 7.375 8.5918C7.375 10.0415 8.55025 11.2168 10 11.2168Z"
 														fill="#C06F94"/>
 												</svg>
-												<?= $city->name; ?>
+												<?= dovira_translate_string( $city->name ); ?>
 											</div>
 										<?php endforeach; ?>
 									</div>

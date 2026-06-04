@@ -13,7 +13,7 @@ use WP_Query;
  */
 class TranslateCommand {
 
-	private const LANGUAGE_NAMES = [
+	public const LANGUAGE_NAMES = [
 		'uk' => 'Ukrainian',
 		'ru' => 'Russian',
 		'en' => 'English',
@@ -78,8 +78,9 @@ class TranslateCommand {
 		// wp_insert_post(). Content originates from trusted DB content.
 		kses_remove_filters();
 
-		$extractor  = new ContentExtractor();
-		$translator = new AnthropicTranslator(
+		$extractor      = new ContentExtractor();
+		$meta_extractor = new MetaExtractor();
+		$translator     = new AnthropicTranslator(
 			ANTHROPIC_API_KEY,
 			self::LANGUAGE_NAMES[ $from ] ?? $from,
 			self::LANGUAGE_NAMES[ $to ] ?? $to
@@ -114,6 +115,10 @@ class TranslateCommand {
 			try {
 				$blocks = parse_blocks( $post->post_content );
 				$map    = $extractor->extract( $blocks ) + $this->get_meta_map( $post );
+
+				if ( in_array( $post->post_type, PostCopier::META_BASED_POST_TYPES, true ) ) {
+					$map += $meta_extractor->extract( $post->ID );
+				}
 
 				if ( empty( $map ) ) {
 					WP_CLI::warning( "No translatable strings found in: $label" );

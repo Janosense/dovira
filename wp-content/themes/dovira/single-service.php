@@ -12,7 +12,7 @@
 	if ( ! is_wp_error( $cities ) && ! empty( $cities ) && ! empty( $prices ) ) {
 		foreach ( $cities as $city ) {
 			$prices_data[ 'city_' . $city->term_id ] = array(
-				'city'     => $city->name,
+				'city'     => dovira_translate_string( $city->name ),
 				'services' => array(),
 			);
 		}
