@@ -49,3 +49,10 @@ require TEMPLATE_DIR . '/inc/rest-api.php';
  * Custom Roles
  */
 require_once TEMPLATE_DIR . '/inc/custom-roles.php';
+
+/**
+ * WP-CLI commands
+ */
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	require_once TEMPLATE_DIR . '/inc/cli.php';
+}
