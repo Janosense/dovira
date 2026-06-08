@@ -43,6 +43,7 @@
 @import "@styles/components/questionary.css";
 @import "@styles/components/up-button.css";
 @import "@styles/components/language-switcher-mobile.css";
+@import "@styles/components/location-switcher.css";
 
 /* Blocks */
 @import "@styles/blocks/hero.css";
