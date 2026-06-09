@@ -1,0 +1,44 @@
+.learning-plan {
+  overflow: auto;
+}
+
+.learning-plan__content {
+  min-width: 2000px;
+}
+
+.learning-plan table {
+  background-color: var(--color-white);
+  border-radius: 12px;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+.learning-plan table tr td {
+  padding: 8px 16px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--color-gray-light);
+  vertical-align: bottom;
+}
+
+.learning-plan table tr:first-child {
+  background-color: var(--color-violet-light);
+  color: var(--color-white);
+  border-radius: 12px 12px 0 0;
+}
+
+.learning-plan table tr:first-child td {
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+
+.learning-plan table tr:last-child td {
+  padding-bottom: 24px;
+}
+
+.learning-plan table tr td:first-child {
+  vertical-align: middle;
+  text-align: right;
+  font-weight: 700;
+}

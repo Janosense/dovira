@@ -1,0 +1,20 @@
+{
+	"name": "acf/custom-html",
+	"title": "Custom html",
+	"description": "",
+	"category": "",
+	"icon": "html",
+	"keywords": [
+		"custom",
+		"html",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}
