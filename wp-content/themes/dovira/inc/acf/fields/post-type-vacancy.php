@@ -75,6 +75,10 @@ function acf_add_post_type_vacancy_fields(): void {
 		'button_label' => __( 'Add Phone', 'dovira' ),
 	) )->addText( 'phone' );
 
+	$fields->addWysiwyg( 'seo_description', array(
+		'label' => __( 'SEO description', 'dovira' ),
+	));
+
 	$fields->setLocation( 'post_type', '==', 'vacancy' );
 
 	acf_add_local_field_group( $fields->build() );

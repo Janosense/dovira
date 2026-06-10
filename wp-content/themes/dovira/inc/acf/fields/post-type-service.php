@@ -108,6 +108,10 @@ function acf_add_post_type_service_fields(): void {
 		'label' => __( 'Keywords', 'dovira' ),
 	) );
 
+	$fields->addWysiwyg( 'seo_description', array(
+		'label' => __( 'SEO description', 'dovira' ),
+	));
+
 	$fields->setLocation( 'post_type', '==', 'service' )
 	       ->and('page_template', '!=', 'templates/sub-service.php');
 
