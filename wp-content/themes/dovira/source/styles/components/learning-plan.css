@@ -19,7 +19,7 @@
   padding: 8px 16px;
   box-sizing: border-box;
   border-bottom: 1px solid var(--color-gray-light);
-  vertical-align: bottom;
+  vertical-align: top;
 }
 
 .learning-plan table tr:first-child {

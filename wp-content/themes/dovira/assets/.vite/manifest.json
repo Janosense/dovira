@@ -1,15 +1,15 @@
 {
   "source/admin.js": {
-    "file": "admin.DSj2Z_fM.js",
+    "file": "admin.CIyWeLld.js",
     "name": "admin",
     "src": "source/admin.js",
     "isEntry": true,
     "css": [
-      "admin.CQ9ZhQh7.css"
+      "admin.BJGTSI10.css"
     ]
   },
   "source/main.js": {
-    "file": "main.CD4xgGo-.js",
+    "file": "main.Dnj6Y32z.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -27,7 +27,7 @@
       "source/scripts/modules/init-imask.js"
     ],
     "css": [
-      "main.Ds5miUMt.css"
+      "main.RrDzbqXw.css"
     ]
   },
   "source/scripts/modules/init-animations.js": {
