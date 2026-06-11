@@ -1,15 +1,15 @@
 {
   "source/admin.js": {
-    "file": "admin.4dIS0SQJ.js",
+    "file": "admin.aYmDkk5V.js",
     "name": "admin",
     "src": "source/admin.js",
     "isEntry": true,
     "css": [
-      "admin.BTk3vxMh.css"
+      "admin.J_npYdCe.css"
     ]
   },
   "source/main.js": {
-    "file": "main.BsDFm3ms.js",
+    "file": "main.CDnycuqt.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -18,6 +18,7 @@
       "source/scripts/modules/init-fancybox.js",
       "source/scripts/modules/toggle-accordion.js",
       "source/scripts/modules/toggle-mobile-nav.js",
+      "source/scripts/modules/toggle-submenu.js",
       "source/scripts/modules/services-search.js",
       "source/scripts/modules/init-service-price-lists.js",
       "source/scripts/modules/init-swiper.js",
@@ -27,7 +28,7 @@
       "source/scripts/modules/init-imask.js"
     ],
     "css": [
-      "main.Df1Ibnem.css"
+      "main.DSvf08n8.css"
     ]
   },
   "source/scripts/modules/init-animations.js": {
@@ -94,6 +95,12 @@
     "file": "_chunk.DjGs3uVK.js",
     "name": "toggle-mobile-nav",
     "src": "source/scripts/modules/toggle-mobile-nav.js",
+    "isDynamicEntry": true
+  },
+  "source/scripts/modules/toggle-submenu.js": {
+    "file": "_chunk.WteK5LkE.js",
+    "name": "toggle-submenu",
+    "src": "source/scripts/modules/toggle-submenu.js",
     "isDynamicEntry": true
   }
 }
