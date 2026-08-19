@@ -363,6 +363,7 @@ function dovira_allowed_block_types( bool|array $allowed_blocks, WP_Block_Editor
 			'acf/accordion',
 			'acf/contacts',
 			'acf/contacts-simple',
+			'acf/custom-html',
 			'acf/employees',
 			'acf/entities-grid',
 			'acf/entity-links',
@@ -373,6 +374,7 @@ function dovira_allowed_block_types( bool|array $allowed_blocks, WP_Block_Editor
 			'acf/news',
 			'acf/questionary',
 			'acf/rich-text',
+			'acf/seo-text',
 			'acf/services',
 			'acf/text-form',
 			'acf/text-image',
@@ -724,6 +726,28 @@ function dovira_add_query_vars( array $vars ): array {
 }
 
 add_filter( 'query_vars', 'dovira_add_query_vars' );
+
+/**
+ * Append a submenu toggle button to top-level primary menu items that have children.
+ *
+ * @param string $item_output The menu item's starting HTML output.
+ * @param WP_Post $item Menu item data object.
+ * @param int $depth Depth of menu item.
+ * @param stdClass $args An object of wp_nav_menu() arguments.
+ *
+ * @return string
+ */
+function dovira_add_submenu_toggle( string $item_output, WP_Post $item, int $depth, stdClass $args ): string {
+	if ( $args->theme_location === 'primary' && $depth === 0 && in_array( 'menu-item-has-children', $item->classes, true ) ) {
+		$item_output .= '<button class="menu-item__toggle" type="button" aria-expanded="false">'
+		                . '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6l5 5 5-5" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+		                . '</button>';
+	}
+
+	return $item_output;
+}
+
+add_filter( 'walker_nav_menu_start_el', 'dovira_add_submenu_toggle', 10, 4 );
 
 /**
  * @param string $output The HTML output of the language switcher.

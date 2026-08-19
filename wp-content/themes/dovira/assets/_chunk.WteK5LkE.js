@@ -1,0 +1,1 @@
+const c=()=>{const n=document.querySelectorAll(".mobile-nav .menu-item__toggle");n.length&&n.forEach(e=>{e.addEventListener("click",o=>{o.preventDefault();const s=e.closest("li"),t=s.querySelector(".sub-menu");if(!t)return;const l=s.classList.toggle("menu-item--open");t.style.maxHeight=l?`${t.scrollHeight+32}px`:0,e.setAttribute("aria-expanded",l)})})};export{c as toggleSubmenu};

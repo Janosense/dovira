@@ -18,6 +18,7 @@
 				<!-- BREADCRUMBS end -->
 			<?php endif; ?>
 			<?php the_content(); ?>
+			<?php get_template_part( 'template-parts/seo-description' ); ?>
 		<?php endwhile; ?>
 	</main>
 <?php get_footer();

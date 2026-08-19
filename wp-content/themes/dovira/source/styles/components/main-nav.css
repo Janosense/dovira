@@ -22,12 +22,106 @@
   border-radius: 12px;
 }
 
-.main-nav__list li.current-menu-item a {
+.main-nav__list li.current-menu-parent > a,
+.main-nav__list li.current-menu-item > a {
   font-weight: 600;
 
   &::after {
     transform-origin: left;
     transform: scaleX(1);
+  }
+}
+
+.main-nav__list li.current-menu-parent .menu-item__toggle svg {
+  stroke: var(--color-violet-light)!important;
+}
+
+.main-nav__list li.menu-item-has-children {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  column-gap: 6px;
+}
+
+.main-nav__list .menu-item__toggle {
+  position: relative;
+  top: 2px;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-gray-dark);
+  cursor: default;
+  pointer-events: none;
+
+  & svg {
+    transition: transform 0.3s ease;
+    stroke: var(--color-gray-dark);
+  }
+}
+
+.main-nav__list li.menu-item-has-children:hover .menu-item__toggle svg {
+  transform: rotate(180deg);
+}
+
+.main-nav__list .sub-menu {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: -24px;
+  z-index: 20;
+  min-width: 220px;
+  margin: 0;
+  padding: 16px 24px;
+  list-style-type: none;
+  background-color: var(--color-violet-light);
+  border-radius: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -16px;
+    left: 0;
+    right: 0;
+    height: 16px;
+  }
+}
+
+.main-nav__list li:hover > .sub-menu,
+.main-nav__list li:focus-within > .sub-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.main-nav__list .sub-menu li {
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.main-nav__list .sub-menu a {
+  color: var(--color-white);
+  font-size: 16px;
+  white-space: nowrap;
+
+  &::after {
+    background-color: var(--color-white);
+  }
+
+  &:hover {
+    color: var(--color-white);
+
+    &::after {
+      background-color: var(--color-white);
+    }
   }
 }
 

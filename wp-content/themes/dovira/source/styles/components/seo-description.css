@@ -1,0 +1,29 @@
+.seo-description {
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 40px;
+  }
+
+  @media (min-width: 1024px) {
+    margin-bottom: 28px;
+  }
+}
+
+.seo-description__content {
+  padding: 16px 20px;
+  box-sizing: border-box;
+  font-size: 14px;
+  border-radius: 12px;
+  background-color: var(--color-white);
+}
+
+.seo-description__content ul,
+.seo-description__content ol,
+.seo-description__content p {
+  margin: 0 0 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}

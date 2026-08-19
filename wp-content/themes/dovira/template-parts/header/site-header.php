@@ -78,7 +78,7 @@
 	<div class="wrapper main-nav__wrapper">
 		<?= wp_nav_menu( array(
 			'theme_location' => 'primary',
-			'depth'          => 1,
+			'depth'          => 2,
 			'container'      => false,
 			'menu_class'     => 'main-nav__list',
 		) ); ?>
@@ -105,7 +105,7 @@
 
 	<?= wp_nav_menu( array(
 		'theme_location' => 'primary',
-		'depth'          => 1,
+		'depth'          => 2,
 		'container'      => false,
 		'menu_class'     => 'mobile-nav__list',
 	) ); ?>

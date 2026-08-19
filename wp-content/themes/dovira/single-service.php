@@ -142,6 +142,7 @@
 	</div>
 	<!-- SERVICE end -->
 	<?php the_content(); ?>
+	<?php get_template_part( 'template-parts/seo-description' ); ?>
 <?php endwhile; ?>
 <?php get_footer(); ?>
 

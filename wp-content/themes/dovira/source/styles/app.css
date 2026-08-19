@@ -43,6 +43,8 @@
 @import "@styles/components/questionary.css";
 @import "@styles/components/up-button.css";
 @import "@styles/components/language-switcher-mobile.css";
+@import "@styles/components/learning-plan.css";
+@import "@styles/components/seo-description.css";
 @import "@styles/components/location-switcher.css";
 
 /* Blocks */
@@ -64,3 +66,4 @@
 @import "@styles/blocks/about.css";
 @import "@styles/blocks/questionary.css";
 @import "@styles/blocks/vacancies.css";
+@import "@styles/blocks/seo-text.css";

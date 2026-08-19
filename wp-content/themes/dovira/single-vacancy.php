@@ -150,10 +150,14 @@
 				</div>
 			</div>
 		<?php else: ?>
-			<p>Дана вакансія більше не активна. Повернутись до <a href="/vacancies/">списку всіх відкритих вакансій</a>
-			</p>
+			<div class="wrapper">
+				<p>Дана вакансія більше не активна. Повернутись до <a href="/vacancies/">списку всіх відкритих
+						вакансій</a>
+				</p>
+			</div>
 		<?php endif; ?>
 		<!-- VACANCY end -->
+		<?php get_template_part( 'template-parts/seo-description' ); ?>
 	<?php endwhile; ?>
 </main>
 <?php get_footer(); ?>

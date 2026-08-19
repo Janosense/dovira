@@ -19,6 +19,8 @@
 @import "@styles/components/city-toggle.css";
 @import "@styles/components/vacancy.css";
 @import "@styles/components/contact-form7.css";
+@import "@styles/components/learning-plan.css";
+@import "@styles/components/seo-description.css";
 @import "@styles/components/location-switcher.css";
 
 /* Blocks */
@@ -37,6 +39,7 @@
 @import "@styles/blocks/services.css";
 @import "@styles/blocks/contacts-simple.css";
 @import "@styles/blocks/vacancies.css";
+@import "@styles/blocks/seo-text.css";
 
 div.acf-block-preview {
   max-width: none!important;
@@ -49,6 +52,16 @@ div.acf-block-preview {
 
 .is-not-visible {
   opacity: 0.3;
+}
+
+/* The seo-text collapse is driven by frontend JS, so the preview shows the whole text. */
+.acf-block-preview .seo-text__content {
+  max-height: none;
+}
+
+.acf-block-preview .seo-text__content::after,
+.acf-block-preview .seo-text__toggle {
+  display: none;
 }
 
 .entity-status {
