@@ -12,6 +12,8 @@ $strings = [
 	'Pet shop', //Зоомагазин
 	'Phones', //Номери телефону
 	'Cookies message',
+	'Show more', //Показати більше
+	'Show less', //Згорнути
 ];
 
 if ( ! empty( $strings ) && function_exists( 'pll_register_string' ) ) {
