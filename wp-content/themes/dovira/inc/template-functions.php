@@ -187,6 +187,39 @@ function starter_theme_admin_scripts(): void {
 add_action( 'admin_enqueue_scripts', 'starter_theme_admin_scripts' );
 
 /**
+ * Enqueue theme styles inside the block editor canvas.
+ *
+ * The post editor renders the block list in an iframe and WordPress only carries assets that
+ * were enqueued on `enqueue_block_assets` into it, see `_wp_get_iframed_editor_assets()`.
+ * Anything added on `admin_enqueue_scripts` stays in the parent document, which is why the ACF
+ * block previews end up unstyled. The stylesheet is scoped to `.acf-block-preview` by PostCSS,
+ * so it only affects the previews themselves.
+ *
+ * @return void
+ * @throws JsonException
+ * @since 1.0.0
+ */
+function starter_theme_block_editor_styles(): void {
+	if ( ! is_admin() ) {
+		return;
+	}
+
+	if ( wp_get_environment_type() === 'development' ) {
+		/**
+		 * The Vite module injected into `admin_head` never reaches the iframe, so ask the dev
+		 * server for the compiled stylesheet instead. Changes are picked up on page reload.
+		 */
+		wp_enqueue_style( 'dovira-admin-styles', VITE_SERVER . '/source/styles/admin.css?direct', [], null );
+
+		return;
+	}
+
+	wp_enqueue_style( 'dovira-admin-styles', starter_theme_vite_asset( 'source/admin.css' ), [], wp_get_theme()->get( 'Version' ) );
+}
+
+add_action( 'enqueue_block_assets', 'starter_theme_block_editor_styles' );
+
+/**
  * Defer loading of JavaScript assets
  *
  * @param $tag
