@@ -1,0 +1,1076 @@
+{
+  "site": "kharkiv",
+  "label": "Харків",
+  "source": {
+    "file": "dovira_vet.xlsx",
+    "sheet": "Харьков - структура",
+    "generated_at": "2026-08-24"
+  },
+  "default_lang": "uk",
+  "languages": [
+    "uk",
+    "ru"
+  ],
+  "pages_count": 35,
+  "pages": [
+    {
+      "key": "front",
+      "row": 3,
+      "depth": 0,
+      "is_front": true,
+      "expected_slug": {
+        "uk": "",
+        "ru": ""
+      },
+      "translations": {
+        "uk": {
+          "url": "/",
+          "label": "Головна",
+          "title": "Ветеринарна клініка у Харкові– Лікування собак та кішок",
+          "metadesc": "Ветеринарна клініка ДОВІРА у Харкові: хірургія, діагностика, терапія, стоматологія для собак та кішок. Досвідчені лікарі, сучасне обладнання, цілодобова допомога.",
+          "focus_keyphrase": "ветеринарна клініка харків",
+          "related_keyphrases": [],
+          "h1": "Ветеринарна клініка у Харкові"
+        },
+        "ru": {
+          "url": "/ru/",
+          "label": "Главная",
+          "title": "Ветеринарная клиника в Харькове– Лечение собак и кошек",
+          "metadesc": "Ветеринарная клиника ДОВЕРИЕ в Харькове: хирургия, диагностика, терапия, стоматология для собак и кошек. Опытные врачи, современное оборудование, круглосуточная помощь",
+          "focus_keyphrase": "ветеринарная клиника харьков",
+          "related_keyphrases": [
+            "ветклиника харьков"
+          ],
+          "h1": "Ветеринарная клиника в Харькове"
+        }
+      }
+    },
+    {
+      "key": "services",
+      "row": 7,
+      "depth": 1,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "services",
+        "ru": "services"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/",
+          "label": "Послуги",
+          "title": "Послуги",
+          "metadesc": "Повний спектр ветеринарних послуг для собак та кішок у Харкові: хірургія, діагностика, терапія, лабораторія. Запис онлайн.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Послуги"
+        },
+        "ru": {
+          "url": "/ru/services/",
+          "label": "Услуги",
+          "title": "Услуги",
+          "metadesc": "Полный спектр ветеринарных услуг для собак и кошек в Харькове: хирургия, диагностика, терапия, лаборатория. Запись онлайн.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Услуги"
+        }
+      }
+    },
+    {
+      "key": "rehabilitation",
+      "row": 8,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "rehabilitation",
+        "ru": "rehabilitation"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/rehabilitation/",
+          "label": "Реабілітація",
+          "title": "Реабілітація тварин у Харкові – відновлення собак та кішок після операцій",
+          "metadesc": "Реабілітація собак та кішок після хірургії, травм, неврологічних та ортопедичних захворювань у Харкові. Індивідуальна програма відновлення.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Реабілітація"
+        },
+        "ru": {
+          "url": "/ru/services/rehabilitation/",
+          "label": "Реабилитация",
+          "title": "Реабилитация животных в Харькове – восстановление собак и кошек после операций",
+          "metadesc": "Реабилитация собак и кошек после хирургии, травм, неврологических и ортопедических заболеваний в Харькове. Индивидуальная программа восстановления.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Реабилитация"
+        }
+      }
+    },
+    {
+      "key": "funeral-cremation-services",
+      "row": 9,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "funeral-cremation-services",
+        "ru": "funeral-cremation-services"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/funeral-cremation-services/",
+          "label": "Ритуальні послуги та кремація",
+          "title": "Кремація тварин у Харкові – ритуальні послуги для собак та кішок",
+          "metadesc": "Індивідуальна та групова кремація собак та кішок у Харкові. Гідне прощання, урна, доставка праху додому.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Ритуальні послуги та кремація"
+        },
+        "ru": {
+          "url": "/ru/services/funeral-cremation-services/",
+          "label": "Риутальные услуги и кремация",
+          "title": "Кремация животных в Харькове – ритуальные услуги для собак и кошек",
+          "metadesc": "Индивидуальная и групповая кремация собак и кошек в Харькове. Достойное прощание, урна, доставка праха домой.",
+          "focus_keyphrase": "кремация животных харьков",
+          "related_keyphrases": [
+            "эвтаназия животных харьков",
+            "эвтаназия животных харьков",
+            "эвтаназия животных харьков цена"
+          ],
+          "h1": "Ритуальные услуги и кремация"
+        }
+      }
+    },
+    {
+      "key": "amputation",
+      "row": 14,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "amputation",
+        "ru": "amputation"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/amputation/",
+          "label": "Ампутація",
+          "title": "Ампутація кінцівки у тварин у Харкові – операції для собак та кішок",
+          "metadesc": "Ампутація лап у собак та кішок за медичними показаннями у Харкові. Сучасне знеболення, реабілітація після операції.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Ампутація"
+        },
+        "ru": {
+          "url": "/ru/services/amputation/",
+          "label": "Ампутация",
+          "title": "Ампутация конечности у животных в Харькове – операции для собак и кошек",
+          "metadesc": "Ампутация лап у собак и кошек по медицинским показаниям в Харькове. Современное обезболивание, реабилитация после операции.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Ампутация"
+        }
+      }
+    },
+    {
+      "key": "mastectomy-surgery",
+      "row": 15,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "mastectomy-surgery",
+        "ru": "mastectomy-surgery"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/mastectomy-surgery/",
+          "label": "Мастектомія",
+          "title": "Мастектомія у тварин у Харкові – видалення пухлин молочних залоз у собак та кішок",
+          "metadesc": "Хірургічне видалення пухлин молочних залоз у собак та кішок у Харкові. Регіонарна та повна мастектомія, гістологія, постопераційний догляд.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "М'якотканинна хірургія: мастектомія"
+        },
+        "ru": {
+          "url": "/ru/services/mastectomy-surgery/",
+          "label": "Мастектомия",
+          "title": "Мастэктомия у животных в Харькове – удаление опухолей молочных желёз у собак и кошек",
+          "metadesc": "Хирургическое удаление опухолей молочных желёз у собак и кошек в Харькове. Регионарная и полная мастэктомия, гистология, послеоперационный уход.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Мягкотканная хирургия: мастэктомия"
+        }
+      }
+    },
+    {
+      "key": "skin-soft-tissue-surgery",
+      "row": 16,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "skin-soft-tissue-surgery",
+        "ru": "skin-soft-tissue-surgery"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/skin-soft-tissue-surgery/",
+          "label": "Хірургія шкіри та м’яких тканин",
+          "title": "Хірургія шкіри у тварин у Харкові – видалення пухлин та гематом у собак та кішок",
+          "metadesc": "Видалення новоутворень, гематом, абсцесів, кіст у собак та кішок у Харкові. Хірургія шкіри та м'яких тканин, стерильні умови.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "М'якотканинна хірургія: хірургія шкіри та м'яких тканин"
+        },
+        "ru": {
+          "url": "/ru/services/skin-soft-tissue-surgery/",
+          "label": "Хирургия кожи и мягких тканей",
+          "title": "Хирургия кожи у животных в Харькове – удаление опухолей и гематом у собак и кошек",
+          "metadesc": "Удаление новообразований, гематом, абсцессов, кист у собак и кошек в Харькове. Хирургия кожи и мягких тканей, стерильные условия.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Мягкотканная хирургия: хирургия кожи и мягких тканей"
+        }
+      }
+    },
+    {
+      "key": "thoracic-surgery",
+      "row": 17,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "thoracic-surgery",
+        "ru": "thoracic-surgery"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/thoracic-surgery/",
+          "label": "Торакальна хірургія",
+          "title": "Торакальна хірургія для тварин у Харкові – операції для собак та кішок",
+          "metadesc": "Операції на грудній клітці та плевральній порожнині у собак та кішок у Харкові. Лікування пневмотораксу, пухлин, вроджених патологій.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "М'якотканинна хірургія: торакальна хірургія"
+        },
+        "ru": {
+          "url": "/ru/services/thoracic-surgery/",
+          "label": "Торакальная хирургия",
+          "title": "Торакальная хирургия для животных в Харькове – операции для собак и кошек",
+          "metadesc": "Операции на грудной клетке и плевральной полости у собак и кошек в Харькове. Лечение пневмоторакса, опухолей, врождённых патологий.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Мягкотканная хирургия: торакальная хирургия"
+        }
+      }
+    },
+    {
+      "key": "soft-tissue-abdominal-surgery",
+      "row": 18,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "soft-tissue-abdominal-surgery",
+        "ru": "soft-tissue-abdominal-surgery"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/soft-tissue-abdominal-surgery/",
+          "label": "Оперативні втручання на органах черевної порожнини",
+          "title": "Операції на черевній порожнині у тварин у Харкові – для собак та кішок",
+          "metadesc": "Лапаротомія, спленектомія, адреналектомія та інші операції на органах черевної порожнини у собак та кішок у Харкові.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "М'якотканинна хірургія: оперативні втручання на органах черевної порожнини"
+        },
+        "ru": {
+          "url": "/ru/services/soft-tissue-abdominal-surgery/",
+          "label": "Оперативные вмешательства на органах брюшной полости",
+          "title": "Операции на брюшной полости у животных в Харькове – для собак и кошек",
+          "metadesc": "Лапаротомия, спленэктомия, адреналэктомия и другие операции на органах брюшной полости у собак и кошек в Харькове.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Мягкотканная хирургия: оперативные вмешательства на органах брюшной полости"
+        }
+      }
+    },
+    {
+      "key": "head-neck-surgery",
+      "row": 19,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "head-neck-surgery",
+        "ru": "head-neck-surgery"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/head-neck-surgery/",
+          "label": "Операції в області голови та шиї",
+          "title": "Операції на голові та шиї у тварин у Харкові – хірургія собак та кішок",
+          "metadesc": "Булотомія, ринопластика, палатопластика, резекція м'якого піднебіння у собак та кішок у Харкові. Корекція вроджених дефектів дихання.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Хірургія: операції в області голови та шиї"
+        },
+        "ru": {
+          "url": "/ru/services/head-neck-surgery/",
+          "label": "Операции в области головы и шеи",
+          "title": "Операции на голове и шее у животных в Харькове – хирургия собак и кошек",
+          "metadesc": "Булотомия, ринопластика, палатопластика, резекция мягкого нёба у собак и кошек в Харькове. Коррекция врождённых дефектов дыхания.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Хирургия: операции в области головы и шеи"
+        }
+      }
+    },
+    {
+      "key": "soft-tissue-urinary-surgery",
+      "row": 20,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "soft-tissue-urinary-surgery",
+        "ru": "soft-tissue-urinary-surgery"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/soft-tissue-urinary-surgery/",
+          "label": "Оперативні втручання на сечовидільній системі",
+          "title": "Операції на сечовому міхурі у тварин у Харкові – для собак та кішок",
+          "metadesc": "Цистотомія, видалення сечових каменів, лікування обструкцій сечовивідних шляхів у собак та кішок у Харкові. Інгаляційна анестезія.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "М'якотканинна хірургія: оперативні втручання на сечовидільній системі"
+        },
+        "ru": {
+          "url": "/ru/services/soft-tissue-urinary-surgery/",
+          "label": "Оперативные вмешательства на мочевыделительной системе",
+          "title": "Операции на мочевом пузыре у животных в Харькове – для собак и кошек",
+          "metadesc": "Цистотомия, удаление мочевых камней, лечение обструкций мочевыводящих путей у собак и кошек в Харькове. Ингаляционная анестезия.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Мягкотканная хирургия: оперативные вмешательства на мочевыделительной системе"
+        }
+      }
+    },
+    {
+      "key": "soft-tissue-surgery",
+      "row": 21,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "soft-tissue-surgery",
+        "ru": "soft-tissue-surgery"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/soft-tissue-surgery/",
+          "label": "М’якотканинна хірургія",
+          "title": "М'якотканинна хірургія для тварин у Харкові – операції для собак та кішок",
+          "metadesc": "Видалення гриж, новоутворень, складні операції у собак та кішок у Харкові. Досвідчені ветеринарні хірурги, інгаляційна анестезія.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "М'якотканинна хірургія"
+        },
+        "ru": {
+          "url": "/ru/services/soft-tissue-surgery/",
+          "label": "Хирургия мягких тканей",
+          "title": "Мягкотканная хирургия для животных в Харькове – операции для собак и кошек",
+          "metadesc": "Удаление грыж, новообразований, сложные операции у собак и кошек в Харькове. Опытные ветеринарные хирурги, ингаляционная анестезия.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Мягкотканная хирургия"
+        }
+      }
+    },
+    {
+      "key": "blood-bank",
+      "row": 22,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "blood-bank",
+        "ru": "blood-bank"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/blood-bank/",
+          "label": "Банк крові",
+          "title": "Банк крові для тварин у Харкові – переливання крові собакам та кішкам",
+          "metadesc": "Донорська кров та переливання крові для собак та кішок у Харкові в екстрених випадках. Перевірена кров, безпечна процедура.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Банк крові"
+        },
+        "ru": {
+          "url": "/ru/services/blood-bank/",
+          "label": "Банк крови",
+          "title": "Банк крови для животных в Харькове – переливание крови собакам и кошкам",
+          "metadesc": "Донорская кровь и переливание крови для собак и кошек в Харькове в экстренных случаях. Проверенная кровь, безопасная процедура.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Банк крови"
+        }
+      }
+    },
+    {
+      "key": "ophthalmology",
+      "row": 23,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "ophthalmology",
+        "ru": "ophthalmology"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/ophthalmology/",
+          "label": "Офтальмологія",
+          "title": "Офтальмологія для тварин у Харкові – ветеринарний офтальмолог для собак та кішок",
+          "metadesc": "Діагностика та лікування очних хвороб у собак та кішок у Харкові: травми, запалення, катаракта, виразки рогівки. Прийом ветеринарного офтальмолога.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Офтальмологія"
+        },
+        "ru": {
+          "url": "/ru/services/ophthalmology/",
+          "label": "Офтальмология",
+          "title": "Офтальмология для животных в Харькове – ветеринарный офтальмолог для собак и кошек",
+          "metadesc": "Диагностика и лечение глазных болезней у собак и кошек в Харькове: травмы, воспаления, катаракта, язвы роговицы. Приём ветеринарного офтальмолога.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Офтальмология"
+        }
+      }
+    },
+    {
+      "key": "dental-services",
+      "row": 24,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "dental-services",
+        "ru": "dental-services"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/dental-services/",
+          "label": "Стоматологічні послуги",
+          "title": "Стоматологія для тварин у Харкові – ветеринарний стоматолог для собак та кішок",
+          "metadesc": "Видалення зубного каменю, лікування зубів, санація ротової порожнини у собак та кішок у Харкові. Безпечна анестезія, сучасне обладнання.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Стоматологічні послуги"
+        },
+        "ru": {
+          "url": "/ru/services/dental-services/",
+          "label": "Стоматологические услуги",
+          "title": "Стоматология для животных в Харькове – ветеринарный стоматолог для собак и кошек",
+          "metadesc": "Удаление зубного камня, лечение зубов, санация ротовой полости у собак и кошек в Харькове. Безопасная анестезия, современное оборудование.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Стоматологические услуги"
+        }
+      }
+    },
+    {
+      "key": "neurological-appointment",
+      "row": 25,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "neurological-appointment",
+        "ru": "neurological-appointment"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/neurological-appointment/",
+          "label": "Неврологічний прийом",
+          "title": "Неврологія для тварин у Харкові – ветеринарний невролог для собак та кішок",
+          "metadesc": "Діагностика судом, паралічу, атаксії, тремору у собак та кішок у Харкові. Прийом досвідченого ветеринарного невролога, направлення на МРТ.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Неврологічний прийом"
+        },
+        "ru": {
+          "url": "/ru/services/neurological-appointment/",
+          "label": "Неврологический прием",
+          "title": "Неврология для животных в Харькове – ветеринарный невролог для собак и кошек",
+          "metadesc": "Диагностика судорог, паралича, атаксии, тремора у собак и кошек в Харькове. Приём опытного ветеринарного невролога, направление на МРТ.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Неврологический приём"
+        }
+      }
+    },
+    {
+      "key": "orthopedic-appointment",
+      "row": 26,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "orthopedic-appointment",
+        "ru": "orthopedic-appointment"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/orthopedic-appointment/",
+          "label": "Ортопедичний прийом",
+          "title": "Ортопедія для тварин у Харкові – ветеринарний ортопед для собак та кішок",
+          "metadesc": "Лікування травм кінцівок, дисплазії суглобів, захворювань хребта у собак та кішок у Харкові. Ортопедичний огляд, рентген, операції.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Ортопедичний прийом"
+        },
+        "ru": {
+          "url": "/ru/services/orthopedic-appointment/",
+          "label": "Ортопедический прием",
+          "title": "Ортопедия для животных в Харькове – ветеринарный ортопед для собак и кошек",
+          "metadesc": "Лечение травм конечностей, дисплазии суставов, заболеваний позвоночника у собак и кошек в Харькове. Ортопедический осмотр, рентген, операции.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Ортопедический приём"
+        }
+      }
+    },
+    {
+      "key": "soft-tissue-surgery-surgical-interventions-on-the-hepatobiliary-system",
+      "row": 27,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "soft-tissue-surgery-surgical-interventions-on-the-hepatobiliary-system",
+        "ru": "soft-tissue-surgery-surgical-interventions-on-the-hepatobiliary-system"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/soft-tissue-surgery-surgical-interventions-on-the-hepatobiliary-system/",
+          "label": "Оперативні втручання на гепатобіліарній системі",
+          "title": "Операції на печінці та жовчному міхурі у тварин у Харкові – для собак та кішок",
+          "metadesc": "Хірургічне лікування захворювань печінки та жовчного міхура у собак та кішок у Харкові. Холецистектомія, резекція печінки, біопсія.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "М'якотканинна хірургія: оперативні втручання на гепатобіліарній системі"
+        },
+        "ru": {
+          "url": "/ru/services/soft-tissue-surgery-surgical-interventions-on-the-hepatobiliary-system/",
+          "label": "Операции на гепатобилиарной системе",
+          "title": "Операции на печени и желчном пузыре у животных в Харькове – для собак и кошек",
+          "metadesc": "Хирургическое лечение заболеваний печени и желчного пузыря у собак и кошек в Харькове. Холецистэктомия, резекция печени, биопсия.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Мягкотканная хирургия: оперативные вмешательства на гепатобилиарной системе"
+        }
+      }
+    },
+    {
+      "key": "home-services",
+      "row": 28,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "home-services",
+        "ru": "home-services"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/home-services/",
+          "label": "Послуги, які надаються на дому",
+          "title": "Ветеринар на дому у Харкові – виїзд до собак та кішок",
+          "metadesc": "Виїзд ветеринара додому у Харкові: огляд, УЗД, вакцинація, ін'єкції для собак та кішок. Без стресу та черг у клініці.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Ветеринар на дому"
+        },
+        "ru": {
+          "url": "/ru/services/home-services/",
+          "label": "Вызов ветеринара на дом",
+          "title": "Ветеринар на дому в Харькове – выезд к собакам и кошкам",
+          "metadesc": "Выезд ветеринара на дом в Харькове: осмотр, УЗИ, вакцинация, инъекции для собак и кошек. Без стресса и очередей в клинике.",
+          "focus_keyphrase": "ветеринар на дом харьков",
+          "related_keyphrases": [
+            "вызов ветеринара на дом харьков цена",
+            "вызов ветеринара на дом харьков"
+          ],
+          "h1": "Ветеринар на дому"
+        }
+      }
+    },
+    {
+      "key": "soft-tissue-surgery-surgical-interventions-on-the-gastrointestinal-tract",
+      "row": 32,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "soft-tissue-surgery-surgical-interventions-on-the-gastrointestinal-tract",
+        "ru": "soft-tissue-surgery-surgical-interventions-on-the-gastrointestinal-tract"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/soft-tissue-surgery-surgical-interventions-on-the-gastrointestinal-tract/",
+          "label": "Оперативні втручання на ШКТ",
+          "title": "Операції на ШКТ у тварин у Харкові – хірургія для собак та кішок",
+          "metadesc": "Ентеротомія, резекція кишечника, гастротомія у собак та кішок у Харкові. Хірургічне лікування захворювань шлунково-кишкового тракту.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "М'якотканинна хірургія: оперативні втручання на ШКТ"
+        },
+        "ru": {
+          "url": "/ru/services/soft-tissue-surgery-surgical-interventions-on-the-gastrointestinal-tract/",
+          "label": "Операции на ЖКТ",
+          "title": "Операции на ЖКТ у животных в Харькове – хирургия для собак и кошек",
+          "metadesc": "Энтеротомия, резекция кишечника, гастротомия у собак и кошек в Харькове. Хирургическое лечение заболеваний желудочно-кишечного тракта.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Мягкотканная хирургия: оперативные вмешательства на ЖКТ"
+        }
+      }
+    },
+    {
+      "key": "dermatology",
+      "row": 33,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "dermatology",
+        "ru": "dermatology"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/dermatology/",
+          "label": "Дерматологія",
+          "title": "Дерматологія для тварин у Харкові – ветеринарний дерматолог для собак та кішок",
+          "metadesc": "Лікування алергій, свербежу, дерматитів, грибкових інфекцій у собак та кішок у Харкові. Прийом ветеринарного дерматолога, зіскоби, аналізи.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Дерматологія"
+        },
+        "ru": {
+          "url": "/ru/services/dermatology/",
+          "label": "Дерматология",
+          "title": "Дерматология для животных в Харькове – ветеринарный дерматолог для собак и кошек",
+          "metadesc": "Лечение аллергий, зуда, дерматитов, грибковых инфекций у собак и кошек в Харькове. Приём ветеринарного дерматолога, соскобы, анализы.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Дерматология"
+        }
+      }
+    },
+    {
+      "key": "reproductive-medicine-and-newborn-care",
+      "row": 34,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "reproductive-medicine-and-newborn-care",
+        "ru": "reproductive-medicine-and-newborn-care"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/reproductive-medicine-and-newborn-care/",
+          "label": "Репродуктологія та допомога новонародженим",
+          "title": "Репродуктологія для тварин у Харкові – стерилізація та кесарів розтин собак та кішок",
+          "metadesc": "Стерилізація, кастрація, кесарів розтин, допомога новонародженим у собак та кішок у Харкові. Ветеринарний репродуктолог.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Репродуктологія та допомога новонародженим"
+        },
+        "ru": {
+          "url": "/ru/services/reproductive-medicine-and-newborn-care/",
+          "label": "Репродуктология и помощь новорожденным",
+          "title": "Репродуктология для животных в Харькове – стерилизация и кесарево сечение собак и кошек",
+          "metadesc": "Стерилизация, кастрация, кесарево сечение, помощь новорождённым у собак и кошек в Харькове. Ветеринарный репродуктолог.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Репродуктология и помощь новорождённым"
+        }
+      }
+    },
+    {
+      "key": "anesthesia-support",
+      "row": 35,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "anesthesia-support",
+        "ru": "anesthesia-support"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/anesthesia-support/",
+          "label": "Анестезіологічний супровід",
+          "title": "Анестезія для тварин у Харкові – інгаляційний наркоз для собак та кішок",
+          "metadesc": "Інгаляційний наркоз та анестезіологічний супровід операцій у собак, кішок та екзотичних тварин у Харкові. Моніторинг показників під час втручання.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Анестезіологічний супровід"
+        },
+        "ru": {
+          "url": "/ru/services/anesthesia-support/",
+          "label": "Анестезиологическое сопровождение",
+          "title": "Анестезия для животных в Харькове – ингаляционный наркоз для собак и кошек",
+          "metadesc": "Ингаляционный наркоз и анестезиологическое сопровождение операций у собак, кошек и экзотических животных в Харькове. Мониторинг показателей.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Анестезиологическое сопровождение"
+        }
+      }
+    },
+    {
+      "key": "express-tests",
+      "row": 36,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "express-tests",
+        "ru": "express-tests"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/express-tests/",
+          "label": "Експрес-тести",
+          "title": "Експрес-тести для тварин у Харкові – швидка діагностика собак та кішок",
+          "metadesc": "Швидка діагностика інфекцій у собак та кішок у Харкові: чума, панлейкопенія, парвовірус, лямблії. Результат за 10 хвилин.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Експрес-тести"
+        },
+        "ru": {
+          "url": "/ru/services/express-tests/",
+          "label": "Экспресс-тесты",
+          "title": "Экспресс-тесты для животных в Харькове – быстрая диагностика собак и кошек",
+          "metadesc": "Быстрая диагностика инфекций у собак и кошек в Харькове: чума, панлейкопения, парвовирус, лямблии. Результат за 10 минут.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Экспресс-тесты"
+        }
+      }
+    },
+    {
+      "key": "research-in-external-laboratories",
+      "row": 37,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "research-in-external-laboratories",
+        "ru": "research-in-external-laboratories"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/research-in-external-laboratories/",
+          "label": "Дослідження у зовнішніх лабораторіях",
+          "title": "Аналізи у зовнішніх лабораторіях для тварин у Харкові – собаки та кішки",
+          "metadesc": "Спеціалізовані та рідкісні аналізи для собак та кішок у Харкові через зовнішні лабораторії. ПЛР, гормони, генетика, гістологія.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Дослідження у зовнішніх лабораторіях"
+        },
+        "ru": {
+          "url": "/ru/services/research-in-external-laboratories/",
+          "label": "Исследования во внешних лабораториях",
+          "title": "Анализы во внешних лабораториях для животных в Харькове – собаки и кошки",
+          "metadesc": "Специализированные и редкие анализы для собак и кошек в Харькове через внешние лаборатории. ПЦР, гормоны, генетика, гистология.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Исследования во внешних лабораториях"
+        }
+      }
+    },
+    {
+      "key": "cytological-studies",
+      "row": 38,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "cytological-studies",
+        "ru": "cytological-studies"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/cytological-studies/",
+          "label": "Цитологічні дослідження",
+          "title": "Цитологія для тварин у Харкові – аналіз клітин собак та кішок",
+          "metadesc": "Цитологічне дослідження пухлин, шкіри, слизових оболонок у собак та кішок у Харкові. Швидкі результати, точна діагностика.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Цитологічні дослідження"
+        },
+        "ru": {
+          "url": "/ru/services/cytological-studies/",
+          "label": "Цитологические исследования",
+          "title": "Цитология для животных в Харькове – анализ клеток собак и кошек",
+          "metadesc": "Цитологическое исследование опухолей, кожи, слизистых оболочек у собак и кошек в Харькове. Быстрые результаты, точная диагностика.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Цитологические исследования"
+        }
+      }
+    },
+    {
+      "key": "laboratory-stool-and-urine-tests",
+      "row": 39,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "laboratory-stool-and-urine-tests",
+        "ru": "laboratory-stool-and-urine-tests"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/laboratory-stool-and-urine-tests/",
+          "label": "Лабораторія: дослідження калу та сечі",
+          "title": "Аналіз сечі та калу для тварин у Харкові – лабораторія для собак та кішок",
+          "metadesc": "Дослідження сечі та калу у собак та кішок у Харкові: виявлення інфекцій, паразитів, кристалів, запальних процесів.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Лабораторія: дослідження калу та сечі"
+        },
+        "ru": {
+          "url": "/ru/services/laboratory-stool-and-urine-tests/",
+          "label": "Лаборатория: исследования кала и мочи",
+          "title": "Анализ мочи и кала для животных в Харькове – лаборатория для собак и кошек",
+          "metadesc": "Исследование мочи и кала у собак и кошек в Харькове: выявление инфекций, паразитов, кристаллов, воспалительных процессов.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Лаборатория: исследование кала и мочи"
+        }
+      }
+    },
+    {
+      "key": "laboratory-blood-tests",
+      "row": 40,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "laboratory-blood-tests",
+        "ru": "laboratory-blood-tests"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/laboratory-blood-tests/",
+          "label": "Лабораторія: дослідження крові",
+          "title": "Аналізи крові для тварин у Харкові – ветеринарна лабораторія для собак та кішок",
+          "metadesc": "Загальний, біохімічний та розгорнутий аналіз крові для собак та кішок у Харкові. Швидке виконання, точні результати, консультація лікаря.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Лабораторія: дослідження крові"
+        },
+        "ru": {
+          "url": "/ru/services/laboratory-blood-tests/",
+          "label": "Лаборатория: исследования крови",
+          "title": "Анализы крови для животных в Харькове – ветеринарная лаборатория для собак и кошек",
+          "metadesc": "Общий, биохимический и развёрнутый анализ крови для собак и кошек в Харькове. Быстрое выполнение, точные результаты, консультация врача.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Лаборатория: исследование крови"
+        }
+      }
+    },
+    {
+      "key": "intensive-care-unit",
+      "row": 41,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "intensive-care-unit",
+        "ru": "intensive-care-unit"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/intensive-care-unit/",
+          "label": "Відділення реанімації та інтенсивної терапії",
+          "title": "Реанімація тварин у Харкові – інтенсивна терапія собак та кішок",
+          "metadesc": "Цілодобова реанімація та інтенсивна терапія собак та кішок у Харкові. Апаратна підтримка, постійний моніторинг, ургентна допомога.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Відділення реанімації та інтенсивної терапії"
+        },
+        "ru": {
+          "url": "/ru/services/intensive-care-unit/",
+          "label": "Отделение реанимации и интенсивной терапии",
+          "title": "Реанимация животных в Харькове – интенсивная терапия собак и кошек",
+          "metadesc": "Круглосуточная реанимация и интенсивная терапия собак и кошек в Харькове. Аппаратная поддержка, постоянный мониторинг, ургентная помощь.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Отделение реанимации и интенсивной терапии"
+        }
+      }
+    },
+    {
+      "key": "endoscopy",
+      "row": 42,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "endoscopy",
+        "ru": "endoscopy"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/endoscopy/",
+          "label": "Ендоскопія",
+          "title": "Ендоскопія для тварин у Харкові – гастроскопія та бронхоскопія собак та кішок",
+          "metadesc": "Ендоскопічна діагностика ШКТ і дихальних шляхів у собак та кішок у Харкові: гастроскопія, колоноскопія, риноскопія, бронхоскопія.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Ендоскопія"
+        },
+        "ru": {
+          "url": "/ru/services/endoscopy/",
+          "label": "Эндоскопия",
+          "title": "Эндоскопия для животных в Харькове – гастроскопия и бронхоскопия собак и кошек",
+          "metadesc": "Эндоскопическая диагностика ЖКТ и дыхательных путей у собак и кошек в Харькове: гастроскопия, колоноскопия, риноскопия, бронхоскопия.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Эндоскопия"
+        }
+      }
+    },
+    {
+      "key": "radiology",
+      "row": 43,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "radiology",
+        "ru": "radiology"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/radiology/",
+          "label": "Радіологія",
+          "title": "Рентген для тварин у Харкові – ветеринарна радіологія для собак та кішок",
+          "metadesc": "Рентгенографія для собак та кішок у Харкові: переломи, пухлини, сторонні тіла, патології суглобів. Цифровий рентген, швидкі результати.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Радіологія"
+        },
+        "ru": {
+          "url": "/ru/services/radiology/",
+          "label": "Радиология",
+          "title": "Рентген для животных в Харькове – ветеринарная радиология для собак и кошек",
+          "metadesc": "Рентгенография для собак и кошек в Харькове: переломы, опухоли, инородные тела, патологии суставов. Цифровой рентген, быстрые результаты.",
+          "focus_keyphrase": "рентген для животных харьков",
+          "related_keyphrases": [],
+          "h1": "Радиология"
+        }
+      }
+    },
+    {
+      "key": "diagnostics",
+      "row": 45,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "diagnostics",
+        "ru": "diagnostics"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/diagnostics/",
+          "label": "Діагностика: УЗД, ЕХОкГ, тонометрія, ЕКГ",
+          "title": "УЗД, ЕКГ, ЕХОкГ для тварин у Харкові – діагностика собак та кішок",
+          "metadesc": "УЗД органів, ехокардіографія, ЕКГ, тонометрія для собак та кішок у Харкові. Сучасна апаратна діагностика, результати під час прийому.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Діагностика: УЗД, ЕХОкГ, тонометрія, ЕКГ"
+        },
+        "ru": {
+          "url": "/ru/services/diagnostics/",
+          "label": "Диагностика: УЗИ, ЭхоКГ, тонометрия, ЭКГ",
+          "title": "УЗИ, ЭКГ, ЭХОкГ для животных в Харькове – диагностика собак и кошек",
+          "metadesc": "УЗИ органов, эхокардиография, ЭКГ, тонометрия для собак и кошек в Харькове. Современная аппаратная диагностика, результаты на приёме.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Диагностика: УЗИ, ЭХОкГ, тонометрия, ЭКГ"
+        }
+      }
+    },
+    {
+      "key": "complex-therapeutic-manipulations",
+      "row": 46,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "complex-therapeutic-manipulations",
+        "ru": "complex-therapeutic-manipulations"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/complex-therapeutic-manipulations/",
+          "label": "Складні терапевтичні маніпуляції",
+          "title": "Складні терапевтичні процедури для тварин у Харкові – лікування собак та кішок",
+          "metadesc": "Інфузійна терапія, складні маніпуляції та постійний нагляд ветеринара для собак та кішок у Харкові. Лікування важких стаціонарних випадків.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Складні терапевтичні маніпуляції"
+        },
+        "ru": {
+          "url": "/ru/services/complex-therapeutic-manipulations/",
+          "label": "Сложные терапевтические манипуляции",
+          "title": "Сложные терапевтические процедуры для животных в Харькове – лечение собак и кошек",
+          "metadesc": "Инфузионная терапия, сложные манипуляции и постоянный контроль ветеринара для собак и кошек в Харькове. Лечение тяжёлых стационарных случаев.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Сложные терапевтические манипуляции"
+        }
+      }
+    },
+    {
+      "key": "basic-therapeutic-manipulations",
+      "row": 47,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "basic-therapeutic-manipulations",
+        "ru": "basic-therapeutic-manipulations"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/basic-therapeutic-manipulations/",
+          "label": "Базові терапевтичні маніпуляції",
+          "title": "Терапевтичні процедури для тварин у Харкові – крапельниці та ін'єкції собакам та кішкам",
+          "metadesc": "Встановлення катетерів, крапельниці, обробка ран, ін'єкції для собак та кішок у Харкові. Базові маніпуляції швидко та безпечно.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Базові терапевтичні маніпуляції"
+        },
+        "ru": {
+          "url": "/ru/services/basic-therapeutic-manipulations/",
+          "label": "Базовые терапевтические манипуляции",
+          "title": "Терапевтические процедуры для животных в Харькове – капельницы и инъекции собакам и кошкам",
+          "metadesc": "Установка катетеров, капельницы, обработка ран, инъекции для собак и кошек в Харькове. Базовые манипуляции быстро и безопасно.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Базовые терапевтические манипуляции"
+        }
+      }
+    },
+    {
+      "key": "reception-department",
+      "row": 48,
+      "depth": 2,
+      "is_front": false,
+      "expected_slug": {
+        "uk": "reception-department",
+        "ru": "reception-department"
+      },
+      "translations": {
+        "uk": {
+          "url": "/services/reception-department/",
+          "label": "Приймальне відділення",
+          "title": "Ветеринарний прийом у Харкові – огляд собак та кішок без черги",
+          "metadesc": "Первинний ветеринарний огляд, консультація та направлення на аналізи у Харкові. Прийом собак та кішок без черги, запис онлайн.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Приймальне відділення"
+        },
+        "ru": {
+          "url": "/ru/services/reception-department/",
+          "label": "Приемное отделение",
+          "title": "Ветеринарный приём в Харькове – осмотр собак и кошек без очереди",
+          "metadesc": "Первичный ветеринарный осмотр, консультация и направление на анализы в Харькове. Приём собак и кошек без очереди, запись онлайн.",
+          "focus_keyphrase": "",
+          "related_keyphrases": [],
+          "h1": "Приёмное отделение"
+        }
+      }
+    }
+  ]
+}
