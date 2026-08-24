@@ -1,5 +1,7 @@
 <?php
 
+use dovira\CLI\ExportTranslationsCommand;
+use dovira\CLI\ImportTranslationsCommand;
 use dovira\CLI\TranslateCommand;
 use dovira\CLI\TranslateOptionsCommand;
 
@@ -10,6 +12,11 @@ require_once TEMPLATE_DIR . '/inc/cli/AnthropicTranslator.php';
 require_once TEMPLATE_DIR . '/inc/cli/PostCopier.php';
 require_once TEMPLATE_DIR . '/inc/cli/TranslateCommand.php';
 require_once TEMPLATE_DIR . '/inc/cli/TranslateOptionsCommand.php';
+require_once TEMPLATE_DIR . '/inc/cli/TranslationBundle.php';
+require_once TEMPLATE_DIR . '/inc/cli/ExportTranslationsCommand.php';
+require_once TEMPLATE_DIR . '/inc/cli/ImportTranslationsCommand.php';
 
 WP_CLI::add_command( 'dovira translate', TranslateCommand::class );
 WP_CLI::add_command( 'dovira translate-options', TranslateOptionsCommand::class );
+WP_CLI::add_command( 'dovira translations-export', ExportTranslationsCommand::class );
+WP_CLI::add_command( 'dovira translations-import', ImportTranslationsCommand::class );

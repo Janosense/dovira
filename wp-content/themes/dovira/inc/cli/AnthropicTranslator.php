@@ -12,12 +12,26 @@ use WP_CLI;
  */
 class AnthropicTranslator {
 
-	private const MODEL = 'claude-opus-4-8';
+	public const DEFAULT_MODEL = 'claude-haiku-4-5';
+
+	/**
+	 * Models taking adaptive thinking. Everything else (Haiku 4.5 included)
+	 * rejects the parameter with a 400, so it is omitted for those.
+	 */
+	private const ADAPTIVE_THINKING_MODELS = [
+		'claude-fable-5',
+		'claude-opus-5',
+		'claude-opus-4-8',
+		'claude-opus-4-7',
+		'claude-opus-4-6',
+		'claude-sonnet-5',
+		'claude-sonnet-4-6',
+	];
 
 	private const MAX_TOKENS = 16000;
 
 	/**
-	 * Chunking thresholds: a page exceeding these is translated in several calls.
+	 * Chunking thresholds: a post exceeding these is translated in several calls.
 	 */
 	private const CHUNK_MAX_ITEMS = 100;
 
@@ -51,13 +65,17 @@ class AnthropicTranslator {
 
 	private Client $client;
 
+	private string $model;
+
 	private string $system_prompt;
 
-	public function __construct( string $api_key, string $from_language, string $to_language ) {
+	public function __construct( string $api_key, string $from_language, string $to_language, string $model = self::DEFAULT_MODEL ) {
 		$this->client = new Client(
 			apiKey: $api_key,
 			requestOptions: [ 'maxRetries' => 4, 'timeout' => 300.0 ],
 		);
+
+		$this->model = $model;
 
 		$this->system_prompt = <<<PROMPT
 You are a professional {$from_language} to {$to_language} translator for "Dovira", a veterinary clinic and animal blood bank brand.
@@ -66,12 +84,34 @@ You receive a JSON object mapping opaque path keys to source strings in $from_la
 
 Rules:
 - Return each "key" byte-for-byte unchanged. Translate only the "value".
-- Preserve all HTML tags, attributes, and entities exactly; translate only human-readable text between or within them.
-- Preserve placeholders, shortcodes in square brackets, Yoast variables like %%title%%, URLs, emails, phone numbers, numbers, and line breaks exactly as they appear.
+- Preserve markup exactly: every HTML tag, in the same order and nesting as the source, with all of its attributes and their values unchanged (including data-* attributes). Never add, drop, merge, split or reorder tags. Translate only the human-readable text between tags and inside translatable attributes such as alt and title.
+- Preserve HTML entities, placeholders, shortcodes in square brackets, Yoast variables like %%title%%, URLs, emails, phone numbers, numbers, and line breaks exactly as they appear.
 - Do not transliterate proper brand names unless a standard $to_language form exists.
 - Keep the tone warm, professional, and trustworthy. Do not add, omit, or summarize content.
 - Output strictly via the provided JSON schema, one item per input key, no commentary.
 PROMPT;
+	}
+
+	/**
+	 * Resolves the API key from the wp-config constant, falling back to the
+	 * theme .env file (loaded into $_ENV/$_SERVER by phpdotenv in functions.php).
+	 *
+	 * @return string Empty string when no key is configured.
+	 */
+	public static function api_key(): string {
+		if ( defined( 'ANTHROPIC_API_KEY' ) && ANTHROPIC_API_KEY !== '' ) {
+			return (string) ANTHROPIC_API_KEY;
+		}
+
+		foreach ( [ $_ENV, $_SERVER ] as $source ) {
+			$key = $source['ANTHROPIC_API_KEY'] ?? '';
+
+			if ( is_string( $key ) && $key !== '' ) {
+				return $key;
+			}
+		}
+
+		return '';
 	}
 
 	/**
@@ -93,6 +133,24 @@ PROMPT;
 			$result += $this->translate_chunk( $chunk );
 		}
 
+		// Smaller models occasionally drop or reorder inline markup; give
+		// those strings a second, isolated attempt before accepting them.
+		$broken = $this->find_markup_mismatches( $map, $result );
+
+		if ( $broken ) {
+			WP_CLI::log( sprintf( '  Re-translating %d string(s) whose markup changed.', count( $broken ) ) );
+
+			foreach ( $this->chunk_map( $broken ) as $chunk ) {
+				foreach ( $this->translate_chunk( $chunk ) as $key => $value ) {
+					$result[ $key ] = $value;
+				}
+			}
+
+			foreach ( $this->find_markup_mismatches( $broken, $result ) as $key => $source ) {
+				WP_CLI::warning( "Markup still differs from the source for \"$key\" — review this string manually." );
+			}
+		}
+
 		// Any key the model dropped falls back to the source string.
 		foreach ( $map as $key => $value ) {
 			if ( ! array_key_exists( $key, $result ) ) {
@@ -102,6 +160,45 @@ PROMPT;
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Returns the source strings whose translation no longer carries the same
+	 * sequence of HTML tags.
+	 *
+	 * @param array<string, string> $map
+	 * @param array<string, string> $translations
+	 *
+	 * @return array<string, string> Subset of $map that failed the check.
+	 */
+	private function find_markup_mismatches( array $map, array $translations ): array {
+		$mismatches = [];
+
+		foreach ( $map as $key => $source ) {
+			if ( ! isset( $translations[ $key ] ) ) {
+				continue;
+			}
+
+			if ( self::tag_signature( $source ) !== self::tag_signature( $translations[ $key ] ) ) {
+				$mismatches[ $key ] = $source;
+			}
+		}
+
+		return $mismatches;
+	}
+
+	/**
+	 * Ordered list of opening/closing tag names in a string, used to compare
+	 * the markup skeleton of a translation against its source.
+	 *
+	 * @param string $html
+	 *
+	 * @return string
+	 */
+	private static function tag_signature( string $html ): string {
+		preg_match_all( '#</?([a-z][a-z0-9]*)#i', $html, $matches );
+
+		return strtolower( implode( ',', $matches[1] ) );
 	}
 
 	/**
@@ -150,7 +247,7 @@ PROMPT;
 			$message = $this->client->messages->create(
 				maxTokens: self::MAX_TOKENS,
 				messages: [ [ 'role' => 'user', 'content' => $payload ] ],
-				model: self::MODEL,
+				model: $this->model,
 				system: [
 					[
 						'type'         => 'text',
@@ -158,7 +255,7 @@ PROMPT;
 						'cacheControl' => [ 'type' => 'ephemeral' ],
 					],
 				],
-				thinking: [ 'type' => 'adaptive' ],
+				thinking: in_array( $this->model, self::ADAPTIVE_THINKING_MODELS, true ) ? [ 'type' => 'adaptive' ] : null,
 				outputConfig: [
 					'format' => [
 						'type'   => 'json_schema',
