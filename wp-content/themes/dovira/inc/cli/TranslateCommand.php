@@ -38,6 +38,12 @@ class TranslateCommand {
 	 * [--post=<id>]
 	 * : Translate a single post by ID.
 	 *
+	 * [--post-status=<status>]
+	 * : Post status to include (comma-separated, or "any").
+	 * ---
+	 * default: publish
+	 * ---
+	 *
 	 * [--lang-from=<slug>]
 	 * : Source language slug.
 	 * ---
@@ -56,21 +62,30 @@ class TranslateCommand {
 	 * [--overwrite]
 	 * : Re-translate and update posts that already have a translation.
 	 *
+	 * [--model=<id>]
+	 * : Anthropic model used for the translation.
+	 * ---
+	 * default: claude-haiku-4-5
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp dovira translate --post-type=page --dry-run --post=42
-	 *     wp dovira translate --post-type=page
+	 *     wp dovira translate --post-type=post --dry-run --post=1385
+	 *     wp dovira translate --post-type=post
+	 *     wp dovira translate --post-type=page --model=claude-opus-4-8
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
 	 */
 	public function __invoke( array $args, array $assoc_args ): void {
-		$post_type = $assoc_args['post-type'] ?? 'page';
-		$from      = $assoc_args['lang-from'] ?? 'uk';
-		$to        = $assoc_args['lang-to'] ?? 'ru';
-		$post_id   = (int) ( $assoc_args['post'] ?? 0 );
-		$dry_run   = isset( $assoc_args['dry-run'] );
-		$overwrite = isset( $assoc_args['overwrite'] );
+		$post_type   = $assoc_args['post-type'] ?? 'page';
+		$from        = $assoc_args['lang-from'] ?? 'uk';
+		$to          = $assoc_args['lang-to'] ?? 'ru';
+		$post_id     = (int) ( $assoc_args['post'] ?? 0 );
+		$post_status = $assoc_args['post-status'] ?? 'publish';
+		$model       = $assoc_args['model'] ?? AnthropicTranslator::DEFAULT_MODEL;
+		$dry_run     = isset( $assoc_args['dry-run'] );
+		$overwrite   = isset( $assoc_args['overwrite'] );
 
 		$this->check_requirements( $from, $to );
 
@@ -81,19 +96,20 @@ class TranslateCommand {
 		$extractor      = new ContentExtractor();
 		$meta_extractor = new MetaExtractor();
 		$translator     = new AnthropicTranslator(
-			ANTHROPIC_API_KEY,
+			AnthropicTranslator::api_key(),
 			self::LANGUAGE_NAMES[ $from ] ?? $from,
-			self::LANGUAGE_NAMES[ $to ] ?? $to
+			self::LANGUAGE_NAMES[ $to ] ?? $to,
+			$model
 		);
-		$copier     = new PostCopier();
+		$copier         = new PostCopier();
 
-		$posts = $this->get_posts( $post_type, $from, $post_id );
+		$posts = $this->get_posts( $post_type, $from, $post_id, $post_status );
 
 		if ( empty( $posts ) ) {
 			WP_CLI::error( "No \"$post_type\" posts found in language \"$from\"." );
 		}
 
-		WP_CLI::log( sprintf( 'Found %d post(s) to process.', count( $posts ) ) );
+		WP_CLI::log( sprintf( 'Found %d post(s) to process, translating with %s.', count( $posts ), $model ) );
 
 		$results = [];
 		$total   = count( $posts );
@@ -162,8 +178,8 @@ class TranslateCommand {
 	 * @param string $to
 	 */
 	private function check_requirements( string $from, string $to ): void {
-		if ( ! defined( 'ANTHROPIC_API_KEY' ) || ANTHROPIC_API_KEY === '' ) {
-			WP_CLI::error( 'ANTHROPIC_API_KEY constant is not defined in wp-config.php.' );
+		if ( AnthropicTranslator::api_key() === '' ) {
+			WP_CLI::error( 'No Anthropic API key found. Set ANTHROPIC_API_KEY in the theme .env file or in wp-config.php.' );
 		}
 
 		if ( ! function_exists( 'pll_set_post_language' ) ) {
@@ -186,13 +202,14 @@ class TranslateCommand {
 	 * @param string $post_type
 	 * @param string $from
 	 * @param int    $post_id
+	 * @param string $post_status Comma-separated statuses, or "any".
 	 *
 	 * @return WP_Post[]
 	 */
-	private function get_posts( string $post_type, string $from, int $post_id ): array {
+	private function get_posts( string $post_type, string $from, int $post_id, string $post_status = 'publish' ): array {
 		$query = new WP_Query( [
 			'post_type'              => $post_type,
-			'post_status'            => 'publish',
+			'post_status'            => $post_status === 'any' ? 'any' : array_map( 'trim', explode( ',', $post_status ) ),
 			'posts_per_page'         => -1,
 			'lang'                   => $from,
 			'p'                      => $post_id ?: 0,

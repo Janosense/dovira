@@ -44,6 +44,12 @@ class TranslateOptionsCommand {
 	 * [--overwrite]
 	 * : Update target rows and string translations that already exist.
 	 *
+	 * [--model=<id>]
+	 * : Anthropic model used for the translation.
+	 * ---
+	 * default: claude-haiku-4-5
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp dovira translate-options --dry-run
@@ -55,6 +61,7 @@ class TranslateOptionsCommand {
 	public function __invoke( array $args, array $assoc_args ): void {
 		$from      = $assoc_args['lang-from'] ?? 'uk';
 		$to        = $assoc_args['lang-to'] ?? 'ru';
+		$model     = $assoc_args['model'] ?? AnthropicTranslator::DEFAULT_MODEL;
 		$dry_run   = isset( $assoc_args['dry-run'] );
 		$overwrite = isset( $assoc_args['overwrite'] );
 
@@ -101,9 +108,10 @@ class TranslateOptionsCommand {
 		}
 
 		$translator = new AnthropicTranslator(
-			ANTHROPIC_API_KEY,
+			AnthropicTranslator::api_key(),
 			TranslateCommand::LANGUAGE_NAMES[ $from ] ?? $from,
-			TranslateCommand::LANGUAGE_NAMES[ $to ] ?? $to
+			TranslateCommand::LANGUAGE_NAMES[ $to ] ?? $to,
+			$model
 		);
 
 		try {
@@ -136,8 +144,8 @@ class TranslateOptionsCommand {
 	 * @param string $to
 	 */
 	private function check_requirements( string $from, string $to ): void {
-		if ( ! defined( 'ANTHROPIC_API_KEY' ) || ANTHROPIC_API_KEY === '' ) {
-			WP_CLI::error( 'ANTHROPIC_API_KEY constant is not defined in wp-config.php.' );
+		if ( AnthropicTranslator::api_key() === '' ) {
+			WP_CLI::error( 'No Anthropic API key found. Set ANTHROPIC_API_KEY in the theme .env file or in wp-config.php.' );
 		}
 
 		if ( ! function_exists( 'pll_languages_list' ) ) {
