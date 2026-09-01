@@ -18,6 +18,7 @@
 }
 
 .search-form--mobile {
+  flex-shrink: 0;
   width: 100%;
   margin-bottom: 32px;
 }
@@ -54,14 +55,20 @@
   display: block;
   width: 24px;
   height: 24px;
+  padding: 0;
+  box-sizing: border-box;
   background-color: var(--color-transparent);
   border: none;
   cursor: pointer;
 
   & svg {
-    position: relative;
-    top: -6px;
-    right: 6px;
+    position: absolute;
+    top: -10%;
+    right: -10%;
+    display: block;
+    width: 120%;
+    height: 120%;
+    pointer-events: none;
   }
 
 

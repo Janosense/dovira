@@ -111,87 +111,89 @@ $current_site_id       = ( str_contains( get_site_url(), 'kyiv' ) ) ? 'kyiv' : '
 	</div>
 </nav>
 <nav class="mobile-nav">
-	<div class="search-form search-form--mobile">
-		<form role="search" method="get" id="searchformmobile" class="searchform"
-			  action="<?php echo esc_url( home_url( '/' ) ); ?>">
-			<input type="text" name="s" id="s-mobile" class="search-form__input" placeholder="Пошук..."
-				   value="<?php echo get_search_query(); ?>">
-			<button class="search-form__submit">
-				<svg width="36px" height="36px" viewBox="0 -0.5 25 25" fill="none">
-					<path fill-rule="evenodd" clip-rule="evenodd"
-						  d="M7.30524 15.7137C6.4404 14.8306 5.85381 13.7131 5.61824 12.4997C5.38072 11.2829 5.50269 10.0233 5.96924 8.87469C6.43181 7.73253 7.22153 6.75251 8.23924 6.05769C10.3041 4.64744 13.0224 4.64744 15.0872 6.05769C16.105 6.75251 16.8947 7.73253 17.3572 8.87469C17.8238 10.0233 17.9458 11.2829 17.7082 12.4997C17.4727 13.7131 16.8861 14.8306 16.0212 15.7137C14.8759 16.889 13.3044 17.5519 11.6632 17.5519C10.0221 17.5519 8.45059 16.889 7.30524 15.7137V15.7137Z"
-						  stroke="#727270" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-					<path
-						d="M11.6702 7.20292C11.2583 7.24656 10.9598 7.61586 11.0034 8.02777C11.0471 8.43968 11.4164 8.73821 11.8283 8.69457L11.6702 7.20292ZM13.5216 9.69213C13.6831 10.0736 14.1232 10.2519 14.5047 10.0904C14.8861 9.92892 15.0644 9.4888 14.9029 9.10736L13.5216 9.69213ZM16.6421 15.0869C16.349 14.7943 15.8741 14.7947 15.5815 15.0879C15.2888 15.381 15.2893 15.8559 15.5824 16.1485L16.6421 15.0869ZM18.9704 19.5305C19.2636 19.8232 19.7384 19.8228 20.0311 19.5296C20.3237 19.2364 20.3233 18.7616 20.0301 18.4689L18.9704 19.5305ZM11.8283 8.69457C12.5508 8.61801 13.2384 9.02306 13.5216 9.69213L14.9029 9.10736C14.3622 7.83005 13.0496 7.05676 11.6702 7.20292L11.8283 8.69457ZM15.5824 16.1485L18.9704 19.5305L20.0301 18.4689L16.6421 15.0869L15.5824 16.1485Z"
-						fill="#727270"/>
-				</svg>
-			</button>
-		</form>
-	</div>
-	<?= wp_nav_menu( array(
-		'theme_location' => 'primary',
-		'depth'          => 2,
-		'container'      => false,
-		'menu_class'     => 'mobile-nav__list',
-	) ); ?>
-	<ul class="language-switcher language-switcher--mobile">
-		<?php pll_the_languages( [
-			'show_flags'       => 0,
-			'show_names'       => 1,
-			'display_names_as' => 'name',
-		] ); ?>
-	</ul>
-	<ul class="location-switcher location-switcher--mobile">
-		<?php if ( $current_site_id === 'kyiv' ) : ?>
-			<li class="location-switcher__item">
-				<div class="location-switcher__link location-switcher__link--active">
-					<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+	<div class="mobile-nav__inner">
+		<div class="search-form search-form--mobile">
+			<form role="search" method="get" id="searchformmobile" class="searchform"
+				  action="<?php echo esc_url( home_url( '/' ) ); ?>">
+				<input type="text" name="s" id="s-mobile" class="search-form__input" placeholder="Пошук..."
+					   value="<?php echo get_search_query(); ?>">
+				<button class="search-form__submit">
+					<svg width="36px" height="36px" viewBox="0 -0.5 25 25" fill="none">
+						<path fill-rule="evenodd" clip-rule="evenodd"
+							  d="M7.30524 15.7137C6.4404 14.8306 5.85381 13.7131 5.61824 12.4997C5.38072 11.2829 5.50269 10.0233 5.96924 8.87469C6.43181 7.73253 7.22153 6.75251 8.23924 6.05769C10.3041 4.64744 13.0224 4.64744 15.0872 6.05769C16.105 6.75251 16.8947 7.73253 17.3572 8.87469C17.8238 10.0233 17.9458 11.2829 17.7082 12.4997C17.4727 13.7131 16.8861 14.8306 16.0212 15.7137C14.8759 16.889 13.3044 17.5519 11.6632 17.5519C10.0221 17.5519 8.45059 16.889 7.30524 15.7137V15.7137Z"
+							  stroke="#727270" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 						<path
-							d="M12 21C15.5 17.4 19 14.1764 19 10.2C19 6.22355 15.866 3 12 3C8.13401 3 5 6.22355 5 10.2C5 14.1764 8.5 17.4 12 21Z"
-							stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-						<path
-							d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"
-							stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							d="M11.6702 7.20292C11.2583 7.24656 10.9598 7.61586 11.0034 8.02777C11.0471 8.43968 11.4164 8.73821 11.8283 8.69457L11.6702 7.20292ZM13.5216 9.69213C13.6831 10.0736 14.1232 10.2519 14.5047 10.0904C14.8861 9.92892 15.0644 9.4888 14.9029 9.10736L13.5216 9.69213ZM16.6421 15.0869C16.349 14.7943 15.8741 14.7947 15.5815 15.0879C15.2888 15.381 15.2893 15.8559 15.5824 16.1485L16.6421 15.0869ZM18.9704 19.5305C19.2636 19.8232 19.7384 19.8228 20.0311 19.5296C20.3237 19.2364 20.3233 18.7616 20.0301 18.4689L18.9704 19.5305ZM11.8283 8.69457C12.5508 8.61801 13.2384 9.02306 13.5216 9.69213L14.9029 9.10736C14.3622 7.83005 13.0496 7.05676 11.6702 7.20292L11.8283 8.69457ZM15.5824 16.1485L18.9704 19.5305L20.0301 18.4689L16.6421 15.0869L15.5824 16.1485Z"
+							fill="#727270"/>
 					</svg>
-					<?= $current_language_slug === 'uk' ? 'Київ' : 'Киев'; ?>
-				</div>
-			</li>
-			<li class="location-switcher__item">
-				<a href="https://dovira.vet"
-				   class="location-switcher__link"><?= $current_language_slug === 'uk' ? 'Харків' : 'Харьков'; ?></a>
-			</li>
-		<?php elseif ( $current_site_id === 'kharkiv' ) : ?>
-			<li class="location-switcher__item">
-				<a href="https://kyiv.dovira.vet"
-				   class="location-switcher__link"><?= $current_language_slug === 'uk' ? 'Київ' : 'Киев'; ?></a>
-			</li>
-			<li class="location-switcher__item">
-				<div class="location-switcher__link location-switcher__link--active">
-					<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path
-							d="M12 21C15.5 17.4 19 14.1764 19 10.2C19 6.22355 15.866 3 12 3C8.13401 3 5 6.22355 5 10.2C5 14.1764 8.5 17.4 12 21Z"
-							stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-						<path
-							d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"
-							stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-					</svg>
-					<?= $current_language_slug === 'uk' ? 'Харків' : 'Харьков'; ?>
-				</div>
-			</li>
-		<?php endif; ?>
-	</ul>
-	<?php if ( ! empty( $contacts ) ) : ?>
-		<ul class="mobile-nav__phones">
-			<?php foreach ( $contacts as $contact ) : ?>
-				<li class="mobile-nav__phone">
-					<span><?= $contact['city']; ?></span> <a href="tel:<?= str_replace( [
-						' ',
-						'-',
-						'(',
-						')'
-					], '', $contact['phones'][0]['number'] ); ?>"><?= $contact['phones'][0]['number']; ?></a>
-				</li>
-			<?php endforeach; ?>
+				</button>
+			</form>
+		</div>
+		<?= wp_nav_menu( array(
+			'theme_location' => 'primary',
+			'depth'          => 2,
+			'container'      => false,
+			'menu_class'     => 'mobile-nav__list',
+		) ); ?>
+		<ul class="language-switcher language-switcher--mobile">
+			<?php pll_the_languages( [
+				'show_flags'       => 0,
+				'show_names'       => 1,
+				'display_names_as' => 'name',
+			] ); ?>
 		</ul>
-	<?php endif; ?>
+		<ul class="location-switcher location-switcher--mobile">
+			<?php if ( $current_site_id === 'kyiv' ) : ?>
+				<li class="location-switcher__item">
+					<div class="location-switcher__link location-switcher__link--active">
+						<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path
+								d="M12 21C15.5 17.4 19 14.1764 19 10.2C19 6.22355 15.866 3 12 3C8.13401 3 5 6.22355 5 10.2C5 14.1764 8.5 17.4 12 21Z"
+								stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<path
+								d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"
+								stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+						<?= $current_language_slug === 'uk' ? 'Київ' : 'Киев'; ?>
+					</div>
+				</li>
+				<li class="location-switcher__item">
+					<a href="https://dovira.vet"
+					   class="location-switcher__link"><?= $current_language_slug === 'uk' ? 'Харків' : 'Харьков'; ?></a>
+				</li>
+			<?php elseif ( $current_site_id === 'kharkiv' ) : ?>
+				<li class="location-switcher__item">
+					<a href="https://kyiv.dovira.vet"
+					   class="location-switcher__link"><?= $current_language_slug === 'uk' ? 'Київ' : 'Киев'; ?></a>
+				</li>
+				<li class="location-switcher__item">
+					<div class="location-switcher__link location-switcher__link--active">
+						<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path
+								d="M12 21C15.5 17.4 19 14.1764 19 10.2C19 6.22355 15.866 3 12 3C8.13401 3 5 6.22355 5 10.2C5 14.1764 8.5 17.4 12 21Z"
+								stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<path
+								d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"
+								stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+						<?= $current_language_slug === 'uk' ? 'Харків' : 'Харьков'; ?>
+					</div>
+				</li>
+			<?php endif; ?>
+		</ul>
+		<?php if ( ! empty( $contacts ) ) : ?>
+			<ul class="mobile-nav__phones">
+				<?php foreach ( $contacts as $contact ) : ?>
+					<li class="mobile-nav__phone">
+						<span><?= $contact['city']; ?></span> <a href="tel:<?= str_replace( [
+							' ',
+							'-',
+							'(',
+							')'
+						], '', $contact['phones'][0]['number'] ); ?>"><?= $contact['phones'][0]['number']; ?></a>
+					</li>
+				<?php endforeach; ?>
+			</ul>
+		<?php endif; ?>
+	</div>
 </nav>

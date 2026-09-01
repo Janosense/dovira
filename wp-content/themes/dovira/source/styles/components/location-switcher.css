@@ -5,7 +5,7 @@
   align-items: center;
   max-width: 400px;
   list-style-type: none;
-  margin: 40px auto 0;
+  margin: 40px auto 20px;
   padding: 0;
   background-color: var(--color-white);
   border-radius: 50px;
