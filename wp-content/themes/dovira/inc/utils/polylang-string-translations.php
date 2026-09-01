@@ -14,6 +14,8 @@ $strings = [
 	'Cookies message',
 	'Show more', //Показати більше
 	'Show less', //Згорнути
+	'kyiv', //Згорнути
+	'kharkiv', //Згорнути
 ];
 
 if ( ! empty( $strings ) && function_exists( 'pll_register_string' ) ) {

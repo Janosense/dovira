@@ -78,7 +78,13 @@
   position: relative;
   text-decoration: none;
   color: var(--color-violet-light);
+}
 
+.location-switcher--desktop .location-switcher__item {
+  position: relative;
+}
+
+.location-switcher--desktop .location-switcher__item:first-child {
   &::after {
     content: "";
     position: absolute;
