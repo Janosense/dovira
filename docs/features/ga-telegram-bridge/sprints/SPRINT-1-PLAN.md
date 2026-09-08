@@ -42,7 +42,7 @@ Read: `docs/features/core/FEATURE.md`, `wp-content/themes/dovira/CLAUDE.md`,
   `.gitignore`, `readme.txt` stub, `languages/.gitkeep`, and commit the area `CLAUDE.md`
   that discovery already left on disk untracked (as-is, no edits).
   → commit `feat(ga-telegram-bridge): add plugin skeleton with autoloader and activation guard`
-- [ ] **Task 2 — dev tooling + smoke tests.** `composer.json` (dev-only requires, `autoload-dev`
+- [x] **Task 2 — dev tooling + smoke tests.** `composer.json` (dev-only requires, `autoload-dev`
   PSR-4 for `src/` and `tests/`, scripts `test` / `lint` / `lint:fix` / `analyse`,
   `allow-plugins` for the PHPCS installer), committed `composer.lock`, `phpcs.xml.dist`,
   `phpstan.neon.dist`, `phpunit.xml.dist`, `tests/bootstrap.php`, `tests/TestCase.php`,
