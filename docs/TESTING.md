@@ -17,9 +17,11 @@ logic in a plugin.
 
 ## How to run
 - Everything that gates a commit: `bin/check.sh` from the repo root (PHPCS →
-  PHPStan → PHPUnit in the plugin → `php -l` over the theme). Created in
-  ga-telegram-bridge Sprint 1 Step 1; until then this section is aspirational.
-- Plugin only: `cd wp-content/plugins/ga-telegram-bridge && composer install && composer test` (script names fixed in Step 1).
+  PHPStan → PHPUnit in the plugin → `php -l` over the theme). Needs PHP ≥ 8.3
+  and Composer on PATH; `ddev exec bash bin/check.sh` works too.
+- Plugin only: `cd wp-content/plugins/ga-telegram-bridge && composer install`,
+  then `composer test` (PHPUnit), `composer lint` / `composer lint:fix` (PHPCS /
+  PHPCBF) and `composer analyse` (PHPStan).
 
 ## Fixtures
 - Recorded GA4 Data API responses live in `tests/fixtures/ga/*.json`,

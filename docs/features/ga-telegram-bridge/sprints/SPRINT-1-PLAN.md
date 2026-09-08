@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step. Approval of a section
      authorizes that step only. -->
 
-## Plan — Sprint 1, Step 1: Delta-audit, plugin skeleton, check command   (status: approved, in progress)
+## Plan — Sprint 1, Step 1: Delta-audit, plugin skeleton, check command   (status: implemented, awaiting close)
 
 ### Branch
 `ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
@@ -56,7 +56,7 @@ Read: `docs/features/core/FEATURE.md`, `wp-content/themes/dovira/CLAUDE.md`,
   `node_modules/` (108 files today), exiting non-zero on the first failure and printing the
   file that failed.
   → commit `chore: add bin/check.sh check command`
-- [ ] **Task 4 — docs.** The four documents under *Docs to update*, with the versions actually
+- [x] **Task 4 — docs.** The four documents under *Docs to update*, with the versions actually
   locked by `composer.lock` and the audit findings above.
   → commit `docs: record the ga-telegram-bridge plugin, its tooling and the check command`
 
