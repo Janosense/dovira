@@ -9,7 +9,8 @@
 | Language / runtime | PHP (DDEV image; production per host) | 8.3 (local) | theme uses PHP 8 syntax (`mixed`, union types, `str_contains`) |
 | DB | MariaDB (DDEV) | 10.11 (local) | WP default; snapshot `mysql.sql` committed at repo root |
 | Web server | nginx-fpm (DDEV) | — | — |
-| Theme | `dovira` — custom classic theme from the Syndicode starter | 1.1.2026 | all custom code lives here; no custom plugins |
+| Theme | `dovira` — custom classic theme from the Syndicode starter | 1.1.2026 | all the site's own code lives here (feature `core`) |
+| Custom plugin | `ga-telegram-bridge` — standalone plugin in its own code area, zero runtime dependencies, own `CLAUDE.md` | 0.1.0 | daily GA4 → Telegram report; must run on any WP site — DECISIONS "A standalone plugin in a new code area" |
 | Fields & blocks | ACF Pro + StoutLogic ACF Builder | 6.8.8 / 1.12.0 | field groups and 21 blocks defined in PHP, version-controlled (invariant 6) |
 | i18n | Polylang | 3.8.4 | uk/ru content; ACF options per language via `inc/polylang.php` |
 | Forms | Contact Form 7 | 6.1.6 | contact / franchise / vacancy forms → CPT records via hooks |
@@ -19,16 +20,20 @@
 | Front-end build | Vite + PostCSS (preset-env stage 1, assets, prefix-selector, replace) + LightningCSS | 5.4.19 / 8.4.49 / 1.28.2 | `source/` → hashed `assets/` with manifest; `assets/` is committed |
 | Front-end libs | Swiper 11.2.1, Fancybox (`@fancyapps/ui`) 5.0.36, iMask 7.6.1; vanilla ES modules, no framework | — | dynamic `import()` per module in `scripts/app.js` |
 | Fonts | Google Fonts (Inter, Oswald, Raleway) + self-hosted Open Sans | — | — |
-| Testing | **none** — no PHPUnit, no JS tests, no linter, no static analysis configured | — | see Check command |
+| Testing & QA (plugin only) | PHPUnit + Brain\Monkey (unit tests, no WP bootstrap), PHPCS + WPCS, PHPStan + phpstan-wordpress — dev-only, the plugin's `vendor/` is gitignored | 12.5.34 + 2.7.0 / 3.13.6 + 3.4.1 / 2.2.13 + 2.0.4 | DECISIONS "Testing tooling and the project check command"; the theme has no tests and no JS tests exist — the theme gets `php -l` only |
 | Local env | DDEV | — | `.ddev/config.yaml`; `wp-config.php` DDEV-generated |
 | CI/CD | GitHub Actions → FTP (dev only) | FTP-Deploy-Action 4.3.5 | production deploys are manual (ARCHITECTURE.md → Environments) |
 | CLI | WP-CLI (`wp dovira …` commands in `inc/cli/`) | — | translation and bundle transfer |
 
 ## Check command
-`bin/check.sh` (repo root) — **created in ga-telegram-bridge Sprint 1 Step 1**
-(not yet present): runs PHPCS, PHPStan and PHPUnit inside
-`wp-content/plugins/ga-telegram-bridge/` and `php -l` over the theme's PHP,
-exiting non-zero on the first failure. The theme's `npm run build` is NOT part
+`bin/check.sh` (repo root, committed and executable) — the gate every commit
+passes. In order, stopping at the first failure: PHPCS (WordPress Coding
+Standards) → PHPStan (level 8, analysing against PHP 8.1) → PHPUnit, all inside
+`wp-content/plugins/ga-telegram-bridge/`, then `php -l` over every theme PHP
+file outside `vendor/` and `node_modules/` (108 files today). It runs
+`composer install` in the plugin when `vendor/` is missing and refuses to start
+below PHP 8.3; the host PHP (8.5) and the DDEV web container (8.3) both qualify
+— `ddev exec bash bin/check.sh` works. The theme's `npm run build` is NOT part
 of the gate (`assets/` are committed; rebuild only when the front end
 changes) — DECISIONS "Testing tooling and the project check command".
 
@@ -78,3 +83,14 @@ justification.
 | Date | Package | Why |
 |---|---|---|
 | (pre-adoption) | everything in the Stack table | inherited as-is at adoption, 2026-09-08 |
+| 2026-09-08 | phpunit/phpunit `^12.5` (12.5.34) | test runner for the plugin. Not `^13`: it requires PHP ≥ 8.4.1 and would not run in DDEV (PHP 8.3) |
+| 2026-09-08 | brain/monkey `^2.7` (2.7.0) | stubs WordPress functions so unit tests need no WP bootstrap and no database |
+| 2026-09-08 | squizlabs/php_codesniffer `^3.13` (3.13.6) | linter. Not `^4`: WPCS 3.4.1 requires PHPCS `^3.13.5` |
+| 2026-09-08 | wp-coding-standards/wpcs `^3.4` (3.4.1) | WordPress Coding Standards ruleset for the plugin |
+| 2026-09-08 | dealerdirect/phpcodesniffer-composer-installer `^1.2` (1.2.1) | registers the WPCS standard with PHPCS on install |
+| 2026-09-08 | phpstan/phpstan `^2.2` (2.2.13) | static analysis — the plugin runs on unknown hosts |
+| 2026-09-08 | szepeviktor/phpstan-wordpress `^2.0` (2.0.4) | WordPress stubs for PHPStan (pulls php-stubs/wordpress-stubs 7.1.0, matching the installed core) |
+
+All seven are **dev-only**, live in `wp-content/plugins/ga-telegram-bridge/composer.json`,
+and never reach a server: the plugin's `vendor/` is gitignored and it has zero runtime
+dependencies. Approved in the Sprint 1 Step 1 plan.

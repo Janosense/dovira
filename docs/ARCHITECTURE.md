@@ -7,7 +7,8 @@ A single WordPress install per city (Kharkiv `dovira.vet`, Kyiv `kyiv.dovira.vet
 running the same custom classic theme `wp-content/themes/dovira`. Everything
 custom is in the theme: post types, taxonomy, ACF field groups and blocks (PHP
 via ACF Builder), page templates, a REST namespace `dovira/v1`, WP-CLI
-commands, a custom role, Polylang glue. There are no custom plugins and no
+commands, a custom role, Polylang glue. The only custom plugin is
+`ga-telegram-bridge` (its own code area, no theme coupling); there are no
 mu-plugins. Content is bilingual (uk source, ru translation) via Polylang.
 
 ```
@@ -25,15 +26,23 @@ mu-plugins. Content is bilingual (uk source, ru translation) via Polylang.
                                   │
                                   ├─ plugins: ACF Pro, Polylang, Contact Form 7, Yoast SEO, Cyr2Lat,
                                   │           Simple Custom Post Order, Enable Media Replace, Akismet, Loco Translate
+                                  ├─ plugin ga-telegram-bridge (own code area, feature ga-telegram-bridge)
+                                  │    └─ ga-telegram-bridge.php → src/ (PSR-4, own autoloader)
                                   └─ MariaDB
  External: Telegram Bot API (notifications + webhook), Anthropic Messages API (CLI translation),
            Google Fonts, GTM/GA4
 ```
 
 ## Feature map
-Single feature `core` = the theme as-is (`docs/features/core/FEATURE.md`).
-New features go into `wp-content/themes/dovira/inc/features/{name}/` with one
-registration line in `functions.php` (see the theme's `CLAUDE.md`).
+| Feature | Code area | Docs |
+|---|---|---|
+| `core` | the theme as-is, `wp-content/themes/dovira/` | `docs/features/core/FEATURE.md` |
+| `ga-telegram-bridge` | plugin `wp-content/plugins/ga-telegram-bridge/` (own `CLAUDE.md`) | `docs/features/ga-telegram-bridge/FEATURE.md` |
+
+A new feature inside the theme goes into
+`wp-content/themes/dovira/inc/features/{name}/` with one registration line in
+`functions.php` (see the theme's `CLAUDE.md`); a feature that must run on any
+WordPress site goes into its own plugin, as `ga-telegram-bridge` does.
 
 ## Modules
 | Module | Location | Responsibility / public surface | Must never |
@@ -50,6 +59,8 @@ registration line in `functions.php` (see the theme's `CLAUDE.md`).
 | Polylang glue | `inc/polylang.php`, `inc/utils/polylang-string-translations.php` | `service`/`vacancy` translatable; ACF options per language via `acf/settings/current_language`; `service-city` term names + UI strings registered as Polylang strings; `dovira_translate_string()` | make `service-city` translatable |
 | CLI translation | `inc/cli/*.php` | `wp dovira translate`, `translate-options`, `translations-export`, `translations-import`: extract strings (title, ACF block data, core block HTML, Yoast meta) → Anthropic Messages API (default `claude-haiku-4-5`, JSON schema, chunked 100 items / 8000 chars) → copy post + Polylang link; bundles keyed by source post id + fingerprint | run outside WP-CLI |
 | Front-end build | `vite.config.js`, `postcss.config.cjs`, `source/**` → `assets/**` (committed) | Entries `main` (`source/main.js` → `scripts/app.js` + `styles/app.css`) and `admin`; ES modules loaded via dynamic `import()`; Swiper, Fancybox, iMask; admin CSS prefixed `.acf-block-preview` for editor iframe previews | edit `assets/` by hand |
+| GA → Telegram bridge (plugin) | `wp-content/plugins/ga-telegram-bridge/` | Standalone plugin, feature `ga-telegram-bridge`: PSR-4 `src/` under namespace `GaTelegramBridge` loaded by its own autoloader, `gatb_` prefix, text domain `ga-telegram-bridge`, zero runtime dependencies, OpenSSL required (checked on activation). Sprint 1 Step 1 ships the skeleton only — settings, GA/Telegram clients, report and schedule follow in Steps 3–8 and Sprint 2 | reference the theme, its functions, options or data; ship its dev `vendor/` (gitignored) |
+| Project gate (not a feature) | `bin/check.sh` | PHPCS + PHPStan + PHPUnit in the plugin, `php -l` over the theme; run before every commit (docs/TECH-STACK.md → Check command) | be replaced by an ad-hoc shell chain |
 | Ops tooling (not a feature) | `temp-data/` | Yoast SEO import script + data (`yoast-import.php`, run via `wp eval-file`), translation bundles, SEO CSVs; `reports/` (repo root) holds Kyiv/Kharkiv service diff CSVs | be loaded by the theme at runtime |
 
 Legacy remnants present in the theme but not wired to any live page: `templates/{sign-in,sign-up,profile,testing}.php`, `dovira_get_user_study_state()` / `chapter` / `question` helpers, `student` role on theme switch, `source/scripts/modules/{authentication,reset-progress}.js`, `learning-plan` styles/HTML in `temp-data/`. Documented as-is; see DECISIONS.md open questions.
@@ -94,7 +105,9 @@ cross-site switcher; content differs per install (separate DBs), code is shared.
 ## Integrations
 | Service | Used for | Auth / credentials | Failure behaviour |
 |---|---|---|---|
-| Telegram Bot API | notifications after every form record; bot webhook | Bot token is a **string literal in code** (`TelegramController::$access_token` and three `inc/utils/*` call sites); join password is a literal in `handle_updates` | `wp_remote_get` result ignored — the record is already saved; no retry |
+| Telegram Bot API (theme, feature `core`) | notifications after every form record; bot webhook | Bot token is a **string literal in code** (`TelegramController::$access_token` and three `inc/utils/*` call sites); join password is a literal in `handle_updates` | `wp_remote_get` result ignored — the record is already saved; no retry |
+| Telegram Bot API (plugin `ga-telegram-bridge`) | the daily GA report to one configured chat | Its **own** bot token and chat id in `gatb_settings`, overridable by `GATB_TELEGRAM_BOT_TOKEN`; shares nothing with the theme's bot (separate token, separate chat registry) | mapped to `TelegramException`, logged in `gatb_log`, retried by the scheduler — *wired up in Sprint 1 Step 5 / Sprint 2* |
+| Google Analytics 4 Data API (plugin `ga-telegram-bridge`) | reads one GA4 property once a day (`batchRunReports`) | Service-account JSON in `gatb_settings` (or `GATB_GA_SERVICE_ACCOUNT_JSON`) → RS256 JWT signed with `openssl_sign` → access token cached in the transient `gatb_google_access_token` | mapped to `GoogleAuthException` / `GaClientException`, logged without secrets — *wired up in Sprint 1 Steps 4–6* |
 | Anthropic Messages API | `wp dovira translate*` (CLI only) | `ANTHROPIC_API_KEY` in the theme `.env` (phpdotenv), read by `anthropic-ai/sdk` | command errors out via `WP_CLI::error`; chunk retry for strings whose markup changed |
 | Contact Form 7 | contact (id 6), franchise (1430), vacancy (1399) forms | — (form ids hardcoded in hooks) | mail failure → no `conversation` (except in DDEV) |
 | Google Tag Manager / GA4 | analytics; ids differ per install (`master`: GTM-53M4V7M5 + G-HKYZFG0E2W; `kyiv`: G-Q597WTF16L only) | inline in `header.php` | — |
