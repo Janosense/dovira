@@ -50,7 +50,7 @@ Read: `docs/features/core/FEATURE.md`, `wp-content/themes/dovira/CLAUDE.md`,
   see *Dependencies*), then PHPCS/PHPStan/PHPUnit green; any style or type fixes to the
   task-1 files belong to this commit (the tools do not exist before it).
   → commit `chore(ga-telegram-bridge): add PHPUnit, PHPCS and PHPStan dev tooling`
-- [ ] **Task 3 — the check command.** `bin/check.sh` at the repo root (executable, `set -euo
+- [x] **Task 3 — the check command.** `bin/check.sh` at the repo root (executable, `set -euo
   pipefail`): PHP ≥ 8.3 guard → `composer install` in the plugin when `vendor/` is missing →
   PHPCS → PHPStan → PHPUnit → `php -l` over every theme `*.php` outside `vendor/` and
   `node_modules/` (108 files today), exiting non-zero on the first failure and printing the
