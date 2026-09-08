@@ -1,0 +1,73 @@
+# Feature — ga-telegram-bridge
+
+<!-- Lightweight ARCHITECTURE + DATA-MODEL for one feature. Lives at
+     docs/features/ga-telegram-bridge/FEATURE.md next to its sprints/. Root
+     ARCHITECTURE.md holds only one row + a link here. Keep ≤80 lines. -->
+
+## Purpose & scope
+"Google Analytics → Telegram bridge": a standalone WordPress plugin that, once a
+day at a configured time, reads one GA4 property through the Data API, builds a
+short report and sends it to one Telegram chat (a channel or a person), so a
+business owner who never opens GA sees whether people come to the site and from
+where. It works on any WordPress site; on Dovira it is installed separately on
+each city install. OUT of scope: key events / conversions, a weekly digest,
+several properties or chats per install, joining a recipient through a bot
+password/webhook, OAuth sign-in, exact external cron, distribution packaging
+and wordpress.org, any change to the theme's own Telegram code.
+
+## Fit into the host
+- **Code location:** `wp-content/plugins/ga-telegram-bridge/`
+- **Host area:** plugin `ga-telegram-bridge` — obeys its own `CLAUDE.md`
+- **Entry point:** `ga-telegram-bridge.php` (plugin header, autoloader, `Plugin::boot()`); the theme has no registration line — the plugin is activated in wp-admin
+- **Shared code it depends on:** — (WordPress core only: HTTP API, Settings API, WP-Cron, i18n, transients)
+
+## Data
+Owns three non-autoloaded `wp_options` rows (details in `docs/DATA-MODEL.md`):
+`gatb_settings` (property id, service-account JSON, bot token, chat id, send
+time, max attempts, enabled blocks), `gatb_state` (`last_report_date`,
+`attempt`, `next_run`), `gatb_log` (last 30 runs); one transient
+`gatb_google_access_token`; cron hooks `gatb_daily_report` (recurring) and
+`gatb_retry_report` (single). Constants `GATB_GA_SERVICE_ACCOUNT_JSON` and
+`GATB_TELEGRAM_BOT_TOKEN` override the two secrets. No other feature writes
+to this data; `uninstall.php` removes all of it.
+
+## Invariants
+- A report for a given date is sent at most once: every run checks
+  `gatb_state.last_report_date` first; only the admin's "Send now" bypasses it.
+- Secrets never appear in `gatb_log`, error messages, notices or test output.
+- All GA date ranges are relative (`yesterday`, `NdaysAgo`) and thus resolved
+  in the property's reporting time zone; the send time is site-local.
+- Never more than 2 `batchRunReports` calls per run; a disabled block issues no request.
+- Public pages never call Google or Telegram synchronously: all network work
+  runs inside the cron callback or an admin-initiated request.
+- Zero runtime Composer dependencies; `openssl` is required and checked at activation.
+
+## Interfaces
+- **Admin:** Settings → "GA → Telegram" (`manage_options`), screen names in UI below.
+- **Cron hooks:** `gatb_daily_report`, `gatb_retry_report` (the only schedulers are in `Scheduler`).
+- **Filters (public surface, stable):** `gatb_report_data` (the normalized `Report` before rendering), `gatb_message_html` (final HTML before sending). Changing their payload = "touches shared surface".
+- **CLI / REST:** none in v1.
+
+## UI
+- **Screens:** `Settings` (wp-admin page: credentials, recipient, schedule, blocks, buttons *Check GA*, *Check Telegram*, *Preview*, *Send now*; states: unconfigured, secrets set in configuration, check ok/error), `Run log` (table on the same page: date, status, attempt, message, next run; states: empty, with errors). No design export — stock wp-admin components.
+- **Reuses:** — (not a theme screen; `docs/DESIGN.md` does not apply)
+- **Introduces:** —
+- **Message template (HTML parse mode; `{}` = data, `[...]` = block, blocks 2–5 optional):**
+  ```
+  📊 <b>{site_host} — {report_date, "7 вересня (неділя)"}</b>
+  <b>Відвідувачі</b>
+  Вчора: {n} ({▲|▼} {pct}% до середнього за 7 днів)
+  За 28 днів: {n} ({▲|▼} {pct}% до попередніх 28)
+  [<b>Топ‑5 сторінок вчора</b>  1. {title} — {views} … ]
+  [<b>Топ‑5 сторінок за 28 днів</b>  1. {title} — {views} … ]
+  [<b>Джерела за 28 днів</b>  {channel} {pct}% · … ]
+  [<b>Міста за 28 днів</b>  {city} {pct}% · … ]
+  [<b>Пристрої за 28 днів</b>  {device} {pct}% · … ]
+  ```
+  Failure notice: `⚠️ <b>{site_host}</b> — звіт за {report_date} не сформовано. Деталі в журналі плагіна.`
+  Source strings are English (text domain `ga-telegram-bridge`); a `uk_UA` translation ships with the plugin and is what the template above shows; `—` when a baseline is 0.
+
+## Roadmap
+- Sprint 1 — the full report reaches Telegram from the admin's "Send now" on the dev site (`sprints/SPRINT-1.md`)
+- Sprint 2 — the report goes out by itself every day on both production installs, with retries and a run log (`sprints/SPRINT-2.md`)
+- Later (not planned): key events block, weekly digest, several properties/chats, packaging for other sites

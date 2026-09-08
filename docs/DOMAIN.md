@@ -26,6 +26,11 @@
 | Спеціаліст підтримки (customer support specialist) | The admin role that sees only conversations/applications/questionnaires |
 | Налаштування → Контакти (settings / contacts) | Per-city address, phones, schedule (clinic and pet shop), map, e-mail, Instagram; and the global social links |
 | Мова (language) | Ukrainian is the original; Russian pages are translations of it |
+| Щоденний звіт (daily report) | One Telegram message per day per city site, sent by the `ga-telegram-bridge` plugin, that tells the owner how many people visited yesterday and over the last 4 weeks, which pages they read, where they came from, from which cities and on which devices |
+| Відвідувачі (visitors) | Distinct people who engaged with the site in a period — GA4 "active users", the same number the owner sees as "Users" in the GA4 app |
+| Динаміка (dynamics) | The change in % of yesterday against the average of the previous 7 days, and of the last 28 days against the previous 28 days; ▲ up, ▼ down, — when there is nothing to compare with |
+| Блок звіту (report block) | One section of the daily report: visitors, top pages, traffic sources, cities, devices; the owner's site administrator switches blocks on and off, visitors is always on |
+| Одержувач звіту (report recipient) | The one Telegram chat — a channel or a person — that a site's report goes to |
 
 ## Rules & invariants
 - Every service, employee and vacancy belongs to exactly one or more cities; a
@@ -49,6 +54,11 @@
   indexed by search engines.
 - City names are shared between languages (one list of cities), only their
   spelling is translated.
+- A daily report covers one calendar day of the site's own GA4 property and
+  is delivered at most once per day; a day whose report could not be built is
+  announced as missing, never silently skipped and never filled with guesses.
+- The report's periods follow Google Analytics' calendar for the property;
+  the delivery time follows the site's own clock.
 
 ## Roles
 | Role | Can do |
@@ -58,6 +68,7 @@
 | Customer support specialist | see and process conversations, applications and questionnaires; nothing else in the admin |
 | Staff in the Telegram bot | receive a message for every new record after joining the bot with the password |
 | Developer (Syndicode) | code, deploys, translation CLI |
+| Owner in Telegram (report recipient) | receives the daily report of each city site; reads, does not configure |
 
 ## Explicitly out of scope (v1)
 - Online booking, patient records, payments — the site informs and collects

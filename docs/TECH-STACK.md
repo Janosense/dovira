@@ -25,11 +25,12 @@
 | CLI | WP-CLI (`wp dovira …` commands in `inc/cli/`) | — | translation and bundle transfer |
 
 ## Check command
-`none yet` — the project ships no test, lint, static-analysis or build gate.
-Created in the first code step of the next feature (its Sprint 1 Step 1 has
-the task "create the check command"): one committed script that at minimum
-runs `npm run build` in the theme and a PHP lint/static-analysis pass, exits
-non-zero on the first failure, and is recorded here.
+`bin/check.sh` (repo root) — **created in ga-telegram-bridge Sprint 1 Step 1**
+(not yet present): runs PHPCS, PHPStan and PHPUnit inside
+`wp-content/plugins/ga-telegram-bridge/` and `php -l` over the theme's PHP,
+exiting non-zero on the first failure. The theme's `npm run build` is NOT part
+of the gate (`assets/` are committed; rebuild only when the front end
+changes) — DECISIONS "Testing tooling and the project check command".
 
 ## ANTI-PATTERNS (mandatory reading before writing code)
 <!-- Derived from what the code actually does and avoids (Adoption). Grows via LEARNINGS.md. -->

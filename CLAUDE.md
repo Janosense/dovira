@@ -122,6 +122,7 @@ resolves paths through it, not through the file hierarchy.
 | Feature | Docs (FEATURE.md + sprints) | Code |
 |---|---|---|
 | core | `docs/features/core/` | `wp-content/themes/dovira/` (the theme as-is; new features: `inc/features/{name}/`) |
+| ga-telegram-bridge | `docs/features/ga-telegram-bridge/` | `wp-content/plugins/ga-telegram-bridge/` (standalone plugin, own `CLAUDE.md`) |
 
 Rules:
 - Sprint numbering is independent per feature. WORKLOG/LEARNINGS entries are
