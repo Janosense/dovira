@@ -75,6 +75,12 @@ Entry format:
 - **Alternatives rejected:** Claude Design or in-chat mockups — nothing to design beyond stock admin components; MarkdownV2 — page titles with `.`, `-`, `(` need per-character escaping and break silently; plain text — hard to scan; a fixed block set — the composition of the report is a business value (core rule 6), not a constant.
 - **Consequences:** no `docs/DESIGN.md` changes and no `design/` folder for this feature; the message template in `FEATURE.md` is the reference the renderer tests assert against; a disabled block is skipped in both the GA requests and the rendering.
 
+## 2026-09-08 — [ga-telegram-bridge] The check command runs on PHP 8.3+, tooling pinned to what 8.3 accepts
+- **Context:** Sprint 1 Step 1 installed the tooling fixed by DECISIONS "Testing tooling and the project check command". The gate can be run from two places with different PHP versions — the developer's host (PHP 8.5.4) and the DDEV web container (PHP 8.3.31, where WP-CLI verification happens) — while the plugin itself must run on PHP 8.1.
+- **Decision:** `bin/check.sh` requires PHP ≥ 8.3 and works from either place; the plugin's dev tooling is pinned to versions that install under 8.3 — PHPUnit `^12.5` (13.x requires PHP ≥ 8.4.1) and PHPCS `^3.13` (WPCS 3.4 does not support PHPCS 4) — with `config.platform.php = "8.3"` and a **committed `composer.lock`** so both places resolve identically; PHPStan runs at level 8 with `phpVersion: 80100`, analysing against the plugin's minimum PHP, not the host's.
+- **Alternatives rejected:** the newest majors (PHPUnit 13, PHPCS 4) — the gate would then run only on the host; no committed lock (the theme's convention) — the two PHP versions could resolve different tool versions and disagree about what "green" means; analysing at the host's PHP version — would hide PHP 8.1 incompatibilities until a production host found them.
+- **Consequences:** moving past PHPUnit 12 or PHPCS 3 requires raising DDEV's PHP first; the plugin header's `Requires at least: 7.1` is the WordPress version this repo actually ships (the whole WP root is versioned here), and lowering it for other sites is a Sprint 2 packaging question.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)

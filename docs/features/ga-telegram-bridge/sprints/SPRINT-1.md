@@ -22,7 +22,7 @@ schedule yet. The project has a check command that gates every commit.
 
 ## Steps
 
-### [ ] Step 1 — Delta-audit, plugin skeleton, check command
+### [x] Step 1 — Delta-audit, plugin skeleton, check command
 - **Tasks:**
   - Delta-audit: read `docs/features/core/FEATURE.md`, the theme `CLAUDE.md` and `docs/ARCHITECTURE.md` → Integrations; confirm the plugin touches no theme code or data and note the theme's existing Telegram bot as an unrelated integration (same Telegram API, separate token setting).
   - Create `wp-content/plugins/ga-telegram-bridge/`: `ga-telegram-bridge.php` (header: name "Google Analytics → Telegram bridge", text domain `ga-telegram-bridge`, `Requires PHP: 8.1`, `Requires at least` = a WordPress version verified against the local install), `src/Plugin.php` with `boot()`, `spl_autoload_register` autoloader for namespace `GaTelegramBridge` → `src/`, activation hook that aborts with a message when `openssl` is missing, `.gitignore` (`vendor/`), `readme.txt` stub, `languages/`.

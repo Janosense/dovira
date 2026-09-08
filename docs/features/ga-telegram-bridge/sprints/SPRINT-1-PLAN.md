@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step. Approval of a section
      authorizes that step only. -->
 
-## Plan — Sprint 1, Step 1: Delta-audit, plugin skeleton, check command   (status: implemented, awaiting close)
+## Plan — Sprint 1, Step 1: Delta-audit, plugin skeleton, check command   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
