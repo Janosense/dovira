@@ -781,3 +781,208 @@ one day, showing the name is a small change to one method.
 notice names the property id with the reporting time zone and currency from the response's own
 `metadata`. The Admin API stays off; showing the property's display name remains a small change to
 one method if it is ever enabled.
+
+---
+
+## Plan — Sprint 1, Step 5: TelegramClient and "Check Telegram"   (status: approved, in progress)
+
+### Branch
+`ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
+(git model in root `CLAUDE.md` is *simple*: task branch → `master`; `SPRINT-1.md` → Branch
+names this same branch. Deleted at the close of Step 4 — `/do-step` re-creates it from `master`.)
+
+### Tasks (ordered)
+
+- [x] **1. `TelegramClient`: one way to send, one mapped message per failure** (+ its tests, the
+  fixtures, the TESTING.md fixtures rule and the ARCHITECTURE Telegram row, same commit) →
+  `feat(ga-telegram-bridge): send messages to Telegram through a minimal client`
+
+  `src/TelegramClient.php` and `src/TelegramException.php`, built the same way `GaClient` was.
+
+  - `send_message( string $chat_id, string $html ): void` —
+    `POST https://api.telegram.org/bot{token}/sendMessage`, timeout **15 s**, JSON body
+    (`Content-Type: application/json`, as `GaClient` posts) holding `chat_id`, `text` = the HTML,
+    `parse_mode` = `HTML` and `link_preview_options` = `{"is_disabled": true}`. The token comes
+    from `Settings::telegram_bot_token()` (so the constant override applies); the chat id is a
+    parameter, because Step 8's runner passes the configured one and this step's button passes
+    the same. Named `send_message`, not `sendMessage` — WPCS, as in Step 4.
+  - Refused locally, before any request: an empty token (*"No Telegram bot token is configured
+    yet."*) and an empty chat id (*"No Telegram chat id is configured yet."*).
+  - `client_error_message( int $status, $body ): string` — Telegram answers
+    `{"ok": false, "error_code": …, "description": "…"}`, with an optional `parameters` object:
+    - **401** — the token is wrong. *Recorded live today* (no credential needed): status 401,
+      `{"ok":false,"error_code":401,"description":"Unauthorized"}`.
+    - **404** — the token is not even shaped like a token. *Recorded live today*:
+      `{"ok":false,"error_code":404,"description":"Not Found"}`. Not in the step's list of four,
+      but it is what a mistyped token really answers, and the fallback sentence ("HTTP 404: Not
+      Found") would tell an administrator nothing. One branch, one recorded fixture.
+    - **400** — two named cases inside it: `chat not found` (the chat id is wrong, or the bot was
+      never added to that channel) and `can't parse entities` (the message's HTML is broken —
+      which from Step 7 onwards means a renderer bug, so the message says so). Any other 400
+      passes Telegram's own `description` through, which already reads well for the rest
+      (*"message is too long"*, *"group chat was upgraded to a supergroup chat"*), so those get
+      no branch of their own.
+    - **403** — the bot may not post there: blocked by the user, or removed from the channel.
+      The message says to add the bot to the channel as an administrator.
+    - **429** — flood control; the message names `parameters.retry_after` in seconds. The value
+      is *shown*, not returned: Sprint 2 retries on a fixed one-hour schedule (DECISIONS
+      "Scheduling, retries and idempotency on WP-Cron"), so exposing it programmatically now
+      would be a layer nothing uses (core rule 5).
+    - **5xx**, a body that is not JSON, and a `WP_Error` from `wp_remote_post` (the host cannot
+      reach Telegram at all) each get their sentence.
+  - **The token is in the URL, so it can leak through the one string we do not write ourselves:**
+    a `WP_Error` message may quote the request URL. Every dynamic value that enters a message
+    goes through a private `without_token()` first, which replaces the configured token with
+    `…`. This is the step's own requirement ("the token is never part of any exception message
+    or log line") made mechanical rather than assumed.
+
+  Fixtures land here, in `tests/fixtures/telegram/` (the directory `docs/TESTING.md` already
+  names), each keeping the `{status, body, ms}` envelope: `error-unauthorized.json` and
+  `error-not-found.json` **recorded** against the live API today with a made-up token, the other
+  five — `send-message-success.written.json`, `error-chat-not-found.written.json`,
+  `error-cant-parse-entities.written.json`, `error-bot-not-in-chat.written.json`,
+  `error-too-many-requests.written.json` — **written** from Telegram's documentation, because
+  every one of them needs a real bot token and no bot exists yet. `TESTING.md` → Fixtures gains
+  them in the same commit; its "recorded vs. written" list stops being a list of two.
+
+- [ ] **2. "Check Telegram" on screen `Settings`** (+ its tests, the ARCHITECTURE row's button
+  clause and the readme sentence, same commit) →
+  `feat(ga-telegram-bridge): check the Telegram connection from the settings screen`
+
+  `src/Admin.php`, `src/Plugin.php`.
+
+  - The **Connection** section built in Step 4 now prints **two** forms to `admin-post.php`, each
+    with its own hidden `action` and its own nonce: `gatb_check_ga` and the new
+    `gatb_check_telegram`. A private `check_form( $action, $label, $description )` prints one, so
+    the second button is a call and not a copy.
+  - The section's intro sentence changes. Today it reads *"This button sends nothing to
+    Telegram"* — with the second button that is no longer true of the section, so the promise
+    moves onto the GA form ("sends nothing to Telegram") and the Telegram form carries its own
+    warning: **it really sends a message to the configured chat**.
+  - `handle_check_telegram()`: `check_admin_referer( 'gatb_check_telegram' )`,
+    `current_user_can( 'manage_options' )` or `wp_die`, then
+    `TelegramClient::send_message( Settings::telegram_chat_id(), $html )` with a fixed test
+    message — `📊 <b>{site host}</b> — test message from the Google Analytics → Telegram bridge.
+    The daily report will arrive in this chat.` The host comes from
+    `wp_parse_url( home_url(), PHP_URL_HOST )` and is `esc_html`'d before it enters the HTML, the
+    way FEATURE.md → UI requires of every dynamic value in a message. The outcome becomes
+    `add_settings_error( …, 'gatb_check_telegram', …, 'success'|'error' )`.
+  - Both handlers end the same way — `set_transient( 'settings_errors', get_settings_errors(),
+    30 )`, `wp_safe_redirect()` back to the screen with `settings-updated=true`, `exit`. That
+    tail moves into a private `redirect_to_settings()` and `handle_check_ga()` calls it too; its
+    behaviour does not change and Step 4's tests must stay green as written.
+  - `Plugin::boot()` registers `admin_post_gatb_check_telegram` → `Admin::handle_check_telegram()`.
+  - Two of Step 4's test files need adjusting, not weakening: `AdminCheckGaTest` expects
+    `wp_nonce_field` once with `gatb_check_ga` and `AdminTest` expects `submit_button` twice —
+    with the second form both counts move by one.
+
+### Files to create/change
+- `wp-content/plugins/ga-telegram-bridge/src/TelegramClient.php`, `src/TelegramException.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/TelegramClientTest.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/fixtures/telegram/*.json` — 7 files, new directory (task 1)
+- `wp-content/plugins/ga-telegram-bridge/src/Admin.php` — the second form, `handle_check_telegram()`, the shared redirect tail (task 2)
+- `wp-content/plugins/ga-telegram-bridge/src/Plugin.php` — one hook (task 2)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/AdminCheckTelegramTest.php` — new (task 2)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/AdminCheckGaTest.php`, `tests/Unit/AdminTest.php`, `tests/Unit/PluginTest.php` — adjusted for the second form and hook (task 2)
+- `docs/TESTING.md` — Fixtures (task 1); `docs/ARCHITECTURE.md` — Integrations, the plugin's Telegram row (tasks 1 and 2); `wp-content/plugins/ga-telegram-bridge/readme.txt` — Configuration (task 2)
+
+### Tests to write
+`TelegramClientTest` — the request shape and every way the call can fail:
+- the URL is exactly `https://api.telegram.org/bot{token}/sendMessage`, the timeout is 15 s, and
+  the JSON body decodes to `chat_id`, `text`, `parse_mode` = `HTML` and
+  `link_preview_options.is_disabled` = `true`.
+- an empty token and an empty chat id each throw `TelegramException` **before** `wp_remote_post`
+  is reached — asserted by the call never happening.
+- a 200 `{"ok":true,…}` returns without throwing; a 200 whose body is not JSON throws.
+- one test per fixture → its mapped sentence: 401 (the token), 404 (the token's shape), 400 chat
+  not found (the chat id and the channel-admin hint), 400 can't parse entities, 403 (add the bot
+  to the channel), 429 (the sentence names the `retry_after` seconds), a 500, and a `WP_Error`.
+- **the negative check the step asks for:** every one of those messages is asserted not to
+  contain the token — including the `WP_Error` case, whose stubbed message deliberately embeds
+  the full request URL with the token in it.
+
+`AdminCheckTelegramTest` — the state the administrator is left in, mirroring `AdminCheckGaTest`:
+- the Connection section renders **two** forms posting to `admin-post.php`, one per action, each
+  with its own nonce field and button label.
+- a successful check registers a `success` notice naming the chat id; the message actually handed
+  to Telegram carries `parse_mode=HTML` and the site's host.
+- a failed send registers an `error` notice carrying the client's mapped sentence, and that
+  sentence contains no token.
+- an install with no bot token or no chat id is refused before any network call — `wp_remote_post`
+  is never reached.
+- a request without a valid nonce, and one from a user without `manage_options`, never send
+  anything.
+
+`PluginTest` — `boot()` registers `admin_post_gatb_check_telegram`.
+
+Test-critical zones of the profile are untouched (no form pipeline, no price grouping, no
+`dovira/v1` route, no translate command). The plugin's own rule applies: the request builder and
+the error mapping are pure logic and are covered here; only the network boundary is stubbed.
+
+### Docs to update
+- `docs/ARCHITECTURE.md` → Integrations, the row *Telegram Bot API (plugin `ga-telegram-bridge`)*:
+  replace *wired up in Sprint 1 Step 5 / Sprint 2* with what is then true — `TelegramClient::send_message()`
+  posting to `api.telegram.org/bot{token}/sendMessage` with HTML parse mode, link previews off and
+  a 15 s timeout (task 1), the *Check Telegram* button behind an admin-post nonce (task 2), and
+  the failure behaviour: one mapped `TelegramException` per case, the token scrubbed from every
+  message; `gatb_log` and the retries stay Sprint 2.
+- `docs/TESTING.md` → Fixtures: `tests/fixtures/telegram/` now exists; two of its files are
+  recorded (401 and 404, which need no credential) and five are `*.written.json` from Telegram's
+  documentation, because the rest need a real bot token.
+- `wp-content/plugins/ga-telegram-bridge/readme.txt` → Configuration: its closing line still says
+  *"Checking the connection, previewing the message and sending it are added in the following
+  releases"*, which stopped being true at Step 4. It becomes a short paragraph naming both check
+  buttons and warning that *Check Telegram* really posts a message into the configured chat.
+- Not updated, checked: `DATA-MODEL.md` — no new option, transient or key; `telegram_bot_token`
+  and `telegram_chat_id` are already described with the validation this step relies on.
+  `FEATURE.md` — Interfaces and UI already name the *Check Telegram* button and the plugin's own
+  bot token; the message template belongs to Step 7. `DECISIONS.md` — nothing reopened and no new
+  decision: the transport, the parse mode and the separate bot are all fixed by existing entries.
+  `DOMAIN.md` (no new term), `CONTRACTS.md` (none kept), `DESIGN.md` (see below), `TECH-STACK.md`
+  (no dependency — `wp_remote_post` again).
+
+### Checks
+- **ANTI-PATTERNS:** none violated. Nothing here touches ACF, blocks, `service-city`, CF7 ids,
+  `assets/`, `mu-plugins/`, post-type registration or per-city ids; no tool is installed; no
+  business value is hardcoded (token, chat id and send time are settings, the test message is a
+  translatable string). The theme's rule *"do not send the Telegram notification before the post
+  is saved"* is about the `core` form pipelines and does not apply — this plugin writes no posts
+  and shares nothing with the theme's bot.
+- **Docs vs reality:** six items, none of them a question.
+  1. **`disable_web_page_preview` is gone from the Bot API documentation.** `SPRINT-1.md` names it;
+     the live page at `core.telegram.org/bots/api` (fetched today) mentions it nowhere and documents
+     only `link_preview_options`. Bot API versions are server-side, so every bot gets the current
+     one. Resolution: send `link_preview_options: {"is_disabled": true}` — vendor reality over the
+     sprint's shorthand, the same class of mismatch as item 2, no doc change beyond the
+     ARCHITECTURE row.
+  2. `SPRINT-1.md` writes the method as `sendMessage`; WPCS refuses camelCase method names
+     (settled at Step 3, applied at Step 4), so the code says `send_message`. Naming shorthand,
+     not a contract; no doc changes.
+  3. The step lists four statuses to map (400, 401, 403, 429); **404** is added, because a
+     mistyped token really answers `404 Not Found` — recorded today — and the generic sentence
+     would be useless exactly when a non-developer needs it most. One branch, one recorded fixture.
+  4. `readme.txt` still promises the connection checks "in the following releases"; Step 4 shipped
+     one. Corrected in task 2, together with this step's button.
+  5. **No Telegram bot exists yet.** `GATB_TELEGRAM_BOT_TOKEN` is not defined in the local
+     `wp-config.php` and `gatb_settings` holds no token, so the manual verification of this step
+     needs you to create the bot with BotFather, add it to the target channel as an administrator
+     and have its chat id — the Day-1 item in `SPRINT-1.md` → Risks. It is a precondition of
+     verification, not a task; the code and its tests do not wait for it.
+  6. Carried and unchanged by this step: `docs/DESIGN.md` → Screens lists no screen of this
+     plugin, because DECISIONS "No UI design phase" forbids DESIGN.md changes for the feature —
+     for the sprint retro; and `spike/` with the service-account key is still on disk, removed at
+     the sprint boundary per the Definition of Done.
+- **Design:** n/a — DECISIONS "No UI design phase": a second stock `submit_button()` in the
+  existing Connection section of screen `Settings` (`FEATURE.md` → UI), whose *check ok* and
+  *check error* states this step reaches for Telegram.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) — green on `master` right
+  now: PHPCS, PHPStan level 8, 101 tests / 264 assertions, 108 theme files.
+- **Not locally verifiable:** the **200 success, 400, 403 and 429** responses. All four need a real
+  bot token, which does not exist yet, so their fixtures are written from Telegram's documentation
+  and prove only that the parser handles the shape we believe in. The one real run that verifies
+  them is this step's own manual verification with your bot: a test message arriving in the
+  configured chat (200), and a wrong chat id (400). The 429 stays documented-but-not-observed, like
+  Google's quota error — one button press cannot trip flood control.
+
+### Questions / ambiguities
+none
