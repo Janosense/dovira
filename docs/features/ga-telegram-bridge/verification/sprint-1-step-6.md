@@ -14,20 +14,34 @@ The message is Step 7 and sending it is Step 8, so everything below is read from
 
 Shell commands are run from the repo root. No Telegram bot is needed.
 
-## 0. Give the site the key, without putting it in the database
+## 0. Configure the property on the settings screen
 
-Same as Step 4 — in `wp-config.php`, above `require_once ABSPATH . '/wp-settings.php';`:
+Open **<https://dovira.ddev.site/wp-admin/options-general.php?page=gatb-settings>**
+and fill in the *Google Analytics* section the way any administrator would:
 
-```php
-define( 'GATB_GA_SERVICE_ACCOUNT_JSON', file_get_contents( __DIR__ . '/wp-content/plugins/ga-telegram-bridge/spike/service-acount.json' ) );
-```
+* **Property id** — `533779496`
+* **Service-account key** — the contents of
+  `wp-content/plugins/ga-telegram-bridge/spike/service-acount.json` (the key from
+  the Sprint 1 spike; the filename really is missing a "c")
 
-**Remove that line again when you are finished** — §7.
+Save, then press **Check GA** to confirm the connection before reading anything
+into the report. It should answer *"Google answered for property 533779496. Its
+reporting time zone is Europe/Kiev"*.
+
+Both values go into the database, which is where the plugin keeps them. `*.sql` is
+gitignored, so a dump can never carry them into the repository. §7 clears them
+again when you are done.
+
+If you would rather verify the way the two production installs are configured,
+define the key in `wp-config.php` instead — `define( 'GATB_GA_SERVICE_ACCOUNT_JSON',
+file_get_contents( __DIR__ . '/wp-content/plugins/ga-telegram-bridge/spike/service-acount.json' ) );`
+— and the *Service-account key* field turns read-only and says *Set in
+configuration*. Everything below works the same either way.
 
 ## 1. The whole report, from the real property
 
 ```bash
-ddev wp eval '$s = GaTelegramBridge\Settings::all(); $s["property_id"] = "533779496"; update_option( "gatb_settings", $s ); echo json_encode( GaTelegramBridge\ReportBuilder::build(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n";'
+ddev wp eval 'echo json_encode( GaTelegramBridge\ReportBuilder::build(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n";'
 ```
 
 Expected: one JSON object beginning like this (the numbers move every day; the
@@ -117,6 +131,18 @@ the previous 28 days as yesterday and look entirely plausible while doing it.
 
 ## 5. Negative check — a switched-off block asks Google for nothing
 
+On the settings screen, in **Report blocks**, untick *Top pages* and save. Then:
+
+```bash
+ddev wp eval '$r = GaTelegramBridge\ReportBuilder::build(); echo "pages_yesterday: " . var_export( $r->pages_yesterday, true ) . "\n"; echo "cities still there: " . count( $r->cities ) . " rows\n";'
+```
+
+Expected: `pages_yesterday: NULL` — switched off, so the block is absent from the
+report entirely, as opposed to `array ()`, which would mean switched on with nothing
+to report. Tick *Top pages* back on and save.
+
+The requests behind that can be seen without touching Google at all:
+
 ```bash
 ddev wp eval '$off = array( "visitors" => true, "pages" => false, "channels" => false, "cities" => false, "devices" => false ); $r = GaTelegramBridge\ReportBuilder::requests( $off ); echo count( $r ) . " request(s): " . implode( ", ", array_keys( $r ) ) . "\n"; echo ( false === strpos( json_encode( $r ), "pagePath" ) && false === strpos( json_encode( $r ), "deviceCategory" ) ? "no disabled block is mentioned (good)\n" : "A DISABLED BLOCK IS STILL ASKED FOR — STOP\n" ); $all = GaTelegramBridge\ReportBuilder::requests( array_fill_keys( GaTelegramBridge\Settings::BLOCKS, true ) ); echo count( $all ) . " requests with everything on, in " . count( array_chunk( $all, 5 ) ) . " call(s)\n";'
 ```
@@ -132,11 +158,6 @@ no disabled block is mentioned (good)
 Six reports cannot be one call: the Data API accepts at most five requests per
 `batchRunReports`. That is where the plugin's "never more than two calls a run"
 comes from — it is a limit, not a preference.
-
-You can watch the same thing from the settings screen: switch *Top pages* off at
-<https://dovira.ddev.site/wp-admin/options-general.php?page=gatb-settings>, save, and
-re-run §1 — `pages_yesterday` and `pages_28_days` come back as `null` (switched off)
-rather than `[]` (switched on, nothing to report). Switch it back on afterwards.
 
 ## 6. Negative check — the day is the property's day, not the server's
 
@@ -163,7 +184,9 @@ answer to be sure of it.
 ddev wp eval 'delete_option( "gatb_settings" ); add_option( "gatb_settings", GaTelegramBridge\Settings::defaults(), "", false );'
 ```
 
-and delete the `define( 'GATB_GA_SERVICE_ACCOUNT_JSON', … )` line from `wp-config.php`.
+That clears the property id and the key from the database along with everything
+else. If you used the `wp-config.php` constant instead of the form, delete that line
+too.
 
 ## 8. The gate is green
 
