@@ -81,7 +81,7 @@ schedule yet. The project has a check command that gates every commit.
 - **Docs to update:** `docs/DOMAIN.md` (glossary: daily report, block, dynamics — if wording changes); `docs/TESTING.md` (what is never mocked: the maths and the parsers).
 - **Depends on:** Step 4
 
-### [ ] Step 7 — MessageRenderer and Preview
+### [x] Step 7 — MessageRenderer and Preview
 - **Tasks:**
   - `MessageRenderer::render(Report, Settings)` producing exactly the template of `FEATURE.md` → UI: header with `wp_parse_url(home_url(), PHP_URL_HOST)` and `wp_date('j F (l)')`-style localized date, ▲/▼ or `—`, `number_format_i18n`, `esc_html` on every GA-provided string, blocks in fixed order, disabled blocks omitted; `renderFailure(date)`; filter `gatb_message_html`; filter `gatb_report_data` applied before rendering.
   - i18n: source strings in English (WordPress convention), all through `__()`; generate `languages/ga-telegram-bridge.pot` (`wp i18n make-pot`) and ship the `uk_UA` `.po/.mo` (`wp i18n make-mo`); the template in FEATURE.md shows the uk rendering, the English strings must map to it line by line.
