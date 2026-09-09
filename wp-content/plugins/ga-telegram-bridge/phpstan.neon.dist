@@ -9,3 +9,9 @@ parameters:
 		- ga-telegram-bridge.php
 		- src
 		- tests
+	parallel:
+		# PHPStan sizes its worker pool from the CPU count, and every worker
+		# loads the WordPress stubs; on a 14-core machine that exhausted the
+		# 512M default and crashed the gate. Two workers are plenty for this
+		# many files and make the run identical on the host and inside DDEV.
+		maximumNumberOfProcesses: 2
