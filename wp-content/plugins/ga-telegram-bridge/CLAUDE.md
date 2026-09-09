@@ -61,6 +61,8 @@ ddev wp cron event list                                          # see gatb_* ev
 ddev exec wp i18n make-pot wp-content/plugins/ga-telegram-bridge \
   wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge.pot \
   --domain=ga-telegram-bridge --exclude=vendor,tests,spike,.phpunit.cache
+# DDEV syncs container writes to the host a moment later: read the .pot back and
+# check its entry count changed before rebuilding the .po from it.
 # translate the new entries in languages/ga-telegram-bridge-uk.po, then:
 ddev exec wp i18n make-mo \
   wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge-uk.po \

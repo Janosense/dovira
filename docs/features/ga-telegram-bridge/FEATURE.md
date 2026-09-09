@@ -49,7 +49,7 @@ to this data; `uninstall.php` removes all of it.
 - **CLI / REST:** none in v1.
 
 ## UI
-- **Screens:** `Settings` (wp-admin page: credentials, recipient, schedule, blocks, buttons *Check GA*, *Check Telegram*, *Preview*, *Send now*; states: unconfigured, secrets set in configuration, check ok/error), `Run log` (table on the same page: date, status, attempt, message, next run; states: empty, with errors). No design export — stock wp-admin components.
+- **Screens:** `Settings` (wp-admin page: credentials, recipient, schedule, blocks, buttons *Check GA*, *Check Telegram*, *Preview*, *Send now*; states: unconfigured, secrets set in configuration, check ok/error), `Run log` (table on the same page under the buttons, newest first: time, what started the run, the day the report was about, sent or failed, attempt and one line of detail; states: empty, with errors. The **next run** column arrives with the scheduler in Sprint 2 — SPRINT-1.md → Out of scope). No design export — stock wp-admin components.
 - **Reuses:** — (not a theme screen; `docs/DESIGN.md` does not apply)
 - **Introduces:** —
 - **Message template (HTML parse mode; `{}` = data, `[...]` = block, blocks 2–5 optional; one line per row, no blank lines):**

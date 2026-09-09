@@ -25,6 +25,7 @@ final class Plugin {
 		add_action( 'admin_post_' . Admin::CHECK_GA_ACTION, array( Admin::class, 'handle_check_ga' ) );
 		add_action( 'admin_post_' . Admin::CHECK_TELEGRAM_ACTION, array( Admin::class, 'handle_check_telegram' ) );
 		add_action( 'admin_post_' . Admin::PREVIEW_ACTION, array( Admin::class, 'handle_preview' ) );
+		add_action( 'admin_post_' . Admin::SEND_NOW_ACTION, array( Admin::class, 'handle_send_now' ) );
 		add_action( 'all_admin_notices', array( Admin::class, 'take_preview' ) );
 	}
 

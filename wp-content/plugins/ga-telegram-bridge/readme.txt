@@ -48,17 +48,24 @@ of the database and out of any database dump:
 Where a constant is defined, the matching field is shown read-only and anything
 typed into it is ignored.
 
-Under the settings form, **Connection** holds three buttons. *Check GA* asks
+Under the settings form, **Connection** holds four buttons. *Check GA* asks
 Google whether this site can read the configured property and reports the
 property's reporting time zone — the time zone that decides which day the report
 calls "yesterday". *Check Telegram* really posts a short test message into the
 configured chat, which is the only way to prove the bot may write there; open
 the chat to see it arrive. *Preview* reads yesterday from Google, builds the
 report and prints the message underneath the buttons exactly as Telegram would
-receive it, tags and all — it sends nothing and stores nothing. No button ever
-shows the key or the token.
+receive it, tags and all — it sends nothing and stores nothing. *Send now*
+builds the same report and sends it, even if today's report has already gone
+out. No button ever shows the key or the token.
 
-Sending the report is added in the following release.
+**Run log** under those buttons lists the last 30 runs, newest first: when it
+ran, what started it, which day the report was about, whether it was sent or
+failed, which attempt it was and one line of detail. A failed run leaves the day
+unsent, so nothing is lost.
+
+The report is sent by hand for now; a daily schedule with retries follows in the
+next release.
 
 == Changelog ==
 

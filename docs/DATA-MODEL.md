@@ -162,9 +162,43 @@ token and nothing else — never the service-account key, never the JWT — and 
 deleted whenever Google answers 401, so the next attempt signs in again. Losing
 it costs one extra token exchange of ~200-350 ms.
 
-Still to come in this feature: `gatb_state` (`last_report_date`, `attempt`) and
-`gatb_log` (last 30 runs) in Sprint 1 Step 8. `uninstall.php` (Sprint 2) removes
-all of them, the transient included.
+### Option `gatb_state` — one array, autoload `no`
+Created on the first run by `RunLog`, never by the settings screen. It is the
+whole of the plugin's idempotency (DECISIONS "Scheduling, retries and idempotency
+on WP-Cron"): a report for a day is sent at most once.
+
+| Key | Type | Default | Written by |
+|---|---|---|---|
+| `last_report_date` | string | `''` | `RunLog::mark_sent()` after Telegram accepted the message — the property's day, `Y-m-d`, never the server's |
+| `attempt` | int | `0` | `RunLog::mark_failed()` adds one; a success resets it to 0 |
+
+A failed run leaves `last_report_date` untouched on purpose: the day stays
+unsent, which is what Sprint 2's retry looks for and what keeps a failure from
+being remembered as a delivery. Sprint 2 adds `next_run` here for the schedule
+display; a row written by Sprint 1 completes to the new key on read, so there is
+no migration.
+
+### Option `gatb_log` — a list of at most 30 entries, autoload `no`
+Created on the first run by `RunLog::add()`, newest first, capped at
+`RunLog::KEEP` = 30 — the 31st run drops the oldest. Read by screen `Run log`
+under the settings form.
+
+| Key | Type | Meaning |
+|---|---|---|
+| `time` | int | Unix time of the run; the screen prints it with `wp_date()` in the site's zone |
+| `trigger` | string | `manual` (the *Send now* button), `cron` or `retry` — the last two are written from Sprint 2 |
+| `date` | string | the day the report was about, `Y-m-d`; when the report could not be built at all, the day the **site** would call yesterday |
+| `status` | string | `sent` or `failed` |
+| `attempt` | int | which attempt this was for that day: 1 after a success, 2 after one failure, and so on |
+| `message` | string | what to tell the administrator |
+
+**No secret is ever written here.** The only text stored is the mapped message of
+a `TelegramException`, `GaClientException` or `GoogleAuthException`; those are
+scrubbed of the bot token before they are thrown and never carry the
+service-account key. A stored entry is completed and typed on the way out, so a
+row edited by hand cannot break the table that prints it.
+
+`uninstall.php` (Sprint 2) removes both options, the settings and the transient.
 
 ## Relations
 ```
