@@ -784,7 +784,7 @@ one method if it is ever enabled.
 
 ---
 
-## Plan — Sprint 1, Step 5: TelegramClient and "Check Telegram"   (status: approved, in progress)
+## Plan — Sprint 1, Step 5: TelegramClient and "Check Telegram"   (status: implemented, awaiting close)
 
 ### Branch
 `ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
