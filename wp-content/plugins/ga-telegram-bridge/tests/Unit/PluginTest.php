@@ -11,6 +11,7 @@ namespace GaTelegramBridge\Tests\Unit;
 
 use Brain\Monkey\Actions;
 use Brain\Monkey\Functions;
+use GaTelegramBridge\Admin;
 use GaTelegramBridge\Plugin;
 use GaTelegramBridge\Settings;
 use GaTelegramBridge\Tests\TestCase;
@@ -42,6 +43,16 @@ final class PluginTest extends TestCase {
 		Plugin::boot();
 
 		$this->assertNotFalse( Actions\has( 'admin_init', array( Settings::class, 'register' ) ) );
+	}
+
+	/**
+	 * Boot registers the settings screen for the admin.
+	 */
+	public function test_boot_registers_the_settings_screen(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse( Actions\has( 'admin_menu', array( Admin::class, 'add_page' ) ) );
+		$this->assertNotFalse( Actions\has( 'admin_init', array( Admin::class, 'add_fields' ) ) );
 	}
 
 	/**

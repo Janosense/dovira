@@ -20,6 +20,8 @@ final class Plugin {
 	public static function boot(): void {
 		add_action( 'init', array( self::class, 'load_textdomain' ) );
 		add_action( 'admin_init', array( Settings::class, 'register' ) );
+		add_action( 'admin_menu', array( Admin::class, 'add_page' ) );
+		add_action( 'admin_init', array( Admin::class, 'add_fields' ) );
 	}
 
 	/**

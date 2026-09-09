@@ -396,7 +396,7 @@ the current `master`, which carries Steps 1 and 2.)
     only way to guarantee **autoload `no`** (the step's wording; `update_option` from `options.php`
     would create it autoloaded on a fresh install).
 
-- [ ] **2. `Admin`: the screen `Settings` under Settings → "GA → Telegram"** (+ its tests and the
+- [x] **2. `Admin`: the screen `Settings` under Settings → "GA → Telegram"** (+ its tests and the
   `readme.txt` settings description, same commit) → `feat(ga-telegram-bridge): add the GA → Telegram settings page`
 
   `src/Admin.php`, final class of static methods; `src/Plugin.php` registers `admin_menu` →
