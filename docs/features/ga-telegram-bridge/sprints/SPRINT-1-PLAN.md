@@ -197,7 +197,7 @@ none
 
 ---
 
-## Plan — Sprint 1, Step 2: Spike — service account → GA4 Data API (timeboxed, throwaway)   (status: approved, in progress)
+## Plan — Sprint 1, Step 2: Spike — service account → GA4 Data API (timeboxed, throwaway)   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
