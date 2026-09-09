@@ -1203,3 +1203,253 @@ them.
 
 ### Questions / ambiguities
 none
+
+---
+
+## Plan — Sprint 1, Step 7: MessageRenderer and Preview   (status: implemented, awaiting close)
+
+### Branch
+`ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
+(git model in root `CLAUDE.md` is *simple*: task branch → `master`; `SPRINT-1.md` → Branch
+names this same branch. Deleted at the close of Step 6 — `/do-step` re-creates it from `master`.)
+
+### Tasks (ordered)
+
+- [x] **1. `MessageRenderer`: the `Report` becomes the message of `FEATURE.md` → UI** (+ its tests
+  and the two doc updates that describe it, same commit) →
+  `feat(ga-telegram-bridge): render the daily report as a Telegram message`
+
+  `src/MessageRenderer.php`, two public entry points and no state:
+  - `render( Report $report ): string` — the whole message, HTML parse mode, blocks in the fixed
+    order of the template, a block that is `null` (switched off) left out.
+  - `render_failure( string $date ): string` — the one-line notice of FEATURE.md → UI. Sprint 2
+    sends it; it is written here because it is the second template of the same renderer and the
+    step names it.
+
+  **What each line is made of.**
+  | Template line | Built from |
+  |---|---|
+  | `📊 <b>{host} — {date}</b>` | `wp_parse_url( home_url(), PHP_URL_HOST )`, and `wp_date()` on the report's own day |
+  | `<b>Відвідувачі</b>` | `__( 'Visitors' )` wrapped in `<b>` by the renderer |
+  | `Вчора: {n} ({▲ або ▼} {pct}% до середнього за 7 днів)` | `visitors_yesterday` + `visitors_change_vs_average` |
+  | `За 28 днів: {n} ({…} до попередніх 28)` | `visitors_28_days` + `visitors_change_28_days` |
+  | `<b>Топ‑5 сторінок вчора</b>` / `… за 28 днів` | `pages_yesterday` / `pages_28_days`, rows `1. {title} — {views}` |
+  | `<b>Джерела / Міста / Пристрої за 28 днів</b>` | `channels` / `cities` / `devices`, rows `{label} {pct}%` joined with ` · ` |
+
+  Five rules the code has to encode, each of them a test below:
+
+  - **The date is the property's day, printed in the site's language.** `Report::$date` is a
+    `Y-m-d` in `Report::$time_zone`; the renderer turns it into a timestamp at noon of that day in
+    that zone (noon, so no DST hour can move it across midnight) and formats it with
+    `wp_date( __( 'j F (l)' ), $ts, new DateTimeZone( $report->time_zone ) )`. Measured today on
+    this install: the uk output is **`7 Вересня (Понеділок)`** — WordPress declines the month to
+    the genitive by itself (`wp_maybe_decline_date()`, matched by the `j F` in the format) and
+    capitalises both words, which is how its own uk translation writes them. FEATURE.md's template
+    illustrates the line as "7 вересня (неділя)"; the example there is corrected to what WordPress
+    produces (Docs vs reality 1). The format itself is translatable, so a locale that writes dates
+    differently can reorder it.
+  - **Numbers go through `number_format_i18n()` — and then have their HTML entities decoded.**
+    In uk that function returns `1&nbsp;560`: the locale's thousands separator is the *named
+    entity*, not the character. Telegram's HTML parse mode supports **only** `&lt;`, `&gt;`,
+    `&amp;` and `&quot;` as named entities (Bot API → HTML style; numeric entities are all
+    supported), so `&nbsp;` would either be shown literally or make the message unparseable — the
+    exact 400 `can't parse entities` that `TelegramClient` already maps. Every formatted number is
+    therefore passed through `html_entity_decode( …, ENT_QUOTES | ENT_HTML5, 'UTF-8' )`, which
+    turns the separator into a real non-breaking space that needs no entity at all.
+  - **Everything GA supplies is escaped, everything we write is not.** Page titles, paths, channel
+    names, city names and device categories go through `esc_html()` (`&` → `&amp;`, `<` → `&lt;`,
+    `'` → `&#039;` — all four of them entities Telegram accepts). The tags of the template are the
+    renderer's own and are written literally.
+  - **A change of `null` prints `—`.** `Dynamics::change()` returns `null` when the baseline is 0
+    (a site's first days), and FEATURE.md fixes the rendering as an em dash in place of the arrow
+    and the percentage. `▲` for a rise, `▼` for a fall, `▲ 0%` for exactly the same.
+  - **An empty block is left out, like a switched-off one.** `array()` means the block is on and
+    GA had nothing for it; a heading with nothing under it is not worth sending, so the renderer
+    prints a block only when it has rows. The distinction the `Report` keeps is still real and
+    still tested — it is what Sprint 2's log will read — but the message has no place for it. This
+    is written into FEATURE.md → UI in the same commit, because the template does not currently
+    say it.
+
+  **The two filters of `FEATURE.md` → Interfaces are applied here, and their signatures fixed:**
+  `$report = apply_filters( 'gatb_report_data', $report )` at the top of `render()` (a filter that
+  returns anything but a `Report` is ignored and the original is rendered — the message still has
+  to go out), and `apply_filters( 'gatb_message_html', $html, $report )` on the finished string of
+  both entry points, with `?Report $report` as the second argument (`null` for the failure
+  notice). Both signatures are written into FEATURE.md → Interfaces in this commit.
+
+  One line changes outside the renderer: `ReportBuilder::TOP_ROWS` becomes `public` so the heading
+  can say "Top 5" from the same constant that asks GA for five rows, instead of a second 5 in
+  another file. No behaviour changes.
+
+- [x] **2. *Preview* on screen `Settings`: the message, built and shown, never sent** (+ its tests
+  and the readme line, same commit) →
+  `feat(ga-telegram-bridge): preview the daily message from the settings screen`
+
+  `src/Admin.php`:
+  - `public const PREVIEW_ACTION = 'gatb_preview';` and a third `check_form()` in the **Connection**
+    section, labelled *Preview*, described as building the report and showing it without sending
+    anything.
+  - `handle_preview()` — nonce, `manage_options`, `ReportBuilder::build()` → `MessageRenderer::render()`,
+    the result carried back to the screen the way both existing checks carry theirs: as a settings
+    error (code `gatb_preview`, type `info`) through the `settings_errors` transient and the same
+    private `redirect_to_settings()`. `GaClientException` / `GoogleAuthException` become an error
+    notice, exactly as *Check GA* does. Nothing is sent to Telegram and no option is written.
+  - `render_page()` takes the preview **out** of the notice list before printing the rest and shows
+    it in its own section — `<h2>Preview</h2>` and the message inside `<pre>`, escaped, so the
+    administrator reads the HTML as text (a `<pre>` inside the notice's `<p><strong>` would be
+    invalid markup and bold). The pull-out is a `take_preview()` helper that reads
+    `get_settings_errors( Settings::OPTION )` — which is what merges the transient into
+    `$wp_settings_errors` and deletes it — and unsets that one entry from the global. **No new
+    option, transient or cron hook**: the plugin's data surface (plugin `CLAUDE.md` → Data) is
+    unchanged.
+  - `src/Plugin.php`: `add_action( 'admin_post_' . Admin::PREVIEW_ACTION, … )`, next to the two
+    existing ones.
+  - `readme.txt`: the Connection paragraph gains the third button, and the closing sentence
+    "Previewing the report and sending it are added in the following releases" becomes "Sending it
+    is added in the following release" — it describes the screen this task changes (core rule 8).
+
+- [x] **3. The plugin speaks Ukrainian: `.pot`, `uk` `.po` and `.mo`** →
+  `feat(ga-telegram-bridge): ship the Ukrainian translation`
+
+  - `ddev exec wp i18n make-pot wp-content/plugins/ga-telegram-bridge \
+    wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge.pot \
+    --domain=ga-telegram-bridge --exclude=vendor,tests,spike,.phpunit.cache` — trialled today
+    inside the container: it detects the plugin header and writes **89 entries** for the code as it
+    stands, and this step adds roughly a dozen more.
+  - `languages/ga-telegram-bridge-uk.po` — **`uk`, not `uk_UA`**: `get_locale()` on this install
+    returns `uk` and WordPress's own files are `admin-uk.mo` (Docs vs reality 2). Every string is
+    translated, not only the message: the screen is used by the clinic's administrator. The message
+    strings are translated to the exact wording of `FEATURE.md` → UI, which is what "the English
+    strings must map to it line by line" means.
+  - `ddev exec wp i18n make-mo …/languages/ga-telegram-bridge-uk.po …/languages/` → the `.mo`
+    beside it. Both files are committed; `load_plugin_textdomain()` in `Plugin::boot()` already
+    points at `languages/`, and WordPress 7.1 still reads `.mo` (it prefers `.l10n.php` and falls
+    back — `wp-includes/l10n.php`).
+  - Verified before the commit by rendering the message on the dev site and reading the uk text.
+
+### Files to create/change
+- `wp-content/plugins/ga-telegram-bridge/src/MessageRenderer.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/MessageRendererTest.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/src/ReportBuilder.php` — `TOP_ROWS` made public (task 1)
+- `docs/features/ga-telegram-bridge/FEATURE.md` — UI (the date example, the empty-block rule) and
+  Interfaces (the two filter signatures) (task 1)
+- `docs/TESTING.md` — Never mocked: what a renderer snapshot asserts and why it is English (task 1)
+- `wp-content/plugins/ga-telegram-bridge/src/Admin.php`, `src/Plugin.php` — the third button and its
+  action (task 2)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/AdminPreviewTest.php` — new; `AdminTest.php`
+  adjusted (the Connection section now prints three forms) (task 2)
+- `wp-content/plugins/ga-telegram-bridge/readme.txt` — the Connection paragraph (task 2)
+- `wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge.pot`,
+  `ga-telegram-bridge-uk.po`, `ga-telegram-bridge-uk.mo` — new (task 3)
+- `docs/ARCHITECTURE.md` — the plugin's module row ("In as of Sprint 1 Step 7", `MessageRenderer`,
+  the *Preview* button) (task 2, the commit that adds the screen behaviour)
+- No change to `Settings`, `GaClient`, `GoogleAuth`, `TelegramClient`, `Report` or `Dynamics`:
+  Step 7 reads a `Report` and prints it. Nothing is sent — that is Step 8.
+
+### Tests to write
+`MessageRendererTest` — snapshots of the whole message, built from the **recorded** payloads
+(`docs/TESTING.md` → Never mocked): `batch-run-reports-daily-call-{1,2}.json` go through
+`ReportBuilder` and the resulting `Report` through the renderer, so a change in either shows up
+here:
+- **the full report** — every block present, in the template's order, with the header, the two
+  visitors lines, five page rows twice, and the three share lists; asserted as one expected string,
+  not field by field, because the message *is* the deliverable.
+- **blocks switched off** — pages and devices off: their headings are absent, the remaining blocks
+  keep their order, and nothing else moves.
+- **a block that is on but empty** (`batch-run-reports-no-data.written.json`) — no heading for it
+  either, and the visitors block still prints its zeros.
+- **zero baselines** — the same no-data report renders `—` in both parenthesised comparisons,
+  never `▲ 0%` and never a division by zero.
+- **a page title with `<` and `&`** (a constructed `Report`, since the live property has no such
+  page) — the message carries `&lt;` and `&amp;`, and contains no bare `<` outside the template's
+  own `<b>` tags. This is the check that keeps Telegram from answering 400 `can't parse entities`.
+- **the uk thousands separator** — with `number_format_i18n()` stubbed to return `1&nbsp;560`, as
+  the uk locale really does, the message contains a real non-breaking space and **no `&nbsp;`**.
+- **the failure notice** — `render_failure()` against its template line.
+- **both filters** — `gatb_report_data` replacing the report changes what is rendered;
+  `gatb_message_html` replacing the string changes what comes back; a `gatb_report_data` that
+  returns a string is ignored and the real report is rendered anyway.
+
+`AdminPreviewTest` — the button and the handler:
+- the Connection section prints a third form whose action is `gatb_preview`, with its own nonce.
+- the handler refuses without the nonce and without `manage_options`, builds through
+  `ReportBuilder`, registers a settings error of type `info` holding the rendered message, and
+  never calls `wp_remote_post` against `api.telegram.org` — the negative check that *Preview* sends
+  nothing.
+- a `GaClientException` from the build becomes an error notice, not a fatal.
+- `render_page()` prints the preview inside `<pre>` with the HTML escaped, and the notice list it
+  passes to `settings_errors()` no longer contains that entry (printed once, in one place).
+
+`AdminTest` — the existing `submit_button` expectation moves from three calls to four.
+`PluginTest` — the third `admin_post_` action is registered.
+
+Test-critical zones of the profile are untouched (no form pipeline, no price grouping, no
+`dovira/v1` route, no translate command). The plugin's own rule is what applies: `docs/TESTING.md`
+already names `MessageRenderer` among the things that are never mocked.
+
+### Docs to update
+- `docs/features/ga-telegram-bridge/FEATURE.md` → **UI**: the date in the template example becomes
+  what WordPress renders (`7 Вересня (Понеділок)`), and the legend gains one line — a block with no
+  rows is omitted like a switched-off one. → **Interfaces**: the exact signatures of
+  `gatb_report_data` and `gatb_message_html`, which this step is the first code to apply.
+- `docs/ARCHITECTURE.md` → Modules: the plugin row's "In as of Sprint 1 Step 6" list gains
+  `MessageRenderer` and the *Preview* button; the GA4 row's closing "Report composition follows in
+  Step 6" clause was retired in Step 6's close, and the Telegram row's "the daily GA report" is now
+  a message that exists.
+- `docs/TESTING.md` → Never mocked: a renderer snapshot asserts the **English source strings**,
+  because Brain\Monkey's translation stubs return the original — the Ukrainian rendering is proven
+  by the manual verification and by nothing else.
+- `wp-content/plugins/ga-telegram-bridge/readme.txt` — the third button (task 2).
+- Likely at close, not a task: `docs/LEARNINGS.md` — Telegram's four named HTML entities against
+  `number_format_i18n()`'s `&nbsp;` is a pitfall the next person to touch the renderer will meet.
+- Not updated, checked, with the reason: `docs/DATA-MODEL.md` (nothing is stored — the preview
+  travels in WordPress's own `settings_errors` transient and dies there), `docs/DOMAIN.md` (the
+  glossary already carries *Щоденний звіт*, *Динаміка* and *Блок звіту* and this step changes no
+  wording), `docs/DECISIONS.md` (the step implements "No UI design phase; message format and
+  configurable blocks" as written and reopens nothing), `docs/TECH-STACK.md` (no dependency — the
+  `.pot`/`.mo` are made with the WP-CLI that DDEV already ships), `docs/CONTRACTS.md` (none kept),
+  `docs/DESIGN.md` (below).
+
+### Checks
+- **ANTI-PATTERNS:** none violated. No ACF field group or block, no `service-city`, no CF7 id, no
+  `assets/`, no `mu-plugins/`, no post-type registration, no per-city analytics id, nothing written
+  to `temp-data/`, `reports/` or `_to_delete/`, and no globally installed tool — `wp i18n` is part
+  of the WP-CLI inside DDEV, which the project already uses. Core rule 6: the message's wording is
+  not hardcoded business data — it is a translatable template, and what the business changes (which
+  blocks are sent) is already a setting.
+- **Docs vs reality:** four items, none of them a question.
+  1. **The uk date reads `7 Вересня (Понеділок)`, not `7 вересня (неділя)`.** Measured on this
+     install today: `wp_date( 'j F (l)' )` declines the month by itself but keeps WordPress's own
+     capitalisation of both words. Lower-casing them would mean fighting the core translation with
+     `mb_strtolower()`, which is right for Ukrainian and wrong for English and German — the plugin
+     ships in both. FEATURE.md's example is corrected instead; `SPRINT-1.md` → Step 7 explicitly
+     provides for that ("if a string had to change, the template is updated in the same commit").
+  2. **The locale is `uk`, not `uk_UA`.** The step text says `uk_UA`; `get_locale()` here returns
+     `uk` and core's files are `admin-uk.mo`, so the shipped file is `ga-telegram-bridge-uk.mo`.
+     A `uk_UA` file would simply never load.
+  3. `SPRINT-1.md` writes the entry point as `MessageRenderer::render(Report, Settings)`.
+     `Settings` is an all-static class with no instance to pass, and the `Report` already says
+     which blocks are on (`null` = off) — so the signature is `render( Report ): string`, the same
+     shorthand already resolved for `ReportBuilder::build()` in Step 6.
+  4. Observations that change no task: GA's own labels stay as GA writes them — the uk message will
+     say `mobile 80%` and `Organic Search 70%`, because those are data, not our copy, and
+     translating a vendor's channel groups is not in this step (a retro item if the owner minds).
+     A full message measures about 700 characters against Telegram's 4096 limit. And, carried
+     unchanged from Steps 3–6: `docs/DESIGN.md` → Screens still lists no screen of this plugin,
+     because DECISIONS "No UI design phase" forbids it — for the retro.
+- **Design:** n/a by decision — DECISIONS "No UI design phase; message format and configurable
+  blocks" rules `docs/DESIGN.md` out for this feature and fixes the message template in
+  `FEATURE.md` → UI, which is what task 1 renders against. The *Preview* button is a stock
+  `submit_button()` in the existing **Connection** section; the preview itself is a `<pre>` in the
+  page, no CSS and no JS (plugin `CLAUDE.md` → Admin).
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) — green on `master` right
+  now: PHPCS, PHPStan level 8 at `--memory-limit=1G`, **163 tests / 532 assertions**, 108 theme
+  files.
+- **Not locally verifiable:** n/a for the step's own promise — the preview is read on the screen and
+  every number behind it comes from the live property. What stays unproven is one step further on:
+  that **Telegram accepts this HTML**. No bot token is configured on the dev site, so the message
+  is proven parseable only by its own escaping and by Telegram's documented entity rules; the one
+  real run that settles it is Step 8's *Send now* into the configured chat.
+
+### Questions / ambiguities
+none
