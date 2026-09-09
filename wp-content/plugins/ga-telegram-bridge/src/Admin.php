@@ -39,6 +39,14 @@ final class Admin {
 	public const PREVIEW_ACTION = 'gatb_preview';
 
 	/**
+	 * The previewed message, between the notices being read and the screen
+	 * being printed. Null when this request built no preview.
+	 *
+	 * @var string|null
+	 */
+	private static ?string $preview = null;
+
+	/**
 	 * Adds the screen under Settings. Hooked on admin_menu.
 	 */
 	public static function add_page(): void {
@@ -186,19 +194,21 @@ final class Admin {
 	}
 
 	/**
-	 * Prints the screen: the notices, the form, its sections and any preview.
+	 * Prints the screen: the form, its sections and any preview.
+	 *
+	 * The notices are not printed here. wp-admin prints the settings errors of
+	 * every screen whose parent is Settings by itself — admin-header.php
+	 * requires options-head.php, which calls settings_errors() — so a second
+	 * call here showed every notice twice.
 	 */
 	public static function render_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
-		$preview = self::take_preview();
-
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html__( 'Google Analytics → Telegram', 'ga-telegram-bridge' ); ?></h1>
-			<?php settings_errors( Settings::OPTION ); ?>
 			<form action="options.php" method="post">
 				<?php
 				settings_fields( Settings::GROUP );
@@ -208,24 +218,34 @@ final class Admin {
 			</form>
 			<?php
 			self::render_connection_section();
-			self::render_preview( $preview );
+			self::render_preview( self::consume_preview() );
 			?>
 		</div>
 		<?php
 	}
 
 	/**
-	 * Takes the message a preview just built out of the notices.
+	 * Takes the message a preview built out of the notices, before they print.
 	 *
 	 * The preview travels back from admin-post.php the way the two checks carry
 	 * their results — as a settings error, which is the transient WordPress
-	 * already uses for notices; reading the notices is what merges that
-	 * transient into this request. It is then taken out of the list on purpose:
-	 * a whole message belongs in a block of its own, not inside a one-line
-	 * notice printed as bold text.
+	 * already uses for notices, so the plugin needs no storage of its own.
+	 * Reading the notices is what merges that transient into this request.
+	 *
+	 * Hooked on all_admin_notices because that is the last moment before
+	 * wp-admin prints them: admin-header.php fires this action and then, three
+	 * lines further down, requires options-head.php. A whole message read as
+	 * one bold paragraph with its line breaks gone is not a preview, so it is
+	 * taken out here and render_page() prints it in a block of its own.
 	 */
-	private static function take_preview(): ?string {
-		$message = null;
+	public static function take_preview(): void {
+		$screen = get_current_screen();
+
+		// The hook fires on every admin screen; only this one has somewhere to
+		// print a preview. The id is the one add_options_page() gives the page.
+		if ( null === $screen || 'settings_page_' . self::PAGE !== $screen->id ) {
+			return;
+		}
 
 		get_settings_errors( Settings::OPTION );
 
@@ -243,10 +263,22 @@ final class Admin {
 				continue;
 			}
 
-			$message = is_string( $notice['message'] ?? null ) ? $notice['message'] : '';
+			self::$preview = is_string( $notice['message'] ?? null ) ? $notice['message'] : '';
 
 			unset( $GLOBALS['wp_settings_errors'][ $index ] );
 		}
+	}
+
+	/**
+	 * Returns the message taken out of the notices, once.
+	 *
+	 * A preview belongs to the one request that built it, so it is handed over
+	 * and forgotten.
+	 */
+	private static function consume_preview(): ?string {
+		$message = self::$preview;
+
+		self::$preview = null;
 
 		return $message;
 	}

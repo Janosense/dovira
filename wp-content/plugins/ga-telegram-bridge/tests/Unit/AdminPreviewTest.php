@@ -281,12 +281,94 @@ final class AdminPreviewTest extends TestCase {
 	}
 
 	/**
-	 * The screen shows the message as text, and shows it exactly once.
+	 * The message is taken out of the notices and printed as text of its own.
 	 *
-	 * It is printed in a block of its own rather than inside a notice, so the
-	 * entry is taken out of WordPress's notice list before the notices print.
+	 * The settings errors of every screen under Settings are printed by
+	 * wp-admin itself, before the screen callback runs, so the preview has to
+	 * be taken out of that list earlier — on all_admin_notices — or the whole
+	 * message appears as one bold paragraph above the form.
 	 */
-	public function test_the_screen_prints_the_preview_as_text_and_not_as_a_notice(): void {
+	public function test_the_preview_is_taken_out_of_the_notices_and_printed_as_text(): void {
+		$this->given_the_notices_of_a_preview();
+		$this->given_the_settings_screen();
+
+		Admin::take_preview();
+
+		$this->assertSame(
+			array( 'gatb_check_ga' ),
+			array_column( (array) $GLOBALS['wp_settings_errors'], 'code' ),
+			'the preview is gone from the notices, the check result is not'
+		);
+
+		$markup = $this->render_screen();
+
+		$this->assertStringContainsString( '<h2>Preview</h2>', $markup );
+		$this->assertStringContainsString( '<pre>📊 &lt;b&gt;dovira.vet — 9 September (Tuesday)&lt;/b&gt;', $markup );
+
+		$this->forget_the_notices();
+	}
+
+	/**
+	 * Negative check: the screen never prints the notices a second time.
+	 *
+	 * They are printed by wp-admin itself (admin-header.php requires
+	 * options-head.php for every screen whose parent is Settings), and a call
+	 * here showed each of them twice.
+	 */
+	public function test_the_screen_does_not_print_the_notices_itself(): void {
+		$this->given_the_notices_of_a_preview();
+		$this->given_the_settings_screen();
+		Functions\expect( 'settings_errors' )->never();
+
+		Admin::take_preview();
+		$markup = $this->render_screen();
+
+		$this->assertStringNotContainsString( 'Google answered for property', $markup );
+
+		$this->forget_the_notices();
+	}
+
+	/**
+	 * Negative check: on any other admin screen nothing is taken and nothing
+	 * is printed — the hook fires everywhere, the preview belongs to one page.
+	 */
+	public function test_another_admin_screen_keeps_its_notices(): void {
+		$this->given_the_notices_of_a_preview();
+		$this->given_the_settings_screen( 'edit-post' );
+
+		Admin::take_preview();
+
+		$this->assertSame(
+			array( 'gatb_preview', 'gatb_check_ga' ),
+			array_column( (array) $GLOBALS['wp_settings_errors'], 'code' ),
+			'the notice list of another screen is left alone'
+		);
+		$this->assertStringNotContainsString( '<pre>', $this->render_screen() );
+
+		$this->forget_the_notices();
+	}
+
+	/**
+	 * With no preview in the notices the screen prints no preview block.
+	 */
+	public function test_the_screen_prints_no_preview_when_none_was_built(): void {
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- arranging the notice list wp-admin would hand the screen.
+		$GLOBALS['wp_settings_errors'] = array();
+		$this->given_the_settings_screen();
+
+		Admin::take_preview();
+		$markup = $this->render_screen();
+
+		$this->assertStringNotContainsString( 'Preview</h2>', $markup );
+		$this->assertStringNotContainsString( '<pre>', $markup );
+
+		$this->forget_the_notices();
+	}
+
+	/**
+	 * Arranges the notice list a preview leaves behind, next to a check result.
+	 */
+	private function given_the_notices_of_a_preview(): void {
 		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- arranging the notice list wp-admin would hand the screen.
 		$GLOBALS['wp_settings_errors'] = array(
 			array(
@@ -302,52 +384,56 @@ final class AdminPreviewTest extends TestCase {
 				'type'    => 'success',
 			),
 		);
-
-		Functions\when( 'current_user_can' )->justReturn( true );
-		Functions\when( 'get_settings_errors' )->justReturn( array() );
-		Functions\when( 'wp_nonce_field' )->justReturn( null );
-		Functions\when( 'settings_errors' )->justReturn( null );
-		Functions\when( 'settings_fields' )->justReturn( null );
-		Functions\when( 'do_settings_sections' )->justReturn( null );
-		Functions\when( 'submit_button' )->justReturn( null );
-
-		ob_start();
-		Admin::render_page();
-		$markup = (string) ob_get_clean();
-
-		$this->assertStringContainsString( '<h2>Preview</h2>', $markup );
-		$this->assertStringContainsString( '<pre>📊 &lt;b&gt;dovira.vet — 9 September (Tuesday)&lt;/b&gt;', $markup );
-		$this->assertSame(
-			array( 'gatb_check_ga' ),
-			array_column( (array) $GLOBALS['wp_settings_errors'], 'code' ),
-			'the preview is gone from the notices, the check result is not'
-		);
-
-		unset( $GLOBALS['wp_settings_errors'] );
 	}
 
 	/**
-	 * With no preview in the notices the screen prints no preview block.
+	 * Says which screen wp-admin is printing.
+	 *
+	 * @param string $id The screen id; the settings screen by default.
 	 */
-	public function test_the_screen_prints_no_preview_when_none_was_built(): void {
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- arranging the notice list wp-admin would hand the screen.
-		$GLOBALS['wp_settings_errors'] = array();
+	private function given_the_settings_screen( string $id = 'settings_page_gatb-settings' ): void {
+		Functions\when( 'get_current_screen' )->justReturn(
+			new class( $id ) {
+				/**
+				 * The screen id wp-admin reports.
+				 *
+				 * @var string
+				 */
+				public $id;
 
-		Functions\when( 'current_user_can' )->justReturn( true );
+				/**
+				 * Holds one screen id.
+				 *
+				 * @param string $id The screen id.
+				 */
+				public function __construct( string $id ) {
+					$this->id = $id;
+				}
+			}
+		);
 		Functions\when( 'get_settings_errors' )->justReturn( array() );
+	}
+
+	/**
+	 * Renders the settings screen and returns its markup.
+	 */
+	private function render_screen(): string {
+		Functions\when( 'current_user_can' )->justReturn( true );
 		Functions\when( 'wp_nonce_field' )->justReturn( null );
-		Functions\when( 'settings_errors' )->justReturn( null );
 		Functions\when( 'settings_fields' )->justReturn( null );
 		Functions\when( 'do_settings_sections' )->justReturn( null );
 		Functions\when( 'submit_button' )->justReturn( null );
 
 		ob_start();
 		Admin::render_page();
-		$markup = (string) ob_get_clean();
 
-		$this->assertStringNotContainsString( 'Preview</h2>', $markup );
-		$this->assertStringNotContainsString( '<pre>', $markup );
+		return (string) ob_get_clean();
+	}
 
+	/**
+	 * Leaves no notices behind for the next test.
+	 */
+	private function forget_the_notices(): void {
 		unset( $GLOBALS['wp_settings_errors'] );
 	}
 }
