@@ -17,6 +17,12 @@ Entry format:
 
 ---
 
+## 2026-09-09 — [ga-telegram-bridge] Sprint 1 Step 6 — ReportBuilder
+- Changed: three classes, no hook and no screen — `Dynamics` (the seven-day baseline divides by seven, a change against a zero baseline is null, shares are rounded row by row), `Report` (a readonly value object whose optional blocks separate "switched off" from "on but empty") and `ReportBuilder` (six GA4 reports composed into at most two `batchRunReports` calls, parsed back into one object with shares and changes already computed). 34 new unit tests, one of them walking all sixteen block combinations.
+- Shared code: none — no theme code, no hook, no option, no project-level tooling touched this time.
+- Decisions: none new; DECISIONS "Report content and comparison baselines" is implemented as written. Two constraints made explicit in code and docs: the Data API takes five requests per batch call, so a full report of six cannot be one call — that is where FEATURE.md's "never more than 2" comes from; and which day the report covers is read from the property's own reporting time zone, not the server clock.
+- Open: the 28-day pages block lists the same path twice when its title changed during the period (recorded in the fixture: `/` appears as two titles, eating two of the five slots) — the step fixes the dimensions as pagePath + pageTitle, so this is for Step 7 or the retro to settle. The empty-property shape is still a written fixture. The Google key and `spike/` are still on disk and were used to record this step's fixtures; they go at the sprint boundary.
+
 ## 2026-09-09 — [ga-telegram-bridge] Sprint 1 Step 5 — TelegramClient and "Check Telegram"
 - Changed: `TelegramClient::send_message()` (one HTML message to one chat via `api.telegram.org`, link previews off, 15 s) with `TelegramException` and one mapped sentence per failure — a revoked token, a mistyped one, a chat that cannot be found, unreadable markup, a bot that may not post there, flood control naming `retry_after`, 5xx, and an unreachable host; a second button in the Connection section of screen `Settings` that really posts a test message. 28 new unit tests on 7 fixtures (2 recorded live — a wrong token needs no credential — and 5 written from Telegram's documentation).
 - Shared code: none of the theme. Two project-level changes, both gating every feature: `bin/check.sh` and the plugin's `composer analyse` now pass `--memory-limit=1G` to PHPStan (commit `5937251`), and `phpunit.xml.dist` fixes the suite order so the class defining the `GATB_*` constants runs last.

@@ -989,7 +989,7 @@ none
 
 ---
 
-## Plan — Sprint 1, Step 6: ReportBuilder   (status: implemented, awaiting close)
+## Plan — Sprint 1, Step 6: ReportBuilder   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
