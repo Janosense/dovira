@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-09T16:10:25+03:00\n"
+"POT-Creation-Date: 2026-09-09T17:13:15+03:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: ga-telegram-bridge\n"
@@ -236,39 +236,55 @@ msgid "Where the report is sent. Create a bot with BotFather; to post into a cha
 msgstr ""
 
 #: src/Admin.php:640
-msgid "Kept for the daily sending, which is added in a later release. Nothing runs on a schedule yet."
+msgid "When the report goes out by itself. The time is site-local, and a saved change takes effect immediately."
 msgstr ""
 
-#: src/Admin.php:649
+#: src/Admin.php:666
+msgid "The report is not scheduled yet. Save these settings once and it will be."
+msgstr ""
+
+#. translators: %s: the date and time of the next scheduled report, in the site's time zone.
+#: src/Admin.php:672
+#, php-format
+msgid "Next run: %s"
+msgstr ""
+
+#. translators: %s: the URL of wp-cron.php on this site.
+#: src/Admin.php:687
+#, php-format
+msgid "WP-Cron is switched off in wp-config.php (DISABLE_WP_CRON), and nothing has called %s in the last 24 hours — so nothing will send the report. Set up a system cron that calls that address, for example every 15 minutes."
+msgstr ""
+
+#: src/Admin.php:706
 msgid "What the message contains. The visitors block is always sent."
 msgstr ""
 
-#: src/Admin.php:769
+#: src/Admin.php:826
 msgid "Set in configuration (wp-config.php); the field is ignored."
 msgstr ""
 
-#: src/Admin.php:813
+#: src/Admin.php:870
 msgid "(always sent)"
 msgstr ""
 
-#: src/Admin.php:831
+#: src/Admin.php:888
 #: src/MessageRenderer.php:126
 msgid "Visitors"
 msgstr ""
 
-#: src/Admin.php:832
+#: src/Admin.php:889
 msgid "Top pages"
 msgstr ""
 
-#: src/Admin.php:833
+#: src/Admin.php:890
 msgid "Traffic sources"
 msgstr ""
 
-#: src/Admin.php:834
+#: src/Admin.php:891
 msgid "Cities"
 msgstr ""
 
-#: src/Admin.php:835
+#: src/Admin.php:892
 msgid "Devices"
 msgstr ""
 
@@ -441,7 +457,7 @@ msgstr ""
 msgid "j F (l)"
 msgstr ""
 
-#: src/Plugin.php:81
+#: src/Plugin.php:99
 msgid "Google Analytics → Telegram bridge needs the PHP OpenSSL extension to sign Google API requests. Ask your host to enable it, then activate the plugin again."
 msgstr ""
 

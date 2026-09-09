@@ -235,39 +235,55 @@ msgid "Where the report is sent. Create a bot with BotFather; to post into a cha
 msgstr "Куди надсилається звіт. Створіть бота через BotFather; щоб публікувати в каналі, додайте бота до нього адміністратором."
 
 #: src/Admin.php:640
-msgid "Kept for the daily sending, which is added in a later release. Nothing runs on a schedule yet."
-msgstr "Зберігається для щоденного надсилання, яке з’явиться в наступному випуску. Поки що за розкладом нічого не виконується."
+msgid "When the report goes out by itself. The time is site-local, and a saved change takes effect immediately."
+msgstr "Коли звіт надсилається сам. Час — за годинником сайту, а збережена зміна діє одразу."
 
-#: src/Admin.php:649
+#: src/Admin.php:666
+msgid "The report is not scheduled yet. Save these settings once and it will be."
+msgstr "Звіт ще не заплановано. Збережіть ці налаштування один раз — і він буде запланований."
+
+#. translators: %s: the date and time of the next scheduled report, in the site's time zone.
+#: src/Admin.php:672
+#, php-format
+msgid "Next run: %s"
+msgstr "Наступний запуск: %s"
+
+#. translators: %s: the URL of wp-cron.php on this site.
+#: src/Admin.php:687
+#, php-format
+msgid "WP-Cron is switched off in wp-config.php (DISABLE_WP_CRON), and nothing has called %s in the last 24 hours — so nothing will send the report. Set up a system cron that calls that address, for example every 15 minutes."
+msgstr "WP-Cron вимкнено у wp-config.php (DISABLE_WP_CRON), і за останні 24 години ніхто не викликав %s — тож звіт не надішле ніщо. Налаштуйте системний cron, який звертається до цієї адреси, наприклад кожні 15 хвилин."
+
+#: src/Admin.php:706
 msgid "What the message contains. The visitors block is always sent."
 msgstr "Що містить повідомлення. Блок відвідувачів надсилається завжди."
 
-#: src/Admin.php:769
+#: src/Admin.php:826
 msgid "Set in configuration (wp-config.php); the field is ignored."
 msgstr "Задано в конфігурації (wp-config.php); поле ігнорується."
 
-#: src/Admin.php:813
+#: src/Admin.php:870
 msgid "(always sent)"
 msgstr "(надсилається завжди)"
 
-#: src/Admin.php:831
+#: src/Admin.php:888
 #: src/MessageRenderer.php:126
 msgid "Visitors"
 msgstr "Відвідувачі"
 
-#: src/Admin.php:832
+#: src/Admin.php:889
 msgid "Top pages"
 msgstr "Топ сторінок"
 
-#: src/Admin.php:833
+#: src/Admin.php:890
 msgid "Traffic sources"
 msgstr "Джерела трафіку"
 
-#: src/Admin.php:834
+#: src/Admin.php:891
 msgid "Cities"
 msgstr "Міста"
 
-#: src/Admin.php:835
+#: src/Admin.php:892
 msgid "Devices"
 msgstr "Пристрої"
 
@@ -440,7 +456,7 @@ msgstr "%1$d. %2$s — %3$s"
 msgid "j F (l)"
 msgstr "j F (l)"
 
-#: src/Plugin.php:81
+#: src/Plugin.php:99
 msgid "Google Analytics → Telegram bridge needs the PHP OpenSSL extension to sign Google API requests. Ask your host to enable it, then activate the plugin again."
 msgstr "Плагіну Google Analytics → Telegram bridge потрібне розширення PHP OpenSSL, щоб підписувати запити до Google API. Попросіть хостинг увімкнути його і активуйте плагін ще раз."
 
