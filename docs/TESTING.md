@@ -65,6 +65,15 @@ logic in a plugin.
 ## Never mocked
 - The report maths (`Dynamics`), the response parsers and `MessageRenderer`
   run on real recorded payloads — a test that stubs them tests nothing.
+  For the daily report those payloads are
+  `batch-run-reports-daily-call-{1,2}.json`: the two `batchRunReports` calls
+  `ReportBuilder` composes, recorded against the live property. They are worth
+  reading before changing the parser, because the real data carries the awkward
+  cases — the visitors rows come back ordered by metric (`date_range_3` first,
+  `date_range_0` last), the cities list contains a real `(not set)` row, and the
+  28-day pages list holds the same path twice under two titles. The empty-property
+  shape is the one written fixture (`batch-run-reports-no-data.written.json`):
+  a property with traffic cannot produce it.
 - `openssl_sign`/`openssl_verify` — the signature is verified for real against
   the test key.
 - Only the network boundary (`wp_remote_post`/`wp_remote_get`) and WordPress

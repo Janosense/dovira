@@ -1,0 +1,462 @@
+{
+    "status": 200,
+    "body": {
+        "reports": [
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "dateRange"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "activeUsers",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rows": [
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "date_range_3"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "1577"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "date_range_2"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "1560"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "date_range_1"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "394"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "date_range_0"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "69"
+                            }
+                        ]
+                    }
+                ],
+                "rowCount": 4,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            },
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "pagePath"
+                    },
+                    {
+                        "name": "pageTitle"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "screenPageViews",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rows": [
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/"
+                            },
+                            {
+                                "value": "Ветеринарна клініка у Харкові– Лікування собак та кішок"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "73"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/services/"
+                            },
+                            {
+                                "value": "Послуги"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "31"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/contacts/"
+                            },
+                            {
+                                "value": "Контакти - Ветеринарна клініка Довіра"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "25"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/services/reception-department/"
+                            },
+                            {
+                                "value": "Ветеринарний прийом у Харкові – огляд собак та кішок без черги"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "16"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/services/radiology/"
+                            },
+                            {
+                                "value": "Рентген для тварин у Харкові – ветеринарна радіологія для собак та кішок"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "11"
+                            }
+                        ]
+                    }
+                ],
+                "rowCount": 42,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            },
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "pagePath"
+                    },
+                    {
+                        "name": "pageTitle"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "screenPageViews",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rows": [
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/"
+                            },
+                            {
+                                "value": "Ветеринарна клініка у Харкові– Лікування собак та кішок"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "1176"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/"
+                            },
+                            {
+                                "value": "Ветеринарна клініка DOVIRA – турбота цілодобово - Ветеринарна клініка в Києві та Харкові"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "913"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/services/"
+                            },
+                            {
+                                "value": "Послуги"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "602"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/contacts/"
+                            },
+                            {
+                                "value": "Контакти - Ветеринарна клініка Довіра"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "465"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/services/"
+                            },
+                            {
+                                "value": "Ветеринарні послуги DOVIRA – діагностика, лікування"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "370"
+                            }
+                        ]
+                    }
+                ],
+                "rowCount": 243,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            },
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "sessionDefaultChannelGroup"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "sessions",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rows": [
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Organic Search"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "1757"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Direct"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "399"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Referral"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "173"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Organic Social"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "165"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "AI Assistant"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "29"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Paid Search"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "1"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Unassigned"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "1"
+                            }
+                        ]
+                    }
+                ],
+                "rowCount": 7,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            },
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "city"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "activeUsers",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rows": [
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Kharkiv"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "623"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Kyiv"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "360"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Dnipro"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "136"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "(not set)"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "114"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "Lviv"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "78"
+                            }
+                        ]
+                    }
+                ],
+                "rowCount": 142,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            }
+        ],
+        "kind": "analyticsData#batchRunReports"
+    },
+    "ms": 816
+}

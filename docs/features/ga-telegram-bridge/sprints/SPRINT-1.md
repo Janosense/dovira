@@ -71,7 +71,7 @@ schedule yet. The project has a check command that gates every commit.
 - **Docs to update:** `docs/ARCHITECTURE.md` → Integrations (Telegram row for the plugin).
 - **Depends on:** Step 3
 
-### [ ] Step 6 — ReportBuilder
+### [x] Step 6 — ReportBuilder
 - **Tasks:**
   - `Report` value object (immutable: date, visitors yesterday / 7-day avg / 28 d / previous 28 d, top pages ×2, channels, cities, devices — each block nullable when disabled).
   - `ReportBuilder::build(Settings)`: request set — users: metric `activeUsers`, date ranges `yesterday`, `8daysAgo`–`2daysAgo`, `28daysAgo`–`yesterday`, `56daysAgo`–`29daysAgo`; pages ×2: dimensions `pagePath`,`pageTitle`, metric `screenPageViews`, order by views desc, limit 5, ranges `yesterday` and `28daysAgo`–`yesterday`; channels `sessionDefaultChannelGroup` / `sessions`; cities `city` / `activeUsers` (limit 5, "(not set)" dropped); devices `deviceCategory` / `activeUsers`; packed into ≤2 `batchRunReports` calls, skipping disabled blocks.

@@ -986,3 +986,220 @@ the error mapping are pure logic and are covered here; only the network boundary
 
 ### Questions / ambiguities
 none
+
+---
+
+## Plan — Sprint 1, Step 6: ReportBuilder   (status: closed)
+
+### Branch
+`ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
+(git model in root `CLAUDE.md` is *simple*: task branch → `master`; `SPRINT-1.md` → Branch
+names this same branch. Deleted at the close of Step 5 — `/do-step` re-creates it from `master`.)
+
+### Tasks (ordered)
+
+- [x] **1. `Dynamics` and `Report`: the maths and the shape, with no network in sight** (+ their
+  tests, same commit) → `feat(ga-telegram-bridge): add the report value object and its maths`
+
+  `src/Dynamics.php` — three pure functions, each taking numbers and returning numbers, so they
+  can be read and tested without GA, WordPress or a fixture:
+  - `average( int $total, int $days ): float` — the baseline is `total / days`, **not** an average
+    over the days that happened to have traffic. GA returns one number for the whole range
+    `8daysAgo`–`2daysAgo`, so a week with three silent days still divides by 7; that is what makes
+    "yesterday vs the usual day" mean anything.
+  - `change( int|float $current, int|float $baseline ): ?int` — the percentage change, rounded to
+    a whole number; **`null` when the baseline is 0**, because "up from nothing" is not a
+    percentage. FEATURE.md → UI renders that null as `—`.
+  - `share( int $value, int $total ): ?int` — the row's share of its block, whole per cent, `null`
+    when the total is 0. Rows are rounded independently, so a block's shares need not add up to
+    exactly 100; the tests state that rather than hide it.
+
+  `src/Report.php` — a `final` value object with `readonly` promoted properties (PHP 8.1, which is
+  what `phpstan.neon.dist` analyses against). It holds what the renderer needs and nothing else:
+  - `date` (the `Y-m-d` of yesterday **in the property's reporting time zone**) and `time_zone`;
+  - the visitors block, which is never absent: `visitors_yesterday`,
+    `visitors_average_7_days`, `visitors_28_days`, `visitors_previous_28_days`, plus the two
+    changes already computed — `visitors_change_vs_average` and `visitors_change_28_days`, each
+    `?int`;
+  - four nullable blocks, `null` meaning *switched off* and `array()` meaning *on but no data*, a
+    distinction Step 7 needs to decide between omitting a block and printing an empty one:
+    `pages_yesterday` and `pages_28_days` as `list<array{title: string, path: string, views: int}>`,
+    `channels`, `cities` and `devices` as `list<array{label: string, value: int, share: ?int}>`.
+
+  Shares and changes are computed here, at build time, not in the renderer: `gatb_report_data` is
+  documented in FEATURE.md as *the normalized Report before rendering*, so what a filter receives
+  has to be the finished numbers.
+
+- [x] **2. `ReportBuilder`: six reports in two calls, and the parsing that puts them back together**
+  (+ its tests, the recorded fixtures and the TESTING.md line, same commit) →
+  `feat(ga-telegram-bridge): build the daily report from the GA4 Data API`
+
+  `src/ReportBuilder.php`, one public entry point `build(): Report`.
+
+  - **Composition.** An ordered list of keyed requests is built from the enabled blocks
+    (`Settings::blocks()`), a disabled block contributing nothing:
+    | key | dimensions | metric | ranges | limit / order |
+    |---|---|---|---|---|
+    | `visitors` | — | `activeUsers` | `yesterday`; `8daysAgo`–`2daysAgo`; `28daysAgo`–`yesterday`; `56daysAgo`–`29daysAgo` | — |
+    | `pages_yesterday` | `pagePath`, `pageTitle` | `screenPageViews` | `yesterday` | limit 5, desc |
+    | `pages_28_days` | `pagePath`, `pageTitle` | `screenPageViews` | `28daysAgo`–`yesterday` | limit 5, desc |
+    | `channels` | `sessionDefaultChannelGroup` | `sessions` | `28daysAgo`–`yesterday` | desc |
+    | `cities` | `city` | `activeUsers` | `28daysAgo`–`yesterday` | limit 5, desc |
+    | `devices` | `deviceCategory` | `activeUsers` | `28daysAgo`–`yesterday` | desc |
+    Every block is ordered by its metric descending. For pages and cities the step already
+    requires it (a "top 5" without an order is an arbitrary 5); channels and devices are ranked
+    lists in the FEATURE.md template, and one rule for all four is less code than two.
+  - **Two calls, and never more.** `batchRunReports` accepts **at most 5 requests per call**
+    (verified today against Google's reference — see Checks). Six reports therefore cannot fit in
+    one, which is exactly why FEATURE.md's invariant says *never more than 2*. The list is passed
+    through `array_chunk( $requests, 5 )`: six reports become 5 + 1, and any smaller enabled set
+    becomes a single call. Responses are flattened back in order and zipped with the key list, so
+    a disabled block cannot shift another block's answer onto the wrong field.
+  - **Parsing keys rows by their dimension value, never by row index.** The visitors report comes
+    back with a `dateRange` dimension GA adds by itself, and its rows are ordered **by metric
+    value, not by request order** — the Step 2 spike recorded `date_range_3, date_range_2,
+    date_range_1, date_range_0` in that order (LEARNINGS, "Sprint 1 spike findings"). An
+    index-based parser would silently swap "yesterday" with "the previous 28 days". The recorded
+    fixture keeps that scrambled order, so the test fails if anyone rewrites the parser to trust
+    the index.
+  - **The report's date comes from the property, not from the server.** The first response's
+    `metadata.timeZone` (`Europe/Kiev` here) decides which day "yesterday" was; a pure
+    `report_date( string $time_zone, int $now ): string` turns it into `Y-m-d` with `$now`
+    injected so it is testable without freezing the clock. If a response ever arrives without a
+    time zone the site's own (`wp_timezone_string()`) is used — every response the spike saw
+    carried one, so this is a fallback and not the path.
+  - **The rows the step names as special cases:** a page whose `pageTitle` is empty or `(not set)`
+    is labelled with its `pagePath` instead; a city row whose value is `(not set)` is dropped
+    before shares are computed, so the remaining shares are shares of what is actually shown.
+    A block that GA answers with no `rows` key at all — a property with no traffic — becomes
+    `array()`, not `null`: switched on, nothing to say.
+  - **Failures pass through.** `GaClientException` and `GoogleAuthException` are not caught here;
+    Step 8's runner is what turns them into a log entry and a failure notice. The builder adds no
+    error handling of its own.
+
+  **Fixtures.** The only recorded batch response in the repo is Step 2's, and it contains just the
+  visitors report — nothing for pages, channels, cities or devices. This task records the real
+  answers to the two calls the builder actually composes, against property 533779496, with the key
+  passed as a constant so it never touches the database:
+  `batch-run-reports-daily-call-1.json` (visitors + both page reports + channels + cities) and
+  `batch-run-reports-daily-call-2.json` (devices). Both are read before committing: page paths and
+  titles of a public website are fine, but any path carrying a query string with personal data is
+  dropped, per `docs/TESTING.md` → Fixtures. One more fixture is **written**, not recorded —
+  `batch-run-reports-no-data.written.json`, the shape GA returns for a property with no traffic
+  (reports with no `rows`), which the live property cannot produce.
+
+### Files to create/change
+- `wp-content/plugins/ga-telegram-bridge/src/Dynamics.php`, `src/Report.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/DynamicsTest.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/src/ReportBuilder.php` — new (task 2)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/ReportBuilderTest.php` — new (task 2)
+- `wp-content/plugins/ga-telegram-bridge/tests/fixtures/ga/batch-run-reports-daily-call-1.json`,
+  `…-call-2.json`, `batch-run-reports-no-data.written.json` — new (task 2)
+- `docs/TESTING.md` — Never mocked (task 2)
+- No change to `src/Admin.php`, `src/Plugin.php` or any hook: nothing calls the builder yet. The
+  screen gets its *Preview* button in Step 7 and *Send now* in Step 8.
+
+### Tests to write
+`DynamicsTest` — the arithmetic, stated as the rules it encodes:
+- the 7-day baseline divides by 7 even when only three days had traffic (700 over the range → 100,
+  not 233).
+- a change is rounded to a whole per cent in both directions, and `change( x, 0 )` is **`null`**,
+  for `x` positive and for `x` zero — the case a brand-new site hits every morning.
+- a share is a whole per cent of the block total, `null` when the total is 0, and three rows of
+  33.4 % round to 33 + 33 + 33 rather than being forced to 100 — asserted, so the renderer's
+  author knows.
+
+`ReportBuilderTest` — composition and parsing, on the recorded payloads (`docs/TESTING.md` →
+Never mocked):
+- **all five blocks on → exactly two calls**, the first carrying 5 requests and the second 1; the
+  requests are asserted field by field against the table above (metrics, dimensions, date ranges,
+  limits, order).
+- **visitors only → one call with one request**, and no request anywhere mentions `pagePath`,
+  `sessionDefaultChannelGroup`, `city` or `deviceCategory`. Same for two intermediate sets
+  (pages off; cities and devices off), which is where an off-by-one in the key zipping would show.
+- the invariant as its own assertion: for **every one of the 16 combinations** of the four
+  optional blocks, `wp_remote_post` is called at most twice and the returned `Report` has exactly
+  the enabled blocks non-null.
+- the visitors block is read from the recorded, **deliberately out-of-order** `dateRange` rows:
+  yesterday 66, previous 7 days 394, last 28 days 1559, previous 28 days 1577 — the negative check
+  against index-based parsing.
+- a page with an empty `pageTitle` and one with `(not set)` are both labelled with their path;
+  a `(not set)` city is dropped and the remaining shares are computed without it.
+- the no-data fixture yields a `Report` whose enabled blocks are `array()` (not `null`), whose
+  visitors are all 0, and whose two changes are `null` — no division by zero anywhere.
+- `report_date()` returns the day before `$now` **in the property's zone**, checked with a `$now`
+  that is the same instant on two sides of midnight in `Europe/Kiev` (23:30 UTC and 00:30 UTC give
+  different answers) — the one thing that decides which day the report is about.
+
+Test-critical zones of the profile are untouched (no form pipeline, no price grouping, no
+`dovira/v1` route, no translate command). The plugin's own rule applies and is the whole of this
+step: the maths and the parsers are pure logic, and `docs/TESTING.md` already forbids stubbing
+them.
+
+### Docs to update
+- `docs/TESTING.md` → Never mocked: the line already names "the report maths (`Dynamics`), the
+  response parsers and `MessageRenderer`" as things that run on real recorded payloads. It is
+  updated to say which fixtures those now are for the report, and that the no-data shape is the
+  one written case.
+- Not updated, checked, with the reason:
+  - `docs/DOMAIN.md` — the step says "if wording changes". It does not: the glossary already
+    carries *Щоденний звіт*, *Відвідувачі* ("GA4 active users, the same number the owner sees as
+    Users"), *Динаміка* ("yesterday against the average of the previous 7 days, and the last 28
+    days against the previous 28; ▲ ▼ — when there is nothing to compare with") and *Блок звіту*,
+    and this step implements exactly those definitions. Nothing to add or correct.
+  - `docs/ARCHITECTURE.md` — the GA4 integration row already describes the transport and the
+    failure behaviour, and closes with "Report composition follows in Step 6". The builder adds no
+    endpoint, host, auth or failure mode; the row's last clause is retired in Step 7's close, when
+    the message it feeds exists. Flagged here so it is not forgotten.
+  - `docs/DATA-MODEL.md` (nothing is stored — the Report lives for one request), `FEATURE.md`
+    (Data, Interfaces and UI already describe the report and its filter), `DECISIONS.md` (this
+    step implements "Report content and comparison baselines" as written and reopens nothing),
+    `TECH-STACK.md` (no dependency), `CONTRACTS.md` (none kept), `DESIGN.md` (see below).
+
+### Checks
+- **ANTI-PATTERNS:** none violated. No ACF, block, `service-city`, CF7 id, `assets/`,
+  `mu-plugins/`, post-type registration or per-city id is touched; no tool is installed; nothing
+  is written to `temp-data/`, `reports/` or `_to_delete/`. Core rule 6 deserves a word: the metric
+  names, date ranges and the limit of 5 are not business values the clinic may change — they are
+  the report's definition, fixed by DECISIONS "Report content and comparison baselines". What the
+  business does change, the set of blocks, is already a setting.
+- **Docs vs reality:** five items, none of them a question.
+  1. `SPRINT-1.md` writes the entry point as `ReportBuilder::build(Settings)`. `Settings` is an
+     all-static class with no instance to pass, so the signature is `build(): Report` and the
+     builder reads `Settings::blocks()` itself — exactly as `GaClient` reads
+     `Settings::property_id()`. Naming shorthand, the same class as `batchRunReports` in Step 4;
+     no doc changes.
+  2. **`batchRunReports` accepts at most 5 requests per call** — verified today on
+     `developers.google.com/.../properties/batchRunReports` ("allowed up to 5 requests"). This is
+     what forces the 6 reports into 2 calls and makes FEATURE.md's "never more than 2" a
+     consequence rather than a preference. Worth having in the plan because a future reader may
+     otherwise try to "optimise" it into one call.
+  3. The repo's only recorded batch response (`batch-run-reports-four-date-ranges.json`) holds
+     **just the visitors report** — the spike never asked for pages, channels, cities or devices.
+     Task 2 records the two calls the builder really makes rather than hand-writing five reports.
+  4. This step needs `spike/service-acount.json` on disk twice — to record the fixtures and to run
+     the manual verification. It is still there, gitignored and PHPCS-excluded; removing it stays
+     a Definition-of-Done item at the sprint boundary, after Step 8.
+  5. Carried and unchanged: `docs/DESIGN.md` → Screens lists no screen of this plugin (DECISIONS
+     "No UI design phase" forbids the change) — for the retro. The Telegram bot from Step 5 is not
+     needed here: Step 6 depends on Step 4 only, and nothing in it sends a message.
+- **Design:** n/a — this step builds no screen and prints nothing. DECISIONS "No UI design phase"
+  covers the feature; the message template in `FEATURE.md` → UI is Step 7's reference, and this
+  step only has to produce the numbers that template names.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) — green on `master` right
+  now: PHPCS, PHPStan level 8 at `--memory-limit=1G`, 129 tests / 318 assertions, 108 theme files.
+- **Not locally verifiable:** the **no-data property** shape. A property with no traffic answers
+  with reports that have no `rows` key, and the Kharkiv property cannot be made to produce that;
+  its fixture is written from the Data API reference. The one real run that would verify it is the
+  plugin's first morning on a brand-new GA4 property — not something this sprint has. Everything
+  else in this step runs against the real property: the manual verification prints the whole
+  `Report` and its numbers are compared with the GA4 UI.
+
+  Manual verification snippet, for the guide `/close-step` writes:
+
+  ```bash
+  ddev wp --exec="define( 'GATB_GA_SERVICE_ACCOUNT_JSON', file_get_contents( '/var/www/html/wp-content/plugins/ga-telegram-bridge/spike/service-acount.json' ) );" eval '$s = GaTelegramBridge\Settings::all(); $s["property_id"] = "533779496"; update_option( "gatb_settings", $s ); echo json_encode( GaTelegramBridge\ReportBuilder::build(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) . "\n";'
+  ```
+
+### Questions / ambiguities
+none
