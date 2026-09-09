@@ -34,8 +34,11 @@ final class ReportBuilder {
 
 	/**
 	 * How many rows the ranked blocks keep.
+	 *
+	 * Public because the message says "top five" with the same number that
+	 * asks Google for five rows, rather than a second 5 in another file.
 	 */
-	private const TOP_ROWS = 5;
+	public const TOP_ROWS = 5;
 
 	/**
 	 * What GA calls a dimension it has no value for.

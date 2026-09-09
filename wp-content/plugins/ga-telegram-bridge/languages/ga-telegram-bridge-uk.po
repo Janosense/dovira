@@ -1,0 +1,484 @@
+# Ukrainian translation of the Google Analytics → Telegram bridge plugin.
+# Copyright (C) 2026 Dovira
+# This file is distributed under the same licence as the plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Google Analytics → Telegram bridge 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ga-telegram-bridge\n"
+"Language-Team: Ukrainian\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Domain: ga-telegram-bridge\n"
+
+#. Plugin Name of the plugin
+#: ga-telegram-bridge.php
+msgid "Google Analytics → Telegram bridge"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: ga-telegram-bridge.php
+msgid "https://dovira.vet"
+msgstr ""
+
+#. Description of the plugin
+#: ga-telegram-bridge.php
+msgid "Sends a short daily Google Analytics 4 report to one Telegram chat."
+msgstr "Щодня надсилає короткий звіт Google Analytics 4 в один чат Telegram."
+
+#. Author of the plugin
+#: ga-telegram-bridge.php
+msgid "Dovira"
+msgstr ""
+
+#: src/Admin.php:46
+#: src/Admin.php:47
+msgid "GA → Telegram"
+msgstr ""
+
+#: src/Admin.php:60
+msgid "Google Analytics"
+msgstr ""
+
+#: src/Admin.php:67
+msgid "Property id"
+msgstr "Ідентифікатор ресурсу"
+
+#: src/Admin.php:76
+msgid "The numeric id of the GA4 property (Admin → Property settings), not the measurement id."
+msgstr "Числовий ідентифікатор ресурсу GA4 (Адміністратор → Налаштування ресурсу), а не ідентифікатор оцінювання."
+
+#: src/Admin.php:82
+msgid "Service-account key"
+msgstr "Ключ сервісного акаунта"
+
+#: src/Admin.php:90
+msgid "The whole JSON key file of the service account, pasted as it is."
+msgstr "Весь JSON-файл ключа сервісного акаунта, вставлений як є."
+
+#: src/Admin.php:96
+msgid "Telegram"
+msgstr ""
+
+#: src/Admin.php:103
+msgid "Bot token"
+msgstr "Токен бота"
+
+#: src/Admin.php:111
+msgid "The token BotFather issued for the bot."
+msgstr "Токен, який BotFather видав для цього бота."
+
+#: src/Admin.php:117
+msgid "Chat id"
+msgstr "Ідентифікатор чату"
+
+#: src/Admin.php:126
+msgid "A number: a person's chat id is positive, a group or channel id starts with a minus (for example -1001234567890)."
+msgstr "Число: у людини ідентифікатор додатний, у групи чи каналу — починається з мінуса (наприклад, -1001234567890)."
+
+#: src/Admin.php:132
+msgid "Schedule"
+msgstr "Розклад"
+
+#: src/Admin.php:139
+msgid "Send time"
+msgstr "Час надсилання"
+
+#: src/Admin.php:148
+msgid "Site time, 24-hour."
+msgstr "За часом сайту, 24-годинний формат."
+
+#: src/Admin.php:154
+msgid "Maximum attempts"
+msgstr "Максимум спроб"
+
+#: src/Admin.php:168
+msgid "How often a failed report is tried again before a failure notice is sent. Between 1 and 10."
+msgstr "Скільки разів повторити невдалий звіт, перш ніж надіслати повідомлення про помилку. Від 1 до 10."
+
+#: src/Admin.php:174
+msgid "Report blocks"
+msgstr "Блоки звіту"
+
+#: src/Admin.php:181
+msgid "Blocks"
+msgstr "Блоки"
+
+#: src/Admin.php:200
+msgid "Google Analytics → Telegram"
+msgstr ""
+
+#: src/Admin.php:268
+#: src/Admin.php:300
+msgid "Preview"
+msgstr "Попередній перегляд"
+
+#: src/Admin.php:269
+msgid "The message as Telegram would receive it, tags and all. Nothing was sent."
+msgstr "Повідомлення в тому вигляді, у якому його отримає Telegram, разом із тегами. Нічого не надіслано."
+
+#: src/Admin.php:283
+msgid "Connection"
+msgstr "З’єднання"
+
+#: src/Admin.php:284
+msgid "Save the settings first, then check each side separately."
+msgstr "Спочатку збережіть налаштування, потім перевірте кожен бік окремо."
+
+#: src/Admin.php:288
+msgid "Check GA"
+msgstr "Перевірити GA"
+
+#: src/Admin.php:289
+msgid "Asks Google whether this site can read the configured property. Sends nothing to Telegram."
+msgstr "Запитує Google, чи може цей сайт читати вказаний ресурс. У Telegram нічого не надсилає."
+
+#: src/Admin.php:294
+msgid "Check Telegram"
+msgstr "Перевірити Telegram"
+
+#: src/Admin.php:295
+msgid "Really posts a short test message into the configured chat, so you can see it arrive."
+msgstr "Справді надсилає коротке тестове повідомлення у вказаний чат, щоб ви побачили, як воно прийде."
+
+#: src/Admin.php:301
+msgid "Reads yesterday from Google and shows the message it would send. Sends nothing."
+msgstr "Читає вчорашній день із Google і показує повідомлення, яке було б надіслане. Нічого не надсилає."
+
+#: src/Admin.php:335
+#: src/Admin.php:369
+#: src/Admin.php:405
+msgid "You are not allowed to configure this plugin."
+msgstr "Ви не маєте права налаштовувати цей плагін."
+
+#. translators: 1: the GA4 property id, 2: the property's reporting time zone.
+#: src/Admin.php:346
+#, php-format
+msgid "Google answered for property %1$s. Its reporting time zone is %2$s — that is the day the report calls \"yesterday\"."
+msgstr "Google відповів для ресурсу %1$s. Його часовий пояс звітності — %2$s; саме за ним визначається день, який звіт називає «вчора»."
+
+#. translators: %s: the configured Telegram chat id.
+#: src/Admin.php:382
+#, php-format
+msgid "Telegram accepted a test message for chat %s. Open that chat to see it."
+msgstr "Telegram прийняв тестове повідомлення для чату %s. Відкрийте цей чат, щоб його побачити."
+
+#. translators: %s: the site's host name.
+#: src/Admin.php:433
+#, php-format
+msgid "📊 <b>%s</b> — test message from the Google Analytics → Telegram bridge. The daily report will arrive in this chat."
+msgstr "📊 <b>%s</b> — тестове повідомлення від плагіна Google Analytics → Telegram. Щоденний звіт приходитиме в цей чат."
+
+#: src/Admin.php:466
+msgid "Read access to one GA4 property: create a service account in Google Cloud, give its e-mail address Viewer on the property and paste its key file here."
+msgstr "Доступ на читання до одного ресурсу GA4: створіть сервісний акаунт у Google Cloud, надайте його адресі роль «Переглядач» для ресурсу і вставте сюди файл ключа."
+
+#: src/Admin.php:475
+msgid "Where the report is sent. Create a bot with BotFather; to post into a channel, add the bot to it as an administrator."
+msgstr "Куди надсилається звіт. Створіть бота через BotFather; щоб публікувати в каналі, додайте бота до нього адміністратором."
+
+#: src/Admin.php:484
+msgid "Kept for the daily sending, which is added in a later release. Nothing runs on a schedule yet."
+msgstr "Зберігається для щоденного надсилання, яке з’явиться в наступному випуску. Поки що за розкладом нічого не виконується."
+
+#: src/Admin.php:493
+msgid "What the message contains. The visitors block is always sent."
+msgstr "Що містить повідомлення. Блок відвідувачів надсилається завжди."
+
+#: src/Admin.php:613
+msgid "Set in configuration (wp-config.php); the field is ignored."
+msgstr "Задано в конфігурації (wp-config.php); поле ігнорується."
+
+#: src/Admin.php:657
+msgid "(always sent)"
+msgstr "(надсилається завжди)"
+
+#: src/Admin.php:675
+#: src/MessageRenderer.php:126
+msgid "Visitors"
+msgstr "Відвідувачі"
+
+#: src/Admin.php:676
+msgid "Top pages"
+msgstr "Топ сторінок"
+
+#: src/Admin.php:677
+msgid "Traffic sources"
+msgstr "Джерела трафіку"
+
+#: src/Admin.php:678
+msgid "Cities"
+msgstr "Міста"
+
+#: src/Admin.php:679
+msgid "Devices"
+msgstr "Пристрої"
+
+#: src/GaClient.php:49
+msgid "Google Analytics answered without any report in it."
+msgstr "Google Analytics відповів без жодного звіту."
+
+#: src/GaClient.php:103
+msgid "No GA4 property id is configured yet."
+msgstr "Ідентифікатор ресурсу GA4 ще не вказано."
+
+#. translators: %s: the reason the HTTP request failed.
+#: src/GaClient.php:123
+#, php-format
+msgid "This site could not reach Google Analytics: %s"
+msgstr "Сайт не зміг звернутися до Google Analytics: %s"
+
+#: src/GaClient.php:144
+msgid "Google Analytics answered with something that is not a report."
+msgstr "Google Analytics відповів чимось, що не є звітом."
+
+#. translators: %s: the reason Google gave.
+#: src/GaClient.php:168
+#, php-format
+msgid "Google Analytics did not accept the request: %s Check the property id."
+msgstr "Google Analytics не прийняв запит: %s Перевірте ідентифікатор ресурсу."
+
+#. translators: %s: the service account's e-mail address.
+#: src/GaClient.php:176
+#, php-format
+msgid "The service account cannot read this property. In Google Analytics, give %s at least Viewer access to it — and check that the property id is the right one."
+msgstr "Сервісний акаунт не може читати цей ресурс. У Google Analytics надайте %s щонайменше роль «Переглядач» для нього — і перевірте, чи правильний ідентифікатор ресурсу."
+
+#: src/GaClient.php:182
+msgid "Google refused the access token. It has been discarded; try again, and check the service-account key if it happens twice."
+msgstr "Google відхилив токен доступу. Його відкинуто; спробуйте ще раз, а якщо повториться — перевірте ключ сервісного акаунта."
+
+#: src/GaClient.php:186
+msgid "Google Analytics is rate-limiting this project. Wait a while and try again; the daily report uses only a few requests."
+msgstr "Google Analytics обмежує кількість запитів цього проєкту. Зачекайте трохи і спробуйте ще раз; щоденний звіт витрачає лише кілька запитів."
+
+#. translators: %d: the HTTP status Google answered with.
+#: src/GaClient.php:192
+#, php-format
+msgid "Google Analytics is not answering right now (HTTP %d). This is on Google's side; try again later."
+msgstr "Google Analytics зараз не відповідає (HTTP %d). Це на боці Google; спробуйте пізніше."
+
+#. translators: %d: the HTTP status Google answered with.
+#: src/GaClient.php:200
+#, php-format
+msgid "Google Analytics refused the request (HTTP %d) and gave no reason."
+msgstr "Google Analytics відхилив запит (HTTP %d) без пояснення причини."
+
+#. translators: 1: the HTTP status Google answered with, 2: the reason Google gave.
+#: src/GaClient.php:207
+#, php-format
+msgid "Google Analytics refused the request (HTTP %1$d): %2$s"
+msgstr "Google Analytics відхилив запит (HTTP %1$d): %2$s"
+
+#: src/GaClient.php:223
+msgid "the service account"
+msgstr "сервісному акаунту"
+
+#. translators: %s: the reason the HTTP request failed.
+#: src/GoogleAuth.php:82
+#, php-format
+msgid "This site could not reach Google to sign in: %s"
+msgstr "Сайт не зміг звернутися до Google для входу: %s"
+
+#: src/GoogleAuth.php:130
+msgid "No Google service-account key is configured yet."
+msgstr "Ключ сервісного акаунта Google ще не вказано."
+
+#: src/GoogleAuth.php:138
+msgid "The service-account key is not valid JSON. Paste the key file Google generated, unchanged."
+msgstr "Ключ сервісного акаунта не є коректним JSON. Вставте файл ключа, згенерований Google, без змін."
+
+#. translators: %s: the name of the missing field in the key file.
+#: src/GoogleAuth.php:153
+#, php-format
+msgid "The service-account key has no %s in it. Paste the key file Google generated, unchanged."
+msgstr "У ключі сервісного акаунта немає %s. Вставте файл ключа, згенерований Google, без змін."
+
+#: src/GoogleAuth.php:197
+msgid "The private key inside the service-account file could not be read. Paste the key file Google generated, unchanged."
+msgstr "Не вдалося прочитати приватний ключ усередині файлу сервісного акаунта. Вставте файл ключа, згенерований Google, без змін."
+
+#: src/GoogleAuth.php:205
+msgid "This server could not sign the Google request with the service-account key."
+msgstr "Цей сервер не зміг підписати запит до Google ключем сервісного акаунта."
+
+#. translators: %s: the reason Google gave.
+#: src/GoogleAuth.php:230
+#, php-format
+msgid "Google refused the service-account key: %s Check that the key is the current one for this service account and that the server clock is correct."
+msgstr "Google відхилив ключ сервісного акаунта: %s Перевірте, чи це чинний ключ цього акаунта і чи правильний час на сервері."
+
+#: src/GoogleAuth.php:236
+msgid "Google does not know this service account any more. It may have been deleted; create a new key and paste it here."
+msgstr "Google більше не знає цього сервісного акаунта. Можливо, його видалено; створіть новий ключ і вставте його сюди."
+
+#. translators: %d: the HTTP status Google answered with.
+#: src/GoogleAuth.php:242
+#, php-format
+msgid "Google could not issue an access token right now (HTTP %d). This is on Google's side; try again later."
+msgstr "Google зараз не може видати токен доступу (HTTP %d). Це на боці Google; спробуйте пізніше."
+
+#. translators: %d: the HTTP status Google answered with.
+#: src/GoogleAuth.php:250
+#, php-format
+msgid "Google refused to issue an access token (HTTP %d) and gave no reason."
+msgstr "Google відмовився видати токен доступу (HTTP %d) без пояснення причини."
+
+#. translators: 1: the HTTP status Google answered with, 2: the reason Google gave.
+#: src/GoogleAuth.php:257
+#, php-format
+msgid "Google refused to issue an access token (HTTP %1$d): %2$s"
+msgstr "Google відмовився видати токен доступу (HTTP %1$d): %2$s"
+
+#. translators: %d: how many pages the block lists.
+#: src/MessageRenderer.php:65
+#, php-format
+msgid "Top %d pages yesterday"
+msgstr "Топ‑%d сторінок вчора"
+
+#. translators: %d: how many pages the block lists.
+#: src/MessageRenderer.php:73
+#, php-format
+msgid "Top %d pages over 28 days"
+msgstr "Топ‑%d сторінок за 28 днів"
+
+#: src/MessageRenderer.php:78
+msgid "Sources over 28 days"
+msgstr "Джерела за 28 днів"
+
+#: src/MessageRenderer.php:79
+msgid "Cities over 28 days"
+msgstr "Міста за 28 днів"
+
+#: src/MessageRenderer.php:80
+msgid "Devices over 28 days"
+msgstr "Пристрої за 28 днів"
+
+#. translators: 1: the site's host name, 2: the day the report was about.
+#: src/MessageRenderer.php:97
+#, php-format
+msgid "⚠️ <b>%1$s</b> — the report for %2$s was not built. The details are in the plugin's run log."
+msgstr "⚠️ <b>%1$s</b> — звіт за %2$s не сформовано. Деталі в журналі плагіна."
+
+#. translators: 1: how many people visited yesterday, 2: the change against the seven-day average, for example "▲ 23%".
+#: src/MessageRenderer.php:129
+#, php-format
+msgid "Yesterday: %1$s (%2$s to the 7-day average)"
+msgstr "Вчора: %1$s (%2$s до середнього за 7 днів)"
+
+#. translators: 1: how many people visited in the last 28 days, 2: the change against the 28 days before those.
+#: src/MessageRenderer.php:135
+#, php-format
+msgid "Last 28 days: %1$s (%2$s to the previous 28)"
+msgstr "За 28 днів: %1$s (%2$s до попередніх 28)"
+
+#. translators: 1: the page's place in the list, 2: the page title, 3: how many times it was viewed.
+#: src/MessageRenderer.php:162
+#, php-format
+msgid "%1$d. %2$s — %3$s"
+msgstr "%1$d. %2$s — %3$s"
+
+#. translators: The report's date, in the letters of the PHP date() function — https://www.php.net/date.
+#: src/MessageRenderer.php:259
+msgid "j F (l)"
+msgstr "j F (l)"
+
+#: src/Plugin.php:79
+msgid "Google Analytics → Telegram bridge needs the PHP OpenSSL extension to sign Google API requests. Ask your host to enable it, then activate the plugin again."
+msgstr "Плагіну Google Analytics → Telegram bridge потрібне розширення PHP OpenSSL, щоб підписувати запити до Google API. Попросіть хостинг увімкнути його і активуйте плагін ще раз."
+
+#: src/ReportBuilder.php:76
+msgid "Google Analytics answered with fewer reports than were asked for."
+msgstr "Google Analytics повернув менше звітів, ніж було запитано."
+
+#: src/Settings.php:184
+msgid "The GA4 property id must consist of digits only (for example 123456789). The previous value was kept."
+msgstr "Ідентифікатор ресурсу GA4 має складатися лише з цифр (наприклад, 123456789). Збережено попереднє значення."
+
+#: src/Settings.php:199
+msgid "The service-account key must be the JSON file Google generated, containing client_email, private_key and token_uri. The previous key was kept."
+msgstr "Ключ сервісного акаунта має бути JSON-файлом, згенерованим Google, який містить client_email, private_key і token_uri. Збережено попередній ключ."
+
+#: src/Settings.php:220
+msgid "The chat id must be a number, with a leading minus for groups and channels (for example -1001234567890). The previous value was kept."
+msgstr "Ідентифікатор чату має бути числом, із мінусом на початку для груп і каналів (наприклад, -1001234567890). Збережено попереднє значення."
+
+#: src/Settings.php:233
+msgid "The send time must be given as HH:MM in 24-hour form (for example 09:00). The previous value was kept."
+msgstr "Час надсилання треба вказати як HH:MM у 24-годинному форматі (наприклад, 09:00). Збережено попереднє значення."
+
+#: src/Settings.php:246
+msgid "The number of attempts must be a whole number between 1 and 10. The previous value was kept."
+msgstr "Кількість спроб має бути цілим числом від 1 до 10. Збережено попереднє значення."
+
+#: src/TelegramClient.php:49
+msgid "No Telegram bot token is configured yet."
+msgstr "Токен бота Telegram ще не вказано."
+
+#: src/TelegramClient.php:55
+msgid "No Telegram chat id is configured yet."
+msgstr "Ідентифікатор чату Telegram ще не вказано."
+
+#. translators: %s: the reason the HTTP request failed.
+#: src/TelegramClient.php:82
+#, php-format
+msgid "This site could not reach Telegram: %s"
+msgstr "Сайт не зміг звернутися до Telegram: %s"
+
+#: src/TelegramClient.php:98
+msgid "Telegram answered in a way this plugin does not understand. The message may or may not have been sent."
+msgstr "Telegram відповів так, що плагін цього не зрозумів. Повідомлення могло бути надіслане, а могло і ні."
+
+#: src/TelegramClient.php:123
+msgid "Telegram did not accept the bot token. Check the token BotFather issued for this bot — a token is revoked as soon as a new one is generated."
+msgstr "Telegram не прийняв токен бота. Перевірте токен, який BotFather видав для цього бота: щойно згенеровано новий, старий перестає діяти."
+
+#: src/TelegramClient.php:127
+msgid "Telegram does not know a bot with this token. Copy the whole token from BotFather, including the digits before the colon."
+msgstr "Telegram не знає бота з таким токеном. Скопіюйте токен від BotFather повністю, разом із цифрами перед двокрапкою."
+
+#. translators: %d: how many seconds Telegram asks to wait.
+#: src/TelegramClient.php:138
+#, php-format
+msgid "Telegram is rate-limiting this bot and asks to wait %d seconds before trying again."
+msgstr "Telegram обмежує цього бота і просить зачекати %d секунд перед наступною спробою."
+
+#: src/TelegramClient.php:143
+msgid "Telegram is rate-limiting this bot. Wait a while before trying again."
+msgstr "Telegram обмежує цього бота. Зачекайте трохи перед наступною спробою."
+
+#. translators: %s: the reason Telegram gave.
+#: src/TelegramClient.php:149
+#, php-format
+msgid "The bot may not post into this chat: %s To post into a channel, add the bot to it as an administrator; a person has to write to the bot once before it may answer."
+msgstr "Бот не може писати в цей чат: %s Щоб публікувати в каналі, додайте бота до нього адміністратором; а людині треба один раз написати боту, перш ніж він зможе відповісти."
+
+#: src/TelegramClient.php:155
+msgid "Telegram cannot find that chat. Check the chat id — a channel id begins with -100 — and make sure the bot has been added to it."
+msgstr "Telegram не знаходить цей чат. Перевірте ідентифікатор чату — у каналу він починається з -100 — і переконайтеся, що бота до нього додано."
+
+#. translators: %s: the reason Telegram gave.
+#: src/TelegramClient.php:161
+#, php-format
+msgid "Telegram could not read the formatting of the message: %s This is a fault in the message, not in the settings."
+msgstr "Telegram не зміг прочитати форматування повідомлення: %s Це помилка в самому повідомленні, а не в налаштуваннях."
+
+#. translators: %d: the HTTP status Telegram answered with.
+#: src/TelegramClient.php:169
+#, php-format
+msgid "Telegram is not answering right now (HTTP %d). This is on Telegram's side; try again later."
+msgstr "Telegram зараз не відповідає (HTTP %d). Це на боці Telegram; спробуйте пізніше."
+
+#. translators: %d: the HTTP status Telegram answered with.
+#: src/TelegramClient.php:177
+#, php-format
+msgid "Telegram refused the message (HTTP %d) and gave no reason."
+msgstr "Telegram відхилив повідомлення (HTTP %d) без пояснення причини."
+
+#. translators: 1: the HTTP status Telegram answered with, 2: the reason Telegram gave.
+#: src/TelegramClient.php:184
+#, php-format
+msgid "Telegram refused the message (HTTP %1$d): %2$s"
+msgstr "Telegram відхилив повідомлення (HTTP %1$d): %2$s"

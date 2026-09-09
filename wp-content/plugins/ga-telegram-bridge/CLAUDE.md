@@ -25,7 +25,9 @@ references the `dovira` theme, its functions, options or data.
   dependencies; `composer.json` is dev tooling only and `vendor/` is gitignored.
 - Prefix everything WordPress-visible with `gatb_` (options, transients,
   cron hooks, filters, admin-post actions, settings ids); text domain
-  `ga-telegram-bridge`; source strings in English, `uk_UA` translation in `languages/`.
+  `ga-telegram-bridge`; source strings in English, the `uk` translation in
+  `languages/` (the locale is `uk`, not `uk_UA` — a `uk_UA` file never loads).
+  A new or changed string means regenerating the `.pot` and the `.mo` below.
 - WordPress Coding Standards (PHPCS `phpcs.xml.dist`), PHPStan
   (`phpstan.neon.dist`) — both gate every commit through root `bin/check.sh`.
 - Network only through `wp_remote_post`/`wp_remote_get` with explicit timeouts,
@@ -37,7 +39,8 @@ references the `dovira` theme, its functions, options or data.
   exceptions, notices, fixtures or tests.
 - Admin: Settings API, capability `manage_options`, nonce on every action,
   `esc_html`/`esc_attr` on output, `sanitize_*` on input. No custom CSS/JS
-  unless a step plan approves it.
+  unless a step plan approves it. The screen never calls `settings_errors()`:
+  wp-admin prints the notices of every screen under Settings itself.
 - Data: only the options `gatb_settings`, `gatb_state`, `gatb_log`, the
   transient `gatb_google_access_token` and the cron hooks `gatb_daily_report`,
   `gatb_retry_report` — all removed by `uninstall.php`. No custom tables.
@@ -53,4 +56,13 @@ cd wp-content/plugins/ga-telegram-bridge && composer test        # PHPUnit (scri
 bin/check.sh                                                     # full gate from the repo root
 ddev wp plugin activate ga-telegram-bridge
 ddev wp cron event list                                          # see gatb_* events
+
+# Translations, after adding or changing a string:
+ddev exec wp i18n make-pot wp-content/plugins/ga-telegram-bridge \
+  wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge.pot \
+  --domain=ga-telegram-bridge --exclude=vendor,tests,spike,.phpunit.cache
+# translate the new entries in languages/ga-telegram-bridge-uk.po, then:
+ddev exec wp i18n make-mo \
+  wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge-uk.po \
+  wp-content/plugins/ga-telegram-bridge/languages/
 ```

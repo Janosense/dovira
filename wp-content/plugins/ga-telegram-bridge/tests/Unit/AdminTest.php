@@ -238,20 +238,23 @@ final class AdminTest extends TestCase {
 	}
 
 	/**
-	 * The form posts to options.php with its nonce and shows the notices.
+	 * The form posts to options.php with its nonce and prints its sections.
+	 *
+	 * The notices are wp-admin's business: it requires options-head.php for
+	 * every screen under Settings, which prints them already.
 	 */
-	public function test_the_page_prints_the_nonce_the_notices_and_the_sections(): void {
+	public function test_the_page_prints_the_nonce_the_form_and_the_sections(): void {
 		Functions\when( 'current_user_can' )->justReturn( true );
 		Functions\when( 'esc_url' )->returnArg();
 		Functions\when( 'admin_url' )->alias(
 			static fn( string $path = '' ): string => 'https://example.test/wp-admin/' . $path
 		);
 		Functions\when( 'wp_nonce_field' )->justReturn( null );
-		Functions\expect( 'settings_errors' )->once()->with( 'gatb_settings' );
+		Functions\expect( 'settings_errors' )->never();
 		Functions\expect( 'settings_fields' )->once()->with( 'gatb_settings' );
 		Functions\expect( 'do_settings_sections' )->once()->with( 'gatb-settings' );
-		// Three times: the settings form and the two check forms below it.
-		Functions\expect( 'submit_button' )->times( 3 );
+		// Four times: the settings form and the three buttons below it.
+		Functions\expect( 'submit_button' )->times( 4 );
 
 		$markup = $this->render(
 			static function (): void {

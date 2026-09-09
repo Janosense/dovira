@@ -78,6 +78,28 @@ final class PluginTest extends TestCase {
 	}
 
 	/**
+	 * Boot registers the handler behind the "Preview" button.
+	 */
+	public function test_boot_registers_the_preview_handler(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'admin_post_gatb_preview', array( Admin::class, 'handle_preview' ) )
+		);
+	}
+
+	/**
+	 * Boot registers the reader that takes a preview out of the notices.
+	 */
+	public function test_boot_registers_the_preview_reader(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'all_admin_notices', array( Admin::class, 'take_preview' ) )
+		);
+	}
+
+	/**
 	 * Activation creates the settings option, and creates it not autoloaded.
 	 */
 	public function test_activation_creates_the_settings_option_without_autoloading_it(): void {

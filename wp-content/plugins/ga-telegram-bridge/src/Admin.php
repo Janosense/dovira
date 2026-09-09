@@ -34,6 +34,19 @@ final class Admin {
 	public const CHECK_TELEGRAM_ACTION = 'gatb_check_telegram';
 
 	/**
+	 * The admin-post action behind the "Preview" button.
+	 */
+	public const PREVIEW_ACTION = 'gatb_preview';
+
+	/**
+	 * The previewed message, between the notices being read and the screen
+	 * being printed. Null when this request built no preview.
+	 *
+	 * @var string|null
+	 */
+	private static ?string $preview = null;
+
+	/**
 	 * Adds the screen under Settings. Hooked on admin_menu.
 	 */
 	public static function add_page(): void {
@@ -181,7 +194,12 @@ final class Admin {
 	}
 
 	/**
-	 * Prints the screen: the notices, the form and its sections.
+	 * Prints the screen: the form, its sections and any preview.
+	 *
+	 * The notices are not printed here. wp-admin prints the settings errors of
+	 * every screen whose parent is Settings by itself — admin-header.php
+	 * requires options-head.php, which calls settings_errors() — so a second
+	 * call here showed every notice twice.
 	 */
 	public static function render_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -191,7 +209,6 @@ final class Admin {
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html__( 'Google Analytics → Telegram', 'ga-telegram-bridge' ); ?></h1>
-			<?php settings_errors( Settings::OPTION ); ?>
 			<form action="options.php" method="post">
 				<?php
 				settings_fields( Settings::GROUP );
@@ -199,8 +216,90 @@ final class Admin {
 				submit_button();
 				?>
 			</form>
-			<?php self::render_connection_section(); ?>
+			<?php
+			self::render_connection_section();
+			self::render_preview( self::consume_preview() );
+			?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Takes the message a preview built out of the notices, before they print.
+	 *
+	 * The preview travels back from admin-post.php the way the two checks carry
+	 * their results — as a settings error, which is the transient WordPress
+	 * already uses for notices, so the plugin needs no storage of its own.
+	 * Reading the notices is what merges that transient into this request.
+	 *
+	 * Hooked on all_admin_notices because that is the last moment before
+	 * wp-admin prints them: admin-header.php fires this action and then, three
+	 * lines further down, requires options-head.php. A whole message read as
+	 * one bold paragraph with its line breaks gone is not a preview, so it is
+	 * taken out here and render_page() prints it in a block of its own.
+	 */
+	public static function take_preview(): void {
+		$screen = get_current_screen();
+
+		// The hook fires on every admin screen; only this one has somewhere to
+		// print a preview. The id is the one add_options_page() gives the page.
+		if ( null === $screen || 'settings_page_' . self::PAGE !== $screen->id ) {
+			return;
+		}
+
+		get_settings_errors( Settings::OPTION );
+
+		/**
+		 * The notices of this request, WordPress's own list.
+		 *
+		 * @var array<int, mixed> $notices
+		 */
+		$notices = isset( $GLOBALS['wp_settings_errors'] ) && is_array( $GLOBALS['wp_settings_errors'] )
+			? $GLOBALS['wp_settings_errors']
+			: array();
+
+		foreach ( $notices as $index => $notice ) {
+			if ( ! is_array( $notice ) || self::PREVIEW_ACTION !== ( $notice['code'] ?? '' ) ) {
+				continue;
+			}
+
+			self::$preview = is_string( $notice['message'] ?? null ) ? $notice['message'] : '';
+
+			unset( $GLOBALS['wp_settings_errors'][ $index ] );
+		}
+	}
+
+	/**
+	 * Returns the message taken out of the notices, once.
+	 *
+	 * A preview belongs to the one request that built it, so it is handed over
+	 * and forgotten.
+	 */
+	private static function consume_preview(): ?string {
+		$message = self::$preview;
+
+		self::$preview = null;
+
+		return $message;
+	}
+
+	/**
+	 * Prints the message the plugin would send, as text.
+	 *
+	 * The HTML is shown escaped, tags and all: what Telegram receives is what
+	 * the administrator should be able to read here.
+	 *
+	 * @param string|null $message The rendered message, or null when none was built.
+	 */
+	private static function render_preview( ?string $message ): void {
+		if ( null === $message ) {
+			return;
+		}
+
+		?>
+		<h2><?php echo esc_html__( 'Preview', 'ga-telegram-bridge' ); ?></h2>
+		<p><?php echo esc_html__( 'The message as Telegram would receive it, tags and all. Nothing was sent.', 'ga-telegram-bridge' ); ?></p>
+		<pre><?php echo esc_html( $message ); ?></pre>
 		<?php
 	}
 
@@ -226,6 +325,12 @@ final class Admin {
 			self::CHECK_TELEGRAM_ACTION,
 			__( 'Check Telegram', 'ga-telegram-bridge' ),
 			__( 'Really posts a short test message into the configured chat, so you can see it arrive.', 'ga-telegram-bridge' )
+		);
+
+		self::check_form(
+			self::PREVIEW_ACTION,
+			__( 'Preview', 'ga-telegram-bridge' ),
+			__( 'Reads yesterday from Google and shows the message it would send. Sends nothing.', 'ga-telegram-bridge' )
 		);
 	}
 
@@ -313,6 +418,34 @@ final class Admin {
 			);
 		} catch ( TelegramException $exception ) {
 			add_settings_error( Settings::OPTION, 'gatb_check_telegram', $exception->getMessage(), 'error' );
+		}
+
+		self::redirect_to_settings();
+	}
+
+	/**
+	 * Builds the report and shows the message it would make of it.
+	 *
+	 * This is the only button that reads the whole property: it runs the same
+	 * two calls and the same renderer the daily report will, and then stops.
+	 * Telegram is not touched and nothing is stored.
+	 */
+	public static function handle_preview(): void {
+		check_admin_referer( self::PREVIEW_ACTION );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to configure this plugin.', 'ga-telegram-bridge' ) );
+		}
+
+		try {
+			add_settings_error(
+				Settings::OPTION,
+				self::PREVIEW_ACTION,
+				MessageRenderer::render( ReportBuilder::build() ),
+				'info'
+			);
+		} catch ( GoogleAuthException | GaClientException $exception ) {
+			add_settings_error( Settings::OPTION, self::PREVIEW_ACTION . '_failed', $exception->getMessage(), 'error' );
 		}
 
 		self::redirect_to_settings();

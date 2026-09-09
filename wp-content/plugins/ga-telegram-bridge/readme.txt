@@ -48,15 +48,17 @@ of the database and out of any database dump:
 Where a constant is defined, the matching field is shown read-only and anything
 typed into it is ignored.
 
-Under the settings form, **Connection** holds two buttons. *Check GA* asks Google
-whether this site can read the configured property and reports the property's
-reporting time zone — the time zone that decides which day the report calls
-"yesterday". *Check Telegram* really posts a short test message into the
+Under the settings form, **Connection** holds three buttons. *Check GA* asks
+Google whether this site can read the configured property and reports the
+property's reporting time zone — the time zone that decides which day the report
+calls "yesterday". *Check Telegram* really posts a short test message into the
 configured chat, which is the only way to prove the bot may write there; open
-the chat to see it arrive. Neither button ever shows the key or the token, and
-neither is needed again once both answer.
+the chat to see it arrive. *Preview* reads yesterday from Google, builds the
+report and prints the message underneath the buttons exactly as Telegram would
+receive it, tags and all — it sends nothing and stores nothing. No button ever
+shows the key or the token.
 
-Previewing the report and sending it are added in the following releases.
+Sending the report is added in the following release.
 
 == Changelog ==
 

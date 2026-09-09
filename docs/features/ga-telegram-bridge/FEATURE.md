@@ -45,16 +45,16 @@ to this data; `uninstall.php` removes all of it.
 ## Interfaces
 - **Admin:** Settings → "GA → Telegram" (`manage_options`), screen names in UI below.
 - **Cron hooks:** `gatb_daily_report`, `gatb_retry_report` (the only schedulers are in `Scheduler`).
-- **Filters (public surface, stable):** `gatb_report_data` (the normalized `Report` before rendering), `gatb_message_html` (final HTML before sending). Changing their payload = "touches shared surface".
+- **Filters (public surface, stable):** `gatb_report_data` (the normalized `Report` before rendering — `apply_filters( 'gatb_report_data', Report $report )`; a return value that is not a `Report` is ignored and the built one is rendered) and `gatb_message_html` (final HTML before sending — `apply_filters( 'gatb_message_html', string $html, ?Report $report )`, `null` for the failure notice). Both are applied in `MessageRenderer`. Changing their payload = "touches shared surface".
 - **CLI / REST:** none in v1.
 
 ## UI
 - **Screens:** `Settings` (wp-admin page: credentials, recipient, schedule, blocks, buttons *Check GA*, *Check Telegram*, *Preview*, *Send now*; states: unconfigured, secrets set in configuration, check ok/error), `Run log` (table on the same page: date, status, attempt, message, next run; states: empty, with errors). No design export — stock wp-admin components.
 - **Reuses:** — (not a theme screen; `docs/DESIGN.md` does not apply)
 - **Introduces:** —
-- **Message template (HTML parse mode; `{}` = data, `[...]` = block, blocks 2–5 optional):**
+- **Message template (HTML parse mode; `{}` = data, `[...]` = block, blocks 2–5 optional; one line per row, no blank lines):**
   ```
-  📊 <b>{site_host} — {report_date, "7 вересня (неділя)"}</b>
+  📊 <b>{site_host} — {report_date, "9 Вересня (Вівторок)"}</b>
   <b>Відвідувачі</b>
   Вчора: {n} ({▲|▼} {pct}% до середнього за 7 днів)
   За 28 днів: {n} ({▲|▼} {pct}% до попередніх 28)
@@ -65,7 +65,9 @@ to this data; `uninstall.php` removes all of it.
   [<b>Пристрої за 28 днів</b>  {device} {pct}% · … ]
   ```
   Failure notice: `⚠️ <b>{site_host}</b> — звіт за {report_date} не сформовано. Деталі в журналі плагіна.`
-  Source strings are English (text domain `ga-telegram-bridge`); a `uk_UA` translation ships with the plugin and is what the template above shows; `—` when a baseline is 0.
+  Source strings are English (text domain `ga-telegram-bridge`); the `uk` translation shipped in `languages/` is what the template above shows; `—` when a baseline is 0.
+  The date is `wp_date()` on the property's own day: WordPress declines the month itself and capitalises month and weekday the way its Ukrainian translation writes them, hence "9 Вересня (Вівторок)".
+  A block with no rows is left out exactly like a switched-off one — the message has no place for a heading with nothing under it, though the `Report` keeps the two states apart (`null` = off, `array()` = on and empty).
 
 ## Roadmap
 - Sprint 1 — the full report reaches Telegram from the admin's "Send now" on the dev site (`sprints/SPRINT-1.md`)
