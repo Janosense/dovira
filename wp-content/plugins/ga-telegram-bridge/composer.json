@@ -31,7 +31,7 @@
 		"sort-packages": true
 	},
 	"scripts": {
-		"analyse": "phpstan analyse",
+		"analyse": "phpstan analyse --memory-limit=1G",
 		"lint": "phpcs",
 		"lint:fix": "phpcbf",
 		"test": "phpunit"

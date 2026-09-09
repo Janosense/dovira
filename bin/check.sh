@@ -32,7 +32,10 @@ echo "==> PHPCS (ga-telegram-bridge)"
 ( cd "${PLUGIN}" && vendor/bin/phpcs )
 
 echo "==> PHPStan (ga-telegram-bridge)"
-( cd "${PLUGIN}" && vendor/bin/phpstan analyse --no-progress )
+# --memory-limit: PHPStan's own default is the PHP CLI's 512M, and the
+# WordPress stubs each worker loads need more than that on their own — the
+# analysis peaks at ~730M single-threaded whether or not tests/ is included.
+( cd "${PLUGIN}" && vendor/bin/phpstan analyse --no-progress --memory-limit=1G )
 
 echo "==> PHPUnit (ga-telegram-bridge)"
 ( cd "${PLUGIN}" && vendor/bin/phpunit )
