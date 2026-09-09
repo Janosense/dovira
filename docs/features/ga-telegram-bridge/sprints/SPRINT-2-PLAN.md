@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step, executed by /do-step and
      closed by /close-step. Sections of closed steps are never edited. -->
 
-## Plan — Sprint 2, Step 1: Scheduler   (status: implemented, awaiting close)
+## Plan — Sprint 2, Step 1: Scheduler   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-2-runs-by-itself` ← `master`
