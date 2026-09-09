@@ -62,7 +62,7 @@ schedule yet. The project has a check command that gates every commit.
 - **Docs to update:** `docs/ARCHITECTURE.md` → Integrations (GA4 row: auth, failure behaviour); `docs/TESTING.md` (fixtures rule).
 - **Depends on:** Step 2, Step 3
 
-### [ ] Step 5 — TelegramClient and "Check Telegram"
+### [x] Step 5 — TelegramClient and "Check Telegram"
 - **Tasks:**
   - `TelegramClient::sendMessage(string $chatId, string $html)` via `wp_remote_post` to `https://api.telegram.org/bot{token}/sendMessage` with `parse_mode=HTML`, `disable_web_page_preview=true`; map 400 (bad chat id / unparsable HTML), 401 (bad token), 403 (bot blocked / not in channel), 429 (`retry_after`) to `TelegramException`; the token is never part of any exception message or log line.
   - "Check Telegram" button on screen `Settings`: sends a fixed test message.

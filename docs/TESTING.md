@@ -22,6 +22,15 @@ logic in a plugin.
 - Plugin only: `cd wp-content/plugins/ga-telegram-bridge && composer install`,
   then `composer test` (PHPUnit), `composer lint` / `composer lint:fix` (PHPCS /
   PHPCBF) and `composer analyse` (PHPStan).
+- **Suite order is fixed, not alphabetical.** `phpunit.xml.dist` declares two
+  suites so that `SettingsSecretConstantsTest` — the one class that defines the
+  real `GATB_GA_SERVICE_ACCOUNT_JSON` and `GATB_TELEGRAM_BOT_TOKEN` — runs last.
+  A PHP constant cannot be undefined, so once that class has run, every later
+  test sees a secret it cannot control: `Settings::telegram_bot_token()` returns
+  the constant no matter what `get_option()` is stubbed to. Any test that needs
+  an unset or a chosen secret must therefore be in the first suite. Adding a
+  test class needs nothing; adding a second class that defines constants means
+  moving it into the last suite too.
 
 ## Fixtures
 - Google responses live in `tests/fixtures/ga/*.json` (Data API and the token
