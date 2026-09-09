@@ -331,3 +331,197 @@ must still exit 0 on every commit of this step — task 1 is what makes that tru
 
 ### Questions / ambiguities
 none
+
+## Plan — Sprint 1, Step 3: Settings and the admin page   (status: approved, in progress)
+
+### Branch
+`ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
+(git model in root `CLAUDE.md` is *simple*: task branch → `master`; `SPRINT-1.md` → Branch
+names this same branch. It was deleted at the close of Step 2 — `/do-step` re-creates it from
+the current `master`, which carries Steps 1 and 2.)
+
+### Tasks (ordered)
+
+- [x] **1. `Settings`: the option, its defaults, validation and typed getters** (+ its tests and
+  the DATA-MODEL section, same commit) → `feat(ga-telegram-bridge): store and validate the plugin settings`
+
+  `src/Settings.php`, a final class of static methods (no state, no WordPress in the pure parts):
+
+  - `OPTION = 'gatb_settings'`; `defaults()` returns the whole shape below.
+  - `register()` — `register_setting( 'gatb_settings', 'gatb_settings', [ 'type' => 'array',
+    'sanitize_callback' => [ self::class, 'sanitize' ], 'default' => self::defaults(),
+    'show_in_rest' => false ] )`. Hooked on `admin_init` from `Plugin::boot()`.
+  - **Option shape** (one array, non-autoloaded):
+
+    | Key | Type | Default | Rule |
+    |---|---|---|---|
+    | `property_id` | string | `''` | trimmed; digits only (`/^\d+$/`) |
+    | `service_account_json` | string | `''` | trimmed; must `json_decode` to an object and hold non-empty `client_email`, `private_key`, `token_uri` |
+    | `telegram_bot_token` | string | `''` | trimmed; no format rule (Telegram's own check is Step 5's "Check Telegram") |
+    | `telegram_chat_id` | string | `''` | trimmed; `/^-?\d+$/` |
+    | `send_time` | string | `'09:00'` | `/^([01]\d|2[0-3]):[0-5]\d$/` |
+    | `max_attempts` | int | `3` | integer 1–10 |
+    | `blocks` | array<string,bool> | all five `true` | exactly the keys `visitors`, `pages`, `channels`, `cities`, `devices`; unknown keys dropped; `visitors` always `true` |
+
+    Names `service_account_json` and `telegram_bot_token` are fixed by the plugin's `CLAUDE.md`;
+    `telegram_chat_id` follows them. The five block keys are the five blocks of DECISIONS "No UI
+    design phase…" — the two page tables of the FEATURE.md template are one block, `pages`.
+    `send_time` and `max_attempts` are **stored and validated here, consumed in Sprint 2** —
+    the step text names both sanitizers, nothing schedules or retries in Sprint 1.
+  - **Validation rule (one decision, made here):** an *empty* value is always accepted and stored
+    as `''` — an unconfigured install must be able to save a half-filled form. A *non-empty*
+    value that breaks its rule is rejected **per field**: that field keeps the value currently
+    stored, every other field of the same submit is saved, and an error is registered. This is
+    what the step's manual verification asks for ("shows an error and keeps the previous value").
+  - **Pure core:** `sanitize_settings( array $raw, array $current, array $locked ): array` returning
+    `[ 'values' => …, 'errors' => [ field => message ] ]` — no WordPress calls, so every rule above
+    is unit-tested directly. `$locked` = keys whose constant is defined; their submitted value is
+    ignored and the stored one kept, with no error.
+  - **WordPress face:** `sanitize( mixed $raw ): array` collects `$current` (`self::all()`) and
+    `$locked`, calls the pure core and turns each error into `add_settings_error( 'gatb_settings',
+    "gatb_{$field}", $message, 'error' )`. Error messages name the field and the expected format and
+    **never echo the submitted value** (the JSON key is one of them) — plugin `CLAUDE.md`, core rule 7.
+  - **Getters:** `all()`, `property_id()`, `service_account_json()`, `telegram_bot_token()`,
+    `telegram_chat_id()`, `send_time()`, `max_attempts()`, `blocks()`, `is_block_enabled( string $key )`,
+    `is_secret_locked( string $key )`. `all()` merges the stored option over `defaults()` (the nested
+    `blocks` merged on its own, `visitors` forced `true`), so a partially written option can never
+    produce a missing key or a wrong type at level 8.
+  - **Constant overrides:** the two secret getters go through one pure seam,
+    `secret( string $constant_name, string $stored ): string` → `defined()` ? `constant()` : stored,
+    with `GATB_GA_SERVICE_ACCOUNT_JSON` for `service_account_json` and `GATB_TELEGRAM_BOT_TOKEN` for
+    `telegram_bot_token` (DECISIONS "Plugin structure, storage and secrets"). The seam takes the
+    constant *name* so both branches are testable without defining the real constants in the suite.
+  - `src/Plugin.php`: `boot()` also registers `admin_init` → `Settings::register`; `activate()`, after
+    the OpenSSL guard, calls `add_option( 'gatb_settings', Settings::defaults(), '', false )` — the
+    only way to guarantee **autoload `no`** (the step's wording; `update_option` from `options.php`
+    would create it autoloaded on a fresh install).
+
+- [ ] **2. `Admin`: the screen `Settings` under Settings → "GA → Telegram"** (+ its tests and the
+  `readme.txt` settings description, same commit) → `feat(ga-telegram-bridge): add the GA → Telegram settings page`
+
+  `src/Admin.php`, final class of static methods; `src/Plugin.php` registers `admin_menu` →
+  `Admin::add_page` and `admin_init` → `Admin::add_fields`.
+
+  - `add_page()` — `add_options_page( 'GA → Telegram', 'GA → Telegram', 'manage_options',
+    'gatb-settings', [ self::class, 'render_page' ] )`, both titles through `__()`.
+  - `add_fields()` — four sections on page `gatb-settings`: **Google Analytics** (`property_id`,
+    `service_account_json`), **Telegram** (`telegram_bot_token`, `telegram_chat_id`), **Schedule**
+    (`send_time`, `max_attempts`; section description says the values are stored now and start
+    working when the daily schedule ships), **Report blocks** (the five checkboxes).
+  - `render_page()` — `current_user_can( 'manage_options' )` guard, `settings_errors( 'gatb_settings' )`,
+    `<form method="post" action="options.php">` with `settings_fields( 'gatb_settings' )` (this is
+    the nonce + capability check `options.php` verifies), `do_settings_sections( 'gatb-settings' )`,
+    `submit_button()`. Stock wp-admin markup, no CSS or JS (plugin `CLAUDE.md`).
+  - Field renderers, one per type, every value escaped (`esc_attr`, `esc_textarea`, `esc_html`):
+    - text / number / time inputs named `gatb_settings[{key}]`, `type="time"` for `send_time`,
+      `type="number" min="1" max="10"` for `max_attempts`;
+    - the two **secret** fields (JSON in a `<textarea rows="8">`, token in a text input) render the
+      stored value when it is editable, and when the matching constant is defined render **empty**,
+      `readonly`, with the description "Set in configuration (`wp-config.php`); the field is ignored."
+      — the constant's value is never printed into the page;
+    - the five block checkboxes render checked from the stored state; `visitors` renders
+      `checked disabled` with the note that the visitors block is always sent (a disabled checkbox
+      submits nothing, and `sanitize` forces it back to `true` — both halves of "cannot be disabled").
+  - All strings through `__()` / `esc_html__()` with text domain `ga-telegram-bridge`; English
+    source strings, the `uk_UA` translation ships in Step 7 with the `.pot`.
+
+### Files to create/change
+- `wp-content/plugins/ga-telegram-bridge/src/Settings.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/src/Admin.php` — new (task 2)
+- `wp-content/plugins/ga-telegram-bridge/src/Plugin.php` — `boot()` gains three hooks (task 1: `admin_init` → `Settings::register`; task 2: `admin_menu`, `admin_init` for `Admin`), `activate()` creates the option
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/SettingsTest.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/SettingsSecretConstantsTest.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/AdminTest.php` — new (task 2)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/PluginTest.php` — extended (tasks 1 and 2)
+- `docs/DATA-MODEL.md` — new section (task 1)
+- `wp-content/plugins/ga-telegram-bridge/readme.txt` — Description gains the configuration paragraph (task 2)
+
+### Tests to write
+`SettingsTest` (pure, no WordPress state):
+- `defaults()`: five blocks all on, `max_attempts` 3, `send_time` `09:00`, the four credentials empty.
+- a fully valid submit is stored with the right types (`max_attempts` an `int`, the rest strings).
+- property id `abc` / `53a` → error on `property_id`, the previously stored id survives, everything
+  else in the same submit is saved.
+- service-account JSON: malformed → error; valid JSON without `private_key` → error; in both cases the
+  stored JSON survives and **the error message contains no fragment of the submitted value**.
+- chat id `@dovira` and `12a` → error, previous kept; `-1001234567890` and `123456` accepted.
+- `send_time` `24:00`, `9:00`, `noon` → error, previous kept; `00:00` and `23:59` accepted.
+- `max_attempts` `0`, `11`, `abc` → error, previous kept; `1` and `10` accepted.
+- every field empty → no errors, all stored as `''` (a fresh install can save).
+- blocks: an unchecked box (absent from the input) becomes `false`; an unknown key is dropped;
+  `visitors` is `true` even when absent from the input **and** when the stored option says `false`.
+- a key in `$locked` keeps the stored value and produces no error, whatever was submitted.
+- `secret( 'GATB_NOT_DEFINED_IN_TESTS', 'from-option' )` returns the option value.
+- `blocks()` / `is_block_enabled()` on a stored option missing keys → defaults fill in.
+
+`SettingsSecretConstantsTest` — the one class that defines `GATB_GA_SERVICE_ACCOUNT_JSON` and
+`GATB_TELEGRAM_BOT_TOKEN` (constants cannot be undefined; no other test asserts their absent branch
+on the real names): both getters return the constant over a stored option, and `is_secret_locked()`
+reports both keys locked.
+
+`AdminTest` (Brain\Monkey stubs `add_options_page`, `esc_*`, `__`, `checked`, `disabled`, output buffered):
+- `add_page()` registers the page with capability `manage_options` and slug `gatb-settings`.
+- the JSON field with the constant defined: `readonly` present, "Set in configuration" present, and
+  the constant's value **absent** from the HTML; without the constant: the stored JSON present and
+  no `readonly` — the two states the admin actually sees.
+- the `visitors` checkbox renders `checked` and `disabled`; `cities` renders enabled, `checked` when
+  the stored option has it on and unchecked when off.
+- `render_page()` emits `settings_fields( 'gatb_settings' )` (nonce) and `settings_errors( 'gatb_settings' )`.
+
+`PluginTest` (extended): `boot()` registers `admin_init` → `Settings::register`, `admin_menu` →
+`Admin::add_page` and `admin_init` → `Admin::add_fields` alongside the existing `init` hook;
+`activate()` creates `gatb_settings` with the defaults and autoload `false`.
+
+Test-critical zones of the profile (form pipelines, price grouping, REST, translate commands) are
+not touched by this step; the plugin's own rule — every piece of pure logic is unit-tested — is what
+applies, and `sanitize_settings` is that logic.
+
+### Docs to update
+- `docs/DATA-MODEL.md` — new section "Plugin `ga-telegram-bridge` (`wp_options`)" before `## Relations`:
+  the `gatb_settings` key/type/default/rule table above, autoload `no`, the two constant overrides,
+  and a line that `gatb_state`, `gatb_log` and the token transient arrive in Step 8 (committed with task 1).
+- `wp-content/plugins/ga-telegram-bridge/readme.txt` — the Description's closing line
+  ("Configuration, scheduling and the run log are added in the following releases") is replaced by a
+  paragraph describing the settings screen: where it lives, what is entered, and that the two secrets
+  may instead be defined in `wp-config.php`. No version bump and no changelog entry — the header is
+  still `0.1.0` and release numbering is a Sprint 2 packaging question (DECISIONS "The check command
+  runs on PHP 8.3+…" → Consequences).
+- Not updated, checked: `FEATURE.md` → Data already lists these `gatb_settings` keys and points at
+  DATA-MODEL; `ARCHITECTURE.md` gains no module, endpoint, flow or integration (the plugin row and
+  both integration rows exist since Step 1); `DECISIONS.md` — the step reopens nothing;
+  `TECH-STACK.md` — no dependency; `DOMAIN.md` — no new domain term (the settings are plumbing);
+  `TESTING.md` — the fixtures rule is unchanged, this step records no GA payloads; `DESIGN.md` — see below.
+
+### Checks
+- **ANTI-PATTERNS:** none violated. The list is about the theme (ACF field groups, block directories,
+  `service-city` term ids, CF7 ids, `assets/`, `mu-plugins/`, post-type files, per-city ids) and about
+  tooling ("no global installs"); this step adds two PSR-4 classes inside the plugin and no dependency.
+  The one item that could touch it — "never hardcode business values" (core rule 6) — is respected:
+  every value the business may change (which blocks are sent, when, how many attempts) is an option,
+  not a constant.
+- **Docs vs reality:** match, with three observations that change no task here:
+  1. `SPRINT-1.md` writes later methods in camelCase (`sendMessage`, `batchRunReports`,
+     `getPropertyName`). WPCS as configured rejects that — verified: PHPCS reports
+     `WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid` on a `sendMessage` probe. Since
+     WPCS gates every commit (plugin `CLAUDE.md`), Steps 4–6 will write `send_message`,
+     `batch_run_reports`, `get_property_name`; class names stay PascalCase. Resolution taken:
+     the gate wins over the sprint's prose; no doc change, it is naming shorthand, not a contract.
+  2. `FEATURE.md` → Data lists `gatb_state` as `last_report_date`, `attempt`, `next_run`, while
+     DECISIONS "Plugin structure…" and `SPRINT-1.md` Step 8 list only the first two. Neither is
+     written in this step (Step 8 / Sprint 2 owns `gatb_state`) — left for the step that creates it.
+  3. Step 2's `spike/` and the service-account key are still on disk, untracked and excluded from
+     PHPCS; removing them is a Definition-of-Done item at the sprint boundary, not a task here.
+- **Design:** n/a — DECISIONS "No UI design phase; message format and configurable blocks": stock
+  wp-admin components, no `docs/DESIGN.md` entry and no `design/` folder for this feature. The screen
+  is named `Settings` as `FEATURE.md` → UI names it; this step builds its *unconfigured* and
+  *secrets set in configuration* states, while the *check ok/error* states arrive with the buttons in
+  Steps 4, 5, 7 and 8.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) — exists and is green on
+  `master` right now (PHPCS 5 files, PHPStan level 8 no errors, PHPUnit 3 tests/4 assertions,
+  `php -l` over 108 theme files).
+- **Not locally verifiable:** n/a. Everything this step builds is verifiable on the DDEV site:
+  `wp-config.php` is gitignored here (`.gitignore:13`), so defining the two constants for the
+  read-only check cannot be committed by accident, and it is removed again after the check.
+
+### Questions / ambiguities
+none

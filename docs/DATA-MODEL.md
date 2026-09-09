@@ -120,6 +120,45 @@ Cities the clinic operates in. **Not Polylang-translatable** (invariant 2); term
 ### Users
 Roles: WordPress defaults + `customer_support_specialist` (caps `edit_conversations` … `read_conversation`, see `inc/custom-roles/`). Legacy: a `student` role (cap `take_course`) is added on theme activation and `user_study_state` usermeta is written by `dovira_update_user_study_state()` — remnants of a removed LMS, not used by any live page.
 
+## Plugin `ga-telegram-bridge` (`wp_options`)
+Owned entirely by the plugin (`docs/features/ga-telegram-bridge/FEATURE.md`), on
+every install separately. No custom tables; nothing here is autoloaded.
+
+### Option `gatb_settings` — one array, autoload `no`
+Created with the defaults by the activation hook (`Plugin::activate()`), written
+only by the settings screen through the Settings API. `Settings::merge_defaults()`
+completes a partially written row, so a missing key never reaches a getter.
+
+| Key | Type | Default | Validation on save |
+|---|---|---|---|
+| `property_id` | string | `''` | digits only (`/^\d+$/`); the GA4 property, not the measurement id |
+| `service_account_json` | string | `''` | must `json_decode` to an object holding non-empty `client_email`, `private_key`, `token_uri` |
+| `telegram_bot_token` | string | `''` | stored as typed; the token is only proven by "Check Telegram" |
+| `telegram_chat_id` | string | `''` | `/^-?\d+$/` — a person is positive, a group or channel negative |
+| `send_time` | string | `'09:00'` | `HH:MM`, 24-hour (`/^([01]\d\|2[0-3]):[0-5]\d$/`); site-local. Read by the scheduler in Sprint 2 |
+| `max_attempts` | int | `3` | whole number 1–10. Read by the retry logic in Sprint 2 |
+| `blocks` | array<string,bool> | all five `true` | exactly `visitors`, `pages`, `channels`, `cities`, `devices`; unknown keys dropped; `visitors` is forced `true` (the visitors block is always sent) |
+
+Save semantics: an empty credential is accepted and stored as `''` (an install
+that is not configured yet must be able to save). A value that is present but
+breaks its rule is rejected **alone** — that field keeps the stored value, every
+other field of the same submission is saved, and the reason appears as an admin
+notice; error messages never repeat the submitted value, which may be a private
+key. An empty `send_time` or `max_attempts` keeps the stored value: unlike the
+credentials, those two have no "unset" state.
+
+Secrets: `service_account_json` and `telegram_bot_token` are overridden by the
+constants `GATB_GA_SERVICE_ACCOUNT_JSON` and `GATB_TELEGRAM_BOT_TOKEN` when
+those are defined in `wp-config.php` — the getter returns the constant, the
+field is read-only in the admin and a submitted value for it is ignored, so the
+option row keeps whatever it held (DECISIONS "Plugin structure, storage and
+secrets"). Both Dovira installs configure the secrets this way, which is why
+neither ever appears in the committed `mysql.sql` snapshot.
+
+Still to come in this feature: `gatb_state` (`last_report_date`, `attempt`) and
+`gatb_log` (last 30 runs) in Sprint 1 Step 8, and the transient
+`gatb_google_access_token` in Step 4. `uninstall.php` (Sprint 2) removes all of them.
+
 ## Relations
 ```
 service-city ──< service            application >── vacancy (post_object)
