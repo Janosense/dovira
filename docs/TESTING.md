@@ -74,6 +74,17 @@ logic in a plugin.
   28-day pages list holds the same path twice under two titles. The empty-property
   shape is the one written fixture (`batch-run-reports-no-data.written.json`):
   a property with traffic cannot produce it.
+- `MessageRenderer` is asserted as **whole messages**, built from those same
+  recorded payloads through the real `ReportBuilder`. Two WordPress functions
+  are stubbed inside it — `wp_date()` and `number_format_i18n()` — with what
+  WordPress does in **English**, so the expected messages in the test are the
+  English source strings; Brain\Monkey's translation stubs return the original
+  anyway. The Ukrainian rendering is therefore proven by the step's manual
+  verification guide and by nothing else. One test stubs
+  `number_format_i18n()` with the Ukrainian thousands separator, which really is
+  the string `&nbsp;`, because Telegram accepts only four named entities
+  (`&lt;`, `&gt;`, `&amp;`, `&quot;`) and would otherwise print it or refuse the
+  message.
 - `openssl_sign`/`openssl_verify` — the signature is verified for real against
   the test key.
 - Only the network boundary (`wp_remote_post`/`wp_remote_get`) and WordPress
