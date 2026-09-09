@@ -250,8 +250,8 @@ final class AdminTest extends TestCase {
 		Functions\expect( 'settings_errors' )->once()->with( 'gatb_settings' );
 		Functions\expect( 'settings_fields' )->once()->with( 'gatb_settings' );
 		Functions\expect( 'do_settings_sections' )->once()->with( 'gatb-settings' );
-		// Twice: the settings form and the Check GA form below it.
-		Functions\expect( 'submit_button' )->twice();
+		// Three times: the settings form and the two check forms below it.
+		Functions\expect( 'submit_button' )->times( 3 );
 
 		$markup = $this->render(
 			static function (): void {

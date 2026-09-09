@@ -845,7 +845,7 @@ names this same branch. Deleted at the close of Step 4 — `/do-step` re-creates
   every one of them needs a real bot token and no bot exists yet. `TESTING.md` → Fixtures gains
   them in the same commit; its "recorded vs. written" list stops being a list of two.
 
-- [ ] **2. "Check Telegram" on screen `Settings`** (+ its tests, the ARCHITECTURE row's button
+- [x] **2. "Check Telegram" on screen `Settings`** (+ its tests, the ARCHITECTURE row's button
   clause and the readme sentence, same commit) →
   `feat(ga-telegram-bridge): check the Telegram connection from the settings screen`
 
