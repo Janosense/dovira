@@ -35,13 +35,28 @@ final class TelegramClient {
 	private const REDACTED = '[bot token]';
 
 	/**
+	 * The longest pause this client takes inside one run, in seconds.
+	 *
+	 * Telegram answers a flood limit with the number of seconds to wait, and a
+	 * short one is worth honouring on the spot. A long one is not: every message
+	 * is sent from a WP-Cron or an admin request, and both run under the host's
+	 * own request timeout — that is what the hourly retry is for.
+	 */
+	private const MAX_WAIT = 30;
+
+	/**
 	 * Sends one HTML message to one chat.
 	 *
-	 * @param string $chat_id The chat to post into: positive for a person, negative for a group or channel.
-	 * @param string $html    The message, in Telegram's HTML parse mode.
+	 * A flood limit is the one refusal answered inside the same run: Telegram
+	 * says how long to wait, and a wait it asks for is honoured once. Anything
+	 * else — a second refusal included — is the failure it looks like.
+	 *
+	 * @param string        $chat_id The chat to post into: positive for a person, negative for a group or channel.
+	 * @param string        $html    The message, in Telegram's HTML parse mode.
+	 * @param callable|null $wait    How to wait between the two attempts; injected by the tests, sleep() otherwise.
 	 * @throws TelegramException When the plugin is unconfigured, or Telegram refuses.
 	 */
-	public static function send_message( string $chat_id, string $html ): void {
+	public static function send_message( string $chat_id, string $html, ?callable $wait = null ): void {
 		$token = Settings::telegram_bot_token();
 
 		if ( '' === trim( $token ) ) {
@@ -56,7 +71,32 @@ final class TelegramClient {
 			);
 		}
 
-		$response = wp_remote_post(
+		$response = self::post( $token, $chat_id, $html );
+		$seconds  = self::flood_wait( $response );
+
+		if ( $seconds > 0 ) {
+			if ( null === $wait ) {
+				sleep( $seconds );
+			} else {
+				$wait( $seconds );
+			}
+
+			$response = self::post( $token, $chat_id, $html );
+		}
+
+		self::accept( $response, $token );
+	}
+
+	/**
+	 * Posts the message once.
+	 *
+	 * @param string $token   The bot token.
+	 * @param string $chat_id The chat to post into.
+	 * @param string $html    The message.
+	 * @return array<string, mixed>|\WP_Error What wp_remote_post() answered.
+	 */
+	private static function post( string $token, string $chat_id, string $html ) {
+		return wp_remote_post(
 			self::ENDPOINT . '/bot' . $token . '/sendMessage',
 			array(
 				'timeout' => self::TIMEOUT,
@@ -74,7 +114,40 @@ final class TelegramClient {
 				),
 			)
 		);
+	}
 
+	/**
+	 * Returns how long Telegram asked to wait before one more attempt.
+	 *
+	 * Zero for every answer that is not a flood limit naming a wait this client
+	 * is willing to sit through — including one it names but that is too long.
+	 *
+	 * @param array<string, mixed>|\WP_Error $response What wp_remote_post() answered.
+	 */
+	private static function flood_wait( $response ): int {
+		if ( is_wp_error( $response ) || 429 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return 0;
+		}
+
+		$body       = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+		$parameters = is_array( $body ) && isset( $body['parameters'] ) && is_array( $body['parameters'] )
+			? $body['parameters']
+			: array();
+		$seconds    = isset( $parameters['retry_after'] ) && is_numeric( $parameters['retry_after'] )
+			? (int) $parameters['retry_after']
+			: 0;
+
+		return ( $seconds > 0 && $seconds <= self::MAX_WAIT ) ? $seconds : 0;
+	}
+
+	/**
+	 * Returns quietly when Telegram accepted the message, and throws otherwise.
+	 *
+	 * @param array<string, mixed>|\WP_Error $response What wp_remote_post() answered.
+	 * @param string                         $token    The bot token, so it can be kept out of every message.
+	 * @throws TelegramException When the site could not reach Telegram, or Telegram refused.
+	 */
+	private static function accept( $response, string $token ): void {
 		if ( is_wp_error( $response ) ) {
 			throw new TelegramException(
 				sprintf(
