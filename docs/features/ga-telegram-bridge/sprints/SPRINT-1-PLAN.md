@@ -332,7 +332,7 @@ must still exit 0 on every commit of this step — task 1 is what makes that tru
 ### Questions / ambiguities
 none
 
-## Plan — Sprint 1, Step 3: Settings and the admin page   (status: approved, in progress)
+## Plan — Sprint 1, Step 3: Settings and the admin page   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
