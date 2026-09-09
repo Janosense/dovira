@@ -62,25 +62,39 @@ final class ReportBuilder {
 	 * up to the caller, which from Step 8 is the runner that logs them.
 	 *
 	 * @param int|null $now The current Unix time; injected by the tests.
-	 * @throws GaClientException When a report cannot be read.
 	 */
 	public static function build( ?int $now = null ): Report {
 		$requests  = self::requests( Settings::blocks() );
 		$responses = array();
 
 		foreach ( array_chunk( $requests, self::MAX_REQUESTS_PER_CALL, true ) as $chunk ) {
-			$reports = GaClient::batch_run_reports( array_values( $chunk ) );
-
-			if ( count( $reports ) !== count( $chunk ) ) {
-				throw new GaClientException(
-					esc_html__( 'Google Analytics answered with fewer reports than were asked for.', 'ga-telegram-bridge' )
-				);
-			}
-
-			$responses += array_combine( array_keys( $chunk ), $reports );
+			$responses += self::answers( $chunk );
 		}
 
 		return self::to_report( $responses, $now ?? time() );
+	}
+
+	/**
+	 * Runs one call and gives its reports back their block names.
+	 *
+	 * A short answer is a failure and not a report with holes in it: the
+	 * responses are matched to the requests by position, so one missing report
+	 * would move every block after it onto the wrong field.
+	 *
+	 * @param array<string, array<string, mixed>> $chunk The requests of one call, keyed by block.
+	 * @return array<string, array<string, mixed>>
+	 * @throws GaClientException When Google answered with fewer reports than were asked for.
+	 */
+	private static function answers( array $chunk ): array {
+		$reports = GaClient::batch_run_reports( array_values( $chunk ) );
+
+		if ( count( $reports ) !== count( $chunk ) ) {
+			throw new GaClientException(
+				esc_html__( 'Google Analytics answered with fewer reports than were asked for.', 'ga-telegram-bridge' )
+			);
+		}
+
+		return array_combine( array_keys( $chunk ), $reports );
 	}
 
 	/**

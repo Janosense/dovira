@@ -1,0 +1,106 @@
+<?php
+/**
+ * One run of the daily report, from Google to Telegram to the log.
+ *
+ * @package GaTelegramBridge
+ */
+
+declare( strict_types=1 );
+
+namespace GaTelegramBridge;
+
+/**
+ * The one path a report ever takes: build, render, send, log, remember.
+ *
+ * Every caller goes through here — the *Send now* button today, the cron
+ * callback from Sprint 2 — so that the date guard and the log cannot be
+ * bypassed by accident, only on purpose.
+ */
+final class Runner {
+
+	/**
+	 * Runs the report once and returns the entry it wrote.
+	 *
+	 * Null means the run stopped at the date guard: the report for that day had
+	 * already gone out, nothing was sent and nothing was logged, because
+	 * nothing happened.
+	 *
+	 * @param string   $trigger           What started this run: cron, retry or manual.
+	 * @param bool     $bypass_date_guard Whether to send even if the day was already sent.
+	 * @param int|null $now               The current Unix time; injected by the tests.
+	 * @return array{time: int, trigger: string, date: string, status: string, attempt: int, message: string}|null
+	 */
+	public static function run( string $trigger, bool $bypass_date_guard = false, ?int $now = null ): ?array {
+		try {
+			$report = ReportBuilder::build( $now );
+		} catch ( GaClientException | GoogleAuthException $unreadable ) {
+			// A day that could not be read must not look like a day with no
+			// visitors, so it is logged as a failure and nothing is sent.
+			return self::failed( $trigger, self::site_yesterday( $now ?? time() ), $unreadable->getMessage() );
+		}
+
+		if ( ! $bypass_date_guard && RunLog::last_report_date() === $report->date ) {
+			return null;
+		}
+
+		try {
+			TelegramClient::send_message( Settings::telegram_chat_id(), MessageRenderer::render( $report ) );
+		} catch ( TelegramException $refused ) {
+			return self::failed( $trigger, $report->date, $refused->getMessage() );
+		}
+
+		RunLog::mark_sent( $report->date );
+
+		return RunLog::add(
+			$trigger,
+			$report->date,
+			'sent',
+			self::attempt(),
+			sprintf(
+				/* translators: 1: the day the report was about, 2: the Telegram chat it went to. */
+				__( 'The report for %1$s was sent to chat %2$s.', 'ga-telegram-bridge' ),
+				$report->date,
+				Settings::telegram_chat_id()
+			)
+		);
+	}
+
+	/**
+	 * Records a run that did not deliver, and counts the attempt.
+	 *
+	 * The last sent day is deliberately left as it was: the day stays unsent.
+	 *
+	 * @param string $trigger The trigger of the run.
+	 * @param string $date    The day the report was about.
+	 * @param string $message The mapped reason, already free of any secret.
+	 * @return array{time: int, trigger: string, date: string, status: string, attempt: int, message: string}
+	 */
+	private static function failed( string $trigger, string $date, string $message ): array {
+		$attempt = self::attempt();
+
+		RunLog::mark_failed();
+
+		return RunLog::add( $trigger, $date, 'failed', $attempt, $message );
+	}
+
+	/**
+	 * Returns the number this run is: the first after a success is 1.
+	 */
+	private static function attempt(): int {
+		return RunLog::attempt() + 1;
+	}
+
+	/**
+	 * Returns the day the site would call yesterday.
+	 *
+	 * Used only when the report could not be built at all, so no property time
+	 * zone is known. The site's own is the closest thing to the truth, and an
+	 * empty column in the log would be worse than a date that may be a few
+	 * hours out on a property in another zone.
+	 *
+	 * @param int $now The current Unix time.
+	 */
+	private static function site_yesterday( int $now ): string {
+		return ReportBuilder::report_date( (string) wp_timezone_string(), $now );
+	}
+}

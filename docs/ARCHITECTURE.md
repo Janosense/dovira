@@ -92,6 +92,21 @@ server-side required-field check (13 fields) → `questionary` post + ACF fields
 `telegram_webhook_data`; `/start|/join` asks for a password; the password message
 stores the chat id in `telegram_bot_chats`; `/reset` removes it.
 
+**Daily GA report (plugin `ga-telegram-bridge`).** One path, one class:
+`Runner::run( $trigger, $bypass_date_guard )`. Today the only caller is the
+admin-post action `gatb_send_now` behind the *Send now* button (nonce,
+`manage_options`), which passes `manual` and bypasses the guard on purpose;
+Sprint 2 adds the cron callback that passes `cron` and does not.
+`ReportBuilder::build()` (≤ 2 `batchRunReports` calls, only the enabled blocks)
+→ `Report` → **date guard**: the day is the property's own (`Report::$time_zone`),
+and a run that is not manual stops here when `gatb_state.last_report_date`
+already holds it — nothing sent, nothing logged → `MessageRenderer::render()`
+→ `TelegramClient::send_message()` to the one configured chat → `gatb_log`
+(30 entries) and, only on delivery, `gatb_state.last_report_date`. A failure at
+either host is logged with its mapped reason and raises `gatb_state.attempt`,
+leaving the day unsent for Sprint 2's retry; no secret is ever written. Screen
+`Run log` under the settings form prints the entries newest first.
+
 **Translation (CLI).** `wp dovira translate --post-type=X --lang-from=uk --lang-to=ru`
 → `ContentExtractor` + `MetaExtractor` → `AnthropicTranslator` → `PostCopier`
 creates the ru post, copies terms/thumbnail, links via `pll_save_post_translations`.
@@ -106,7 +121,7 @@ cross-site switcher; content differs per install (separate DBs), code is shared.
 | Service | Used for | Auth / credentials | Failure behaviour |
 |---|---|---|---|
 | Telegram Bot API (theme, feature `core`) | notifications after every form record; bot webhook | Bot token is a **string literal in code** (`TelegramController::$access_token` and three `inc/utils/*` call sites); join password is a literal in `handle_updates` | `wp_remote_get` result ignored — the record is already saved; no retry |
-| Telegram Bot API (plugin `ga-telegram-bridge`) | the daily GA report to one configured chat (`TelegramClient::send_message()` → `POST api.telegram.org/bot{token}/sendMessage`, HTML parse mode, link previews off, 15 s timeout); one fixed test message behind the *Check Telegram* button on screen `Settings` (admin-post action `gatb_check_telegram`, nonce, `manage_options`) | Its **own** bot token and chat id in `gatb_settings`, overridable by `GATB_TELEGRAM_BOT_TOKEN`; shares nothing with the theme's bot (separate token, separate chat registry) | one mapped `TelegramException` per case (401 the token was revoked, 404 the token is malformed, 400 `chat not found`, 400 unreadable HTML, 403 the bot may not post there, 429 flood control naming `retry_after`, 5xx, and a host that cannot reach Telegram at all). The bot token travels in the request URL, so every value entering a message is scrubbed of it first — Telegram never echoes it, but a transport error can quote the URL back. Logging in `gatb_log` and the retries follow in Sprint 2 |
+| Telegram Bot API (plugin `ga-telegram-bridge`) | the daily GA report to one configured chat (`TelegramClient::send_message()` → `POST api.telegram.org/bot{token}/sendMessage`, HTML parse mode, link previews off, 15 s timeout); one fixed test message behind the *Check Telegram* button on screen `Settings` (admin-post action `gatb_check_telegram`, nonce, `manage_options`) | Its **own** bot token and chat id in `gatb_settings`, overridable by `GATB_TELEGRAM_BOT_TOKEN`; shares nothing with the theme's bot (separate token, separate chat registry) | one mapped `TelegramException` per case (401 the token was revoked, 404 the token is malformed, 400 `chat not found`, 400 unreadable HTML, 403 the bot may not post there, 429 flood control naming `retry_after`, 5xx, and a host that cannot reach Telegram at all). The bot token travels in the request URL, so every value entering a message is scrubbed of it first — Telegram never echoes it, but a transport error can quote the URL back. Every run is recorded in `gatb_log` with its mapped reason; the retries follow in Sprint 2 |
 | Google Analytics 4 Data API (plugin `ga-telegram-bridge`) | reads one GA4 property (`GaClient::batch_run_reports()`; `check_connection()` behind the *Check GA* button) | Service-account JSON in `gatb_settings` (or `GATB_GA_SERVICE_ACCOUNT_JSON`) → RS256 JWT signed with `openssl_sign` (`GoogleAuth`, scope `analytics.readonly`) → token exchanged at `oauth2.googleapis.com/token` (15 s) and cached in the transient `gatb_google_access_token` for `expires_in - 60`; reports posted to `analyticsdata.googleapis.com/v1beta` (20 s). The **Admin API is deliberately not used** — it is a second API each install would have to enable, so the check names the property id with the reporting time zone from the report's own `metadata`, not the property's display name | one mapped `GoogleAuthException` / `GaClientException` per case (bad property id, no Viewer access — the message names the service account —, refused token → the cached token is dropped, quota, 5xx, host cannot reach Google); no message or log line ever carries the key, the JWT or the token. `ReportBuilder` composes the day's reports into **at most two** `batchRunReports` calls (the API takes five requests per call and a full report is six), asks only for the blocks that are switched on, and keys the visitors rows by the `dateRange` dimension because GA returns them ordered by metric |
 | Anthropic Messages API | `wp dovira translate*` (CLI only) | `ANTHROPIC_API_KEY` in the theme `.env` (phpdotenv), read by `anthropic-ai/sdk` | command errors out via `WP_CLI::error`; chunk retry for strings whose markup changed |
 | Contact Form 7 | contact (id 6), franchise (1430), vacancy (1399) forms | — (form ids hardcoded in hooks) | mail failure → no `conversation` (except in DDEV) |
