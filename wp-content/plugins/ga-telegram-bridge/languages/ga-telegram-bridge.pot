@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-09T17:13:15+03:00\n"
+"POT-Creation-Date: 2026-09-09T22:54:51+03:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: ga-telegram-bridge\n"
@@ -97,7 +97,7 @@ msgid "Maximum attempts"
 msgstr ""
 
 #: src/Admin.php:181
-msgid "How often a failed report is tried again before a failure notice is sent. Between 1 and 10."
+msgid "How many attempts a day is given before the chat is told it could not be reported. Each attempt after the first follows an hour later. Between 1 and 10."
 msgstr ""
 
 #: src/Admin.php:187
@@ -457,7 +457,7 @@ msgstr ""
 msgid "j F (l)"
 msgstr ""
 
-#: src/Plugin.php:99
+#: src/Plugin.php:107
 msgid "Google Analytics → Telegram bridge needs the PHP OpenSSL extension to sign Google API requests. Ask your host to enable it, then activate the plugin again."
 msgstr ""
 
@@ -465,10 +465,26 @@ msgstr ""
 msgid "Google Analytics answered with fewer reports than were asked for."
 msgstr ""
 
-#. translators: 1: the day the report was about, 2: the Telegram chat it went to.
+#. translators: 1: the day the attempt was for, 2: the day the property now calls yesterday.
 #: src/Runner.php:61
 #, php-format
+msgid "The report for %1$s can no longer be built: the property now calls %2$s yesterday."
+msgstr ""
+
+#. translators: 1: the day the report was about, 2: the Telegram chat it went to.
+#: src/Runner.php:89
+#, php-format
 msgid "The report for %1$s was sent to chat %2$s."
+msgstr ""
+
+#. translators: %s: the reason Telegram gave, already free of the bot token.
+#: src/Runner.php:145
+#, php-format
+msgid "No attempts are left, and the chat could not be told either: %s"
+msgstr ""
+
+#: src/Runner.php:150
+msgid "No attempts are left, so the chat has been told that this day could not be reported."
 msgstr ""
 
 #: src/Settings.php:184
@@ -491,72 +507,72 @@ msgstr ""
 msgid "The number of attempts must be a whole number between 1 and 10. The previous value was kept."
 msgstr ""
 
-#: src/TelegramClient.php:49
+#: src/TelegramClient.php:64
 msgid "No Telegram bot token is configured yet."
 msgstr ""
 
-#: src/TelegramClient.php:55
+#: src/TelegramClient.php:70
 msgid "No Telegram chat id is configured yet."
 msgstr ""
 
 #. translators: %s: the reason the HTTP request failed.
-#: src/TelegramClient.php:82
+#: src/TelegramClient.php:155
 #, php-format
 msgid "This site could not reach Telegram: %s"
 msgstr ""
 
-#: src/TelegramClient.php:98
+#: src/TelegramClient.php:171
 msgid "Telegram answered in a way this plugin does not understand. The message may or may not have been sent."
 msgstr ""
 
-#: src/TelegramClient.php:123
+#: src/TelegramClient.php:196
 msgid "Telegram did not accept the bot token. Check the token BotFather issued for this bot — a token is revoked as soon as a new one is generated."
 msgstr ""
 
-#: src/TelegramClient.php:127
+#: src/TelegramClient.php:200
 msgid "Telegram does not know a bot with this token. Copy the whole token from BotFather, including the digits before the colon."
 msgstr ""
 
 #. translators: %d: how many seconds Telegram asks to wait.
-#: src/TelegramClient.php:138
+#: src/TelegramClient.php:211
 #, php-format
 msgid "Telegram is rate-limiting this bot and asks to wait %d seconds before trying again."
 msgstr ""
 
-#: src/TelegramClient.php:143
+#: src/TelegramClient.php:216
 msgid "Telegram is rate-limiting this bot. Wait a while before trying again."
 msgstr ""
 
 #. translators: %s: the reason Telegram gave.
-#: src/TelegramClient.php:149
+#: src/TelegramClient.php:222
 #, php-format
 msgid "The bot may not post into this chat: %s To post into a channel, add the bot to it as an administrator; a person has to write to the bot once before it may answer."
 msgstr ""
 
-#: src/TelegramClient.php:155
+#: src/TelegramClient.php:228
 msgid "Telegram cannot find that chat. Check the chat id — a channel id begins with -100 — and make sure the bot has been added to it."
 msgstr ""
 
 #. translators: %s: the reason Telegram gave.
-#: src/TelegramClient.php:161
+#: src/TelegramClient.php:234
 #, php-format
 msgid "Telegram could not read the formatting of the message: %s This is a fault in the message, not in the settings."
 msgstr ""
 
 #. translators: %d: the HTTP status Telegram answered with.
-#: src/TelegramClient.php:169
+#: src/TelegramClient.php:242
 #, php-format
 msgid "Telegram is not answering right now (HTTP %d). This is on Telegram's side; try again later."
 msgstr ""
 
 #. translators: %d: the HTTP status Telegram answered with.
-#: src/TelegramClient.php:177
+#: src/TelegramClient.php:250
 #, php-format
 msgid "Telegram refused the message (HTTP %d) and gave no reason."
 msgstr ""
 
 #. translators: 1: the HTTP status Telegram answered with, 2: the reason Telegram gave.
-#: src/TelegramClient.php:184
+#: src/TelegramClient.php:257
 #, php-format
 msgid "Telegram refused the message (HTTP %1$d): %2$s"
 msgstr ""
