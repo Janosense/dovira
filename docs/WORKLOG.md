@@ -17,6 +17,12 @@ Entry format:
 
 ---
 
+## 2026-09-09 — [ga-telegram-bridge] Sprint 1 Step 4 — GoogleAuth, GaClient and "Check GA"
+- Changed: `GoogleAuth` (RS256 JWT signed with the service-account key, token exchange, cache in the transient `gatb_google_access_token` for `expires_in - 60`) and `GaClient` (`batch_run_reports()`, `check_connection()`, one mapped message per failure), each with its own exception type; a *Check GA* button in a new Connection section of screen `Settings`, behind an admin-post nonce. 39 new unit tests on the six responses the Step 2 spike recorded plus two written from Google's documentation; the JWT signature is signed and verified for real against a throwaway key pair the bootstrap generates.
+- Shared code: none of the theme. One project-level change: `phpstan.neon.dist` now caps PHPStan at two parallel workers (commit `e5c5cbb`) — the gate crashed on code with no errors because the worker pool scales with the CPU count. That gate covers every feature.
+- Decisions: DECISIONS ""Check GA" proves the connection through the Data API, not the Admin API" — a read-only probe with the real key showed the Admin API is a separate service and is disabled in the Cloud project, so the check names the property id with the reporting time zone from the report's own metadata instead of the property's display name. One API to enable per install, not two.
+- Open: the 429 quota mapping stays documented-but-not-observed, tested on a written fixture. The spike directory and the service-account key are still on disk (sprint Definition of Done). `docs/DESIGN.md` → Screens still lists no screen of this plugin, because DECISIONS forbids DESIGN.md changes for the feature — for the retro. The staged `templates/*` deletions from outside the session are in none of this step's commits.
+
 ## 2026-09-09 — [ga-telegram-bridge] Sprint 1 Step 3 — Settings and the admin page
 - Changed: two classes in the plugin — `Settings` (the option `gatb_settings`, created non-autoloaded by the activation hook: defaults, per-field validation, typed getters, the two secrets overridden by `GATB_GA_SERVICE_ACCOUNT_JSON` / `GATB_TELEGRAM_BOT_TOKEN`) and `Admin` (screen `Settings` under Settings → "GA → Telegram", Settings API, `manage_options`, four sections, no CSS or JS); 59 new unit tests, `docs/DATA-MODEL.md` gained the plugin's options section and `readme.txt` its configuration section.
 - Shared code: none touched. The plugin still references no theme code, option or hook; the only project-level files changed are docs.

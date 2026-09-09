@@ -24,11 +24,24 @@ logic in a plugin.
   PHPCBF) and `composer analyse` (PHPStan).
 
 ## Fixtures
-- Recorded GA4 Data API responses live in `tests/fixtures/ga/*.json`,
-  captured during the Sprint 1 spike and later steps, with the property id
-  and any identifying values replaced; Telegram responses in `tests/fixtures/telegram/`.
+- Google responses live in `tests/fixtures/ga/*.json` (Data API and the token
+  endpoint, one directory), Telegram responses in `tests/fixtures/telegram/`.
+- Every file keeps the envelope the Sprint 1 spike recorded —
+  `{"status": …, "body": …, "ms": …}` — so a test rebuilds a `wp_remote_post`
+  response from it instead of hand-writing one.
+- **Recorded vs. written.** A plain `*.json` is a real response captured against
+  the live API. One that could not be captured is named `*.written.json` and is
+  built from Google's documentation — today `token-success.written.json` (the
+  spike deliberately never printed a real access token) and
+  `error-quota-exceeded.written.json` (one PHP process cannot exhaust the quota;
+  see LEARNINGS "Sprint 1 spike findings"). The distinction matters: a written
+  fixture proves only that our parser handles the shape we believe in.
+- A recorded fixture is committed only after the property id, the
+  service-account address and any token are checked for and removed. The six
+  Sprint 1 dumps contained none of them and are committed unchanged.
 - A throwaway RSA key pair for JWT tests is generated in the test bootstrap
-  (never a real service-account key in the repo).
+  (`tests/TestKey.php`, one 2048-bit pair per run, ~30 ms) — never a real
+  service-account key in the repo.
 
 ## Never mocked
 - The report maths (`Dynamics`), the response parsers and `MessageRenderer`

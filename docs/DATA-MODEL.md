@@ -155,9 +155,16 @@ option row keeps whatever it held (DECISIONS "Plugin structure, storage and
 secrets"). Both Dovira installs configure the secrets this way, which is why
 neither ever appears in the committed `mysql.sql` snapshot.
 
+### Transient `gatb_google_access_token` — one string
+The Google access token, cached by `GoogleAuth::access_token()` for
+`expires_in - 60` seconds (Google issues 3599 s, so 3539 s). It holds the bearer
+token and nothing else — never the service-account key, never the JWT — and is
+deleted whenever Google answers 401, so the next attempt signs in again. Losing
+it costs one extra token exchange of ~200-350 ms.
+
 Still to come in this feature: `gatb_state` (`last_report_date`, `attempt`) and
-`gatb_log` (last 30 runs) in Sprint 1 Step 8, and the transient
-`gatb_google_access_token` in Step 4. `uninstall.php` (Sprint 2) removes all of them.
+`gatb_log` (last 30 runs) in Sprint 1 Step 8. `uninstall.php` (Sprint 2) removes
+all of them, the transient included.
 
 ## Relations
 ```

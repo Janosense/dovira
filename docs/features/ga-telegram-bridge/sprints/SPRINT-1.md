@@ -52,7 +52,7 @@ schedule yet. The project has a check command that gates every commit.
 - **Docs to update:** `docs/DATA-MODEL.md` (section "Plugin ga-telegram-bridge": `gatb_settings` keys and types); `readme.txt` (settings description).
 - **Depends on:** Step 1
 
-### [ ] Step 4 — GoogleAuth, GaClient and "Check GA"
+### [x] Step 4 — GoogleAuth, GaClient and "Check GA"
 - **Tasks:**
   - `GoogleAuth`: JWT building/signing from the spike findings, token exchange via `wp_remote_post`, cache in transient `gatb_google_access_token` for `expires_in - 60`, typed exception `GoogleAuthException` with a user-readable reason (never the key).
   - `GaClient`: `batchRunReports(array $requests)` and `getPropertyName()` (Admin API `GET https://analyticsadmin.googleapis.com/v1beta/properties/{id}` with the same token — verify the endpoint and scope in the step plan; if it needs the Admin scope, fall back to a `runReport` with `limit 1` as the connectivity check and show the property id), HTTP timeouts, 5xx and quota errors mapped to `GaClientException`.

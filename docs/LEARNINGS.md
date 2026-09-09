@@ -19,6 +19,12 @@ Entry format:
 
 ---
 
+## 2026-09-09 — [ga-telegram-bridge] The gate failed on code that had no errors, and said the wrong thing about why
+- **Incident:** With Step 4's last test file added, `bin/check.sh` stopped passing: `Child process error: PHPStan process crashed because it reached configured PHP memory limit: 512M ... while running parallel worker`. The obvious reading — "the analysis needs more memory" — is wrong. The same analysis run single-threaded (`phpstan analyse --debug`) reports `[OK] No errors`. PHPStan sizes its worker pool from the CPU count, so on a 14-core machine it spawns many workers, each loading the WordPress stubs; the pool, not the analysis, exhausted the limit.
+- **Root cause:** The gate's PHPStan configuration left the worker count to the machine, so the same commit passes or fails depending on how many cores the developer has — and the failure text points at memory rather than at concurrency. Nothing in the step protocol says what to do when the *gate itself* breaks for reasons unrelated to the code.
+- **Fix applied here:** `phpstan.neon.dist` pins `parallel: maximumNumberOfProcesses: 2` (commit `e5c5cbb`), which makes the run identical on the host and inside DDEV whatever the core count; `docs/TECH-STACK.md` → Check command records why. The rule learned: when the gate fails, first re-run the failing tool **single-threaded** to find out whether the code or the tooling is at fault, and never raise a limit before knowing which. `/do-step` was stopped and the choice put to the user rather than changing project-level tooling inside a feature step — the tooling fix is its own commit, separate from the step's three.
+- **Transferred to playbook:** pending
+
 ## 2026-09-09 — [ga-telegram-bridge] Two assumptions about the gate's own tools broke in Step 3
 <!-- Tooling findings rather than a harness defect, kept here because the next four steps write
      many more tests and will meet both again. -->

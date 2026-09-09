@@ -32,7 +32,9 @@ Standards) → PHPStan (level 8, analysing against PHP 8.1) → PHPUnit, all ins
 `wp-content/plugins/ga-telegram-bridge/`, then `php -l` over every theme PHP
 file outside `vendor/` and `node_modules/` (108 files today). It runs
 `composer install` in the plugin when `vendor/` is missing and refuses to start
-below PHP 8.3; the host PHP (8.5) and the DDEV web container (8.3) both qualify
+below PHP 8.3; PHPStan is capped at two parallel workers in `phpstan.neon.dist`, because its pool otherwise scales with the CPU count and every worker loads the
+WordPress stubs — on a 14-core machine that exhausted PHPStan's 512M default and
+crashed the gate on code that has no errors; the host PHP (8.5) and the DDEV web container (8.3) both qualify
 — `ddev exec bash bin/check.sh` works. The theme's `npm run build` is NOT part
 of the gate (`assets/` are committed; rebuild only when the front end
 changes) — DECISIONS "Testing tooling and the project check command".

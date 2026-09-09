@@ -1,0 +1,11 @@
+{
+    "status": 400,
+    "body": {
+        "error": {
+            "code": 400,
+            "message": "Invalid property ID: abc. A numeric Property ID is required. To learn more about Property ID, see https://developers.google.com/analytics/devguides/reporting/data/v1/property-id.",
+            "status": "INVALID_ARGUMENT"
+        }
+    },
+    "ms": 325
+}
