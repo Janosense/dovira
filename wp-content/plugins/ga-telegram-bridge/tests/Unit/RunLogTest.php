@@ -173,6 +173,42 @@ final class RunLogTest extends TestCase {
 	}
 
 	/**
+	 * The cron hit is remembered next to the day, and neither write erases the
+	 * other: the two keys are written by different requests.
+	 */
+	public function test_the_cron_hit_survives_a_run_and_a_failure(): void {
+		RunLog::mark_cron_hit( 1757505600 );
+
+		RunLog::mark_sent( '2026-09-08' );
+		$this->assertSame( 1757505600, RunLog::last_cron_hit(), 'a delivery did not erase it' );
+
+		RunLog::mark_failed();
+		$this->assertSame( 1757505600, RunLog::last_cron_hit(), 'a failure did not erase it' );
+		$this->assertSame( '2026-09-08', RunLog::last_report_date(), 'and the day is still there' );
+
+		RunLog::mark_cron_hit( 1757592000 );
+		$this->assertSame( 1757592000, RunLog::last_cron_hit() );
+		$this->assertSame( 1, RunLog::attempt(), 'a cron hit is not a run' );
+	}
+
+	/**
+	 * A state row written before the key existed reads as "never", not as a
+	 * broken row: there is no migration.
+	 */
+	public function test_a_state_from_before_the_cron_hit_reads_as_never(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'last_report_date' => '2026-09-08',
+				'attempt'          => 2,
+			)
+		);
+
+		$this->assertSame( 0, RunLog::last_cron_hit() );
+		$this->assertSame( '2026-09-08', RunLog::last_report_date() );
+		$this->assertSame( 2, RunLog::attempt() );
+	}
+
+	/**
 	 * A row edited by hand is completed rather than trusted.
 	 */
 	public function test_a_damaged_row_is_completed_instead_of_breaking_the_table(): void {
