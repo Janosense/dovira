@@ -574,7 +574,7 @@ names this same branch. Deleted at the close of Step 3 — `/do-step` re-creates
   printed only the token's length and prefix, so no real token exists to record. `TESTING.md` →
   Fixtures gains that distinction in this commit (recorded vs. written from documentation).
 
-- [ ] **2. `GaClient`: the Data API calls and one mapped error per failure** (+ its tests, the
+- [x] **2. `GaClient`: the Data API calls and one mapped error per failure** (+ its tests, the
   recorded fixtures and the ARCHITECTURE integrations row, same commit) →
   `feat(ga-telegram-bridge): read the GA4 Data API through a minimal client`
 
