@@ -108,9 +108,12 @@ and a run that is not manual stops here when `gatb_state.last_report_date`
 already holds it — nothing sent, nothing logged → `MessageRenderer::render()`
 → `TelegramClient::send_message()` to the one configured chat → `gatb_log`
 (30 entries) and, only on delivery, `gatb_state.last_report_date`. A failure at
-either host is logged with its mapped reason and raises `gatb_state.attempt`,
-leaving the day unsent for Sprint 2's retry; no secret is ever written. Screen
-`Run log` under the settings form prints the entries newest first.
+either host is logged with its mapped reason, raises `gatb_state.attempt` and
+leaves the day unsent; no secret is ever written. While that day has attempts
+left (`gatb_settings.max_attempts`), a run started by the schedule books the
+single event `gatb_retry_report` an hour out, carrying the day it is for — a
+run started by *Send now* books nothing, because a person is at the screen.
+Screen `Run log` under the settings form prints the entries newest first.
 
 **Translation (CLI).** `wp dovira translate --post-type=X --lang-from=uk --lang-to=ru`
 → `ContentExtractor` + `MetaExtractor` → `AnthropicTranslator` → `PostCopier`

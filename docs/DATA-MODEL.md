@@ -184,6 +184,13 @@ being remembered as a delivery. `last_cron_hit` is read by one thing only —
 screen `Settings`, to warn when WP-Cron is switched off in `wp-config.php` and
 nothing has called `wp-cron.php` for 24 hours.
 
+The plugin's two cron events are the other half of this row. `gatb_daily_report`
+recurs daily and takes no arguments; `gatb_retry_report` is a single event booked
+an hour after a failed scheduled run and **carries the day it is for** (`Y-m-d`),
+because an hour later "yesterday" may be another day. Both are removed with
+`wp_unschedule_hook()`, which unschedules a hook's events whatever arguments they
+carry.
+
 The **next run is not stored here.** `wp_next_scheduled( 'gatb_daily_report' )`
 is the one copy of it; a second one in this row would have to be invalidated on
 every reschedule and could only ever disagree with the event that actually

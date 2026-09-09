@@ -54,6 +54,13 @@ final class RunnerTest extends TestCase {
 	private array $posted = array();
 
 	/**
+	 * Every attempt booked with WP-Cron, in order.
+	 *
+	 * @var list<array{int, string, array<int, mixed>}>
+	 */
+	private array $booked = array();
+
+	/**
 	 * How Telegram answers this test.
 	 *
 	 * @var string
@@ -106,8 +113,17 @@ final class RunnerTest extends TestCase {
 			),
 		);
 		$this->posted          = array();
+		$this->booked          = array();
 		$this->telegram_answer = 'send-message-success.written.json';
 		$this->google_error    = null;
+
+		Functions\when( 'wp_schedule_single_event' )->alias(
+			function ( int $timestamp, string $hook, array $arguments = array() ): bool {
+				$this->booked[] = array( $timestamp, $hook, $arguments );
+
+				return true;
+			}
+		);
 
 		Functions\when( 'get_option' )->alias(
 			fn( string $option, $default_value = false ) => $this->option( $option, $default_value )
@@ -286,6 +302,56 @@ final class RunnerTest extends TestCase {
 		$this->assertStringContainsString( 'cannot read this property', $entry['message'] );
 		$this->assertSame( array(), $this->telegram_calls(), 'nothing is sent when there is nothing to send' );
 		$this->assertNotSame( '', $entry['date'], 'the log still says which day the run was about' );
+	}
+
+	/**
+	 * A failed scheduled run books one more attempt an hour later, for the day
+	 * it was about.
+	 */
+	public function test_a_failed_scheduled_run_books_another_attempt_in_an_hour(): void {
+		$this->google_error = 'error-no-access-property.json';
+
+		$entry = Runner::run( 'cron', false, self::NOON );
+
+		$this->assertIsArray( $entry );
+		$this->assertSame( 1, $entry['attempt'] );
+		$this->assertSame(
+			array( array( self::NOON + 3600, 'gatb_retry_report', array( $entry['date'] ) ) ),
+			$this->booked,
+			'one single event, carrying the day the attempt is for'
+		);
+	}
+
+	/**
+	 * A failed *Send now* books nothing: the person who pressed it is looking
+	 * at the reason and can press again.
+	 */
+	public function test_a_failed_manual_run_books_nothing(): void {
+		$this->google_error = 'error-no-access-property.json';
+
+		Runner::run( 'manual', false, self::NOON );
+
+		$this->assertSame( array(), $this->booked );
+		$this->assertSame( 1, RunLog::attempt(), 'the day still failed once' );
+	}
+
+	/**
+	 * The last attempt a day is allowed books nothing more.
+	 */
+	public function test_the_last_attempt_books_nothing_more(): void {
+		$this->options[ Settings::OPTION ]['max_attempts'] = 2;
+		$this->google_error                                = 'error-no-access-property.json';
+
+		Runner::run( 'cron', false, self::NOON );
+		$this->assertCount( 1, $this->booked, 'the first attempt still has one left' );
+
+		$this->booked = array();
+		$second       = Runner::run( 'retry', false, self::NOON, '2025-09-09' );
+
+		$this->assertIsArray( $second );
+		$this->assertSame( 2, $second['attempt'] );
+		$this->assertSame( '2025-09-09', $second['date'], 'the day the retry was booked for' );
+		$this->assertSame( array(), $this->booked );
 	}
 
 	/**

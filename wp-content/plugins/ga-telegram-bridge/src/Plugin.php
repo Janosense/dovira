@@ -28,6 +28,9 @@ final class Plugin {
 		add_action( 'admin_post_' . Admin::SEND_NOW_ACTION, array( Admin::class, 'handle_send_now' ) );
 		add_action( 'all_admin_notices', array( Admin::class, 'take_preview' ) );
 		add_action( Scheduler::DAILY_HOOK, array( Scheduler::class, 'run_daily' ) );
+		// One accepted argument: WP-Cron dispatches with do_action_ref_array(),
+		// so the day the retry was booked for arrives only if it is taken.
+		add_action( Scheduler::RETRY_HOOK, array( Scheduler::class, 'run_retry' ), 10, 1 );
 		// Both, because core routes a save through add_option() while the stored
 		// settings still equal the registered defaults: update_option() hands
 		// over to it when the old value is the default, and only the matching

@@ -25,18 +25,25 @@ final class Runner {
 	 * already gone out, nothing was sent and nothing was logged, because
 	 * nothing happened.
 	 *
-	 * @param string   $trigger           What started this run: cron, retry or manual.
-	 * @param bool     $bypass_date_guard Whether to send even if the day was already sent.
-	 * @param int|null $now               The current Unix time; injected by the tests.
+	 * @param string      $trigger           What started this run: cron, retry or manual.
+	 * @param bool        $bypass_date_guard Whether to send even if the day was already sent.
+	 * @param int|null    $now               The current Unix time; injected by the tests.
+	 * @param string|null $for_date          The day a retry was booked for; null for a run about whatever yesterday is now.
 	 * @return array{time: int, trigger: string, date: string, status: string, attempt: int, message: string}|null
 	 */
-	public static function run( string $trigger, bool $bypass_date_guard = false, ?int $now = null ): ?array {
+	public static function run( string $trigger, bool $bypass_date_guard = false, ?int $now = null, ?string $for_date = null ): ?array {
 		try {
 			$report = ReportBuilder::build( $now );
 		} catch ( GaClientException | GoogleAuthException $unreadable ) {
 			// A day that could not be read must not look like a day with no
-			// visitors, so it is logged as a failure and nothing is sent.
-			return self::failed( $trigger, self::site_yesterday( $now ?? time() ), $unreadable->getMessage() );
+			// visitors, so it is logged as a failure and nothing is sent. A
+			// retry knows which day it is about; a first attempt has to guess.
+			return self::failed(
+				$trigger,
+				null !== $for_date ? $for_date : self::site_yesterday( $now ?? time() ),
+				$unreadable->getMessage(),
+				$now
+			);
 		}
 
 		if ( ! $bypass_date_guard && RunLog::last_report_date() === $report->date ) {
@@ -46,7 +53,7 @@ final class Runner {
 		try {
 			TelegramClient::send_message( Settings::telegram_chat_id(), MessageRenderer::render( $report ) );
 		} catch ( TelegramException $refused ) {
-			return self::failed( $trigger, $report->date, $refused->getMessage() );
+			return self::failed( $trigger, $report->date, $refused->getMessage(), $now );
 		}
 
 		RunLog::mark_sent( $report->date );
@@ -66,21 +73,42 @@ final class Runner {
 	}
 
 	/**
-	 * Records a run that did not deliver, and counts the attempt.
+	 * Records a run that did not deliver, counts the attempt, and books the
+	 * next one while the day has attempts left.
 	 *
 	 * The last sent day is deliberately left as it was: the day stays unsent.
 	 *
-	 * @param string $trigger The trigger of the run.
-	 * @param string $date    The day the report was about.
-	 * @param string $message The mapped reason, already free of any secret.
+	 * @param string   $trigger The trigger of the run.
+	 * @param string   $date    The day the report was about.
+	 * @param string   $message The mapped reason, already free of any secret.
+	 * @param int|null $now     The current Unix time; injected by the tests.
 	 * @return array{time: int, trigger: string, date: string, status: string, attempt: int, message: string}
 	 */
-	private static function failed( string $trigger, string $date, string $message ): array {
+	private static function failed( string $trigger, string $date, string $message, ?int $now = null ): array {
 		$attempt = self::attempt();
 
 		RunLog::mark_failed();
 
+		if ( self::is_automatic( $trigger ) && $attempt < Settings::max_attempts() ) {
+			Scheduler::schedule_retry( $date, $now );
+		}
+
 		return RunLog::add( $trigger, $date, 'failed', $attempt, $message );
+	}
+
+	/**
+	 * Whether this run belongs to the chain that looks after itself.
+	 *
+	 * Only the schedule retries. *Send now* is a person at the screen who is
+	 * shown the reason and can press again: a retry booked behind their back
+	 * would wake up an hour later for a day the manual run had bypassed the
+	 * guard for, and a wrong property id tried three times by hand would tell
+	 * the owner's chat that the day is missing.
+	 *
+	 * @param string $trigger The trigger of the run.
+	 */
+	private static function is_automatic( string $trigger ): bool {
+		return 'cron' === $trigger || 'retry' === $trigger;
 	}
 
 	/**

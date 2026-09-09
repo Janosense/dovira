@@ -160,6 +160,20 @@ final class SchedulerTest extends TestCase {
 				return true;
 			}
 		);
+		Functions\when( 'wp_unschedule_hook' )->alias(
+			function ( string $hook ): int {
+				$this->cron_calls[] = array( 'unschedule', $hook );
+
+				return 1;
+			}
+		);
+		Functions\when( 'wp_schedule_single_event' )->alias(
+			function ( int $timestamp, string $hook, array $arguments = array() ): bool {
+				$this->cron_calls[] = array( 'single', $timestamp, $hook, $arguments );
+
+				return true;
+			}
+		);
 		Functions\when( 'wp_remote_post' )->alias(
 			fn( string $url, array $arguments ): array => $this->answer( $url, $arguments )
 		);
@@ -337,18 +351,64 @@ final class SchedulerTest extends TestCase {
 	}
 
 	/**
-	 * Deactivation takes both events away, the retry one included.
+	 * Deactivation takes both events away, the retry one included — whatever
+	 * arguments its events carry, which wp_clear_scheduled_hook() would not.
 	 */
 	public function test_deactivation_clears_both_events(): void {
 		Scheduler::clear();
 
 		$this->assertSame(
 			array(
-				array( 'clear', 'gatb_daily_report' ),
-				array( 'clear', 'gatb_retry_report' ),
+				array( 'unschedule', 'gatb_daily_report' ),
+				array( 'unschedule', 'gatb_retry_report' ),
 			),
 			$this->cron_calls
 		);
+	}
+
+	/**
+	 * A retry is one single event an hour out, carrying the day it is for.
+	 */
+	public function test_a_retry_is_booked_an_hour_later_with_its_day(): void {
+		$now = self::at( '2026-09-09 07:15:00' );
+
+		Scheduler::schedule_retry( '2026-09-08', $now );
+
+		$this->assertSame(
+			array(
+				array( 'single', $now + 3600, 'gatb_retry_report', array( '2026-09-08' ) ),
+			),
+			$this->cron_calls
+		);
+		$this->assertSame( '2026-09-09 08:15', self::local( $now + 3600 ) );
+	}
+
+	/**
+	 * The retry run says a retry asked, and reports the day it was booked for.
+	 */
+	public function test_the_retry_run_reports_the_day_it_was_booked_for(): void {
+		$yesterday = ( new DateTimeImmutable( 'now', new DateTimeZone( 'Europe/Kiev' ) ) )->modify( '-1 day' )->format( 'Y-m-d' );
+
+		Scheduler::run_retry( $yesterday );
+
+		$entries = RunLog::entries();
+		$this->assertCount( 1, $entries );
+		$this->assertSame( 'retry', $entries[0]['trigger'] );
+		$this->assertSame( $yesterday, $entries[0]['date'], 'the day the event carried' );
+		$this->assertSame( 'sent', $entries[0]['status'] );
+		$this->assertCount( 1, $this->telegram_calls() );
+	}
+
+	/**
+	 * An event scheduled without its day is a run, not a fatal error.
+	 */
+	public function test_a_retry_event_without_its_day_still_runs(): void {
+		Scheduler::run_retry();
+
+		$entries = RunLog::entries();
+		$this->assertCount( 1, $entries );
+		$this->assertSame( 'retry', $entries[0]['trigger'] );
+		$this->assertSame( 'sent', $entries[0]['status'] );
 	}
 
 	/**
