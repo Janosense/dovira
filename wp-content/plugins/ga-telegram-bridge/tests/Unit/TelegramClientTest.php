@@ -33,10 +33,18 @@ final class TelegramClientTest extends TestCase {
 	private const CHAT_ID = '-1001234567890';
 
 	/**
+	 * How long each attempt was asked to wait, in order.
+	 *
+	 * @var list<int>
+	 */
+	private array $waited = array();
+
+	/**
 	 * Stubs the WordPress helpers every path here goes through.
 	 */
 	protected function setUp(): void {
 		parent::setUp();
+		$this->waited = array();
 		Functions\stubTranslationFunctions();
 		Functions\stubEscapeFunctions();
 		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
@@ -48,6 +56,42 @@ final class TelegramClientTest extends TestCase {
 			static fn( array $response ): string => (string) $response['body']
 		);
 		Functions\when( 'get_option' )->justReturn( array( 'telegram_bot_token' => self::TOKEN ) );
+	}
+
+	/**
+	 * Sends the test message, recording any wait instead of sitting through it.
+	 *
+	 * No test in this suite sleeps: the client takes the wait as an argument
+	 * the way the rest of the plugin takes the clock.
+	 */
+	private function send(): void {
+		TelegramClient::send_message(
+			self::CHAT_ID,
+			'<b>Dovira</b>',
+			function ( int $seconds ): void {
+				$this->waited[] = $seconds;
+			}
+		);
+	}
+
+	/**
+	 * Counts the posts and answers each of them from the given list.
+	 *
+	 * The last answer stands for every attempt after it, so a test that repeats
+	 * one refusal passes it once.
+	 *
+	 * @param list<array{response: array{code: int}, body: string}> $answers The answers, in order.
+	 * @param int                                                   $posted  Counts the attempts.
+	 */
+	private function answer_with( array $answers, int &$posted ): void {
+		Functions\when( 'wp_remote_post' )->alias(
+			static function () use ( $answers, &$posted ): array {
+				$answer = $answers[ min( $posted, count( $answers ) - 1 ) ];
+				++$posted;
+
+				return $answer;
+			}
+		);
 	}
 
 	/**
@@ -132,7 +176,7 @@ final class TelegramClientTest extends TestCase {
 		$this->expectException( TelegramException::class );
 		$this->expectExceptionMessageMatches( '/' . preg_quote( $expect, '/' ) . '/' );
 
-		TelegramClient::send_message( self::CHAT_ID, '<b>Dovira</b>' );
+		$this->send();
 	}
 
 	/**
@@ -148,6 +192,123 @@ final class TelegramClientTest extends TestCase {
 			'the markup is broken'       => array( 'error-cant-parse-entities.written.json', 'could not read the formatting' ),
 			'the bot is not in the chat' => array( 'error-bot-not-in-chat.written.json', 'may not post into this chat' ),
 			'the bot is rate-limited'    => array( 'error-too-many-requests.written.json', 'wait 27 seconds' ),
+		);
+	}
+
+	/**
+	 * A flood limit is honoured once, on the spot.
+	 */
+	public function test_a_flood_limit_is_waited_out_once_and_the_message_goes_again(): void {
+		$posted = 0;
+		$this->answer_with(
+			array(
+				$this->fixture( 'error-too-many-requests.written.json' ),
+				$this->fixture( 'send-message-success.written.json' ),
+			),
+			$posted
+		);
+
+		$this->send();
+
+		$this->assertSame( 2, $posted, 'the same message is posted again after the wait' );
+		$this->assertSame( array( 27 ), $this->waited, 'exactly the seconds Telegram asked for' );
+	}
+
+	/**
+	 * A second flood limit is the failure it looks like — the wait is not
+	 * taken twice.
+	 */
+	public function test_a_second_flood_limit_ends_the_run(): void {
+		$posted = 0;
+		$this->answer_with( array( $this->fixture( 'error-too-many-requests.written.json' ) ), $posted );
+
+		try {
+			$this->send();
+			$this->fail( 'A message Telegram kept refusing must not be reported as sent.' );
+		} catch ( TelegramException $exception ) {
+			$this->assertStringContainsString( 'wait 27 seconds', $exception->getMessage() );
+		}
+
+		$this->assertSame( 2, $posted, 'two attempts, not a loop' );
+		$this->assertSame( array( 27 ), $this->waited );
+	}
+
+	/**
+	 * A wait longer than the client is willing to sit through is not taken:
+	 * that is what the hourly retry is for.
+	 */
+	public function test_a_wait_beyond_the_cap_is_left_to_the_retry(): void {
+		$posted = 0;
+		$this->answer_with( array( $this->flood_limit( 300 ) ), $posted );
+
+		try {
+			$this->send();
+			$this->fail( 'A rate-limited message must not be reported as sent.' );
+		} catch ( TelegramException $exception ) {
+			$this->assertStringContainsString( 'wait 300 seconds', $exception->getMessage() );
+		}
+
+		$this->assertSame( 1, $posted, 'the message is not posted again' );
+		$this->assertSame( array(), $this->waited, 'and nothing is waited out' );
+	}
+
+	/**
+	 * A flood limit that names no wait is not guessed at.
+	 */
+	public function test_a_flood_limit_without_a_wait_is_not_repeated(): void {
+		$posted = 0;
+		$this->answer_with( array( $this->flood_limit( null ) ), $posted );
+
+		try {
+			$this->send();
+			$this->fail( 'A rate-limited message must not be reported as sent.' );
+		} catch ( TelegramException $exception ) {
+			$this->assertStringContainsString( 'Wait a while', $exception->getMessage() );
+		}
+
+		$this->assertSame( 1, $posted );
+		$this->assertSame( array(), $this->waited );
+	}
+
+	/**
+	 * Negative check: no other refusal is ever posted twice.
+	 */
+	public function test_a_refusal_that_is_not_a_flood_limit_is_posted_once(): void {
+		$posted = 0;
+		$this->answer_with( array( $this->fixture( 'error-unauthorized.json' ) ), $posted );
+
+		try {
+			$this->send();
+			$this->fail( 'A refused message must not be reported as sent.' );
+		} catch ( TelegramException $exception ) {
+			$this->assertStringContainsString( 'did not accept the bot token', $exception->getMessage() );
+		}
+
+		$this->assertSame( 1, $posted, 'a revoked token is not worth a second attempt' );
+		$this->assertSame( array(), $this->waited );
+	}
+
+	/**
+	 * Builds a 429 answer that names the given wait, or none at all.
+	 *
+	 * @param int|null $retry_after The seconds Telegram asks for, or null for an answer without them.
+	 * @return array{response: array{code: int}, body: string}
+	 */
+	private function flood_limit( ?int $retry_after ): array {
+		$body = array(
+			'ok'          => false,
+			'error_code'  => 429,
+			'description' => 'Too Many Requests',
+		);
+
+		if ( null !== $retry_after ) {
+			$body['description'] = 'Too Many Requests: retry after ' . $retry_after;
+			$body['parameters']  = array( 'retry_after' => $retry_after );
+		}
+
+		return array(
+			'response' => array( 'code' => 429 ),
+			'body'     => (string) wp_json_encode( $body ),
 		);
 	}
 
@@ -212,7 +373,7 @@ final class TelegramClientTest extends TestCase {
 		Functions\when( 'wp_remote_post' )->justReturn( $this->fixture( $fixture ) );
 
 		try {
-			TelegramClient::send_message( self::CHAT_ID, '<b>Dovira</b>' );
+			$this->send();
 			$this->fail( 'A refused message must not be reported as sent.' );
 		} catch ( TelegramException $exception ) {
 			$this->assertStringNotContainsString(

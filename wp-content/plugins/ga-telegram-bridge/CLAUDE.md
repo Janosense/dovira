@@ -48,7 +48,10 @@ references the `dovira` theme, its functions, options or data.
   run passes through `Runner` and its date guard. A settings save is caught on
   **both** `update_option_gatb_settings` and `add_option_gatb_settings`: while
   the stored row still equals the registered default, core writes it through
-  `add_option()`.
+  `add_option()`. Only a `cron` or `retry` run books another attempt; `manual`
+  never does. `gatb_retry_report` carries its day as an argument, so it is
+  registered with one accepted argument and removed with `wp_unschedule_hook()`
+  — `wp_clear_scheduled_hook()` matches only events registered with none.
 - Tests: `tests/Unit/` with PHPUnit + Brain\Monkey, fixtures in
   `tests/fixtures/`, rules in `docs/TESTING.md`.
 

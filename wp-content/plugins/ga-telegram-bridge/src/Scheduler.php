@@ -29,11 +29,20 @@ final class Scheduler {
 	public const DAILY_HOOK = 'gatb_daily_report';
 
 	/**
-	 * The single event a failed run schedules to try again. Nothing registers
-	 * it yet; it is cleared here so that deactivation leaves no event behind
-	 * once it does.
+	 * The single event a failed run schedules to try the same day again. It
+	 * carries the day it is for as its one argument.
 	 */
 	public const RETRY_HOOK = 'gatb_retry_report';
+
+	/**
+	 * How long after a failure the day is tried again, in seconds.
+	 *
+	 * One hour is fixed by DECISIONS "Scheduling, retries and idempotency on
+	 * WP-Cron"; how many times is what the site configures (`max_attempts`).
+	 * Written out rather than taken from HOUR_IN_SECONDS: the unit tests load
+	 * no WordPress.
+	 */
+	public const RETRY_DELAY = 3600;
 
 	/**
 	 * How long wp-cron.php may go unvisited before the screen says so, in
@@ -60,11 +69,42 @@ final class Scheduler {
 	}
 
 	/**
+	 * Books one more attempt at a day, an hour from now.
+	 *
+	 * The day travels with the event: an hour later "yesterday" may be another
+	 * day, and the attempt is about the day it was booked for.
+	 *
+	 * @param string   $date The day the report was about, Y-m-d.
+	 * @param int|null $now  The current Unix time; injected by the tests.
+	 */
+	public static function schedule_retry( string $date, ?int $now = null ): void {
+		wp_schedule_single_event( ( $now ?? time() ) + self::RETRY_DELAY, self::RETRY_HOOK, array( $date ) );
+	}
+
+	/**
+	 * The callback of the retry event: one run for the day it was booked for.
+	 *
+	 * The default covers an event scheduled without its argument — by hand, or
+	 * by a version of this plugin that did not pass one — which would otherwise
+	 * be a fatal error inside WP-Cron rather than a run.
+	 *
+	 * @param string $date The day this attempt is for, Y-m-d.
+	 */
+	public static function run_retry( string $date = '' ): void {
+		Runner::run( 'retry', false, null, '' !== $date ? $date : null );
+	}
+
+	/**
 	 * Clears every event the plugin owns. Called on deactivation.
+	 *
+	 * Unscheduling is by hook, not by hook and arguments:
+	 * wp_clear_scheduled_hook() takes the arguments an event was registered
+	 * with and, called with none, unschedules only the events that have none —
+	 * which the retry, carrying its day, never is (wp-includes/cron.php).
 	 */
 	public static function clear(): void {
-		wp_clear_scheduled_hook( self::DAILY_HOOK );
-		wp_clear_scheduled_hook( self::RETRY_HOOK );
+		wp_unschedule_hook( self::DAILY_HOOK );
+		wp_unschedule_hook( self::RETRY_HOOK );
 	}
 
 	/**

@@ -54,6 +54,13 @@ final class RunnerTest extends TestCase {
 	private array $posted = array();
 
 	/**
+	 * Every attempt booked with WP-Cron, in order.
+	 *
+	 * @var list<array{int, string, array<int, mixed>}>
+	 */
+	private array $booked = array();
+
+	/**
 	 * How Telegram answers this test.
 	 *
 	 * @var string
@@ -106,8 +113,17 @@ final class RunnerTest extends TestCase {
 			),
 		);
 		$this->posted          = array();
+		$this->booked          = array();
 		$this->telegram_answer = 'send-message-success.written.json';
 		$this->google_error    = null;
+
+		Functions\when( 'wp_schedule_single_event' )->alias(
+			function ( int $timestamp, string $hook, array $arguments = array() ): bool {
+				$this->booked[] = array( $timestamp, $hook, $arguments );
+
+				return true;
+			}
+		);
 
 		Functions\when( 'get_option' )->alias(
 			fn( string $option, $default_value = false ) => $this->option( $option, $default_value )
@@ -289,6 +305,122 @@ final class RunnerTest extends TestCase {
 	}
 
 	/**
+	 * A failed scheduled run books one more attempt an hour later, for the day
+	 * it was about.
+	 */
+	public function test_a_failed_scheduled_run_books_another_attempt_in_an_hour(): void {
+		$this->google_error = 'error-no-access-property.json';
+
+		$entry = Runner::run( 'cron', false, self::NOON );
+
+		$this->assertIsArray( $entry );
+		$this->assertSame( 1, $entry['attempt'] );
+		$this->assertSame(
+			array( array( self::NOON + 3600, 'gatb_retry_report', array( $entry['date'] ) ) ),
+			$this->booked,
+			'one single event, carrying the day the attempt is for'
+		);
+	}
+
+	/**
+	 * A failed *Send now* books nothing: the person who pressed it is looking
+	 * at the reason and can press again.
+	 */
+	public function test_a_failed_manual_run_books_nothing(): void {
+		$this->google_error = 'error-no-access-property.json';
+
+		Runner::run( 'manual', false, self::NOON );
+
+		$this->assertSame( array(), $this->booked );
+		$this->assertSame( 1, RunLog::attempt(), 'the day still failed once' );
+	}
+
+	/**
+	 * The last attempt a day is allowed books nothing more, tells the chat and
+	 * lets the counting start again.
+	 */
+	public function test_the_last_attempt_gives_the_day_up_and_tells_the_chat(): void {
+		$this->options[ Settings::OPTION ]['max_attempts'] = 2;
+		$this->google_error                                = 'error-no-access-property.json';
+
+		Runner::run( 'cron', false, self::NOON );
+		$this->assertCount( 1, $this->booked, 'the first attempt still has one left' );
+		$this->assertSame( array(), $this->telegram_calls(), 'and the chat is not told yet' );
+
+		$this->booked = array();
+		$second       = Runner::run( 'retry', false, self::NOON, '2025-09-09' );
+
+		$this->assertIsArray( $second );
+		$this->assertSame( 2, $second['attempt'] );
+		$this->assertSame( '2025-09-09', $second['date'], 'the day the retry was booked for' );
+		$this->assertSame( array(), $this->booked, 'nothing more is booked' );
+		$this->assertCount( 1, $this->telegram_calls(), 'the notice is the only thing sent' );
+		$this->assertStringContainsString( 'No attempts are left', $second['message'] );
+		$this->assertSame( 0, RunLog::attempt(), 'the next day starts at one again' );
+		$this->assertSame( '', RunLog::last_report_date(), 'and the day is still unsent' );
+	}
+
+	/**
+	 * What the chat receives is the failure notice for that day.
+	 */
+	public function test_the_notice_names_the_day_that_could_not_be_reported(): void {
+		$this->options[ Settings::OPTION ]['max_attempts'] = 1;
+		$this->google_error                                = 'error-no-access-property.json';
+		$sent = null;
+
+		Functions\when( 'wp_remote_post' )->alias(
+			function ( string $url, array $arguments ) use ( &$sent ): array {
+				if ( false !== strpos( $url, 'api.telegram.org' ) ) {
+					$sent = json_decode( (string) $arguments['body'], true );
+				}
+
+				return $this->answer( $url, $arguments );
+			}
+		);
+
+		Runner::run( 'cron', false, self::NOON, '2025-09-09' );
+
+		$this->assertIsArray( $sent );
+		$this->assertSame( self::CHAT_ID, $sent['chat_id'] );
+		$this->assertStringContainsString( '⚠️', $sent['text'] );
+		$this->assertStringContainsString( '9 September', $sent['text'] );
+	}
+
+	/**
+	 * A notice that cannot be delivered either is only logged — in the same row
+	 * as the failure it was about.
+	 */
+	public function test_a_notice_that_is_refused_is_logged_and_nothing_more(): void {
+		$this->options[ Settings::OPTION ]['max_attempts'] = 1;
+		$this->telegram_answer                             = 'error-chat-not-found.written.json';
+
+		$entry = Runner::run( 'cron', false, self::NOON );
+
+		$this->assertIsArray( $entry );
+		$this->assertCount( 1, RunLog::entries(), 'one run is one row' );
+		$this->assertStringContainsString( 'cannot find that chat', $entry['message'], 'the reason the report failed' );
+		$this->assertStringContainsString( 'the chat could not be told either', $entry['message'] );
+		$this->assertSame( 0, RunLog::attempt() );
+	}
+
+	/**
+	 * A retry that wakes up after the property's midnight reports the day it
+	 * was booked for, gives it up and sends nothing but the notice.
+	 */
+	public function test_a_retry_whose_day_has_passed_gives_that_day_up(): void {
+		$entry = Runner::run( 'retry', false, self::NOON, '2025-09-08' );
+
+		$this->assertIsArray( $entry );
+		$this->assertSame( 'failed', $entry['status'] );
+		$this->assertSame( '2025-09-08', $entry['date'], 'the day the attempt was for, not the day Google now has' );
+		$this->assertStringContainsString( 'can no longer be built', $entry['message'] );
+		$this->assertStringContainsString( '2025-09-09', $entry['message'], 'and what the property calls yesterday now' );
+		$this->assertSame( array(), $this->booked, 'no later attempt could do better' );
+		$this->assertCount( 1, $this->telegram_calls(), 'only the notice' );
+		$this->assertSame( '', RunLog::last_report_date(), 'the report it happened to hold is not this run\'s to send' );
+	}
+
+	/**
 	 * The same day is not sent twice by itself.
 	 */
 	public function test_the_date_guard_stops_a_second_run_for_the_same_day(): void {
@@ -315,6 +447,38 @@ final class RunnerTest extends TestCase {
 		$this->assertSame( 'manual', $second['trigger'] );
 		$this->assertCount( 2, RunLog::entries() );
 		$this->assertCount( 2, $this->telegram_calls() );
+	}
+
+	/**
+	 * Negative check: nothing the failure notice sends or leaves behind carries
+	 * a secret — not the bot token, not a fragment of the key.
+	 */
+	public function test_the_failure_notice_carries_no_secret(): void {
+		$this->options[ Settings::OPTION ]['max_attempts']         = 1;
+		$this->options[ Settings::OPTION ]['service_account_json'] = '{"private_key":"-----BEGIN PRIVATE KEY-----NOTAKEY-----END PRIVATE KEY-----"}';
+		$this->google_error                                        = 'error-no-access-property.json';
+		$bodies = array();
+
+		Functions\when( 'wp_remote_post' )->alias(
+			function ( string $url, array $arguments ) use ( &$bodies ): array {
+				$bodies[] = (string) $arguments['body'];
+
+				return $this->answer( $url, $arguments );
+			}
+		);
+
+		Runner::run( 'cron', false, self::NOON );
+
+		$this->assertNotSame( array(), $bodies, 'the notice was sent' );
+
+		foreach ( $bodies as $body ) {
+			$this->assertStringNotContainsString( self::TOKEN, $body );
+			$this->assertStringNotContainsString( 'NOTAKEY', $body );
+		}
+
+		$stored = (string) wp_json_encode( RunLog::entries() );
+		$this->assertStringNotContainsString( self::TOKEN, $stored );
+		$this->assertStringNotContainsString( 'NOTAKEY', $stored );
 	}
 
 	/**

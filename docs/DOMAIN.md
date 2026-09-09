@@ -56,7 +56,8 @@
   spelling is translated.
 - A daily report covers one calendar day of the site's own GA4 property and
   is delivered at most once per day; a day whose report could not be built is
-  announced as missing, never silently skipped and never filled with guesses.
+  tried again a configured number of times and then announced as missing to the
+  same chat, never silently skipped and never filled with guesses.
 - The report's periods follow Google Analytics' calendar for the property;
   the delivery time follows the site's own clock.
 

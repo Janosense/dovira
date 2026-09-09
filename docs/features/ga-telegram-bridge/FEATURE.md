@@ -28,7 +28,7 @@ time, max attempts, enabled blocks), `gatb_state` (`last_report_date`,
 `attempt`, `last_cron_hit` — the next run is not stored: `wp_next_scheduled()` is
 the one copy of it), `gatb_log` (last 30 runs); one transient
 `gatb_google_access_token`; cron hooks `gatb_daily_report` (recurring) and
-`gatb_retry_report` (single). Constants `GATB_GA_SERVICE_ACCOUNT_JSON` and
+`gatb_retry_report` (single, carrying the day it is for as its one argument). Constants `GATB_GA_SERVICE_ACCOUNT_JSON` and
 `GATB_TELEGRAM_BOT_TOKEN` override the two secrets. No other feature writes
 to this data; `uninstall.php` removes all of it.
 
@@ -36,6 +36,12 @@ to this data; `uninstall.php` removes all of it.
 - A report for a given date is sent at most once: every run compares the day of
   the report it has built with `gatb_state.last_report_date` before sending, and
   stops there when they match; only the admin's "Send now" bypasses it.
+- A day is attempted at most `max_attempts` times: a scheduled run that fails is
+  repeated an hour later while attempts remain, and the last one sends the
+  failure notice to the same chat and starts the counter again — the day itself
+  stays unsent. A run started by *Send now* is never repeated. A retry cannot
+  read a day the property has already left behind: it reports that day as failed
+  instead of sending another one under its date.
 - Secrets never appear in `gatb_log`, error messages, notices or test output.
 - All GA date ranges are relative (`yesterday`, `NdaysAgo`) and thus resolved
   in the property's reporting time zone; the send time is site-local.
@@ -46,7 +52,7 @@ to this data; `uninstall.php` removes all of it.
 
 ## Interfaces
 - **Admin:** Settings → "GA → Telegram" (`manage_options`), screen names in UI below.
-- **Cron hooks:** `gatb_daily_report`, `gatb_retry_report` (the only schedulers are in `Scheduler`).
+- **Cron hooks:** `gatb_daily_report` (no arguments) and `gatb_retry_report` (one argument, the day `Y-m-d` the attempt is for) — the only schedulers are in `Scheduler`, and both are cleared with `wp_unschedule_hook()` so an event carrying arguments goes too.
 - **Filters (public surface, stable):** `gatb_report_data` (the normalized `Report` before rendering — `apply_filters( 'gatb_report_data', Report $report )`; a return value that is not a `Report` is ignored and the built one is rendered) and `gatb_message_html` (final HTML before sending — `apply_filters( 'gatb_message_html', string $html, ?Report $report )`, `null` for the failure notice). Both are applied in `MessageRenderer`. Changing their payload = "touches shared surface".
 - **CLI / REST:** none in v1.
 

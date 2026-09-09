@@ -124,6 +124,22 @@ final class PluginTest extends TestCase {
 	}
 
 	/**
+	 * Boot registers the callback of the retry event, with the one argument
+	 * that carries the day it is for.
+	 */
+	public function test_boot_registers_the_retry_callback_with_its_argument(): void {
+		Actions\expectAdded( 'gatb_retry_report' )
+			->once()
+			->with( array( Scheduler::class, 'run_retry' ), 10, 1 );
+
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'gatb_retry_report', array( Scheduler::class, 'run_retry' ) )
+		);
+	}
+
+	/**
 	 * Boot re-registers the event whenever the settings are saved: the send
 	 * time is only worth changing if the schedule follows it.
 	 */
@@ -186,7 +202,7 @@ final class PluginTest extends TestCase {
 	 */
 	public function test_deactivation_clears_the_schedule_and_nothing_else(): void {
 		$cleared = array();
-		Functions\when( 'wp_clear_scheduled_hook' )->alias(
+		Functions\when( 'wp_unschedule_hook' )->alias(
 			function ( string $hook ) use ( &$cleared ): int {
 				$cleared[] = $hook;
 

@@ -219,3 +219,293 @@ only the markup).
 
 ### Questions / ambiguities
 none
+
+## Plan — Sprint 2, Step 2: Retries and the failure notice   (status: closed)
+
+### Branch
+`ga-telegram-bridge/sprint-2-runs-by-itself` ← `master`
+(root `CLAUDE.md` → git model: simple — task branch → `master`; the name is the
+**Branch** line of `SPRINT-2.md`. Recreated from `master`, deleted at the close,
+as in Step 1.)
+
+### Tasks (ordered)
+
+- [x] **1. Telegram waits once when it is asked to.** `TelegramClient::send_message()`
+  gains one second attempt inside the same run, for HTTP 429 only: when
+  Telegram's `parameters.retry_after` is between 1 and `MAX_WAIT` seconds the
+  client waits that long and posts the message once more; a second refusal, a
+  429 without `retry_after`, and a `retry_after` beyond the cap are the failure
+  they already are, with the mapped sentence Step 5 wrote and no change to any
+  other status.
+  - `MAX_WAIT = 30` — the plugin only ever sends from a WP-Cron or an admin
+    request, both of them HTTP requests running under the host's own
+    `request_terminate_timeout`; a longer pause is what the hourly retry of
+    task 2 is for. Not a setting: the interval a business changes here is
+    `max_attempts`, which is one already (core rule 6).
+  - The wait is injected — `send_message( string $chat_id, string $html, ?callable $wait = null )`,
+    `sleep(...)` when nothing is passed — the way `$now` is injected into
+    `Runner::run()` and `ReportBuilder::build()`, so the tests assert the number
+    of seconds asked for without any test sleeping. Both production callers pass
+    nothing.
+  `docs/ARCHITECTURE.md` → Integrations, the plugin's Telegram row, gains the
+  in-run wait in the same commit.
+  → `feat(gatb): wait once when Telegram asks to slow down`
+
+- [x] **2. A failed run books another one an hour later.** The scheduling stays
+  in `Scheduler` — the plugin's `CLAUDE.md` makes it the only class that
+  schedules or clears events, so `Runner` asks it rather than calling
+  `wp_schedule_single_event()` itself (the sprint text puts the call "in
+  `Runner`"; the area convention decides where the line lives, not whether it
+  happens).
+  - `Scheduler`: `RETRY_DELAY = 3600` (written out like `CRON_HIT_MAX_AGE`: the
+    unit tests load no WordPress; one hour is fixed by DECISIONS "Scheduling,
+    retries and idempotency on WP-Cron"), `schedule_retry( string $date, ?int $now = null ): void`
+    → `wp_schedule_single_event( ( $now ?? time() ) + RETRY_DELAY, RETRY_HOOK, array( $date ) )`,
+    and `run_retry( string $date = '' ): void` → `Runner::run( 'retry', false, null, $date )`.
+    The default keeps a hand-scheduled event without arguments from fataling.
+  - `Scheduler::clear()` switches both hooks to `wp_unschedule_hook()`.
+    `wp_clear_scheduled_hook( $hook )` unschedules only the events registered
+    with **no** arguments (`wp-includes/cron.php`), so from this task on a
+    pending retry — which carries its date — would survive deactivation. Read in
+    core while planning, per LEARNINGS "The first settings save on a fresh
+    install scheduled nothing".
+  - `Plugin::boot()`: `add_action( Scheduler::RETRY_HOOK, array( Scheduler::class, 'run_retry' ), 10, 1 )`
+    — WP-Cron dispatches with `do_action_ref_array( $hook, $args )`
+    (`wp-cron.php`), so the argument arrives only if one is accepted.
+  - `Runner::run()` gains a fourth parameter `?string $for_date = null`: the day
+    a retry was booked for. It is used for the log row when the report cannot be
+    built at all (in place of the site's yesterday, which is a guess), and it is
+    what task 3 compares the built report against.
+  - On a failure, `Runner` books the retry through `Scheduler::schedule_retry()`
+    while the attempt just spent is below `Settings::max_attempts()` — the
+    step's `attempt < max_attempts`: with the default 3 a day costs three
+    attempts and two retries, which is what DECISIONS calls "a maximum of 3
+    attempts".
+  `docs/DATA-MODEL.md` (the retry hook carries the date), `FEATURE.md` → Data /
+  Interfaces and `docs/ARCHITECTURE.md` → Data flows are updated in the same
+  commit.
+  → `feat(gatb): try a failed report again an hour later`
+
+- [x] **3. The last attempt tells the chat, and the day is let go.** In `Runner`,
+  a failure that books no retry is the end of that day:
+  `MessageRenderer::render_failure( $date )` goes to the configured chat through
+  `TelegramClient`, `RunLog::reset_attempt()` puts the counter back to 0 so the
+  next day starts at 1, and `last_report_date` is left alone — the day stays
+  unsent, it is only no longer being tried. The notice is best effort: a
+  `TelegramException` from it is caught and never rethrown.
+  - **One row per run stays true.** The log row is written after the notice is
+    attempted, and its message is the mapped reason plus one sentence saying
+    that the chat was told, or that the notice could not be delivered either
+    (with its own mapped reason). That is where "a failure of the notice itself
+    is only logged" lands; a second row for the same run would say the same
+    thing twice.
+  - **A retry whose day has moved on.** All GA date ranges are relative and are
+    resolved in the property's zone (FEATURE.md → Invariants, DECISIONS "Report
+    content and comparison baselines"), so after the property's midnight the day
+    a retry was booked for can no longer be read — the report that comes back is
+    about the next day. `Runner` therefore compares the built report's date with
+    `$for_date` and, when they differ, sends the notice for `$for_date`, logs
+    the original day with the reason, resets the counter and books nothing: no
+    later retry could do better, and the report it happens to hold belongs to
+    the run the daily event will make at the configured time. This is what "the
+    retry callback uses the date it was scheduled with, not 'yesterday' at retry
+    time" can mean without making the ranges absolute, which the invariant
+    forbids.
+  - Two sentences that this task makes false are corrected with it: the
+    `max_attempts` field description on screen `Settings` ("How often a failed
+    report is tried again…" — with `attempt < max_attempts` the number is
+    attempts, not retries) and `readme.txt`'s two "the retries arrive in the
+    next release" lines. The readme's full rewrite stays Step 3.
+  `docs/DECISIONS.md` gains the entry this settles (what starts a retry chain,
+  and what a retry does when its day has passed); `docs/ARCHITECTURE.md` →
+  Integrations loses "the retries follow in Sprint 2" on both rows;
+  `docs/DATA-MODEL.md` records that `attempt` is also reset by the final
+  failure; `FEATURE.md` → Invariants gains the notice.
+  → `feat(gatb): tell the chat when a day could not be reported`
+
+- [x] **4. Translations.** Regenerate `languages/ga-telegram-bridge.pot`,
+  translate the new and changed entries in `ga-telegram-bridge-uk.po`, rebuild
+  the `.mo` — the plugin's `CLAUDE.md` requires it of every step that adds or
+  changes a string, and its DDEV note (read the `.pot` back on the host and
+  check the entry count moved) is followed, per LEARNINGS "Two files looked
+  unchanged because DDEV had not synced them yet".
+  → `chore(gatb): translate the retry strings`
+
+No task touches shared code: nothing outside
+`wp-content/plugins/ga-telegram-bridge/` except the four project docs, and no
+project tooling. The plugin hosts one feature.
+
+### Files to create/change
+**Create** — none. No new class: the retry lives in the two classes that own
+scheduling and running, and every test file it needs exists.
+
+**Change**
+- `src/TelegramClient.php` (task 1)
+- `src/Scheduler.php`, `src/Plugin.php`, `src/Runner.php` (task 2)
+- `src/Runner.php`, `src/RunLog.php` (`reset_attempt()`), `src/Admin.php` (one
+  field description), `readme.txt` (task 3)
+- `tests/Unit/TelegramClientTest.php`, `tests/Unit/SchedulerTest.php`,
+  `tests/Unit/RunnerTest.php`, `tests/Unit/RunLogTest.php`,
+  `tests/Unit/PluginTest.php`
+- `languages/ga-telegram-bridge.pot`, `-uk.po`, `-uk.mo`
+- `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `docs/DECISIONS.md`,
+  `docs/features/ga-telegram-bridge/FEATURE.md`,
+  `docs/features/ga-telegram-bridge/sprints/SPRINT-2-PLAN.md` (checkboxes)
+
+Not touched: `ReportBuilder`, `Report`, `Dynamics`, `GaClient`, `GoogleAuth`,
+`Settings` (`max_attempts` is validated and typed since Step 3),
+`MessageRenderer` (`render_failure()` was built and tested in Step 7 and is
+called here for the first time).
+
+**Existing tests whose expectations change** (nothing loses an ability):
+- `SchedulerTest::test_deactivation_clears_both_events` — two
+  `wp_clear_scheduled_hook` calls become two `wp_unschedule_hook` calls.
+- `RunnerTest` — its `setUp()` gains stubs for `wp_schedule_single_event` and
+  `wp_unschedule_hook`, recording what was booked; the four existing failure
+  tests keep their assertions (a manual run counts its attempt exactly as it
+  does today).
+- `AdminSendNowTest::test_a_refused_send_is_reported_as_an_error` — unchanged,
+  because a manual run books nothing (Questions § 1).
+
+### Tests to write
+`TelegramClientTest` (on `error-too-many-requests.written.json`, `retry_after` 27):
+1. a 429 followed by a success posts twice and returns, having asked to wait
+   exactly 27 seconds
+2. a 429 twice throws the mapped 429 sentence and posts exactly twice
+3. a `retry_after` beyond `MAX_WAIT` waits not at all and posts once
+4. a 429 without `parameters.retry_after` waits not at all and posts once
+5. no other status is ever posted twice (401 stays one call)
+
+`SchedulerTest`:
+6. `schedule_retry()` books one single event, an hour after the given moment,
+   carrying the date as its only argument
+7. `run_retry( '2025-09-09' )` runs as `retry` for that day, with the guard on
+8. `run_retry()` without an argument still runs (a hand-scheduled event)
+9. `clear()` removes both hooks through `wp_unschedule_hook()`, so an event
+   carrying arguments goes too
+
+`RunnerTest` (the chain runs for real against the recorded responses, as in
+Sprint 1):
+10. a failed cron run books a retry an hour later for the day it was about, and
+    counts the attempt
+11. the attempt that reaches `max_attempts` books nothing, sends the notice to
+    the configured chat and resets `gatb_state.attempt` to 0
+12. the notice's own refusal is caught: the run still returns one `failed` row,
+    whose message names both reasons
+13. a retry whose day has moved on (the report comes back for the following
+    day) logs the **original** date, sends the notice for it and books nothing
+14. a failed manual run books nothing and sends no notice (Questions § 1)
+15. success resets the counter (Sprint 1 asserts it; kept explicit because the
+    step asks for it)
+16. negative — neither the bot token nor a fragment of the service-account key
+    appears in what the failure notice sends or in anything `gatb_log` stores
+
+`RunLogTest`:
+17. `reset_attempt()` sets the counter to 0 and leaves `last_report_date` and
+    `last_cron_hit` where they were
+
+`PluginTest`:
+18. the retry hook is registered on `Scheduler::run_retry` and accepts one
+    argument
+
+### Docs to update
+- `docs/ARCHITECTURE.md` — Integrations: the Telegram row gains the one in-run
+  wait on 429, and both plugin rows lose "the retries follow in Sprint 2" for
+  what actually happens (retry an hour later while attempts remain, then one
+  notice to the chat); Data flows: the "Daily GA report" flow gains its failure
+  half (the single event `gatb_retry_report` with the date it carries)
+- `docs/DATA-MODEL.md` — `gatb_state.attempt` is also reset by the final
+  failure, not only by a success; the cron hooks paragraph records that
+  `gatb_retry_report` carries the day it is for
+- `docs/DECISIONS.md` — one entry: which runs start a retry chain, and what a
+  retry does when the day it was booked for is no longer readable
+- `docs/features/ga-telegram-bridge/FEATURE.md` — Invariants (a day is retried
+  at most `max_attempts` times and then reported once to the chat), Interfaces
+  (the retry hook's argument)
+- At the close: `docs/WORKLOG.md`, the verification guide, the sprint tick.
+  `docs/LEARNINGS.md` only if a failure mode surprises during the step.
+
+### Checks
+- **ANTI-PATTERNS:** none violated. The list is theme-shaped (ACF groups and
+  blocks, `service-city`, city branching, `assets/`, ops directories, post-type
+  registration, `mu-plugins/`, Kyiv-only changes on `master`, CF7 ids); this
+  step changes three plugin classes and one field description. The one rule that
+  reaches the plugin — no globally installed tooling — is untouched: no
+  dependency is added, so core rule 4 is not in play either.
+- **Docs vs reality:** four mismatches, all settled here:
+  1. **Where the retry is scheduled.** The step says "In `Runner`: … schedule
+     `wp_schedule_single_event`"; the plugin's `CLAUDE.md` says `Scheduler` is
+     the only class that schedules or clears events. The area convention wins on
+     placement — `Runner` asks, `Scheduler` books — and the behaviour the step
+     describes is unchanged.
+  2. **`wp_clear_scheduled_hook` does not clear an event with arguments.** Step 1
+     shipped `Scheduler::clear()` with it, which was right while nothing carried
+     arguments and stops being right in task 2; core is explicit
+     (`wp-includes/cron.php`), and `wp_unschedule_hook()` is the function that
+     clears a hook whatever its events carry. Fixed in the task that creates the
+     situation, not left for `uninstall.php` in Step 3 — which will need the same
+     function.
+  3. **`max_attempts` counts attempts, not retries.** The step's formula
+     (`attempt < max_attempts`) and DECISIONS ("a maximum of 3 attempts") agree;
+     the field description shipped in Step 3 and one line of `readme.txt` say
+     "how often a failed report is tried again", which is one less. The formula
+     wins and the two sentences are corrected in task 3.
+  4. **A retry cannot re-read a day that has passed.** The step asks the retry
+     to use "the date it was scheduled with"; FEATURE.md → Invariants and
+     DECISIONS "Report content and comparison baselines" fix every GA date range
+     as relative, resolved in the property's zone. Absolute ranges would reopen
+     a fixed decision, so the date is what the run reports **about** — the log
+     row and the notice — and a retry that finds the day gone ends the chain
+     instead of sending another day's numbers under yesterday's date.
+  Two observations that change no task: a `daily` event fires every 86 400 s, so
+  after a DST change the report arrives an hour off local time until the
+  settings are saved again — re-anchoring is in neither this step nor DECISIONS
+  and belongs to the retro or an `/adhoc`, and it is unrelated to the retry
+  chain, whose events are single ones an hour out; and screen `Settings` says
+  nothing about a pending retry, which no step asks for — the run log's `retry`
+  rows and `wp cron event list` are where it shows.
+- **Design:** n/a — DECISIONS "No UI design phase; message format and
+  configurable blocks" forbids a design phase and `docs/DESIGN.md` changes for
+  this feature; the one screen string this step corrects is recorded in
+  `FEATURE.md` → UI, which already describes the Schedule section.
+- **Check command:** `bin/check.sh` (`docs/TECH-STACK.md` → Check command) —
+  exists and is green on `master` right now: `OK (238 tests, 748 assertions)`,
+  PHPCS + PHPStan level 8 clean, 108 theme files linted.
+- **Not locally verifiable:** the **arrival** of the failure notice in a real
+  chat, and a real 429. Everything else the step promises is verifiable on the
+  dev site with nothing configured: `max_attempts` = 2, a broken property id,
+  `ddev wp cron event run gatb_daily_report` → one `failed` row plus a
+  `gatb_retry_report` event an hour out carrying the date (`wp cron event list`),
+  `ddev wp cron event run gatb_retry_report` → a second `failed` row, trigger
+  `retry`, the counter back at 0 and no third event. With no bot token that last
+  row also proves the best-effort branch, because the notice itself is refused
+  and says so in the same row. Seeing the notice arrive needs the bot token and
+  chat id that no install has yet — the same gap Step 1 recorded, closed by Step
+  4 and the sprint boundary. A real 429 cannot be provoked (one bot, one message
+  a day), so the fixture stays `*.written.json` per `docs/TESTING.md`.
+
+### Questions / ambiguities
+
+1. **Does a failed *Send now* start the retry chain?** The step says "on
+   {exception} … schedule … while `attempt < max_attempts`" without naming a
+   trigger, and DECISIONS says "the run schedules a retry"; both were written
+   about the scheduled report, and `Runner` has three triggers.
+   - **Only `cron` and `retry` (recommended).** *Send now* stays what DECISIONS
+     calls it, "a manual, logged action": the administrator is looking at the
+     screen, gets the mapped reason as a notice and can press again. Two
+     concrete reasons beyond taste: a manual run bypasses the date guard, so a
+     retry booked by one for a day already delivered would wake up an hour later,
+     hit the guard, log nothing and leave the counter raised for the next real
+     day; and an administrator testing a wrong property id three times would
+     have the plugin tell the owner's chat that the day could not be reported.
+     Failures still count — `gatb_state.attempt` keeps rising exactly as it does
+     today, so a day that failed by hand and then by cron reaches its last
+     attempt sooner, which is true rather than convenient. Tasks: one condition
+     on the trigger in `Runner` and test 14.
+   - **Every run.** The literal reading of the step. Tasks: the condition and
+     test 14 go; `AdminSendNowTest` gains a `wp_schedule_single_event` stub, and
+     its refused-send test then books a retry the assertion has to allow for.
+   Recommendation: **only `cron` and `retry`**.
+   *Resolved: approved as recommended — only a `cron` or `retry` run books a
+   retry or sends the failure notice; a failed manual run counts its attempt
+   and is logged, exactly as it is today.*
