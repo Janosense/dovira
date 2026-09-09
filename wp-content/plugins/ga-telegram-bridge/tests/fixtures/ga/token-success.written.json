@@ -1,0 +1,9 @@
+{
+    "status": 200,
+    "body": {
+        "access_token": "ya29.EXAMPLE-ACCESS-TOKEN-FOR-TESTS-ONLY",
+        "expires_in": 3599,
+        "token_type": "Bearer"
+    },
+    "ms": 185
+}

@@ -525,3 +525,259 @@ applies, and `sanitize_settings` is that logic.
 
 ### Questions / ambiguities
 none
+
+## Plan — Sprint 1, Step 4: GoogleAuth, GaClient and "Check GA"   (status: approved, in progress)
+
+### Branch
+`ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
+(git model in root `CLAUDE.md` is *simple*: task branch → `master`; `SPRINT-1.md` → Branch
+names this same branch. Deleted at the close of Step 3 — `/do-step` re-creates it from `master`.)
+
+### Tasks (ordered)
+
+- [x] **1. `GoogleAuth`: sign the JWT, exchange it, cache the token** (+ its tests, the first
+  fixtures and the TESTING.md fixtures rule, same commit) →
+  `feat(ga-telegram-bridge): authenticate against Google with the service-account key`
+
+  `src/GoogleAuth.php` and `src/GoogleAuthException.php`. Everything is taken from what the
+  Step 2 spike actually observed (`docs/LEARNINGS.md` → "Sprint 1 spike findings"), not from
+  the Google documentation.
+
+  - `parse_service_account( string $json ): array` — decodes and requires non-empty
+    `client_email`, `private_key`, `token_uri`; throws `GoogleAuthException` with a readable
+    reason otherwise. **No newline repair on `private_key`** — the spike proved
+    `json_decode()` already yields real newlines and `str_replace( '\\n', "\n", … )` would
+    corrupt the key.
+  - `build_jwt( array $key, int $now ): string` — header `{"alg":"RS256","typ":"JWT"}`; claims
+    `iss` = `client_email`, `scope` = `https://www.googleapis.com/auth/analytics.readonly`,
+    `aud` = the key's `token_uri`, `iat` = `$now`, `exp` = `$now + 3600`; base64url of the two
+    parts, signed with `openssl_sign( …, OPENSSL_ALGO_SHA256 )` over
+    `openssl_pkey_get_private()`. `$now` is a parameter so the claims are testable without
+    freezing the clock.
+  - `access_token(): string` — returns the transient `gatb_google_access_token` when it holds
+    one; otherwise `wp_remote_post( 'https://oauth2.googleapis.com/token', … )` with
+    `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer`, `assertion` = the JWT, timeout
+    **15 s**, and caches the token for `expires_in - 60` seconds. Only the access token goes
+    into the transient — never the key, never the JWT.
+  - `forget_token(): void` — deletes the transient; called by `GaClient` when Google refuses a
+    token (401), so the next attempt fetches a fresh one. No automatic retry: the step does not
+    ask for one.
+  - `token_error_message( int $status, $body ): string` — the token endpoint's own error shape
+    (`{"error": "...", "error_description": "..."}`), which is **not** the Data API's shape.
+    A tampered signature is `400 invalid_grant / "Invalid JWT Signature."` — not 401.
+    The message names what to fix and **never contains the key, the JWT or the token**.
+  - `src/Plugin.php` is not touched by this task: nothing is hooked yet.
+
+  Fixtures land here (`tests/fixtures/ga/`, one directory as `docs/TESTING.md` names):
+  `token-success.json` and `token-error-tampered-signature.json`. The tampered-signature body is
+  the one the spike recorded; the success body is **written by hand** — the spike deliberately
+  printed only the token's length and prefix, so no real token exists to record. `TESTING.md` →
+  Fixtures gains that distinction in this commit (recorded vs. written from documentation).
+
+- [ ] **2. `GaClient`: the Data API calls and one mapped error per failure** (+ its tests, the
+  recorded fixtures and the ARCHITECTURE integrations row, same commit) →
+  `feat(ga-telegram-bridge): read the GA4 Data API through a minimal client`
+
+  `src/GaClient.php` and `src/GaClientException.php`.
+
+  - `batch_run_reports( array $requests ): array` —
+    `POST https://analyticsdata.googleapis.com/v1beta/properties/{id}:batchRunReports`,
+    bearer token from `GoogleAuth::access_token()`, JSON body via `wp_json_encode`, timeout
+    **20 s**, returns the decoded `reports` array. (Step 6 composes the requests; this step only
+    ships the call and its parsing.) Named `batch_run_reports`, not `batchRunReports` — see
+    Checks → Docs vs reality.
+  - `check_connection(): array` — the connectivity check behind the button, shape decided by the
+    open question below. Recommended form: one `runReport` with `limit 1`, metric `activeUsers`,
+    date range `yesterday`, returning `property_id`, `time_zone` and `currency_code` read from
+    the response's own `metadata` (the spike showed `Europe/Kiev` / `USD`), so the administrator
+    can recognise the property they configured.
+  - `client_error_message( int $status, $body ): string` — the Data API shape
+    (`{"error": {"status": …, "message": …}}`), one message per case, all observed in Step 2:
+    **400 `INVALID_ARGUMENT`** (the property id is not a property), **403 `PERMISSION_DENIED`**
+    (the service account has no access — the message names the account's `client_email`, which
+    is an identifier, not a secret, and is exactly what the user must paste into GA's access
+    management), **401 `UNAUTHENTICATED`** (token refused → `GoogleAuth::forget_token()`),
+    **429 `RESOURCE_EXHAUSTED`** (quota), **5xx** (Google is unavailable), and a `WP_Error` from
+    `wp_remote_post` (the host could not reach Google at all).
+  - Fixtures: the five responses the spike recorded, copied unchanged from
+    `~/dovira-gatb-spike/dumps/` — verified today to contain **no property id, no account
+    address and no token**, so nothing needs scrubbing — plus `error-quota-exceeded.json`,
+    written from Google's documented 429 body because the spike could not provoke one.
+
+- [ ] **3. "Check GA" on screen `Settings`** (+ its tests, same commit) →
+  `feat(ga-telegram-bridge): check the Google connection from the settings screen`
+
+  `src/Admin.php`, `src/Plugin.php`.
+
+  - The Settings API form posts to `options.php` and cannot contain a second form, so the button
+    lives in its own `<form action="admin-post.php" method="post">` in a **Connection** section
+    printed by `Admin::render_page()` below the settings form: a hidden `action=gatb_check_ga`,
+    `wp_nonce_field( 'gatb_check_ga' )` and a secondary submit button.
+  - `Plugin::boot()` registers `admin_post_gatb_check_ga` → `Admin::handle_check_ga()`.
+  - `handle_check_ga()`: `check_admin_referer( 'gatb_check_ga' )`, then
+    `current_user_can( 'manage_options' )` or `wp_die`; refuses early with a readable message
+    when the property id or the key is not configured yet; otherwise calls
+    `GaClient::check_connection()` and turns the outcome into
+    `add_settings_error( 'gatb_settings', 'gatb_check_ga', $message, 'success'|'error' )`.
+    The result survives the redirect the WordPress way — `set_transient( 'settings_errors',
+    get_settings_errors(), 30 )` then `wp_safe_redirect()` back to
+    `options-general.php?page=gatb-settings&settings-updated=true` — which is the only condition
+    under which `get_settings_errors()` reads that transient (checked in
+    `wp-admin/includes/template.php:1928`). The existing `settings_errors( 'gatb_settings' )`
+    call on the screen then prints it; no new notice plumbing.
+  - The button is always enabled: an unconfigured install gets a sentence telling it what is
+    missing, which is more use than a dead control.
+
+### Files to create/change
+- `wp-content/plugins/ga-telegram-bridge/src/GoogleAuth.php`, `src/GoogleAuthException.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/src/GaClient.php`, `src/GaClientException.php` — new (task 2)
+- `wp-content/plugins/ga-telegram-bridge/src/Admin.php` — Connection section + `handle_check_ga()` (task 3)
+- `wp-content/plugins/ga-telegram-bridge/src/Plugin.php` — one hook, `admin_post_gatb_check_ga` (task 3)
+- `wp-content/plugins/ga-telegram-bridge/tests/bootstrap.php` — generates the throwaway RSA key pair once per run (measured: 32 ms for 2048 bits) and exposes it to the tests (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/GoogleAuthTest.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/GaClientTest.php` — new (task 2)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/AdminCheckGaTest.php` — new (task 3)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/PluginTest.php` — the new hook (task 3)
+- `wp-content/plugins/ga-telegram-bridge/tests/fixtures/ga/*.json` — 8 files (tasks 1 and 2)
+- `docs/TESTING.md` — Fixtures (task 1); `docs/ARCHITECTURE.md` — Integrations, the GA4 row (task 2)
+
+### Tests to write
+`GoogleAuthTest` — the signature is verified for real, never mocked (`docs/TESTING.md` → Never mocked):
+- the JWT has three base64url parts; its header decodes to `alg RS256`, `typ JWT`.
+- the claims are exactly `iss` = the key's `client_email`, `scope` = `analytics.readonly`,
+  `aud` = the key's `token_uri`, `exp` = `iat + 3600` — with `iat` the injected `$now`.
+- `openssl_verify( signing input, signature, public key, OPENSSL_ALGO_SHA256 )` returns 1 for the
+  JWT as built, and **0 after one byte of the signature is flipped** — the negative check that the
+  signing is real.
+- a key file without `private_key`, and one whose `private_key` is not a key, both raise
+  `GoogleAuthException`, and neither message contains any part of the input.
+- a cached transient short-circuits everything: `wp_remote_post` is never called.
+- a cache miss posts to `https://oauth2.googleapis.com/token` with
+  `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer`, a 15 s timeout, and caches the token
+  from `token-success.json` for `expires_in - 60` = 3539 s.
+- the tampered-signature fixture (400 `invalid_grant`) becomes a `GoogleAuthException` whose
+  message names the key as the thing to check and contains neither the JWT nor the key.
+
+`GaClientTest` — parsing runs on the recorded payloads, not on stubs:
+- `batch_run_reports` posts to `properties/{id}:batchRunReports` with the bearer header and a 20 s
+  timeout, and returns the four reports of `batch-run-reports-four-date-ranges.json`.
+- `check_connection` reads `metadata.timeZone` (`Europe/Kiev`) and `metadata.currencyCode` from
+  `run-report-active-users-yesterday.json`.
+- one test per recorded error → its mapped message and `GaClientException`: 400 bad property id,
+  403 no access (the message names the service account's address), 401 bad token (**and the
+  transient is deleted**), 429 quota, a 500 body, and a `WP_Error` from `wp_remote_post`.
+- no message of any of them contains the token, the key or the JWT.
+
+`AdminCheckGaTest` — the state the administrator sees after pressing the button:
+- the Connection section renders a form posting to `admin-post.php` with `action=gatb_check_ga`
+  and a nonce field.
+- a successful check registers a `success` notice naming the property id and its time zone; a
+  failing one registers an `error` notice carrying the mapped reason — asserted through
+  `add_settings_error`, which is what `settings_errors()` prints on the screen.
+- an unconfigured install (no property id, no key) is refused before any network call:
+  `wp_remote_post` is never reached.
+- a request without a valid nonce never calls Google.
+
+`PluginTest` — `boot()` registers `admin_post_gatb_check_ga`.
+
+Test-critical zones of the profile are untouched (no form pipeline, no price grouping, no
+`dovira/v1` route, no translate command); the plugin's own rule applies — the JWT, the parsers and
+the error mapping are pure logic and are all covered here.
+
+### Docs to update
+- `docs/TESTING.md` → Fixtures: the fixture directory is `tests/fixtures/ga/`; each file keeps the
+  spike's `{status, body, ms}` envelope so a test can rebuild a `wp_remote_post` response from it;
+  and a fixture that was **not** recorded (the token success body, the 429 quota body) says so in
+  its name and in this rule, because "recorded response" is the whole point of the convention.
+- `docs/ARCHITECTURE.md` → Integrations, the Google Analytics 4 row: replace *wired up in Sprint 1
+  Steps 4–6* with what is now true — `GoogleAuth` (RS256 JWT → token cached in
+  `gatb_google_access_token` for `expires_in - 60`), `GaClient` (`batch_run_reports`, the
+  connection check, 15 s / 20 s timeouts) and the failure behaviour (one mapped
+  `GoogleAuthException` / `GaClientException` per case, never carrying a secret; a 401 drops the
+  cached token).
+- Not updated, checked: `DATA-MODEL.md` — the transient `gatb_google_access_token` is already
+  described there as arriving in this step, and its shape (one token string) is what the section
+  says; `FEATURE.md` — Data and Interfaces already name the transient and the screen;
+  `DECISIONS.md` — no fixed decision is reopened *if the open question is answered as recommended*
+  (an answer of "enable the Admin API" would change the integration surface and would need one);
+  `DOMAIN.md`, `CONTRACTS.md` (none kept), `DESIGN.md` (see below), `TECH-STACK.md` (no dependency
+  — the client is `wp_remote_post` and `openssl`, per DECISIONS "Google access via a service
+  account, own minimal API client").
+
+### Checks
+- **ANTI-PATTERNS:** none violated. Nothing here touches ACF, blocks, `service-city`, CF7 ids,
+  `assets/`, `mu-plugins/`, post-type registration or per-city ids; no tool is installed; no
+  business value is hardcoded (the property id, the key and the blocks are all settings). The one
+  rule this step leans on hardest is core rule 7 — every message asserted to be free of key,
+  token and JWT.
+- **Docs vs reality:** three items, one of which is the open question below.
+  1. **The Google Analytics Admin API is not enabled in the Cloud project.** Verified today with
+     a read-only probe using the existing service-account key: the token exchange succeeds with
+     the `analytics.readonly` scope, and `GET analyticsadmin.googleapis.com/v1beta/properties/533779496`
+     answers **403 `PERMISSION_DENIED`**, `reason: SERVICE_DISABLED`, "Google Analytics Admin API
+     has not been used in project 255847018106 before or it is disabled." The *scope* the step told
+     me to verify is fine (`properties.get` accepts `analytics.readonly`); the *service* is off.
+     The step's fallback is written for a scope problem, so this needs your decision — below.
+  2. `SPRINT-1.md` names the client's methods in camelCase (`batchRunReports`, `getPropertyName`).
+     WPCS as configured refuses that (`WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid`,
+     verified at Step 3), and WPCS gates every commit, so the code says `batch_run_reports`.
+     Resolution: the gate wins over the sprint's prose; this is naming shorthand, not a contract,
+     and no doc changes.
+  3. Step 2's `spike/` and the service-account key are still on disk, untracked and PHPCS-excluded;
+     the dumps they produced are in `~/dovira-gatb-spike/dumps/` and become this step's fixtures.
+     Removing both is a Definition-of-Done item at the sprint boundary, not a task here.
+  Also still open from Step 3's close, and unchanged by this step: `docs/DESIGN.md` → Screens does
+  not list the plugin's screens, because DECISIONS forbids DESIGN.md changes for this feature —
+  for the sprint retro.
+- **Design:** n/a — DECISIONS "No UI design phase": the button is a stock `submit_button()` on the
+  existing screen `Settings` (`FEATURE.md` → UI), whose *check ok* and *check error* states this
+  step is the first to reach.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) — green on `master` right
+  now: PHPCS over 10 plugin files, PHPStan level 8, 62 tests / 151 assertions, 108 theme files.
+- **Not locally verifiable:** the **429 quota** mapping. Fifteen sequential calls in Step 2 all
+  returned 200 and one PHP process cannot reach the concurrency limit, so its fixture is written
+  from Google's documentation rather than recorded; the one real run that would verify it is a
+  genuine quota breach, which at ~6 of 200 000 daily tokens will not happen. Everything else in
+  this step is verifiable on the dev site with your real key.
+
+### Questions / ambiguities
+
+**1. "Check GA" cannot show the property's name unless you enable a second Google API. Which way?**
+
+The step says: use the Admin API's `properties.get` to show the property name, *"verify the
+endpoint and scope in the step plan; if it needs the Admin scope, fall back to a `runReport` with
+`limit 1` as the connectivity check and show the property id"*. I verified both halves. The scope
+is fine — `properties.get` accepts the `analytics.readonly` scope we already request. But the
+**Admin API itself is switched off in your Cloud project** (probe output above), so the call fails
+with a 403 that has nothing to do with the property or the key.
+
+- **(a) Data API only — recommended.** No Admin API, no `get_property_name()`. `check_connection()`
+  runs one `runReport` with `limit 1` against the API you already enabled, and the notice reads
+  *"Google answered for property 533779496 — reporting time zone Europe/Kiev, currency USD."*
+  Tasks change only in that task 2 ships `check_connection()` instead of `get_property_name()`.
+  Why I recommend it: it is the fallback the step itself sanctions; the plugin must run on any
+  site (`CLAUDE.md` of the code area), and this keeps the setup to one API for every future
+  install; `GaClient` stays on one host, which is what `ARCHITECTURE.md` → Integrations and
+  DECISIONS "Google access via a service account, own minimal API client" describe; and the time
+  zone is a better confirmation than a name for the thing that actually matters — that "yesterday"
+  will be Kyiv's yesterday.
+- **(b) Enable the Admin API and show the name.** You open
+  `https://console.developers.google.com/apis/api/analyticsadmin.googleapis.com/overview?project=255847018106`,
+  press Enable, wait a few minutes. Task 2 then ships `get_property_name()` against
+  `analyticsadmin.googleapis.com/v1beta/properties/{id}` and the notice names the property
+  ("Dovira Kharkiv"), which is easier to recognise than an id. Cost: a second API to enable on
+  every install of the plugin, a second host in the integration row (ARCHITECTURE + a DECISIONS
+  entry, since it widens the "minimal client" decision), and one more error to map
+  (`SERVICE_DISABLED`, for the sites that skip it).
+- **(c) Both — try the Admin API, fall back to the Data API on 403/404.** Works everywhere and
+  shows the name where it can. I do not recommend it: it is roughly twice the code for the same
+  answer, and core rule 5 asks for no speculative layers.
+
+Recommendation: **(a)**. Nothing is lost that cannot be added later — if you enable the Admin API
+one day, showing the name is a small change to one method.
+
+**Resolved: approved as recommended — (a) Data API only.** No Admin API call and no
+`get_property_name()`: `GaClient::check_connection()` runs one `runReport` with `limit 1` and the
+notice names the property id with the reporting time zone and currency from the response's own
+`metadata`. The Admin API stays off; showing the property's display name remains a small change to
+one method if it is ever enabled.
