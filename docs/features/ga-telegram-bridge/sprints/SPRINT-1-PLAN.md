@@ -1030,7 +1030,7 @@ names this same branch. Deleted at the close of Step 5 — `/do-step` re-creates
   documented in FEATURE.md as *the normalized Report before rendering*, so what a filter receives
   has to be the finished numbers.
 
-- [ ] **2. `ReportBuilder`: six reports in two calls, and the parsing that puts them back together**
+- [x] **2. `ReportBuilder`: six reports in two calls, and the parsing that puts them back together**
   (+ its tests, the recorded fixtures and the TESTING.md line, same commit) →
   `feat(ga-telegram-bridge): build the daily report from the GA4 Data API`
 
