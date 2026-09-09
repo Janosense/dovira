@@ -19,6 +19,21 @@ Entry format:
 
 ---
 
+## 2026-09-09 — [ga-telegram-bridge] Two assumptions about the gate's own tools broke in Step 3
+<!-- Tooling findings rather than a harness defect, kept here because the next four steps write
+     many more tests and will meet both again. -->
+- **PHPUnit 12 does not read metadata from doc comments.** `@dataProvider` (and `@covers`,
+  `@group`, `@test`) are gone — the annotation is silently ignored and the test then fails with
+  `ArgumentCountError: Too few arguments`. Use the attributes instead:
+  `use PHPUnit\Framework\Attributes\DataProvider;` and `#[DataProvider( 'provider_name' )]`
+  between the docblock and the method. Cost one red run in Step 3; Steps 4, 6 and 7 are the
+  fixture-heavy ones.
+- **PHPCS progress output counts batches, not files, when `parallel` is on.** With
+  `<arg name="parallel" value="8"/>` the plugin's 10 files print as `5 / 5 (100%)`, which reads
+  like half the tree was skipped. It is not: `vendor/bin/phpcs -q --report=json` lists all ten,
+  and `--parallel=1` prints `10 / 10`. Do not "fix" a green gate on the strength of that number.
+- **Transferred to playbook:** n/a — project-technical findings, not a process defect.
+
 ## 2026-09-08 — [ga-telegram-bridge] A pathspec commit silently dropped every new file
 - **Incident:** The working tree carried staged deletions of `templates/*` made outside the session, so each task was committed with `git commit -- <paths>` to keep them out of the step's commits. For task 2 the new files had not been `git add`ed first: the commit succeeded but contained only the already-tracked plan file — the tooling commit had no tooling in it.
 - **Root cause:** The assumption that a pathspec commit picks up untracked files under those paths. It does not: it commits only what is already in the index. Nothing in the step protocol asks for a check of what a commit actually contains.

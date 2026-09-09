@@ -17,6 +17,12 @@ Entry format:
 
 ---
 
+## 2026-09-09 — [ga-telegram-bridge] Sprint 1 Step 3 — Settings and the admin page
+- Changed: two classes in the plugin — `Settings` (the option `gatb_settings`, created non-autoloaded by the activation hook: defaults, per-field validation, typed getters, the two secrets overridden by `GATB_GA_SERVICE_ACCOUNT_JSON` / `GATB_TELEGRAM_BOT_TOKEN`) and `Admin` (screen `Settings` under Settings → "GA → Telegram", Settings API, `manage_options`, four sections, no CSS or JS); 59 new unit tests, `docs/DATA-MODEL.md` gained the plugin's options section and `readme.txt` its configuration section.
+- Shared code: none touched. The plugin still references no theme code, option or hook; the only project-level files changed are docs.
+- Decisions: none new — no fixed decision was reopened. Two rules settled inside the tasks: an empty send time or attempt count keeps the stored value (unlike the four credentials, those two have no unset state), and each block checkbox is preceded by a hidden field so that unticking every block arrives as zeros rather than as nothing. Both are written into DATA-MODEL.md.
+- Open: `docs/DESIGN.md` → Screens is a registry that lists admin screens of `core`, but DECISIONS "No UI design phase" forbids DESIGN.md changes for this feature, so the plugin's `Settings` screen is not in it — for the sprint retro to settle. The staged `templates/*` deletions from outside the session are still in the working tree and in none of this step's commits.
+
 ## 2026-09-09 — [ga-telegram-bridge] Sprint 1 Step 2 — Spike: service account → GA4 Data API
 - Changed: no production code. `spike/` (gitignored, PHPCS-excluded) holds a throwaway probe that ran the real path — RS256 JWT → token exchange → `runReport` / `batchRunReports` — against the Kharkiv property 533779496; six recorded responses kept for Step 4's fixtures, findings written to `docs/LEARNINGS.md`.
 - Shared code: none touched. The only tracked changes are two ignore/exclude lines in the plugin and the LEARNINGS entry.

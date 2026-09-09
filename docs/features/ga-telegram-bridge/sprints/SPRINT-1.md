@@ -43,7 +43,7 @@ schedule yet. The project has a check command that gates every commit.
 - **Docs to update:** `docs/LEARNINGS.md` (the pitfalls found); `docs/DECISIONS.md` only if a finding contradicts the client decision (e.g. `openssl` cannot sign the key on the target host) — raise before deviating.
 - **Depends on:** Step 1
 
-### [ ] Step 3 — Settings and the admin page
+### [x] Step 3 — Settings and the admin page
 - **Tasks:**
   - `Settings` class: option `gatb_settings` (autoload `no`), defaults, typed getters, sanitize callback (property id digits only; JSON must parse and contain `client_email`, `private_key`, `token_uri`; chat id `-?\d+`; time `HH:MM`; max attempts 1–10; blocks array of the five keys, `visitors` forced on), constant overrides `GATB_GA_SERVICE_ACCOUNT_JSON` / `GATB_TELEGRAM_BOT_TOKEN` (getter returns the constant, field rendered read-only with "set in configuration").
   - `Admin` class: Settings API page under Settings → "GA → Telegram", capability `manage_options`, nonces, admin notices for validation errors, all strings through `__()` with text domain `ga-telegram-bridge`.

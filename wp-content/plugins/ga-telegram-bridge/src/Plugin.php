@@ -19,6 +19,9 @@ final class Plugin {
 	 */
 	public static function boot(): void {
 		add_action( 'init', array( self::class, 'load_textdomain' ) );
+		add_action( 'admin_init', array( Settings::class, 'register' ) );
+		add_action( 'admin_menu', array( Admin::class, 'add_page' ) );
+		add_action( 'admin_init', array( Admin::class, 'add_fields' ) );
 	}
 
 	/**
@@ -33,7 +36,8 @@ final class Plugin {
 	}
 
 	/**
-	 * Activation callback: refuses activation when a requirement is missing.
+	 * Activation callback: refuses activation when a requirement is missing and
+	 * otherwise creates the settings option.
 	 *
 	 * WordPress passes $network_wide to activation callbacks; the plugin has no
 	 * network behaviour and ignores it.
@@ -41,17 +45,19 @@ final class Plugin {
 	public static function activate(): void {
 		$message = self::activation_blocked_message( extension_loaded( 'openssl' ) );
 
-		if ( null === $message ) {
-			return;
+		if ( null !== $message ) {
+			deactivate_plugins( plugin_basename( GATB_PLUGIN_FILE ) );
+
+			wp_die(
+				esc_html( $message ),
+				'',
+				array( 'back_link' => true )
+			);
 		}
 
-		deactivate_plugins( plugin_basename( GATB_PLUGIN_FILE ) );
-
-		wp_die(
-			esc_html( $message ),
-			'',
-			array( 'back_link' => true )
-		);
+		// Created here so that it is never autoloaded: a settings save through
+		// options.php would create it with the default autoload instead.
+		add_option( Settings::OPTION, Settings::defaults(), '', false );
 	}
 
 	/**
