@@ -4,6 +4,8 @@
 
 	<file>.</file>
 	<exclude-pattern>/vendor/*</exclude-pattern>
+	<!-- Throwaway spike probes (Sprint 1 Step 2): untracked and deleted at close. -->
+	<exclude-pattern>/spike/*</exclude-pattern>
 
 	<arg name="extensions" value="php"/>
 	<arg name="basepath" value="."/>

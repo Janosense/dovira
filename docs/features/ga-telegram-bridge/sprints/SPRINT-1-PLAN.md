@@ -194,3 +194,140 @@ price grouping and no CLI command, so none of the profile's test-critical zones 
 
 ### Questions / ambiguities
 none
+
+---
+
+## Plan — Sprint 1, Step 2: Spike — service account → GA4 Data API (timeboxed, throwaway)   (status: approved, in progress)
+
+### Branch
+`ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
+(the sprint's branch from `SPRINT-1.md`; it was merged and deleted at the close of Step 1,
+so `/do-step` recreates it from `master`.)
+
+### Prerequisites — the step cannot be verified without these
+The sprint's Risks section calls this "Day 1" work and it is **yours**, not the step's:
+1. A Google Cloud project with the **Google Analytics Data API** enabled.
+2. A **service account** in that project with a downloaded **JSON key**.
+3. That service account's e-mail granted **Viewer** on the Kharkiv GA4 property.
+4. The key file placed at `wp-content/plugins/ga-telegram-bridge/spike/service-account.json`
+   and the Kharkiv **property id** (9 digits, GA4 Admin → Property details) to hand.
+
+Without 1–4 `/do-step` can write the probe but cannot observe a single exit criterion; it
+would stop after task 1 and report. Task 1 commits the ignore rules before anything else, so
+the key is out of git's reach from the first moment — but do not `git add` that path yourself.
+
+### Timebox
+One session, as the step fixes. A probe that cannot be made to fire inside the timebox is
+recorded as *not observed* with the documented behaviour next to it — never faked, never
+extended into a second session.
+
+### Tasks (ordered)
+- [x] **Task 1 — a spike sandbox git and the gate both ignore.** Add `spike/` to
+  `wp-content/plugins/ga-telegram-bridge/.gitignore`, add `<exclude-pattern>/spike/*</exclude-pattern>`
+  to `phpcs.xml.dist`, then create the untracked `spike/` directory with its own belt-and-braces
+  `.gitignore` (`*`). The PHPCS exclusion is not optional: `phpcs.xml.dist` scans `<file>.</file>`
+  with only `/vendor/*` excluded, so an unpolished throwaway probe would turn `bin/check.sh` red
+  (Step 1 proved the scan reaches new files — the deliberate `src/TempViolation.php` was caught there).
+  → commit `chore(ga-telegram-bridge): keep the Sprint 1 spike out of git and out of the gate`
+- [ ] **Task 2 — the probe and the happy path.** Write `spike/ga-probe.php` (untracked) and run
+  `happy`: build the RS256 JWT, sign it with `openssl_sign( …, OPENSSL_ALGO_SHA256 )`, exchange it
+  at `https://oauth2.googleapis.com/token`, then `POST …/properties/{id}:runReport` for
+  `activeUsers` over `yesterday`. Print the number, the token's `expires_in`, and the shape of
+  what came back. Never print the key, the token or any part of either — lengths and prefixes only.
+  → no commit (`spike/` is gitignored by design); evidence = the probe's output in the close report
+- [ ] **Task 3 — the remaining observations.** Run the other probes and keep their raw JSON under
+  `spike/dumps/` for Step 4's fixtures: `batch` (`batchRunReports` with the four users date ranges
+  of DECISIONS "Report content and comparison baselines" — `yesterday`, `8daysAgo`–`2daysAgo`,
+  `28daysAgo`–`yesterday`, `56daysAgo`–`29daysAgo`), `errors` (bad property id; a property the
+  service account was never granted; a garbage bearer token on the Data API; a tampered JWT
+  signature at the token endpoint), `skew` (`iat` +300 s and −3600 s), `quota` (a rapid sequential
+  burst — best effort, see Timebox).
+  → no commit; evidence = the dumps and the close report
+- [ ] **Task 4 — record the findings.** Write the pitfalls and exact error shapes into
+  `docs/LEARNINGS.md`; touch `docs/DECISIONS.md` only if a finding contradicts a fixed decision —
+  and then raise it before deviating, never in silence.
+  → commit `docs(ga-telegram-bridge): record the GA4 service-account spike findings`
+
+Commits use explicit pathspecs after `git add`, per the LEARNINGS entry of Step 1; the
+`templates/*` deletions staged in your working tree stay out of this step's commits too.
+
+### Files to create/change
+**Tracked (2 commits total)**
+- `wp-content/plugins/ga-telegram-bridge/.gitignore` — `+ spike/`
+- `wp-content/plugins/ga-telegram-bridge/phpcs.xml.dist` — `+ <exclude-pattern>/spike/*</exclude-pattern>`
+- `docs/LEARNINGS.md` — the findings entry (task 4)
+- `docs/DECISIONS.md` — only on a contradiction, raised first
+- `docs/features/ga-telegram-bridge/sprints/SPRINT-1-PLAN.md` — checkboxes
+
+**Untracked, deleted at close**
+- `spike/.gitignore` (`*`), `spike/service-account.json` (yours, never committed),
+  `spike/config.local.php` (returns `key_path`, `property_id`, and the id used for the
+  no-access probe), `spike/ga-probe.php`, `spike/dumps/*.json`.
+
+`spike/ga-probe.php` takes the probe name as a positional argument — `wp eval-file <file> [<arg>…]`
+puts them in `$args` (verified against `ddev wp help eval-file`) — so one file serves all five probes:
+```bash
+ddev wp eval-file wp-content/plugins/ga-telegram-bridge/spike/ga-probe.php happy
+ddev wp eval-file wp-content/plugins/ga-telegram-bridge/spike/ga-probe.php batch
+ddev wp eval-file wp-content/plugins/ga-telegram-bridge/spike/ga-probe.php errors
+ddev wp eval-file wp-content/plugins/ga-telegram-bridge/spike/ga-probe.php skew
+ddev wp eval-file wp-content/plugins/ga-telegram-bridge/spike/ga-probe.php quota
+```
+It calls Google through `wp_remote_post` with explicit timeouts — the same door `GoogleAuth` and
+`GaClient` will use in Step 4, so what the spike learns about timeouts, redirects and body shapes
+transfers instead of being an artefact of `curl`.
+
+### What each probe must answer (the step's exit criteria)
+| Probe | Recorded |
+|---|---|
+| `happy` | access token obtained; `activeUsers` for yesterday; how `private_key` survives `json_decode` → `openssl_pkey_get_private()` (the newline question); `expires_in` |
+| `batch` | the `batchRunReports` response shape with four date ranges: whether the `dateRange` dimension must be requested explicitly, the `date_range_0..3` values, and the order of `reports[]` |
+| `errors` | exact HTTP status + `error.status` / `error.message` body for: bad property id (expected 400), a property the account cannot read (expected 403 `PERMISSION_DENIED`), an invalid bearer token (expected 401), a tampered JWT at the token endpoint (Google answers the token endpoint with 400 `invalid_grant`, not 401 — the step's "401" is the label, the observation is what counts) |
+| `skew` | how much clock skew Google tolerates on `iat` / `exp` |
+| `quota` | the status of a quota error — a single PHP process makes sequential calls and will most likely *not* reach the concurrency quota, so the honest outcome is "not observed; Google documents HTTP 429 `RESOURCE_EXHAUSTED`", recorded as such |
+
+### Tests to write
+None — the step says so explicitly, and the plugin gains no committed code here. The spike is
+throwaway; its recorded responses become `tests/fixtures/ga/*.json` in Step 4 (`docs/TESTING.md`
+→ Fixtures), which is why task 3 keeps the raw dumps instead of only printing them. `bin/check.sh`
+must still exit 0 on every commit of this step — task 1 is what makes that true while `spike/` exists.
+
+### Docs to update
+- `docs/LEARNINGS.md` — the GA4 pitfalls and the exact error shapes (task 4).
+- `docs/DECISIONS.md` — only if a finding contradicts a fixed decision of the sprint (e.g. OpenSSL
+  cannot sign the key on the target host); raise it before deviating.
+
+### Checks
+- **ANTI-PATTERNS:** none violated. No global tool install (nothing is installed at all); no
+  runtime-loaded code in `temp-data/`, `reports/` or `_to_delete/`; no theme file, block, field
+  group, post type or CF7 id touched; no per-city value on `master`; and core rule 7 is held by
+  keeping the key out of git and out of every printed line.
+- **Docs vs reality:**
+  - The step says the key JSON is read "from a local file **outside the repo**". It cannot be:
+    `ddev wp eval-file` runs inside the web container, which mounts only the project — I verified
+    `/Users` does not exist in there and `df` shows just `/var/www`. Resolution taken: the key
+    lives at `spike/service-account.json`, **inside the project but outside git** (`spike/` in the
+    plugin's `.gitignore` plus a `*` `.gitignore` inside the directory). The intent — never
+    committed, never deployed — holds, and the sprint's Definition of Done check (`git log -p` for
+    the JSON key) stays clean. The alternatives lose more than they gain: running the probe on host
+    PHP drops the WordPress HTTP API the real client will use, and mounting an extra host volume
+    means committing DDEV config for a throwaway.
+  - `docs/LEARNINGS.md` describes itself in its header comment as a log of *process* defects, while
+    this step routes *technical* GA pitfalls there; root `CLAUDE.md` describes the file more broadly
+    ("when something went wrong before — check if it's a known failure mode"). Following the step:
+    the findings go there as a clearly labelled technical entry.
+  - The spike must **survive** `/do-step` — your manual verification is running it yourself. Deleting
+    `spike/` is a closing action, and before deleting it `/close-step` moves `spike/dumps/` to
+    `~/dovira-gatb-spike/` (outside the repo), because Step 4's fixtures are made from those dumps.
+  - Nothing else: `bin/check.sh` exists and exits 0 on `master`, the plugin is at the state Step 1
+    left it, and no doc claims a GA or Telegram call already works (both integration rows in
+    ARCHITECTURE are marked *wired up in Steps 4–6*).
+- **Design:** n/a — no screen; the step adds no UI.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) — exists, green on `master`.
+- **Not locally verifiable:** every exit criterion of this step. There is no offline substitute for
+  a real Google service account, a real property and real traffic data — the one real run is yours:
+  `ddev wp eval-file …/ga-probe.php happy` against the Kharkiv property, with the number compared to
+  GA4 → Reports for the same day. The quota status may legitimately end as *documented, not observed*.
+
+### Questions / ambiguities
+none
