@@ -229,13 +229,13 @@ extended into a second session.
   with only `/vendor/*` excluded, so an unpolished throwaway probe would turn `bin/check.sh` red
   (Step 1 proved the scan reaches new files — the deliberate `src/TempViolation.php` was caught there).
   → commit `chore(ga-telegram-bridge): keep the Sprint 1 spike out of git and out of the gate`
-- [ ] **Task 2 — the probe and the happy path.** Write `spike/ga-probe.php` (untracked) and run
+- [x] **Task 2 — the probe and the happy path.** Write `spike/ga-probe.php` (untracked) and run
   `happy`: build the RS256 JWT, sign it with `openssl_sign( …, OPENSSL_ALGO_SHA256 )`, exchange it
   at `https://oauth2.googleapis.com/token`, then `POST …/properties/{id}:runReport` for
   `activeUsers` over `yesterday`. Print the number, the token's `expires_in`, and the shape of
   what came back. Never print the key, the token or any part of either — lengths and prefixes only.
   → no commit (`spike/` is gitignored by design); evidence = the probe's output in the close report
-- [ ] **Task 3 — the remaining observations.** Run the other probes and keep their raw JSON under
+- [x] **Task 3 — the remaining observations.** Run the other probes and keep their raw JSON under
   `spike/dumps/` for Step 4's fixtures: `batch` (`batchRunReports` with the four users date ranges
   of DECISIONS "Report content and comparison baselines" — `yesterday`, `8daysAgo`–`2daysAgo`,
   `28daysAgo`–`yesterday`, `56daysAgo`–`29daysAgo`), `errors` (bad property id; a property the
@@ -243,7 +243,7 @@ extended into a second session.
   signature at the token endpoint), `skew` (`iat` +300 s and −3600 s), `quota` (a rapid sequential
   burst — best effort, see Timebox).
   → no commit; evidence = the dumps and the close report
-- [ ] **Task 4 — record the findings.** Write the pitfalls and exact error shapes into
+- [x] **Task 4 — record the findings.** Write the pitfalls and exact error shapes into
   `docs/LEARNINGS.md`; touch `docs/DECISIONS.md` only if a finding contradicts a fixed decision —
   and then raise it before deviating, never in silence.
   → commit `docs(ga-telegram-bridge): record the GA4 service-account spike findings`
