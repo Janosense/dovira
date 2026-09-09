@@ -1453,3 +1453,231 @@ already names `MessageRenderer` among the things that are never mocked.
 
 ### Questions / ambiguities
 none
+
+---
+
+## Plan — Sprint 1, Step 8: "Send now" and RunLog   (status: implemented, awaiting close)
+
+### Branch
+`ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
+(git model in root `CLAUDE.md` is *simple*: task branch → `master`; `SPRINT-1.md` → Branch
+names this same branch. Deleted at the close of Step 7 — `/do-step` re-creates it from `master`.)
+
+### Tasks (ordered)
+
+- [x] **1. `RunLog`: what has been sent, and what happened when** (+ its tests and the
+  DATA-MODEL sections that describe the two options, same commit) →
+  `feat(ga-telegram-bridge): record what each run did`
+
+  `src/RunLog.php` owns both rows the plugin has left to create, and nothing else knows
+  their names (plugin `CLAUDE.md` → Data lists them; DECISIONS "Plugin structure, storage
+  and secrets" puts them behind one module):
+
+  - **`gatb_log`** — a list of at most **30** entries, newest first, each
+    `{ time: int, trigger: 'cron'|'retry'|'manual', date: string, status: 'sent'|'failed', attempt: int, message: string }`.
+    `add()` prepends, slices to 30 and writes with `update_option( …, false )`, so the row
+    is created **non-autoloaded** on first write, like `gatb_settings`.
+    `entries()` reads it back, completing every entry, so a row edited by hand
+    cannot break the table.
+  - **`gatb_state`** — `{ last_report_date: string, attempt: int }` with
+    `last_report_date()`, `attempt()`, `mark_sent( string $date )` (records the day and
+    resets the counter to 0) and `mark_failed()` (leaves the day alone and adds one to the
+    counter). That is the whole of the idempotency state DECISIONS "Scheduling, retries and
+    idempotency on WP-Cron" describes; Sprint 2's scheduler reads the same two values.
+
+  Sprint 1 only ever writes `manual`, but the trigger is stored as given, because Sprint 2
+  writes `cron` and `retry` into the same list and the table has to be able to say which.
+
+  **Nothing secret reaches the log.** The only text stored is the mapped message of a
+  `TelegramException` / `GaClientException` / `GoogleAuthException`, and those are already
+  scrubbed of the bot token (Step 5) and never contain the key (Step 4). The tests assert
+  it again here, because this is the first code that writes such a message to the database.
+
+- [x] **2. `Runner`: build → render → send → log → state, and the date guard** (+ its tests
+  and the ARCHITECTURE data flow, same commit) →
+  `feat(ga-telegram-bridge): run the daily report from end to end`
+
+  `src/Runner.php`, one public entry point:
+  `run( string $trigger, bool $bypass_date_guard = false ): ?array` — it returns the log
+  entry it wrote, or `null` when the date guard stopped the run before anything happened.
+  The caller (this step's button, Sprint 2's cron callback) needs to know both what
+  happened and what to say about it, and the entry already carries exactly that.
+
+  The chain, in order:
+  1. `ReportBuilder::build()`. A `GaClientException` or `GoogleAuthException` here is
+     logged as `failed` and the run ends: Google is where most failures will happen, and a
+     day that could not be read must not look like a day with no visitors.
+  2. **The date guard.** `RunLog::last_report_date() === $report->date` and not bypassed →
+     return `null`, write nothing. It is checked **after** the build, not before, because
+     the day a report is about is the property's day and that is only known from Google's
+     answer (FEATURE.md invariant; `Report::$time_zone`). The cost is one wasted pair of
+     calls on a duplicate cron fire — about 2 of the 200 000 daily tokens the Step 2 spike
+     measured — and the alternative, storing the property's time zone to guess the date
+     first, is a second copy of the truth.
+  3. `MessageRenderer::render( $report )` — nothing can fail here that is worth catching.
+  4. `TelegramClient::send_message( Settings::telegram_chat_id(), $html )`. A
+     `TelegramException` is logged as `failed` with its mapped message, and `mark_failed()`
+     raises the attempt counter; **`last_report_date` is not touched**, so the day stays
+     unsent and Sprint 2's retry has something to retry.
+  5. Success → `mark_sent( $report->date )` and a `sent` entry.
+
+  Two details the step leaves open, decided here because each has one defensible answer:
+  - **The date of a failed build.** There is no report and therefore no property day, so the
+    entry records the day the site would call yesterday
+    (`ReportBuilder::report_date( wp_timezone_string(), time() )`). An empty column in the
+    log would be worse than a date that may be a few hours out on a property in another
+    zone.
+  - **The attempt number.** The entry records `RunLog::attempt() + 1` — the first attempt
+    after a success is 1, an attempt after a failure is 2, and so on. That is the counter
+    Sprint 2 compares with `max_attempts`; in Sprint 1 nothing resets it but a success.
+
+- [x] **3. *Send now* and the run log on screen `Settings`** (+ its tests, the readme and
+  the FEATURE.md UI line, same commit) →
+  `feat(ga-telegram-bridge): send the report on demand and show the run log`
+
+  - `src/Admin.php`: `public const SEND_NOW_ACTION = 'gatb_send_now';` and a fourth
+    `check_form()` in the **Connection** section, labelled *Send now*, described as really
+    sending the report to the configured chat, whatever has already been sent today.
+  - `handle_send_now()` — nonce, `manage_options`, `Runner::run( 'manual', true )`; the
+    returned entry becomes one notice, `success` or `error`, with the message the run
+    logged. The date guard is bypassed because a person pressed the button: that is what
+    DECISIONS calls "a manual, logged action".
+  - `render_log_section()` — `<h2>Run log</h2>` and a `wp-list-table widefat striped`
+    table under the Connection section: **Time** (`wp_date` in the site's zone), **Trigger**,
+    **Date**, **Status**, **Attempt**, **Message**, newest first. Empty state: one row
+    saying nothing has been sent yet. Every value is escaped; the message column carries
+    text the plugin wrote, not markup.
+  - `src/Plugin.php`: `add_action( 'admin_post_' . Admin::SEND_NOW_ACTION, … )`.
+  - `readme.txt`: the fourth button and the log, and the closing "Sending the report is
+    added in the following release" line goes — this is that release.
+
+  **The screen is opened before this step is called implemented** (LEARNINGS 2026-09-09,
+  "A screen was called finished without anyone opening it"): the button is pressed in a
+  browser, the message is confirmed to arrive in the chat, the new row is read in the
+  table, and each notice is counted — exactly one.
+
+### Files to create/change
+- `wp-content/plugins/ga-telegram-bridge/src/RunLog.php` — new (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/RunLogTest.php` — new (task 1)
+- `docs/DATA-MODEL.md` — the two option sections that today read "still to come" (task 1)
+- `wp-content/plugins/ga-telegram-bridge/src/Runner.php` — new (task 2)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/RunnerTest.php` — new (task 2)
+- `docs/ARCHITECTURE.md` — Data flows: the "Daily GA report" flow; and the two integration
+  rows lose their "logging in `gatb_log` … follows in Sprint 2" clause (task 2)
+- `wp-content/plugins/ga-telegram-bridge/src/Admin.php`, `src/Plugin.php` — the fourth
+  button, its handler and the log table (task 3)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/AdminSendNowTest.php` — new;
+  `AdminTest.php` adjusted (four buttons under the form, so five `submit_button` calls);
+  `PluginTest.php` — the fourth `admin_post_` action (task 3)
+- `wp-content/plugins/ga-telegram-bridge/readme.txt`,
+  `docs/features/ga-telegram-bridge/FEATURE.md` → UI (task 3)
+- No change to `Settings`, `GaClient`, `GoogleAuth`, `TelegramClient`, `ReportBuilder`,
+  `Report`, `Dynamics` or `MessageRenderer`: this step wires the parts that exist. No
+  `uninstall.php` and no scheduling — both are Sprint 2 (SPRINT-1.md → Out of scope).
+
+### Tests to write
+`RunLogTest`:
+- an entry is stored with every field of the shape above, newest first, and the option is
+  written **non-autoloaded**;
+- the 31st entry drops the oldest and keeps 30 — asserted on the boundary, not on 5;
+- `mark_sent()` records the day and resets the attempt counter; `mark_failed()` raises the
+  counter and leaves `last_report_date` untouched;
+- a message carrying a bot token is stored as the caller passed it and the caller is the
+  Runner — the negative check lives in `RunnerTest` below, where the token exists.
+
+`RunnerTest` — the whole chain against the recorded GA responses (docs/TESTING.md → Never
+mocked) with only `wp_remote_post` stubbed, one stub per host:
+- **a successful run** writes one `sent` entry with trigger `manual`, attempt 1, the
+  property's date — and `last_report_date` becomes that date;
+- **a refused send** (the recorded Telegram 401, and the written `chat not found`) writes a
+  `failed` entry with the mapped message, raises the attempt counter and leaves
+  `last_report_date` as it was;
+- **a build that fails** (the recorded `error-no-access-property.json`) writes a `failed`
+  entry, sends nothing to Telegram at all, and dates the entry with the site's yesterday;
+- **the date guard**: with `last_report_date` already equal to the property's day, a `cron`
+  run returns `null`, writes no entry and never calls Telegram; the same run with
+  `bypass = true` sends;
+- **the token is not in the log**: after a refused send with a token configured, no entry
+  contains it.
+
+`AdminSendNowTest`:
+- the Connection section prints a fourth form with action `gatb_send_now` and its own nonce;
+- the handler refuses without the nonce and without `manage_options`, and in both cases
+  nothing is sent and nothing is logged;
+- a successful run becomes one `success` notice, a failed run one `error` notice;
+- the handler passes `manual` and the bypass — asserted, because sending twice on purpose
+  is the button's whole point;
+- the table prints one row per entry with the six columns, escapes the message, and shows
+  the empty state when the log is empty.
+
+`AdminTest` — `submit_button` five times. `PluginTest` — the fourth `admin_post_` action.
+
+Test-critical zones of the profile are untouched (no form pipeline, no price grouping, no
+`dovira/v1` route, no translate command). The plugin's own rule applies: this step's logic
+is state transitions, which `docs/TESTING.md` lists among the things unit tests own.
+
+### Docs to update
+- `docs/DATA-MODEL.md` — `gatb_state` and `gatb_log` get the sections the file already
+  promises ("Still to come in this feature… in Sprint 1 Step 8"): keys, types, the 30-entry
+  cap, non-autoloaded, who writes them, and that no secret is ever stored.
+- `docs/ARCHITECTURE.md` — Data flows gains **"Daily GA report (plugin `ga-telegram-bridge`)"**:
+  admin-post `gatb_send_now` → `Runner::run('manual', true)` → `ReportBuilder` (≤2 GA calls)
+  → `MessageRenderer` → `TelegramClient` → `gatb_log` + `gatb_state`, with the date guard
+  named and the cron half marked as Sprint 2. The Telegram and GA4 integration rows lose the
+  "logging follows in Sprint 2" clause.
+- `docs/features/ga-telegram-bridge/FEATURE.md` → UI — screen `Run log` as built: the
+  columns are Time, Trigger, Date, Status, Attempt and Message. The **next run** column the
+  UI section lists belongs to the scheduler and is Sprint 2 (SPRINT-1.md → Out of scope),
+  which the line will say.
+- `wp-content/plugins/ga-telegram-bridge/readme.txt` — the fourth button and the log.
+- Likely at close, not a task: `docs/LEARNINGS.md` if anything about the process goes wrong,
+  and `SPRINT-1-CLOSE.md`, which `/close-step` writes because this tick closes the sprint.
+- Not updated, checked, with the reason: `docs/DECISIONS.md` (this step implements
+  "Scheduling, retries and idempotency on WP-Cron" as written — the guard and the manual
+  bypass — and reopens nothing), `docs/DOMAIN.md` (no new term: *Щоденний звіт* and *Блок
+  звіту* already cover it), `docs/TECH-STACK.md` (no dependency), `docs/TESTING.md` (no new
+  fixture and no new rule — the Runner runs on the recorded payloads the rules already
+  name), `docs/CONTRACTS.md` (none kept), `docs/DESIGN.md` (below).
+
+### Checks
+- **ANTI-PATTERNS:** none violated. No ACF, block, `service-city`, CF7 id, `assets/`,
+  `mu-plugins/`, post-type registration or per-city id is touched; no tool is installed;
+  nothing is written to `temp-data/`, `reports/` or `_to_delete/`. Core rule 6: the 30-entry
+  cap is a storage bound, not a business value; what the business sets — the chat, the
+  blocks, the attempts — is already configuration.
+- **Docs vs reality:** four items, none of them a question.
+  1. `FEATURE.md` → UI lists a **next run** column for screen `Run log`; `SPRINT-1.md` →
+     Out of scope puts the next-run display in Sprint 2. Out of scope wins: five columns
+     plus Time, and the FEATURE.md line says which sprint adds the sixth.
+  2. `FEATURE.md` → Data lists `gatb_state` as `last_report_date`, `attempt`, `next_run`;
+     Step 8 names only the first two, and `next_run` is written by the scheduler. This step
+     creates the row with two keys; `Settings::merge_defaults()`-style completion means
+     Sprint 2 can add the third without a migration.
+  3. The failure **notice** to Telegram (FEATURE.md → UI's second template, already built as
+     `MessageRenderer::render_failure()`) is Sprint 2: Out of scope names it, so Sprint 1
+     only logs failures. `render_failure()` stays unused and tested until then.
+  4. Carried and unchanged: `docs/DESIGN.md` → Screens lists no screen of this plugin
+     (DECISIONS "No UI design phase" forbids it) — for the retro. The spike directory and
+     the service-account key are still on disk and are still needed, by this step's manual
+     verification; removing them is the sprint's Definition of Done at the boundary, after
+     this step closes.
+- **Design:** n/a by decision — DECISIONS "No UI design phase; message format and
+  configurable blocks" rules `docs/DESIGN.md` out for this feature. Screen `Run log` is a
+  stock `wp-list-table widefat striped` table and *Send now* a stock `submit_button()` in
+  the existing Connection section; no CSS, no JS (plugin `CLAUDE.md` → Admin).
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) — green on `master`
+  right now: PHPCS, PHPStan level 8 at `--memory-limit=1G`, **187 tests / 585 assertions**,
+  108 theme files.
+- **Screen check before "implemented"** (LEARNINGS 2026-09-09): the settings screen is
+  opened in a browser, *Send now* pressed, the arriving message read in the chat, the new
+  row read in the table, and each notice counted — exactly one. Unit tests cannot see any of
+  that: they never load wp-admin and never reach Telegram.
+- **Not locally verifiable:** n/a for the code — but the manual verification needs
+  **a Telegram bot token and a chat id**, which do not exist on the dev site yet. The
+  sprint's Risks put that on the user ("Day 1: … creates/reuses a Telegram bot and its
+  target chat (bot must be an admin of a channel)"). Until they are configured, *Send now*
+  can only be proven to fail correctly — the mapped "no bot token is configured yet" — and
+  the sprint's Definition of Done ("Send now delivers the report there") stays open.
+
+### Questions / ambiguities
+none
