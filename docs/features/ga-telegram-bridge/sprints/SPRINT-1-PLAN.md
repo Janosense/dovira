@@ -1456,7 +1456,7 @@ none
 
 ---
 
-## Plan — Sprint 1, Step 8: "Send now" and RunLog   (status: implemented, awaiting close)
+## Plan — Sprint 1, Step 8: "Send now" and RunLog   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-1-report-on-demand` ← `master`

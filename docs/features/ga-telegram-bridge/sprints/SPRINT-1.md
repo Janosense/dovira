@@ -91,7 +91,7 @@ schedule yet. The project has a check command that gates every commit.
 - **Docs to update:** `docs/features/ga-telegram-bridge/FEATURE.md` → UI (if a string had to change, the template is updated in the same commit).
 - **Depends on:** Step 6
 
-### [ ] Step 8 — "Send now" and RunLog
+### [x] Step 8 — "Send now" and RunLog
 - **Tasks:**
   - `RunLog`: option `gatb_log` capped at 30 entries `{time, trigger: cron|retry|manual, date, status: sent|failed, attempt, message}`; `gatb_state` (`last_report_date`, `attempt`); a `Runner::run(trigger, bypassDateGuard)` that chains build → render → send → log → state, with the date guard in place but bypassed for manual runs.
   - "Send now" button on screen `Settings`; screen `Run log` table under the settings form.
