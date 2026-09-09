@@ -633,12 +633,69 @@ final class Admin {
 	}
 
 	/**
-	 * Prints the intro of the schedule section.
+	 * Prints the intro of the schedule section, and what it is doing now.
 	 */
 	public static function render_schedule_section(): void {
 		self::section_description(
-			__( 'Kept for the daily sending, which is added in a later release. Nothing runs on a schedule yet.', 'ga-telegram-bridge' )
+			__( 'When the report goes out by itself. The time is site-local, and a saved change takes effect immediately.', 'ga-telegram-bridge' )
 		);
+
+		self::render_schedule_notes(
+			Scheduler::next_run(),
+			self::wp_cron_disabled(),
+			RunLog::last_cron_hit(),
+			time()
+		);
+	}
+
+	/**
+	 * Prints when the report is due next, and warns when nothing will run it.
+	 *
+	 * Kept free of WordPress state so that every state it has can be tested:
+	 * DISABLE_WP_CRON is a constant, and a constant defined by one test is
+	 * defined for every test after it.
+	 *
+	 * @param int|null $next_run         When the report is due, or null when nothing is scheduled.
+	 * @param bool     $wp_cron_disabled Whether wp-config.php has switched WP-Cron off.
+	 * @param int      $last_hit         When wp-cron.php last ran here; 0 for never.
+	 * @param int      $now              The current Unix time.
+	 */
+	public static function render_schedule_notes( ?int $next_run, bool $wp_cron_disabled, int $last_hit, int $now ): void {
+		if ( null === $next_run ) {
+			self::field_description(
+				__( 'The report is not scheduled yet. Save these settings once and it will be.', 'ga-telegram-bridge' )
+			);
+		} else {
+			self::field_description(
+				sprintf(
+					/* translators: %s: the date and time of the next scheduled report, in the site's time zone. */
+					__( 'Next run: %s', 'ga-telegram-bridge' ),
+					self::moment( $next_run )
+				)
+			);
+		}
+
+		if ( ! Scheduler::external_cron_missing( $wp_cron_disabled, $last_hit, $now ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-warning inline"><p>%s</p></div>',
+			esc_html(
+				sprintf(
+					/* translators: %s: the URL of wp-cron.php on this site. */
+					__( 'WP-Cron is switched off in wp-config.php (DISABLE_WP_CRON), and nothing has called %s in the last 24 hours — so nothing will send the report. Set up a system cron that calls that address, for example every 15 minutes.', 'ga-telegram-bridge' ),
+					site_url( 'wp-cron.php' )
+				)
+			)
+		);
+	}
+
+	/**
+	 * Tells whether wp-config.php has switched WordPress's own cron off.
+	 */
+	private static function wp_cron_disabled(): bool {
+		return defined( 'DISABLE_WP_CRON' ) && (bool) constant( 'DISABLE_WP_CRON' );
 	}
 
 	/**
