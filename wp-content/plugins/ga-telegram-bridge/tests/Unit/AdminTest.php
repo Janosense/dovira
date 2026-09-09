@@ -268,6 +268,79 @@ final class AdminTest extends TestCase {
 	}
 
 	/**
+	 * The schedule section says when the report is due next, through the same
+	 * wp_date() the log rows go through — stubbed here as UTC, so what this
+	 * asserts is the line and its value, not the zone.
+	 */
+	public function test_the_schedule_section_says_when_the_next_run_is(): void {
+		Functions\when( 'wp_date' )->alias(
+			static fn( string $format, ?int $timestamp = null ): string => gmdate( $format, (int) $timestamp )
+		);
+
+		$markup = $this->render(
+			static function (): void {
+				Admin::render_schedule_notes( 1789020000, false, 0, 1788933600 );
+			}
+		);
+
+		$this->assertStringContainsString( 'Next run: 2026-09-10 06:00', $markup );
+		$this->assertStringNotContainsString( 'notice-warning', $markup, 'nothing is wrong here' );
+	}
+
+	/**
+	 * An install where nothing is registered yet is told what to do about it,
+	 * rather than shown an empty line or a zero.
+	 */
+	public function test_the_schedule_section_says_when_nothing_is_scheduled(): void {
+		$markup = $this->render(
+			static function (): void {
+				Admin::render_schedule_notes( null, false, 0, 1788933600 );
+			}
+		);
+
+		$this->assertStringContainsString( 'not scheduled yet', $markup );
+		$this->assertStringNotContainsString( 'Next run:', $markup );
+	}
+
+	/**
+	 * A site that switched WP-Cron off and put nothing in its place is warned,
+	 * because on that site nothing at all will send the report.
+	 */
+	public function test_the_screen_warns_when_nothing_calls_wp_cron(): void {
+		Functions\when( 'wp_date' )->alias(
+			static fn( string $format, ?int $timestamp = null ): string => gmdate( $format, (int) $timestamp )
+		);
+		Functions\when( 'site_url' )->alias(
+			static fn( string $path = '' ): string => 'https://dovira.vet/' . $path
+		);
+		$now = 1788933600;
+
+		$warned = $this->render(
+			static function () use ( $now ): void {
+				Admin::render_schedule_notes( 1789020000, true, 0, $now );
+			}
+		);
+
+		$this->assertStringContainsString( 'notice notice-warning', $warned );
+		$this->assertStringContainsString( 'https://dovira.vet/wp-cron.php', $warned );
+		$this->assertStringContainsString( 'Next run:', $warned, 'the next run is still printed' );
+
+		$visited = $this->render(
+			static function () use ( $now ): void {
+				Admin::render_schedule_notes( 1789020000, true, $now - 3600, $now );
+			}
+		);
+		$this->assertStringNotContainsString( 'notice-warning', $visited, 'a system cron is calling it' );
+
+		$wp_cron_on = $this->render(
+			static function () use ( $now ): void {
+				Admin::render_schedule_notes( 1789020000, false, 0, $now );
+			}
+		);
+		$this->assertStringNotContainsString( 'notice-warning', $wp_cron_on, 'WP-Cron is doing its job' );
+	}
+
+	/**
 	 * Somebody without the capability is shown nothing at all.
 	 */
 	public function test_the_page_prints_nothing_without_the_capability(): void {

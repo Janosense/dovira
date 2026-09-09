@@ -163,20 +163,31 @@ deleted whenever Google answers 401, so the next attempt signs in again. Losing
 it costs one extra token exchange of ~200-350 ms.
 
 ### Option `gatb_state` — one array, autoload `no`
-Created on the first run by `RunLog`, never by the settings screen. It is the
-whole of the plugin's idempotency (DECISIONS "Scheduling, retries and idempotency
-on WP-Cron"): a report for a day is sent at most once.
+Created by `RunLog` on the first run or the first cron hit, never by the settings
+screen. It is the whole of the plugin's idempotency (DECISIONS "Scheduling,
+retries and idempotency on WP-Cron"): a report for a day is sent at most once.
 
 | Key | Type | Default | Written by |
 |---|---|---|---|
 | `last_report_date` | string | `''` | `RunLog::mark_sent()` after Telegram accepted the message — the property's day, `Y-m-d`, never the server's |
 | `attempt` | int | `0` | `RunLog::mark_failed()` adds one; a success resets it to 0 |
+| `last_cron_hit` | int | `0` | `RunLog::mark_cron_hit()` on any request that runs as WP-Cron (`wp_doing_cron()`); `0` = never |
+
+Every write **merges** into the stored row rather than replacing it: the day and
+the counter are written by a run, the hit by a cron request, and neither may drop
+what the other remembered. A row written before `last_cron_hit` existed completes
+to `0` on read, so there is no migration.
 
 A failed run leaves `last_report_date` untouched on purpose: the day stays
 unsent, which is what Sprint 2's retry looks for and what keeps a failure from
-being remembered as a delivery. Sprint 2 adds `next_run` here for the schedule
-display; a row written by Sprint 1 completes to the new key on read, so there is
-no migration.
+being remembered as a delivery. `last_cron_hit` is read by one thing only —
+screen `Settings`, to warn when WP-Cron is switched off in `wp-config.php` and
+nothing has called `wp-cron.php` for 24 hours.
+
+The **next run is not stored here.** `wp_next_scheduled( 'gatb_daily_report' )`
+is the one copy of it; a second one in this row would have to be invalidated on
+every reschedule and could only ever disagree with the event that actually
+fires.
 
 ### Option `gatb_log` — a list of at most 30 entries, autoload `no`
 Created on the first run by `RunLog::add()`, newest first, capped at

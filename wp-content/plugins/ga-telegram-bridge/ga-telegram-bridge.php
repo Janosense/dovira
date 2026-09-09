@@ -47,5 +47,6 @@ spl_autoload_register(
 );
 
 register_activation_hook( __FILE__, array( Plugin::class, 'activate' ) );
+register_deactivation_hook( __FILE__, array( Plugin::class, 'deactivate' ) );
 
 Plugin::boot();

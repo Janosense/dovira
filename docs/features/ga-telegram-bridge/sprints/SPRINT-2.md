@@ -20,7 +20,7 @@ uninstall. A readme lets another site set the plugin up from scratch.
 
 ## Steps
 
-### [ ] Step 1 — Scheduler
+### [x] Step 1 — Scheduler
 - **Tasks:**
   - `Scheduler`: on settings save (and on activation when settings exist) compute the next occurrence of the configured `HH:MM` in the site time zone (`wp_timezone()`), convert to a UTC timestamp and register `wp_schedule_event(ts, 'daily', 'gatb_daily_report')` after clearing any existing one; deactivation clears both hooks.
   - The `gatb_daily_report` callback calls `Runner::run('cron')` with the date guard on (target date = "yesterday" in the site time zone, stored as `Y-m-d` in `gatb_state.last_report_date` after success).

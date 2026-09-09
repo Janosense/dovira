@@ -141,23 +141,43 @@ final class RunLog {
 	}
 
 	/**
+	 * Records that WP-Cron ran on this site.
+	 *
+	 * Read only by the settings screen, and only to tell an install where
+	 * WP-Cron is switched off in wp-config.php whether an external cron is
+	 * really calling wp-cron.php.
+	 *
+	 * @param int|null $now The current Unix time; injected by the tests.
+	 */
+	public static function mark_cron_hit( ?int $now = null ): void {
+		self::save_state( array( 'last_cron_hit' => $now ?? time() ) );
+	}
+
+	/**
+	 * Returns when WP-Cron last ran, or 0 when it never has here.
+	 */
+	public static function last_cron_hit(): int {
+		$state = self::state();
+
+		return (int) $state['last_cron_hit'];
+	}
+
+	/**
 	 * Records one more failed attempt, leaving the last sent day untouched.
 	 *
 	 * The day stays unsent on purpose: Sprint 2's retry has to find it.
 	 */
 	public static function mark_failed(): void {
-		self::save_state(
-			array(
-				'last_report_date' => self::last_report_date(),
-				'attempt'          => self::attempt() + 1,
-			)
-		);
+		self::save_state( array( 'attempt' => self::attempt() + 1 ) );
 	}
 
 	/**
 	 * Returns the state, completed with its defaults.
 	 *
-	 * @return array{last_report_date: string, attempt: int}
+	 * A row written before last_cron_hit existed completes to 0 on the way out,
+	 * so there is no migration.
+	 *
+	 * @return array{last_report_date: string, attempt: int, last_cron_hit: int}
 	 */
 	public static function state(): array {
 		$stored = get_option( self::STATE_OPTION, array() );
@@ -166,16 +186,21 @@ final class RunLog {
 		return array(
 			'last_report_date' => isset( $stored['last_report_date'] ) && is_string( $stored['last_report_date'] ) ? $stored['last_report_date'] : '',
 			'attempt'          => isset( $stored['attempt'] ) && is_numeric( $stored['attempt'] ) ? (int) $stored['attempt'] : 0,
+			'last_cron_hit'    => isset( $stored['last_cron_hit'] ) && is_numeric( $stored['last_cron_hit'] ) ? (int) $stored['last_cron_hit'] : 0,
 		);
 	}
 
 	/**
-	 * Writes the state, never autoloaded.
+	 * Writes the given keys into the state, never autoloaded.
 	 *
-	 * @param array{last_report_date: string, attempt: int} $state What to remember.
+	 * The stored row is merged, not replaced: a run writes the day and the
+	 * counter, a cron request writes the hit, and neither may drop what the
+	 * other remembered.
+	 *
+	 * @param array<string, int|string> $changes The keys to write.
 	 */
-	private static function save_state( array $state ): void {
-		update_option( self::STATE_OPTION, $state, false );
+	private static function save_state( array $changes ): void {
+		update_option( self::STATE_OPTION, array_merge( self::state(), $changes ), false );
 	}
 
 	/**

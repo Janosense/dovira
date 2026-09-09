@@ -11,8 +11,10 @@ namespace GaTelegramBridge\Tests\Unit;
 
 use Brain\Monkey\Actions;
 use Brain\Monkey\Functions;
+use DateTimeZone;
 use GaTelegramBridge\Admin;
 use GaTelegramBridge\Plugin;
+use GaTelegramBridge\Scheduler;
 use GaTelegramBridge\Settings;
 use GaTelegramBridge\Tests\TestCase;
 
@@ -111,16 +113,102 @@ final class PluginTest extends TestCase {
 	}
 
 	/**
-	 * Activation creates the settings option, and creates it not autoloaded.
+	 * Boot registers the callback of the daily event.
+	 */
+	public function test_boot_registers_the_daily_report_callback(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'gatb_daily_report', array( Scheduler::class, 'run_daily' ) )
+		);
+	}
+
+	/**
+	 * Boot re-registers the event whenever the settings are saved: the send
+	 * time is only worth changing if the schedule follows it.
+	 */
+	public function test_boot_reschedules_when_the_settings_are_saved(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'update_option_gatb_settings', array( Scheduler::class, 'reschedule' ) )
+		);
+	}
+
+	/**
+	 * And on the save of an option that does not exist yet in the eyes of core.
+	 *
+	 * While the stored settings are still exactly the registered defaults,
+	 * update_option() hands the write to add_option(), which fires only its own
+	 * action — so a fresh install saving for the first time would otherwise
+	 * schedule nothing.
+	 */
+	public function test_boot_reschedules_when_the_settings_are_first_written(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'add_option_gatb_settings', array( Scheduler::class, 'reschedule' ) )
+		);
+	}
+
+	/**
+	 * Boot registers the reader that notices a visit to wp-cron.php.
+	 */
+	public function test_boot_registers_the_cron_hit_reader(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'wp_loaded', array( Scheduler::class, 'note_cron_hit' ) )
+		);
+	}
+
+	/**
+	 * Activation creates the settings option, creates it not autoloaded, and
+	 * registers the daily event.
 	 */
 	public function test_activation_creates_the_settings_option_without_autoloading_it(): void {
+		$this->stub_cron();
 		Functions\expect( 'add_option' )
 			->once()
 			->with( 'gatb_settings', Settings::defaults(), '', false );
+		Functions\expect( 'wp_schedule_event' )
+			->once()
+			->with( \Mockery::type( 'int' ), 'daily', 'gatb_daily_report' );
 
 		Plugin::activate();
 
 		$this->assertSame( 'gatb_settings', Settings::OPTION );
+	}
+
+	/**
+	 * Deactivation takes the schedule away and leaves everything else: the
+	 * settings, the log and the state survive being switched off.
+	 */
+	public function test_deactivation_clears_the_schedule_and_nothing_else(): void {
+		$cleared = array();
+		Functions\when( 'wp_clear_scheduled_hook' )->alias(
+			function ( string $hook ) use ( &$cleared ): int {
+				$cleared[] = $hook;
+
+				return 1;
+			}
+		);
+		Functions\expect( 'delete_option' )->never();
+
+		Plugin::deactivate();
+
+		$this->assertSame( array( 'gatb_daily_report', 'gatb_retry_report' ), $cleared );
+	}
+
+	/**
+	 * Stubs what registering an event needs.
+	 */
+	private function stub_cron(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_clear_scheduled_hook' )->justReturn( 1 );
+		Functions\when( 'wp_timezone' )->alias(
+			static fn (): DateTimeZone => new DateTimeZone( 'Europe/Kiev' )
+		);
 	}
 
 	/**

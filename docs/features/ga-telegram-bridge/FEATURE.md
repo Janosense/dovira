@@ -25,15 +25,17 @@ and wordpress.org, any change to the theme's own Telegram code.
 Owns three non-autoloaded `wp_options` rows (details in `docs/DATA-MODEL.md`):
 `gatb_settings` (property id, service-account JSON, bot token, chat id, send
 time, max attempts, enabled blocks), `gatb_state` (`last_report_date`,
-`attempt`, `next_run`), `gatb_log` (last 30 runs); one transient
+`attempt`, `last_cron_hit` — the next run is not stored: `wp_next_scheduled()` is
+the one copy of it), `gatb_log` (last 30 runs); one transient
 `gatb_google_access_token`; cron hooks `gatb_daily_report` (recurring) and
 `gatb_retry_report` (single). Constants `GATB_GA_SERVICE_ACCOUNT_JSON` and
 `GATB_TELEGRAM_BOT_TOKEN` override the two secrets. No other feature writes
 to this data; `uninstall.php` removes all of it.
 
 ## Invariants
-- A report for a given date is sent at most once: every run checks
-  `gatb_state.last_report_date` first; only the admin's "Send now" bypasses it.
+- A report for a given date is sent at most once: every run compares the day of
+  the report it has built with `gatb_state.last_report_date` before sending, and
+  stops there when they match; only the admin's "Send now" bypasses it.
 - Secrets never appear in `gatb_log`, error messages, notices or test output.
 - All GA date ranges are relative (`yesterday`, `NdaysAgo`) and thus resolved
   in the property's reporting time zone; the send time is site-local.
@@ -49,7 +51,7 @@ to this data; `uninstall.php` removes all of it.
 - **CLI / REST:** none in v1.
 
 ## UI
-- **Screens:** `Settings` (wp-admin page: credentials, recipient, schedule, blocks, buttons *Check GA*, *Check Telegram*, *Preview*, *Send now*; states: unconfigured, secrets set in configuration, check ok/error), `Run log` (table on the same page under the buttons, newest first: time, what started the run, the day the report was about, sent or failed, attempt and one line of detail; states: empty, with errors. The **next run** column arrives with the scheduler in Sprint 2 — SPRINT-1.md → Out of scope). No design export — stock wp-admin components.
+- **Screens:** `Settings` (wp-admin page: credentials, recipient, schedule, blocks, buttons *Check GA*, *Check Telegram*, *Preview*, *Send now*; the Schedule section prints when the next run is due — read from `wp_next_scheduled()`, never stored — and warns when `DISABLE_WP_CRON` is set and nothing has called `wp-cron.php` for 24 h; states: unconfigured, secrets set in configuration, check ok/error, nothing scheduled yet), `Run log` (table on the same page under the buttons, newest first: time, what started the run, the day the report was about, sent or failed, attempt and one line of detail; states: empty, with errors. Six columns and no **next run** column: the next run is one value about the future and belongs to the Schedule section above, not to a list of past runs). No design export — stock wp-admin components.
 - **Reuses:** — (not a theme screen; `docs/DESIGN.md` does not apply)
 - **Introduces:** —
 - **Message template (HTML parse mode; `{}` = data, `[...]` = block, blocks 2–5 optional; one line per row, no blank lines):**
