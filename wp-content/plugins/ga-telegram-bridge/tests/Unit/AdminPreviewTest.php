@@ -419,6 +419,7 @@ final class AdminPreviewTest extends TestCase {
 	 */
 	private function render_screen(): string {
 		Functions\when( 'current_user_can' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array() );
 		Functions\when( 'wp_nonce_field' )->justReturn( null );
 		Functions\when( 'settings_fields' )->justReturn( null );
 		Functions\when( 'do_settings_sections' )->justReturn( null );

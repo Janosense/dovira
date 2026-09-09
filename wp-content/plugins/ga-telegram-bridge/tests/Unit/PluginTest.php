@@ -89,6 +89,17 @@ final class PluginTest extends TestCase {
 	}
 
 	/**
+	 * Boot registers the handler behind the "Send now" button.
+	 */
+	public function test_boot_registers_the_send_now_handler(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'admin_post_gatb_send_now', array( Admin::class, 'handle_send_now' ) )
+		);
+	}
+
+	/**
 	 * Boot registers the reader that takes a preview out of the notices.
 	 */
 	public function test_boot_registers_the_preview_reader(): void {

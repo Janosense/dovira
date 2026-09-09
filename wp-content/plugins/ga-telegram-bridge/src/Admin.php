@@ -39,6 +39,11 @@ final class Admin {
 	public const PREVIEW_ACTION = 'gatb_preview';
 
 	/**
+	 * The admin-post action behind the "Send now" button.
+	 */
+	public const SEND_NOW_ACTION = 'gatb_send_now';
+
+	/**
 	 * The previewed message, between the notices being read and the screen
 	 * being printed. Null when this request built no preview.
 	 *
@@ -219,9 +224,95 @@ final class Admin {
 			<?php
 			self::render_connection_section();
 			self::render_preview( self::consume_preview() );
+			self::render_log_section( RunLog::entries() );
 			?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Prints the runs the plugin has behind it, newest first.
+	 *
+	 * The table is the whole of screen `Run log` in Sprint 1; the next-run
+	 * column belongs to the scheduler and arrives with it.
+	 *
+	 * @param list<array{time: int, trigger: string, date: string, status: string, attempt: int, message: string}> $entries The runs.
+	 */
+	public static function render_log_section( array $entries ): void {
+		?>
+		<h2><?php echo esc_html__( 'Run log', 'ga-telegram-bridge' ); ?></h2>
+		<table class="wp-list-table widefat striped">
+			<thead>
+				<tr>
+					<th scope="col"><?php echo esc_html__( 'Time', 'ga-telegram-bridge' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Started by', 'ga-telegram-bridge' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Report for', 'ga-telegram-bridge' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Result', 'ga-telegram-bridge' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Attempt', 'ga-telegram-bridge' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Details', 'ga-telegram-bridge' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php if ( array() === $entries ) : ?>
+					<tr>
+						<td colspan="6"><?php echo esc_html__( 'Nothing has been sent yet.', 'ga-telegram-bridge' ); ?></td>
+					</tr>
+				<?php endif; ?>
+				<?php foreach ( $entries as $entry ) : ?>
+					<tr>
+						<td><?php echo esc_html( self::moment( $entry['time'] ) ); ?></td>
+						<td><?php echo esc_html( self::trigger_label( $entry['trigger'] ) ); ?></td>
+						<td><?php echo esc_html( $entry['date'] ); ?></td>
+						<td><?php echo esc_html( self::status_label( $entry['status'] ) ); ?></td>
+						<td><?php echo esc_html( (string) $entry['attempt'] ); ?></td>
+						<td><?php echo esc_html( $entry['message'] ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Prints one run's time the way the site writes times.
+	 *
+	 * @param int $time The Unix time of the run.
+	 */
+	private static function moment( int $time ): string {
+		if ( 0 === $time ) {
+			return '';
+		}
+
+		return (string) wp_date( 'Y-m-d H:i', $time );
+	}
+
+	/**
+	 * Names what started a run.
+	 *
+	 * @param string $trigger The stored trigger.
+	 */
+	private static function trigger_label( string $trigger ): string {
+		$labels = array(
+			'manual' => __( 'Send now', 'ga-telegram-bridge' ),
+			'cron'   => __( 'Schedule', 'ga-telegram-bridge' ),
+			'retry'  => __( 'Retry', 'ga-telegram-bridge' ),
+		);
+
+		return $labels[ $trigger ] ?? $trigger;
+	}
+
+	/**
+	 * Names how a run ended.
+	 *
+	 * @param string $status The stored status.
+	 */
+	private static function status_label( string $status ): string {
+		$labels = array(
+			'sent'   => __( 'Sent', 'ga-telegram-bridge' ),
+			'failed' => __( 'Failed', 'ga-telegram-bridge' ),
+		);
+
+		return $labels[ $status ] ?? $status;
 	}
 
 	/**
@@ -331,6 +422,12 @@ final class Admin {
 			self::PREVIEW_ACTION,
 			__( 'Preview', 'ga-telegram-bridge' ),
 			__( 'Reads yesterday from Google and shows the message it would send. Sends nothing.', 'ga-telegram-bridge' )
+		);
+
+		self::check_form(
+			self::SEND_NOW_ACTION,
+			__( 'Send now', 'ga-telegram-bridge' ),
+			__( 'Builds the report and really sends it to the configured chat, even if today\'s report has already gone out.', 'ga-telegram-bridge' )
 		);
 	}
 
@@ -446,6 +543,33 @@ final class Admin {
 			);
 		} catch ( GoogleAuthException | GaClientException $exception ) {
 			add_settings_error( Settings::OPTION, self::PREVIEW_ACTION . '_failed', $exception->getMessage(), 'error' );
+		}
+
+		self::redirect_to_settings();
+	}
+
+	/**
+	 * Sends the report now, whatever has already been sent today.
+	 *
+	 * The date guard is bypassed on purpose: a person pressed the button, and
+	 * the run is logged as manual so the log says who asked for it.
+	 */
+	public static function handle_send_now(): void {
+		check_admin_referer( self::SEND_NOW_ACTION );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to configure this plugin.', 'ga-telegram-bridge' ) );
+		}
+
+		$entry = Runner::run( 'manual', true );
+
+		if ( null !== $entry ) {
+			add_settings_error(
+				Settings::OPTION,
+				self::SEND_NOW_ACTION,
+				$entry['message'],
+				'sent' === $entry['status'] ? 'success' : 'error'
+			);
 		}
 
 		self::redirect_to_settings();

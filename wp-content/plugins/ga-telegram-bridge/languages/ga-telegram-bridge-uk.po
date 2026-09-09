@@ -33,186 +33,241 @@ msgstr "Щодня надсилає короткий звіт Google Analytics 4
 msgid "Dovira"
 msgstr ""
 
-#: src/Admin.php:46
-#: src/Admin.php:47
+#: src/Admin.php:59
+#: src/Admin.php:60
 msgid "GA → Telegram"
 msgstr ""
 
-#: src/Admin.php:60
+#: src/Admin.php:73
 msgid "Google Analytics"
 msgstr ""
 
-#: src/Admin.php:67
+#: src/Admin.php:80
 msgid "Property id"
 msgstr "Ідентифікатор ресурсу"
 
-#: src/Admin.php:76
+#: src/Admin.php:89
 msgid "The numeric id of the GA4 property (Admin → Property settings), not the measurement id."
 msgstr "Числовий ідентифікатор ресурсу GA4 (Адміністратор → Налаштування ресурсу), а не ідентифікатор оцінювання."
 
-#: src/Admin.php:82
+#: src/Admin.php:95
 msgid "Service-account key"
 msgstr "Ключ сервісного акаунта"
 
-#: src/Admin.php:90
+#: src/Admin.php:103
 msgid "The whole JSON key file of the service account, pasted as it is."
 msgstr "Весь JSON-файл ключа сервісного акаунта, вставлений як є."
 
-#: src/Admin.php:96
+#: src/Admin.php:109
 msgid "Telegram"
 msgstr ""
 
-#: src/Admin.php:103
+#: src/Admin.php:116
 msgid "Bot token"
 msgstr "Токен бота"
 
-#: src/Admin.php:111
+#: src/Admin.php:124
 msgid "The token BotFather issued for the bot."
 msgstr "Токен, який BotFather видав для цього бота."
 
-#: src/Admin.php:117
+#: src/Admin.php:130
 msgid "Chat id"
 msgstr "Ідентифікатор чату"
 
-#: src/Admin.php:126
+#: src/Admin.php:139
 msgid "A number: a person's chat id is positive, a group or channel id starts with a minus (for example -1001234567890)."
 msgstr "Число: у людини ідентифікатор додатний, у групи чи каналу — починається з мінуса (наприклад, -1001234567890)."
 
-#: src/Admin.php:132
+#: src/Admin.php:145
+#: src/Admin.php:297
 msgid "Schedule"
 msgstr "Розклад"
 
-#: src/Admin.php:139
+#: src/Admin.php:152
 msgid "Send time"
 msgstr "Час надсилання"
 
-#: src/Admin.php:148
+#: src/Admin.php:161
 msgid "Site time, 24-hour."
 msgstr "За часом сайту, 24-годинний формат."
 
-#: src/Admin.php:154
+#: src/Admin.php:167
 msgid "Maximum attempts"
 msgstr "Максимум спроб"
 
-#: src/Admin.php:168
+#: src/Admin.php:181
 msgid "How often a failed report is tried again before a failure notice is sent. Between 1 and 10."
 msgstr "Скільки разів повторити невдалий звіт, перш ніж надіслати повідомлення про помилку. Від 1 до 10."
 
-#: src/Admin.php:174
+#: src/Admin.php:187
 msgid "Report blocks"
 msgstr "Блоки звіту"
 
-#: src/Admin.php:181
+#: src/Admin.php:194
 msgid "Blocks"
 msgstr "Блоки"
 
-#: src/Admin.php:200
+#: src/Admin.php:216
 msgid "Google Analytics → Telegram"
 msgstr ""
 
-#: src/Admin.php:268
-#: src/Admin.php:300
+#: src/Admin.php:243
+msgid "Run log"
+msgstr "Журнал запусків"
+
+#: src/Admin.php:247
+msgid "Time"
+msgstr "Час"
+
+#: src/Admin.php:248
+msgid "Started by"
+msgstr "Запуск"
+
+#: src/Admin.php:249
+msgid "Report for"
+msgstr "Звіт за"
+
+#: src/Admin.php:250
+msgid "Result"
+msgstr "Результат"
+
+#: src/Admin.php:251
+msgid "Attempt"
+msgstr "Спроба"
+
+#: src/Admin.php:252
+msgid "Details"
+msgstr "Деталі"
+
+#: src/Admin.php:258
+msgid "Nothing has been sent yet."
+msgstr "Ще нічого не надсилалося."
+
+#: src/Admin.php:296
+#: src/Admin.php:429
+msgid "Send now"
+msgstr "Надіслати зараз"
+
+#: src/Admin.php:298
+msgid "Retry"
+msgstr "Повтор"
+
+#: src/Admin.php:311
+msgid "Sent"
+msgstr "Надіслано"
+
+#: src/Admin.php:312
+msgid "Failed"
+msgstr "Помилка"
+
+#: src/Admin.php:391
+#: src/Admin.php:423
 msgid "Preview"
 msgstr "Попередній перегляд"
 
-#: src/Admin.php:269
+#: src/Admin.php:392
 msgid "The message as Telegram would receive it, tags and all. Nothing was sent."
 msgstr "Повідомлення в тому вигляді, у якому його отримає Telegram, разом із тегами. Нічого не надіслано."
 
-#: src/Admin.php:283
+#: src/Admin.php:406
 msgid "Connection"
 msgstr "З’єднання"
 
-#: src/Admin.php:284
+#: src/Admin.php:407
 msgid "Save the settings first, then check each side separately."
 msgstr "Спочатку збережіть налаштування, потім перевірте кожен бік окремо."
 
-#: src/Admin.php:288
+#: src/Admin.php:411
 msgid "Check GA"
 msgstr "Перевірити GA"
 
-#: src/Admin.php:289
+#: src/Admin.php:412
 msgid "Asks Google whether this site can read the configured property. Sends nothing to Telegram."
 msgstr "Запитує Google, чи може цей сайт читати вказаний ресурс. У Telegram нічого не надсилає."
 
-#: src/Admin.php:294
+#: src/Admin.php:417
 msgid "Check Telegram"
 msgstr "Перевірити Telegram"
 
-#: src/Admin.php:295
+#: src/Admin.php:418
 msgid "Really posts a short test message into the configured chat, so you can see it arrive."
 msgstr "Справді надсилає коротке тестове повідомлення у вказаний чат, щоб ви побачили, як воно прийде."
 
-#: src/Admin.php:301
+#: src/Admin.php:424
 msgid "Reads yesterday from Google and shows the message it would send. Sends nothing."
 msgstr "Читає вчорашній день із Google і показує повідомлення, яке було б надіслане. Нічого не надсилає."
 
-#: src/Admin.php:335
-#: src/Admin.php:369
-#: src/Admin.php:405
+#: src/Admin.php:430
+msgid "Builds the report and really sends it to the configured chat, even if today's report has already gone out."
+msgstr "Формує звіт і справді надсилає його у вказаний чат, навіть якщо сьогоднішній звіт уже надійшов."
+
+#: src/Admin.php:464
+#: src/Admin.php:498
+#: src/Admin.php:534
+#: src/Admin.php:561
 msgid "You are not allowed to configure this plugin."
 msgstr "Ви не маєте права налаштовувати цей плагін."
 
 #. translators: 1: the GA4 property id, 2: the property's reporting time zone.
-#: src/Admin.php:346
+#: src/Admin.php:475
 #, php-format
 msgid "Google answered for property %1$s. Its reporting time zone is %2$s — that is the day the report calls \"yesterday\"."
 msgstr "Google відповів для ресурсу %1$s. Його часовий пояс звітності — %2$s; саме за ним визначається день, який звіт називає «вчора»."
 
 #. translators: %s: the configured Telegram chat id.
-#: src/Admin.php:382
+#: src/Admin.php:511
 #, php-format
 msgid "Telegram accepted a test message for chat %s. Open that chat to see it."
 msgstr "Telegram прийняв тестове повідомлення для чату %s. Відкрийте цей чат, щоб його побачити."
 
 #. translators: %s: the site's host name.
-#: src/Admin.php:433
+#: src/Admin.php:589
 #, php-format
 msgid "📊 <b>%s</b> — test message from the Google Analytics → Telegram bridge. The daily report will arrive in this chat."
 msgstr "📊 <b>%s</b> — тестове повідомлення від плагіна Google Analytics → Telegram. Щоденний звіт приходитиме в цей чат."
 
-#: src/Admin.php:466
+#: src/Admin.php:622
 msgid "Read access to one GA4 property: create a service account in Google Cloud, give its e-mail address Viewer on the property and paste its key file here."
 msgstr "Доступ на читання до одного ресурсу GA4: створіть сервісний акаунт у Google Cloud, надайте його адресі роль «Переглядач» для ресурсу і вставте сюди файл ключа."
 
-#: src/Admin.php:475
+#: src/Admin.php:631
 msgid "Where the report is sent. Create a bot with BotFather; to post into a channel, add the bot to it as an administrator."
 msgstr "Куди надсилається звіт. Створіть бота через BotFather; щоб публікувати в каналі, додайте бота до нього адміністратором."
 
-#: src/Admin.php:484
+#: src/Admin.php:640
 msgid "Kept for the daily sending, which is added in a later release. Nothing runs on a schedule yet."
 msgstr "Зберігається для щоденного надсилання, яке з’явиться в наступному випуску. Поки що за розкладом нічого не виконується."
 
-#: src/Admin.php:493
+#: src/Admin.php:649
 msgid "What the message contains. The visitors block is always sent."
 msgstr "Що містить повідомлення. Блок відвідувачів надсилається завжди."
 
-#: src/Admin.php:613
+#: src/Admin.php:769
 msgid "Set in configuration (wp-config.php); the field is ignored."
 msgstr "Задано в конфігурації (wp-config.php); поле ігнорується."
 
-#: src/Admin.php:657
+#: src/Admin.php:813
 msgid "(always sent)"
 msgstr "(надсилається завжди)"
 
-#: src/Admin.php:675
+#: src/Admin.php:831
 #: src/MessageRenderer.php:126
 msgid "Visitors"
 msgstr "Відвідувачі"
 
-#: src/Admin.php:676
+#: src/Admin.php:832
 msgid "Top pages"
 msgstr "Топ сторінок"
 
-#: src/Admin.php:677
+#: src/Admin.php:833
 msgid "Traffic sources"
 msgstr "Джерела трафіку"
 
-#: src/Admin.php:678
+#: src/Admin.php:834
 msgid "Cities"
 msgstr "Міста"
 
-#: src/Admin.php:679
+#: src/Admin.php:835
 msgid "Devices"
 msgstr "Пристрої"
 
@@ -385,13 +440,19 @@ msgstr "%1$d. %2$s — %3$s"
 msgid "j F (l)"
 msgstr "j F (l)"
 
-#: src/Plugin.php:79
+#: src/Plugin.php:81
 msgid "Google Analytics → Telegram bridge needs the PHP OpenSSL extension to sign Google API requests. Ask your host to enable it, then activate the plugin again."
 msgstr "Плагіну Google Analytics → Telegram bridge потрібне розширення PHP OpenSSL, щоб підписувати запити до Google API. Попросіть хостинг увімкнути його і активуйте плагін ще раз."
 
-#: src/ReportBuilder.php:76
+#: src/ReportBuilder.php:93
 msgid "Google Analytics answered with fewer reports than were asked for."
 msgstr "Google Analytics повернув менше звітів, ніж було запитано."
+
+#. translators: 1: the day the report was about, 2: the Telegram chat it went to.
+#: src/Runner.php:61
+#, php-format
+msgid "The report for %1$s was sent to chat %2$s."
+msgstr "Звіт за %1$s надіслано в чат %2$s."
 
 #: src/Settings.php:184
 msgid "The GA4 property id must consist of digits only (for example 123456789). The previous value was kept."
