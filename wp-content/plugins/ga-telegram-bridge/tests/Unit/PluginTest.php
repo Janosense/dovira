@@ -67,6 +67,17 @@ final class PluginTest extends TestCase {
 	}
 
 	/**
+	 * Boot registers the handler behind the "Check Telegram" button.
+	 */
+	public function test_boot_registers_the_check_telegram_handler(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'admin_post_gatb_check_telegram', array( Admin::class, 'handle_check_telegram' ) )
+		);
+	}
+
+	/**
 	 * Activation creates the settings option, and creates it not autoloaded.
 	 */
 	public function test_activation_creates_the_settings_option_without_autoloading_it(): void {

@@ -1,0 +1,29 @@
+{
+    "status": 200,
+    "body": {
+        "ok": true,
+        "result": {
+            "message_id": 42,
+            "sender_chat": {
+                "id": -1001234567890,
+                "title": "Reports",
+                "type": "channel"
+            },
+            "chat": {
+                "id": -1001234567890,
+                "title": "Reports",
+                "type": "channel"
+            },
+            "date": 1757404800,
+            "text": "example.test — test message",
+            "entities": [
+                {
+                    "offset": 0,
+                    "length": 12,
+                    "type": "bold"
+                }
+            ]
+        }
+    },
+    "ms": 250
+}

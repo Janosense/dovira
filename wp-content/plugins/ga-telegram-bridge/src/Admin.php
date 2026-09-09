@@ -29,6 +29,11 @@ final class Admin {
 	public const CHECK_GA_ACTION = 'gatb_check_ga';
 
 	/**
+	 * The admin-post action behind the "Check Telegram" button.
+	 */
+	public const CHECK_TELEGRAM_ACTION = 'gatb_check_telegram';
+
+	/**
 	 * Adds the screen under Settings. Hooked on admin_menu.
 	 */
 	public static function add_page(): void {
@@ -200,7 +205,7 @@ final class Admin {
 	}
 
 	/**
-	 * Prints the buttons that talk to Google and Telegram.
+	 * Prints the buttons that talk to Google and to Telegram.
 	 *
 	 * They cannot live inside the settings form: that one posts to options.php,
 	 * and a form cannot contain another. Each check is its own small form to
@@ -209,20 +214,37 @@ final class Admin {
 	public static function render_connection_section(): void {
 		?>
 		<h2><?php echo esc_html__( 'Connection', 'ga-telegram-bridge' ); ?></h2>
-		<p>
-			<?php
-			echo esc_html__(
-				'Save the settings first, then check that this site can read the property. This button sends nothing to Telegram.',
-				'ga-telegram-bridge'
-			);
-			?>
-		</p>
+		<p><?php echo esc_html__( 'Save the settings first, then check each side separately.', 'ga-telegram-bridge' ); ?></p>
+		<?php
+		self::check_form(
+			self::CHECK_GA_ACTION,
+			__( 'Check GA', 'ga-telegram-bridge' ),
+			__( 'Asks Google whether this site can read the configured property. Sends nothing to Telegram.', 'ga-telegram-bridge' )
+		);
+
+		self::check_form(
+			self::CHECK_TELEGRAM_ACTION,
+			__( 'Check Telegram', 'ga-telegram-bridge' ),
+			__( 'Really posts a short test message into the configured chat, so you can see it arrive.', 'ga-telegram-bridge' )
+		);
+	}
+
+	/**
+	 * Prints one check button as its own form to admin-post.php.
+	 *
+	 * @param string $action      The admin-post action it triggers.
+	 * @param string $label       The text on the button.
+	 * @param string $description What pressing it does.
+	 */
+	private static function check_form( string $action, string $label, string $description ): void {
+		?>
 		<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
-			<input type="hidden" name="action" value="<?php echo esc_attr( self::CHECK_GA_ACTION ); ?>" />
+			<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>" />
 			<?php
-			wp_nonce_field( self::CHECK_GA_ACTION );
-			submit_button( __( 'Check GA', 'ga-telegram-bridge' ), 'secondary', 'submit', false );
+			wp_nonce_field( $action );
+			submit_button( $label, 'secondary', 'submit', false );
 			?>
+			<p class="description"><?php echo esc_html( $description ); ?></p>
 		</form>
 		<?php
 	}
@@ -231,8 +253,7 @@ final class Admin {
 	 * Runs the Google check and sends its outcome back to the screen.
 	 *
 	 * The result travels as a settings error, the way WordPress carries notices
-	 * across a redirect: get_settings_errors() reads that transient only when
-	 * settings-updated is set, so the redirect sets it.
+	 * across a redirect — see redirect_to_settings().
 	 */
 	public static function handle_check_ga(): void {
 		check_admin_referer( self::CHECK_GA_ACTION );
@@ -259,6 +280,68 @@ final class Admin {
 			add_settings_error( Settings::OPTION, 'gatb_check_ga', $exception->getMessage(), 'error' );
 		}
 
+		self::redirect_to_settings();
+	}
+
+	/**
+	 * Sends one test message and reports whether Telegram took it.
+	 *
+	 * Unlike the Google check this one is not a read: it really posts into the
+	 * configured chat, which is the only way to prove the bot may write there.
+	 */
+	public static function handle_check_telegram(): void {
+		check_admin_referer( self::CHECK_TELEGRAM_ACTION );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to configure this plugin.', 'ga-telegram-bridge' ) );
+		}
+
+		$chat_id = Settings::telegram_chat_id();
+
+		try {
+			TelegramClient::send_message( $chat_id, self::test_message() );
+
+			add_settings_error(
+				Settings::OPTION,
+				'gatb_check_telegram',
+				sprintf(
+					/* translators: %s: the configured Telegram chat id. */
+					esc_html__( 'Telegram accepted a test message for chat %s. Open that chat to see it.', 'ga-telegram-bridge' ),
+					esc_html( $chat_id )
+				),
+				'success'
+			);
+		} catch ( TelegramException $exception ) {
+			add_settings_error( Settings::OPTION, 'gatb_check_telegram', $exception->getMessage(), 'error' );
+		}
+
+		self::redirect_to_settings();
+	}
+
+	/**
+	 * Builds the fixed message the Telegram check sends.
+	 *
+	 * It uses the same HTML parse mode the report will, so a bot that takes
+	 * this one can take the report too.
+	 */
+	public static function test_message(): string {
+		$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+
+		return sprintf(
+			/* translators: %s: the site's host name. */
+			__( '📊 <b>%s</b> — test message from the Google Analytics → Telegram bridge. The daily report will arrive in this chat.', 'ga-telegram-bridge' ),
+			esc_html( $host )
+		);
+	}
+
+	/**
+	 * Carries the notices of a check back to the settings screen.
+	 *
+	 * WordPress reads the settings_errors transient only when settings-updated
+	 * is set, so the redirect sets it; settings_errors() on the screen then
+	 * prints what was registered here.
+	 */
+	private static function redirect_to_settings(): void {
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 
 		wp_safe_redirect(

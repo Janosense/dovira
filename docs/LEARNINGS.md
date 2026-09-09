@@ -19,6 +19,19 @@ Entry format:
 
 ---
 
+## 2026-09-09 — [ga-telegram-bridge] An option was put to the user with a benefit that had never been measured
+- **Incident:** The gate ran out of memory again in Step 5. I stopped and offered three options, one of which — dropping `tests/` from PHPStan's paths — was described as making "memory fall well under 512M with no flag at all". The user chose it. It does not: measured afterwards, excluding the whole test suite saves **8 MB** (732 MB → 724 MB peak) and the run still crashes at 512M and at 576M, passing only from 640M, exactly as before. The memory is the WordPress stubs each worker loads, not the analysed files. I had to return with the measurement and ask a second time, and the user then took the option I had recommended first.
+- **Root cause:** The three options were written from reasoning ("fewer files, less memory") while the *other* two numbers in the same table were measured. Nothing in `/do-step` says that when a stop puts choices to the user, every claim that distinguishes them has to be measured before it is offered — and a plausible mechanism reads exactly like a measured one once it is in a table next to real figures.
+- **Fix applied here:** The rule taken: **an option's stated cost or benefit is measured before it is offered, or it is written as an estimate in so many words.** A stop is worth one extra minute of measuring; a wrong option costs the user a decision they then have to unmake. Concretely for this project: before proposing anything about the gate, run the variant and record the number, as was eventually done here (512M / 576M / 640M for both configurations).
+- **Transferred to playbook:** pending
+
+## 2026-09-09 — [ga-telegram-bridge] Two tests passed only because of the alphabet
+<!-- Tooling finding rather than a harness defect, kept here because Steps 6 to 8 add many more
+     test classes and will meet it again. -->
+- **`define()` in one test class leaks into every class that runs after it.** `SettingsSecretConstantsTest` defines the real `GATB_*` secret constants, and a PHP constant cannot be undefined. `Settings::telegram_bot_token()` then returns that constant whatever `get_option()` is stubbed to. `GaClientTest` had been passing only because "G" sorts before "S"; the new `TelegramClientTest` sorts after it and every token assertion failed at once — on correct code.
+- **The fix is configuration, not isolation.** `#[RunClassInSeparateProcess]` + `#[PreserveGlobalState(false)]` did **not** contain the constants and added three PHPUnit deprecations. What works is declaring the order: `phpunit.xml.dist` now has two suites, the constants class alone in the second. Written up in `docs/TESTING.md` → How to run.
+- **Transferred to playbook:** n/a — project-technical finding, not a process defect.
+
 ## 2026-09-09 — [ga-telegram-bridge] The gate failed on code that had no errors, and said the wrong thing about why
 - **Incident:** With Step 4's last test file added, `bin/check.sh` stopped passing: `Child process error: PHPStan process crashed because it reached configured PHP memory limit: 512M ... while running parallel worker`. The obvious reading — "the analysis needs more memory" — is wrong. The same analysis run single-threaded (`phpstan analyse --debug`) reports `[OK] No errors`. PHPStan sizes its worker pool from the CPU count, so on a 14-core machine it spawns many workers, each loading the WordPress stubs; the pool, not the analysis, exhausted the limit.
 - **Root cause:** The gate's PHPStan configuration left the worker count to the machine, so the same commit passes or fails depending on how many cores the developer has — and the failure text points at memory rather than at concurrency. Nothing in the step protocol says what to do when the *gate itself* breaks for reasons unrelated to the code.
