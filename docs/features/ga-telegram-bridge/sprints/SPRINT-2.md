@@ -30,7 +30,7 @@ uninstall. A readme lets another site set the plugin up from scratch.
 - **Docs to update:** `docs/DATA-MODEL.md` (`gatb_state.next_run`, `last_cron_hit`); `docs/ARCHITECTURE.md` → Data flows ("Daily GA report" flow, scheduled part).
 - **Depends on:** —
 
-### [ ] Step 2 — Retries and the failure notice
+### [x] Step 2 — Retries and the failure notice
 - **Tasks:**
   - In `Runner`: on `GoogleAuthException` / `GaClientException` / `TelegramException` increment `gatb_state.attempt`, log `failed` with the mapped reason (no secrets), and schedule `wp_schedule_single_event(now + 1h, 'gatb_retry_report', [date])` while `attempt < max_attempts`; on the final failure send `MessageRenderer::renderFailure(date)` (best effort — a failure of the notice itself is only logged) and reset `attempt`.
   - Telegram 429: honour `retry_after` inside the same run once, then treat as a failure.

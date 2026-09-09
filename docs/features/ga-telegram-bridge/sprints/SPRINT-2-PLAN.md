@@ -220,7 +220,7 @@ only the markup).
 ### Questions / ambiguities
 none
 
-## Plan — Sprint 2, Step 2: Retries and the failure notice   (status: implemented, awaiting close)
+## Plan — Sprint 2, Step 2: Retries and the failure notice   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-2-runs-by-itself` ← `master`
