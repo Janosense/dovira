@@ -27,6 +27,9 @@ final class Plugin {
 		add_action( 'admin_post_' . Admin::PREVIEW_ACTION, array( Admin::class, 'handle_preview' ) );
 		add_action( 'admin_post_' . Admin::SEND_NOW_ACTION, array( Admin::class, 'handle_send_now' ) );
 		add_action( 'all_admin_notices', array( Admin::class, 'take_preview' ) );
+		add_action( Scheduler::DAILY_HOOK, array( Scheduler::class, 'run_daily' ) );
+		add_action( 'update_option_' . Settings::OPTION, array( Scheduler::class, 'reschedule' ) );
+		add_action( 'wp_loaded', array( Scheduler::class, 'note_cron_hit' ) );
 	}
 
 	/**
@@ -63,6 +66,21 @@ final class Plugin {
 		// Created here so that it is never autoloaded: a settings save through
 		// options.php would create it with the default autoload instead.
 		add_option( Settings::OPTION, Settings::defaults(), '', false );
+
+		// An install that is activated again keeps whatever it had configured,
+		// so the event is registered from the stored send time either way.
+		Scheduler::reschedule();
+	}
+
+	/**
+	 * Deactivation callback: leaves the settings, the log and the state alone
+	 * and takes only the schedule away.
+	 *
+	 * Deleting the plugin is what removes its data (uninstall.php); switching it
+	 * off must not cost an administrator the credentials they typed in.
+	 */
+	public static function deactivate(): void {
+		Scheduler::clear();
 	}
 
 	/**
