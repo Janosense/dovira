@@ -173,6 +173,23 @@ final class RunLogTest extends TestCase {
 	}
 
 	/**
+	 * Giving a day up starts the counting again without pretending anything
+	 * was delivered.
+	 */
+	public function test_giving_a_day_up_resets_only_the_counter(): void {
+		RunLog::mark_cron_hit( 1757505600 );
+		RunLog::mark_sent( '2026-09-07' );
+		RunLog::mark_failed();
+		RunLog::mark_failed();
+
+		RunLog::reset_attempt();
+
+		$this->assertSame( 0, RunLog::attempt() );
+		$this->assertSame( '2026-09-07', RunLog::last_report_date(), 'the last delivery is untouched' );
+		$this->assertSame( 1757505600, RunLog::last_cron_hit(), 'and so is the cron hit' );
+	}
+
+	/**
 	 * The cron hit is remembered next to the day, and neither write erases the
 	 * other: the two keys are written by different requests.
 	 */

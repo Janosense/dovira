@@ -33,8 +33,9 @@ Settings > GA → Telegram (administrators only) holds everything the plugin nee
   starts with a minus. To post into a channel, add the bot to it as an
   administrator.
 * **Schedule** — the site-local time the daily report goes out at, and how many
-  times a failed one is tried again (the retries themselves arrive in the next
-  release). The section also says when the next run is due.
+  attempts a day is given: a failed one is tried again an hour later, and after
+  the last attempt the chat is told that the day could not be reported. The
+  section also says when the next run is due.
 * **Report blocks** — which parts the message contains. Visitors is always sent.
 
 A field that is filled in wrongly is refused on its own: it keeps its previous
@@ -69,8 +70,14 @@ The report also goes out by itself, once a day at the time set under Schedule.
 WordPress runs it through WP-Cron, which fires on site traffic, so a very quiet
 morning can delay it. Where `DISABLE_WP_CRON` is defined in `wp-config.php`, a
 system cron has to call `wp-cron.php` instead — the settings screen says so when
-nothing has called it for a day. Retrying a failed report follows in the next
-release.
+nothing has called it for a day.
+
+A scheduled report that Google or Telegram refuses is tried again an hour later,
+as many times as **Maximum attempts** allows; after the last one a short notice
+goes to the same chat saying that the day could not be reported, and the reason
+stays in the run log. A day is never sent twice, and a report sent by hand with
+*Send now* is not retried — the reason is on the screen, and the button is
+there to press again.
 
 == Changelog ==
 

@@ -36,6 +36,12 @@ to this data; `uninstall.php` removes all of it.
 - A report for a given date is sent at most once: every run compares the day of
   the report it has built with `gatb_state.last_report_date` before sending, and
   stops there when they match; only the admin's "Send now" bypasses it.
+- A day is attempted at most `max_attempts` times: a scheduled run that fails is
+  repeated an hour later while attempts remain, and the last one sends the
+  failure notice to the same chat and starts the counter again — the day itself
+  stays unsent. A run started by *Send now* is never repeated. A retry cannot
+  read a day the property has already left behind: it reports that day as failed
+  instead of sending another one under its date.
 - Secrets never appear in `gatb_log`, error messages, notices or test output.
 - All GA date ranges are relative (`yesterday`, `NdaysAgo`) and thus resolved
   in the property's reporting time zone; the send time is site-local.

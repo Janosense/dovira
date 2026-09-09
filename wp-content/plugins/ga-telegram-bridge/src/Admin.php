@@ -178,7 +178,7 @@ final class Admin {
 					'max'  => '10',
 					'step' => '1',
 				),
-				'description' => __( 'How often a failed report is tried again before a failure notice is sent. Between 1 and 10.', 'ga-telegram-bridge' ),
+				'description' => __( 'How many attempts a day is given before the chat is told it could not be reported. Each attempt after the first follows an hour later. Between 1 and 10.', 'ga-telegram-bridge' ),
 			)
 		);
 

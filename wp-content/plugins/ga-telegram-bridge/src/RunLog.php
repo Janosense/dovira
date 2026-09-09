@@ -165,10 +165,21 @@ final class RunLog {
 	/**
 	 * Records one more failed attempt, leaving the last sent day untouched.
 	 *
-	 * The day stays unsent on purpose: Sprint 2's retry has to find it.
+	 * The day stays unsent on purpose: the retry has to find it.
 	 */
 	public static function mark_failed(): void {
 		self::save_state( array( 'attempt' => self::attempt() + 1 ) );
+	}
+
+	/**
+	 * Starts counting attempts again without remembering a delivery.
+	 *
+	 * Written when a day is given up after its last attempt: the day stays
+	 * unsent — only the counter that bounds the retries goes back to where a
+	 * fresh day starts.
+	 */
+	public static function reset_attempt(): void {
+		self::save_state( array( 'attempt' => 0 ) );
 	}
 
 	/**

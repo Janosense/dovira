@@ -46,6 +46,27 @@ final class Runner {
 			);
 		}
 
+		if ( null !== $for_date && $for_date !== $report->date ) {
+			// Every range this plugin asks Google for is relative and resolved
+			// in the property's zone (FEATURE.md → Invariants), so once the
+			// property's day has turned, the day this attempt was booked for
+			// cannot be read again — and no later attempt could do better. The
+			// report in hand belongs to the run the daily event will make at
+			// the configured time, not to this one.
+			return self::failed(
+				$trigger,
+				$for_date,
+				sprintf(
+					/* translators: 1: the day the attempt was for, 2: the day the property now calls yesterday. */
+					__( 'The report for %1$s can no longer be built: the property now calls %2$s yesterday.', 'ga-telegram-bridge' ),
+					$for_date,
+					$report->date
+				),
+				$now,
+				false
+			);
+		}
+
 		if ( ! $bypass_date_guard && RunLog::last_report_date() === $report->date ) {
 			return null;
 		}
@@ -78,22 +99,55 @@ final class Runner {
 	 *
 	 * The last sent day is deliberately left as it was: the day stays unsent.
 	 *
-	 * @param string   $trigger The trigger of the run.
-	 * @param string   $date    The day the report was about.
-	 * @param string   $message The mapped reason, already free of any secret.
-	 * @param int|null $now     The current Unix time; injected by the tests.
+	 * @param string   $trigger       The trigger of the run.
+	 * @param string   $date          The day the report was about.
+	 * @param string   $message       The mapped reason, already free of any secret.
+	 * @param int|null $now           The current Unix time; injected by the tests.
+	 * @param bool     $may_try_again Whether another attempt could still succeed.
 	 * @return array{time: int, trigger: string, date: string, status: string, attempt: int, message: string}
 	 */
-	private static function failed( string $trigger, string $date, string $message, ?int $now = null ): array {
+	private static function failed( string $trigger, string $date, string $message, ?int $now = null, bool $may_try_again = true ): array {
 		$attempt = self::attempt();
 
 		RunLog::mark_failed();
 
-		if ( self::is_automatic( $trigger ) && $attempt < Settings::max_attempts() ) {
-			Scheduler::schedule_retry( $date, $now );
+		if ( self::is_automatic( $trigger ) ) {
+			if ( $may_try_again && $attempt < Settings::max_attempts() ) {
+				Scheduler::schedule_retry( $date, $now );
+			} else {
+				// The day is given up: the chat is told once, and the counter
+				// starts again for the next day. The day itself stays unsent —
+				// nothing here pretends it was delivered.
+				$message .= ' ' . self::notify( $date );
+
+				RunLog::reset_attempt();
+			}
 		}
 
 		return RunLog::add( $trigger, $date, 'failed', $attempt, $message );
+	}
+
+	/**
+	 * Tells the chat that a day could not be reported, and says how that went.
+	 *
+	 * Best effort by definition: the notice travels the way the report does, so
+	 * whatever refused the report may refuse this too — and then the log is the
+	 * only place left that can say so.
+	 *
+	 * @param string $date The day that could not be reported.
+	 */
+	private static function notify( string $date ): string {
+		try {
+			TelegramClient::send_message( Settings::telegram_chat_id(), MessageRenderer::render_failure( $date ) );
+		} catch ( TelegramException $refused ) {
+			return sprintf(
+				/* translators: %s: the reason Telegram gave, already free of the bot token. */
+				__( 'No attempts are left, and the chat could not be told either: %s', 'ga-telegram-bridge' ),
+				$refused->getMessage()
+			);
+		}
+
+		return __( 'No attempts are left, so the chat has been told that this day could not be reported.', 'ga-telegram-bridge' );
 	}
 
 	/**

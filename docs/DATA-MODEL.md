@@ -170,7 +170,7 @@ retries and idempotency on WP-Cron"): a report for a day is sent at most once.
 | Key | Type | Default | Written by |
 |---|---|---|---|
 | `last_report_date` | string | `''` | `RunLog::mark_sent()` after Telegram accepted the message — the property's day, `Y-m-d`, never the server's |
-| `attempt` | int | `0` | `RunLog::mark_failed()` adds one; a success resets it to 0 |
+| `attempt` | int | `0` | `RunLog::mark_failed()` adds one; a success resets it to 0, and so does `RunLog::reset_attempt()` when a day is given up after its last attempt |
 | `last_cron_hit` | int | `0` | `RunLog::mark_cron_hit()` on any request that runs as WP-Cron (`wp_doing_cron()`); `0` = never |
 
 Every write **merges** into the stored row rather than replacing it: the day and
@@ -179,8 +179,9 @@ what the other remembered. A row written before `last_cron_hit` existed complete
 to `0` on read, so there is no migration.
 
 A failed run leaves `last_report_date` untouched on purpose: the day stays
-unsent, which is what Sprint 2's retry looks for and what keeps a failure from
-being remembered as a delivery. `last_cron_hit` is read by one thing only —
+unsent, which is what the retry looks for and what keeps a failure from being
+remembered as a delivery. Giving a day up after its last attempt does not change
+that either — only the counter goes back to 0, so the next day starts at 1. `last_cron_hit` is read by one thing only —
 screen `Settings`, to warn when WP-Cron is switched off in `wp-config.php` and
 nothing has called `wp-cron.php` for 24 hours.
 
