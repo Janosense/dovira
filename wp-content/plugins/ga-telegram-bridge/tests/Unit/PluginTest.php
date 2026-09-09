@@ -136,6 +136,22 @@ final class PluginTest extends TestCase {
 	}
 
 	/**
+	 * And on the save of an option that does not exist yet in the eyes of core.
+	 *
+	 * While the stored settings are still exactly the registered defaults,
+	 * update_option() hands the write to add_option(), which fires only its own
+	 * action — so a fresh install saving for the first time would otherwise
+	 * schedule nothing.
+	 */
+	public function test_boot_reschedules_when_the_settings_are_first_written(): void {
+		Plugin::boot();
+
+		$this->assertNotFalse(
+			Actions\has( 'add_option_gatb_settings', array( Scheduler::class, 'reschedule' ) )
+		);
+	}
+
+	/**
 	 * Boot registers the reader that notices a visit to wp-cron.php.
 	 */
 	public function test_boot_registers_the_cron_hit_reader(): void {

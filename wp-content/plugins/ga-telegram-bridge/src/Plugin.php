@@ -28,7 +28,12 @@ final class Plugin {
 		add_action( 'admin_post_' . Admin::SEND_NOW_ACTION, array( Admin::class, 'handle_send_now' ) );
 		add_action( 'all_admin_notices', array( Admin::class, 'take_preview' ) );
 		add_action( Scheduler::DAILY_HOOK, array( Scheduler::class, 'run_daily' ) );
+		// Both, because core routes a save through add_option() while the stored
+		// settings still equal the registered defaults: update_option() hands
+		// over to it when the old value is the default, and only the matching
+		// action fires. A fresh install is in exactly that state.
 		add_action( 'update_option_' . Settings::OPTION, array( Scheduler::class, 'reschedule' ) );
+		add_action( 'add_option_' . Settings::OPTION, array( Scheduler::class, 'reschedule' ) );
 		add_action( 'wp_loaded', array( Scheduler::class, 'note_cron_hit' ) );
 	}
 

@@ -45,7 +45,10 @@ references the `dovira` theme, its functions, options or data.
   transient `gatb_google_access_token` and the cron hooks `gatb_daily_report`,
   `gatb_retry_report` — all removed by `uninstall.php`. No custom tables.
 - Cron: `Scheduler` is the only class that schedules or clears events; every
-  run passes through `Runner` and its date guard.
+  run passes through `Runner` and its date guard. A settings save is caught on
+  **both** `update_option_gatb_settings` and `add_option_gatb_settings`: while
+  the stored row still equals the registered default, core writes it through
+  `add_option()`.
 - Tests: `tests/Unit/` with PHPUnit + Brain\Monkey, fixtures in
   `tests/fixtures/`, rules in `docs/TESTING.md`.
 
