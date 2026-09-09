@@ -33,7 +33,7 @@ schedule yet. The project has a check command that gates every commit.
 - **Docs to update:** `docs/TECH-STACK.md` → Check command (name `bin/check.sh`), Stack table (plugin row, tooling rows marked `unverified — pinned at bootstrap` until installed), Approved dependencies log; root `CLAUDE.md` → Commands (check command line); `docs/ARCHITECTURE.md` → Feature map + Modules (plugin row) + Integrations (GA4 Data API row, Telegram row for the plugin); `docs/TESTING.md` → How to run.
 - **Depends on:** —
 
-### [ ] Step 2 — Spike: service account → GA4 Data API (timeboxed, throwaway)
+### [x] Step 2 — Spike: service account → GA4 Data API (timeboxed, throwaway)
 - **Tasks:**
   - Timebox: one session. In a scratch file under `wp-content/plugins/ga-telegram-bridge/spike/` (never committed to `master` — deleted at close), build the JWT (header `RS256`, claims `iss`=client_email, `scope`=`https://www.googleapis.com/auth/analytics.readonly`, `aud`=`https://oauth2.googleapis.com/token`, `iat`, `exp`=iat+3600), sign with `openssl_sign(OPENSSL_ALGO_SHA256)`, exchange it (`grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer`) and call `properties/{id}:runReport` for `activeUsers`, date range `yesterday`, run via `ddev wp eval-file`.
   - Use the Dovira Kharkiv property with a service account the user creates and grants Viewer; the key JSON is read from a local file outside the repo, never committed.
