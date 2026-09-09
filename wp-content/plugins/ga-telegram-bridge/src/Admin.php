@@ -24,6 +24,11 @@ final class Admin {
 	public const PAGE = 'gatb-settings';
 
 	/**
+	 * The admin-post action behind the "Check GA" button.
+	 */
+	public const CHECK_GA_ACTION = 'gatb_check_ga';
+
+	/**
 	 * Adds the screen under Settings. Hooked on admin_menu.
 	 */
 	public static function add_page(): void {
@@ -189,8 +194,84 @@ final class Admin {
 				submit_button();
 				?>
 			</form>
+			<?php self::render_connection_section(); ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Prints the buttons that talk to Google and Telegram.
+	 *
+	 * They cannot live inside the settings form: that one posts to options.php,
+	 * and a form cannot contain another. Each check is its own small form to
+	 * admin-post.php.
+	 */
+	public static function render_connection_section(): void {
+		?>
+		<h2><?php echo esc_html__( 'Connection', 'ga-telegram-bridge' ); ?></h2>
+		<p>
+			<?php
+			echo esc_html__(
+				'Save the settings first, then check that this site can read the property. This button sends nothing to Telegram.',
+				'ga-telegram-bridge'
+			);
+			?>
+		</p>
+		<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+			<input type="hidden" name="action" value="<?php echo esc_attr( self::CHECK_GA_ACTION ); ?>" />
+			<?php
+			wp_nonce_field( self::CHECK_GA_ACTION );
+			submit_button( __( 'Check GA', 'ga-telegram-bridge' ), 'secondary', 'submit', false );
+			?>
+		</form>
+		<?php
+	}
+
+	/**
+	 * Runs the Google check and sends its outcome back to the screen.
+	 *
+	 * The result travels as a settings error, the way WordPress carries notices
+	 * across a redirect: get_settings_errors() reads that transient only when
+	 * settings-updated is set, so the redirect sets it.
+	 */
+	public static function handle_check_ga(): void {
+		check_admin_referer( self::CHECK_GA_ACTION );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to configure this plugin.', 'ga-telegram-bridge' ) );
+		}
+
+		try {
+			$connection = GaClient::check_connection();
+
+			add_settings_error(
+				Settings::OPTION,
+				'gatb_check_ga',
+				sprintf(
+					/* translators: 1: the GA4 property id, 2: the property's reporting time zone. */
+					esc_html__( 'Google answered for property %1$s. Its reporting time zone is %2$s — that is the day the report calls "yesterday".', 'ga-telegram-bridge' ),
+					esc_html( $connection['property_id'] ),
+					esc_html( '' !== $connection['time_zone'] ? $connection['time_zone'] : '-' )
+				),
+				'success'
+			);
+		} catch ( GoogleAuthException | GaClientException $exception ) {
+			add_settings_error( Settings::OPTION, 'gatb_check_ga', $exception->getMessage(), 'error' );
+		}
+
+		set_transient( 'settings_errors', get_settings_errors(), 30 );
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'             => self::PAGE,
+					'settings-updated' => 'true',
+				),
+				admin_url( 'options-general.php' )
+			)
+		);
+
+		exit;
 	}
 
 	/**

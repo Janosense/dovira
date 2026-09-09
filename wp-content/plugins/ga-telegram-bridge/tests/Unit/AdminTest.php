@@ -242,10 +242,16 @@ final class AdminTest extends TestCase {
 	 */
 	public function test_the_page_prints_the_nonce_the_notices_and_the_sections(): void {
 		Functions\when( 'current_user_can' )->justReturn( true );
+		Functions\when( 'esc_url' )->returnArg();
+		Functions\when( 'admin_url' )->alias(
+			static fn( string $path = '' ): string => 'https://example.test/wp-admin/' . $path
+		);
+		Functions\when( 'wp_nonce_field' )->justReturn( null );
 		Functions\expect( 'settings_errors' )->once()->with( 'gatb_settings' );
 		Functions\expect( 'settings_fields' )->once()->with( 'gatb_settings' );
 		Functions\expect( 'do_settings_sections' )->once()->with( 'gatb-settings' );
-		Functions\expect( 'submit_button' )->once();
+		// Twice: the settings form and the Check GA form below it.
+		Functions\expect( 'submit_button' )->twice();
 
 		$markup = $this->render(
 			static function (): void {
@@ -254,6 +260,7 @@ final class AdminTest extends TestCase {
 		);
 
 		$this->assertStringContainsString( '<form action="options.php" method="post">', $markup );
+		$this->assertStringContainsString( 'admin-post.php', $markup, 'the connection check is on the same screen' );
 	}
 
 	/**

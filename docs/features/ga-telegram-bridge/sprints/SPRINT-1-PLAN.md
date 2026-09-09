@@ -604,7 +604,7 @@ names this same branch. Deleted at the close of Step 3 — `/do-step` re-creates
     address and no token**, so nothing needs scrubbing — plus `error-quota-exceeded.json`,
     written from Google's documented 429 body because the spike could not provoke one.
 
-- [ ] **3. "Check GA" on screen `Settings`** (+ its tests, same commit) →
+- [x] **3. "Check GA" on screen `Settings`** (+ its tests, same commit) →
   `feat(ga-telegram-bridge): check the Google connection from the settings screen`
 
   `src/Admin.php`, `src/Plugin.php`.
