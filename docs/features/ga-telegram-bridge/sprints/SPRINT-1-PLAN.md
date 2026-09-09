@@ -526,7 +526,7 @@ applies, and `sanitize_settings` is that logic.
 ### Questions / ambiguities
 none
 
-## Plan — Sprint 1, Step 4: GoogleAuth, GaClient and "Check GA"   (status: approved, in progress)
+## Plan — Sprint 1, Step 4: GoogleAuth, GaClient and "Check GA"   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-1-report-on-demand` ← `master`
