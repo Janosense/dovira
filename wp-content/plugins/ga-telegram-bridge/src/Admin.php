@@ -34,6 +34,11 @@ final class Admin {
 	public const CHECK_TELEGRAM_ACTION = 'gatb_check_telegram';
 
 	/**
+	 * The admin-post action behind the "Preview" button.
+	 */
+	public const PREVIEW_ACTION = 'gatb_preview';
+
+	/**
 	 * Adds the screen under Settings. Hooked on admin_menu.
 	 */
 	public static function add_page(): void {
@@ -181,12 +186,14 @@ final class Admin {
 	}
 
 	/**
-	 * Prints the screen: the notices, the form and its sections.
+	 * Prints the screen: the notices, the form, its sections and any preview.
 	 */
 	public static function render_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
+
+		$preview = self::take_preview();
 
 		?>
 		<div class="wrap">
@@ -199,8 +206,68 @@ final class Admin {
 				submit_button();
 				?>
 			</form>
-			<?php self::render_connection_section(); ?>
+			<?php
+			self::render_connection_section();
+			self::render_preview( $preview );
+			?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Takes the message a preview just built out of the notices.
+	 *
+	 * The preview travels back from admin-post.php the way the two checks carry
+	 * their results — as a settings error, which is the transient WordPress
+	 * already uses for notices; reading the notices is what merges that
+	 * transient into this request. It is then taken out of the list on purpose:
+	 * a whole message belongs in a block of its own, not inside a one-line
+	 * notice printed as bold text.
+	 */
+	private static function take_preview(): ?string {
+		$message = null;
+
+		get_settings_errors( Settings::OPTION );
+
+		/**
+		 * The notices of this request, WordPress's own list.
+		 *
+		 * @var array<int, mixed> $notices
+		 */
+		$notices = isset( $GLOBALS['wp_settings_errors'] ) && is_array( $GLOBALS['wp_settings_errors'] )
+			? $GLOBALS['wp_settings_errors']
+			: array();
+
+		foreach ( $notices as $index => $notice ) {
+			if ( ! is_array( $notice ) || self::PREVIEW_ACTION !== ( $notice['code'] ?? '' ) ) {
+				continue;
+			}
+
+			$message = is_string( $notice['message'] ?? null ) ? $notice['message'] : '';
+
+			unset( $GLOBALS['wp_settings_errors'][ $index ] );
+		}
+
+		return $message;
+	}
+
+	/**
+	 * Prints the message the plugin would send, as text.
+	 *
+	 * The HTML is shown escaped, tags and all: what Telegram receives is what
+	 * the administrator should be able to read here.
+	 *
+	 * @param string|null $message The rendered message, or null when none was built.
+	 */
+	private static function render_preview( ?string $message ): void {
+		if ( null === $message ) {
+			return;
+		}
+
+		?>
+		<h2><?php echo esc_html__( 'Preview', 'ga-telegram-bridge' ); ?></h2>
+		<p><?php echo esc_html__( 'The message as Telegram would receive it, tags and all. Nothing was sent.', 'ga-telegram-bridge' ); ?></p>
+		<pre><?php echo esc_html( $message ); ?></pre>
 		<?php
 	}
 
@@ -226,6 +293,12 @@ final class Admin {
 			self::CHECK_TELEGRAM_ACTION,
 			__( 'Check Telegram', 'ga-telegram-bridge' ),
 			__( 'Really posts a short test message into the configured chat, so you can see it arrive.', 'ga-telegram-bridge' )
+		);
+
+		self::check_form(
+			self::PREVIEW_ACTION,
+			__( 'Preview', 'ga-telegram-bridge' ),
+			__( 'Reads yesterday from Google and shows the message it would send. Sends nothing.', 'ga-telegram-bridge' )
 		);
 	}
 
@@ -313,6 +386,34 @@ final class Admin {
 			);
 		} catch ( TelegramException $exception ) {
 			add_settings_error( Settings::OPTION, 'gatb_check_telegram', $exception->getMessage(), 'error' );
+		}
+
+		self::redirect_to_settings();
+	}
+
+	/**
+	 * Builds the report and shows the message it would make of it.
+	 *
+	 * This is the only button that reads the whole property: it runs the same
+	 * two calls and the same renderer the daily report will, and then stops.
+	 * Telegram is not touched and nothing is stored.
+	 */
+	public static function handle_preview(): void {
+		check_admin_referer( self::PREVIEW_ACTION );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to configure this plugin.', 'ga-telegram-bridge' ) );
+		}
+
+		try {
+			add_settings_error(
+				Settings::OPTION,
+				self::PREVIEW_ACTION,
+				MessageRenderer::render( ReportBuilder::build() ),
+				'info'
+			);
+		} catch ( GoogleAuthException | GaClientException $exception ) {
+			add_settings_error( Settings::OPTION, self::PREVIEW_ACTION . '_failed', $exception->getMessage(), 'error' );
 		}
 
 		self::redirect_to_settings();

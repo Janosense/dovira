@@ -247,11 +247,12 @@ final class AdminTest extends TestCase {
 			static fn( string $path = '' ): string => 'https://example.test/wp-admin/' . $path
 		);
 		Functions\when( 'wp_nonce_field' )->justReturn( null );
+		Functions\when( 'get_settings_errors' )->justReturn( array() );
 		Functions\expect( 'settings_errors' )->once()->with( 'gatb_settings' );
 		Functions\expect( 'settings_fields' )->once()->with( 'gatb_settings' );
 		Functions\expect( 'do_settings_sections' )->once()->with( 'gatb-settings' );
-		// Three times: the settings form and the two check forms below it.
-		Functions\expect( 'submit_button' )->times( 3 );
+		// Four times: the settings form and the three buttons below it.
+		Functions\expect( 'submit_button' )->times( 4 );
 
 		$markup = $this->render(
 			static function (): void {
