@@ -52,6 +52,22 @@ final class Plugin {
 	}
 
 	/**
+	 * The version this build declares, read from the plugin header.
+	 *
+	 * Read rather than stored: the header is where WordPress already keeps this
+	 * number, and a constant beside it would be the second copy that DECISIONS
+	 * "The schedule is registered from the settings alone, and the next run is
+	 * never stored" refused for the next run — one more thing that can disagree
+	 * with the truth. The cost is one 8 KB file read, and only the settings
+	 * screen asks for it.
+	 */
+	public static function version(): string {
+		$headers = get_file_data( GATB_PLUGIN_FILE, array( 'Version' => 'Version' ) );
+
+		return isset( $headers['Version'] ) ? (string) $headers['Version'] : '';
+	}
+
+	/**
 	 * Activation callback: refuses activation when a requirement is missing and
 	 * otherwise creates the settings option.
 	 *

@@ -228,6 +228,57 @@ final class PluginTest extends TestCase {
 	}
 
 	/**
+	 * The version comes out of the plugin header, and from nowhere else.
+	 *
+	 * The stub is the point of the test: a number written into the markup would
+	 * pass an assertion on the rendered screen just as well, and would then be
+	 * free to disagree with the header a host reads.
+	 */
+	public function test_the_version_comes_from_the_plugin_header(): void {
+		Functions\expect( 'get_file_data' )
+			->once()
+			->with( GATB_PLUGIN_FILE, array( 'Version' => 'Version' ) )
+			->andReturn( array( 'Version' => '9.9.9' ) );
+
+		$this->assertSame( '9.9.9', Plugin::version() );
+	}
+
+	/**
+	 * The header and readme.txt name the same version.
+	 *
+	 * Both files are read as they are shipped: the plugin header is what
+	 * WordPress shows on the Plugins screen and what the settings screen prints,
+	 * `Stable tag` is what a reader of the readme believes. A release that bumps
+	 * one and forgets the other fails here instead of on somebody's site.
+	 */
+	public function test_the_header_and_the_readme_agree_on_the_version(): void {
+		$header = $this->first_match( GATB_PLUGIN_FILE, '/^ \* Version:\s+(\S+)/m' );
+		$stable = $this->first_match( dirname( GATB_PLUGIN_FILE ) . '/readme.txt', '/^Stable tag:\s+(\S+)/m' );
+
+		$this->assertNotSame( '', $header, 'the plugin header declares a version' );
+		$this->assertSame(
+			$header,
+			$stable,
+			'the plugin header and readme.txt must name the same version'
+		);
+	}
+
+	/**
+	 * Reads one shipped file and returns the first group its pattern captures.
+	 *
+	 * @param string $file    The file to read, as it is shipped.
+	 * @param string $pattern The pattern whose first group is wanted.
+	 */
+	private function first_match( string $file, string $pattern ): string {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a shipped file of this plugin, and unit tests have no WP_Filesystem.
+		$contents = (string) file_get_contents( $file );
+
+		$this->assertSame( 1, preg_match( $pattern, $contents, $matches ), 'no line matched ' . $pattern );
+
+		return isset( $matches[1] ) ? $matches[1] : '';
+	}
+
+	/**
 	 * With OpenSSL present there is no reason to block activation.
 	 */
 	public function test_activation_is_not_blocked_when_openssl_is_available(): void {

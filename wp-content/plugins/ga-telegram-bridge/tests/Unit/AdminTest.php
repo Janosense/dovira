@@ -246,6 +246,9 @@ final class AdminTest extends TestCase {
 	public function test_the_page_prints_the_nonce_the_form_and_the_sections(): void {
 		Functions\when( 'current_user_can' )->justReturn( true );
 		Functions\when( 'esc_url' )->returnArg();
+		// The run log names the build it is running and links to the readme.
+		Functions\when( 'get_file_data' )->justReturn( array( 'Version' => '0.1.0' ) );
+		Functions\when( 'plugins_url' )->justReturn( 'https://dovira.vet/wp-content/plugins/ga-telegram-bridge/readme.txt' );
 		Functions\when( 'admin_url' )->alias(
 			static fn( string $path = '' ): string => 'https://example.test/wp-admin/' . $path
 		);
@@ -353,5 +356,103 @@ final class AdminTest extends TestCase {
 		);
 
 		$this->assertSame( '', $markup );
+	}
+
+	/**
+	 * A readme URL of the shape plugins_url() builds on a real install.
+	 */
+	private const README_URL = 'https://dovira.vet/wp-content/plugins/ga-telegram-bridge/readme.txt';
+
+	/**
+	 * The run log says which build produced its rows.
+	 *
+	 * The header is stubbed rather than read: a version written into the markup
+	 * would satisfy an assertion on the screen just as well, and would then be
+	 * free to disagree with the header WordPress shows on the Plugins screen.
+	 */
+	public function test_the_run_log_names_the_build_it_is_running(): void {
+		Functions\when( 'plugins_url' )->justReturn( self::README_URL );
+		Functions\expect( 'get_file_data' )
+			->once()
+			->with( GATB_PLUGIN_FILE, array( 'Version' => 'Version' ) )
+			->andReturn( array( 'Version' => '9.9.9' ) );
+
+		$markup = $this->render( static fn() => Admin::render_log_section( array() ) );
+
+		$this->assertStringContainsString( 'Plugin version 9.9.9', $markup );
+	}
+
+	/**
+	 * Negative check: the version stands above the table, not in it.
+	 *
+	 * A version repeated per row would be the seventh column this screen does
+	 * not have — the log records what a run did, not what it was made by.
+	 */
+	public function test_the_version_is_printed_once_however_many_runs_there_are(): void {
+		Functions\when( 'plugins_url' )->justReturn( self::README_URL );
+		Functions\when( 'get_file_data' )->justReturn( array( 'Version' => '9.9.9' ) );
+		Functions\when( 'wp_date' )->justReturn( '2026-09-09 09:00' );
+
+		$markup = $this->render(
+			fn() => Admin::render_log_section( $this->five_runs() )
+		);
+
+		$this->assertSame( 1, substr_count( $markup, 'Plugin version' ) );
+		$this->assertSame( 5, substr_count( $markup, '<td>Sent</td>' ), 'five runs are in the table' );
+	}
+
+	/**
+	 * Every section that raises a question links to the readme answering it.
+	 *
+	 * Asserted on the markup a reader sees, not on the helper that builds it,
+	 * and each link says which part of the readme it leads to: readme.txt is a
+	 * plain-text file, so it opens at the top and is read by scrolling.
+	 */
+	public function test_every_section_points_at_the_readme(): void {
+		Functions\expect( 'plugins_url' )
+			->times( 4 )
+			->with( 'readme.txt', GATB_PLUGIN_FILE )
+			->andReturn( self::README_URL );
+		Functions\when( 'get_file_data' )->justReturn( array( 'Version' => '0.1.0' ) );
+		Functions\when( 'wp_next_scheduled' )->justReturn( false );
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$sections = array(
+			'Installation step 1.'        => $this->render( static fn() => Admin::render_google_section() ),
+			'Installation step 2.'        => $this->render( static fn() => Admin::render_telegram_section() ),
+			'Installation step 5.'        => $this->render( static fn() => Admin::render_schedule_section() ),
+			'Frequently Asked Questions.' => $this->render( static fn() => Admin::render_log_section( array() ) ),
+		);
+
+		foreach ( $sections as $where => $markup ) {
+			$this->assertStringContainsString(
+				'<a href="' . self::README_URL . '" target="_blank" rel="noopener noreferrer">',
+				$markup,
+				'the section pointing at ' . $where . ' links to the readme'
+			);
+			$this->assertStringContainsString( $where, $markup, 'the link says which part of the readme it leads to' );
+		}
+	}
+
+	/**
+	 * Five runs of the same shape RunLog stores.
+	 *
+	 * @return list<array{time: int, trigger: string, date: string, status: string, attempt: int, message: string}>
+	 */
+	private function five_runs(): array {
+		$runs = array();
+
+		for ( $day = 5; $day >= 1; $day-- ) {
+			$runs[] = array(
+				'time'    => 1789020000 - ( $day * 86400 ),
+				'trigger' => 'cron',
+				'date'    => sprintf( '2026-09-%02d', $day ),
+				'status'  => 'sent',
+				'attempt' => 1,
+				'message' => 'The report was sent.',
+			);
+		}
+
+		return $runs;
 	}
 }

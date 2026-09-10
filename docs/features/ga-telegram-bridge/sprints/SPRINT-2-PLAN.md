@@ -729,3 +729,263 @@ repeatedly is safe):
 
 ### Questions / ambiguities
 none
+
+---
+
+## Plan — Sprint 2, Step 4: Production readiness on both Dovira installs   (status: approved, in progress)
+
+### Branch
+`ga-telegram-bridge/sprint-2-runs-by-itself` ← `master`
+(root `CLAUDE.md` → git model: simple — task branch → `master`; the name is the
+**Branch** line of `SPRINT-2.md`. Recreated from `master`, deleted at the close,
+as in Steps 1–3. This is the sprint's **last** step: the close also writes
+`SPRINT-2-CLOSE.md`, and the deploy of both productions is the sprint boundary's,
+never a task here.)
+
+### Tasks (ordered)
+
+- [x] **1. The screen says which build it is running and where the instructions
+  are.** The step's second task, done first because the checklist in task 2
+  describes the screen a person will be looking at.
+  - `src/Plugin.php` gains `public static function version(): string` — the
+    `Version:` header of `GATB_PLUGIN_FILE`, read with
+    `get_file_data( GATB_PLUGIN_FILE, array( 'Version' => 'Version' ) )`. No
+    `GATB_VERSION` constant: the header is where WordPress already keeps this
+    number, and a constant beside it is the second copy that DECISIONS "The
+    schedule is registered from the settings alone" refused for the next run.
+    The cost is one 8 KB file read on the settings screen and nowhere else.
+  - `src/Admin.php` → `render_log_section()` prints, directly under the **Run
+    log** heading, one `<p class="description">` reading `Plugin version %s`.
+    That is the "run log shows the plugin version" of the step: a screenshot
+    sent from Kharkiv or Kyiv then says which build produced those rows. It is
+    **one line above the table, not a seventh column** — see Docs vs reality 1.
+  - `src/Admin.php` gains two private helpers: `readme_url()`
+    (`plugins_url( 'readme.txt', GATB_PLUGIN_FILE )` — the URL is built in one
+    place) and `readme_link( string $label )`, printing
+    `<p class="description"><a href="…" target="_blank" rel="noopener noreferrer">…</a></p>`.
+    `target="_blank"` so a half-filled form is never lost to a click.
+  - Four call sites, one per readme part, each the section that raises the
+    question: Google → *Installation, step 1*; Telegram → *Installation, step 2*;
+    Schedule → *Installation, step 5* (what has to run WP-Cron); Run log → the
+    *FAQ* answer for a report that did not arrive. The whole sentence is the
+    link text, so no translated string ever contains markup.
+  - Five new English source strings; per the plugin's `CLAUDE.md` the `.pot` is
+    regenerated (122 → 127 entries), the five are translated in
+    `languages/ga-telegram-bridge-uk.po` and the `.mo` rebuilt — reading the
+    `.pot` back before rebuilding, because DDEV writes it from the container a
+    moment later (LEARNINGS "Two files looked unchanged because DDEV had not
+    synced them yet").
+  - `FEATURE.md` → UI and the plugin's `CLAUDE.md` are updated in this same
+    commit (core rule 8).
+  → commit `feat(ga-telegram-bridge): name the build and link the readme on the settings screen`
+
+- [ ] **2. The pre-flight checklist both installs are set up from.** New
+  `docs/features/ga-telegram-bridge/PRODUCTION-CHECKLIST.md` — the step's first
+  task, written as a document the developer works through install by install,
+  because nothing here is code:
+  - **A. Before the deploy** (needs no site): each install's **numeric** property
+    id, read in GA → Admin → Property settings — the measurement ids
+    `G-HKYZFG0E2W` (Kharkiv) and `G-Q597WTF16L` (Kyiv) from
+    `docs/ARCHITECTURE.md` → Integrations say *which* property is which, and a
+    measurement id is never a property id; Viewer on each property for the
+    service account's e-mail address; one bot and one chat per install, with the
+    bot an administrator of a channel or the person having written to it first;
+    that chat's id; the send time and the block set agreed with the owner (a
+    change to either is a DECISIONS entry — `SPRINT-2.md` → Docs to update).
+  - **B. At the deploy, per install, in this order:** the two constants added to
+    that install's own `wp-config.php` (never committed — the file is gitignored
+    on every install, which is how core rule 7 is met here); activate the plugin;
+    fill the non-secret fields and save; *Check GA* — it must name that city's
+    property id together with its reporting time zone; *Check Telegram* — the
+    test message must arrive in **that city's** chat, not the other's; *Preview*;
+    *Send now* for the first real report, whose row must read *Sent*.
+  - **C. The host requirements prove themselves in B:** *Check GA* reaching
+    Google proves outbound HTTPS to `oauth2.googleapis.com` and
+    `analyticsdata.googleapis.com` *and* that `openssl` signed the JWT;
+    *Check Telegram* proves `api.telegram.org`; activation proves `openssl` on
+    its own (`Plugin::activate()` refuses without it). No probe file is uploaded
+    to a production host — the plugin's own buttons are the probe. What to ask
+    the host for when one of them reports it cannot reach a service.
+  - **D. The schedule:** **Next run** shows the agreed local time; if that
+    install has `DISABLE_WP_CRON`, the crontab line from `readme.txt` §5 is
+    installed and the screen's warning is gone within a day.
+  - **E. The two mornings:** on each install the newest **Run log** row reads
+    *Schedule · Sent · attempt 1* on two consecutive days and the owner confirms
+    both messages arrived. That is the sprint's Definition of Done.
+  - **F. Never:** paste a key or a token into a chat, an issue or a screenshot;
+    run `wp option get gatb_settings` (LEARNINGS, 2026-09-09); commit a
+    `wp-config.php`. The checklist itself carries no id, no chat and no
+    credential — it says where each value is found and where it is typed in.
+  - `docs/ARCHITECTURE.md` → Environments gains the paragraph the step asks for
+    ("plugin configuration per install"): the two constants in each install's
+    `wp-config.php`, everything else in that install's `gatb_settings`, one GA4
+    property and one chat per install, and a pointer to this checklist. Values
+    stay out of the repository.
+  → commit `docs(ga-telegram-bridge): pre-flight checklist for the two production installs`
+
+- [ ] **3. Run here what can be run here.** No commit — this is the "and runs it"
+  half of the step, as far as this machine reaches:
+  - On `https://dovira.ddev.site/wp-admin/options-general.php?page=gatb-settings`:
+    the version line under **Run log** reads `Версія плагіна 0.1.0`, the four
+    readme links are where task 1 put them, and each opens the readme (a `curl`
+    of the readme URL answering `200` with the file's first line is the check
+    that goes into the guide) — the rule from LEARNINGS "A screen was called
+    finished without anyone opening it".
+  - Walk sections B–D of the checklist on the dev install, which is configured
+    and delivered its first scheduled report on 2026-09-09: *Check GA* names
+    property `533779496` and `Europe/Kiev`, *Check Telegram* arrives, **Next
+    run** reads 2026-09-11 09:00. This is the rehearsal that proves the
+    checklist's wording before either production is touched by it.
+  - The constants rehearsal is Question 1 below.
+  - Nothing on either production install is touched: no step deploys.
+
+### Files to create/change
+
+| File | Task | What |
+|---|---|---|
+| `wp-content/plugins/ga-telegram-bridge/src/Plugin.php` | 1 | `version()` — the plugin header's `Version:`, read, never copied |
+| `wp-content/plugins/ga-telegram-bridge/src/Admin.php` | 1 | the version line under **Run log**; `readme_url()` + `readme_link()` and their four call sites |
+| `wp-content/plugins/ga-telegram-bridge/tests/Unit/AdminTest.php` | 1 | the version line and the four links (3 tests) |
+| `wp-content/plugins/ga-telegram-bridge/tests/Unit/PluginTest.php` | 1 | where the version comes from, and that the readme agrees with it (2 tests) |
+| `wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge.pot` | 1 | regenerated: 122 → 127 entries |
+| `wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge-uk.po` / `.mo` | 1 | the five new strings translated, the `.mo` rebuilt |
+| `wp-content/plugins/ga-telegram-bridge/CLAUDE.md` | 1 | one clause: the version is read from the header, the readme URL is built in one place |
+| `docs/features/ga-telegram-bridge/FEATURE.md` | 1 | → UI: the version line on `Run log`, the readme links on `Settings` |
+| `docs/features/ga-telegram-bridge/PRODUCTION-CHECKLIST.md` | 2 | **new** — sections A–F above |
+| `docs/ARCHITECTURE.md` | 2 | → Environments: the plugin's configuration per install |
+| `docs/features/ga-telegram-bridge/sprints/SPRINT-2-PLAN.md` | 1–3 | this section: status and ticks |
+
+No gate configuration has to learn about any of these — the rule the last two
+steps' LEARNINGS left, checked file by file this time: `phpunit.xml.dist` takes
+`tests/Unit` as a **directory** (only `SettingsSecretConstantsTest` is named, and
+it must stay last), `phpstan.neon.dist` lists `src` and `tests` as directories
+(its file-by-file entries are `ga-telegram-bridge.php` and `uninstall.php`, and
+this step adds no file beside them), `phpcs.xml.dist` scans `.`; the two new
+Markdown files are outside all three by extension.
+
+### Tests to write
+
+All in the existing classes; 5 new tests, taking the suite to 265.
+
+1. `AdminTest::test_the_run_log_names_the_build_it_is_running` — with
+   `get_file_data` stubbed to answer `9.9.9`, `render_log_section()` prints
+   `Plugin version 9.9.9` above the table. The stub is what proves the number is
+   read rather than written into the markup.
+2. `AdminTest::test_the_version_is_printed_once_however_many_runs_there_are` —
+   the negative: five log rows, and the version line still occurs exactly once.
+   A version repeated per row would be the seventh column this step is not
+   adding.
+3. `AdminTest::test_every_section_points_at_the_readme` — with `plugins_url`
+   stubbed, the Google, Telegram, Schedule and Run log renderers each print one
+   anchor whose `href` is the stubbed readme URL, and the stub is asked for
+   `readme.txt` against `GATB_PLUGIN_FILE`. Asserted on the rendered DOM, which
+   is the state a reader sees, not on the helper.
+4. `PluginTest::test_the_version_comes_from_the_plugin_header` — `get_file_data`
+   is called once with `GATB_PLUGIN_FILE` and `array( 'Version' => 'Version' )`.
+5. `PluginTest::test_the_header_and_the_readme_agree_on_the_version` — reads the
+   real `ga-telegram-bridge.php` and the real `readme.txt` off disk and asserts
+   `Version:` equals `Stable tag:`. The same convention as `UninstallTest`: a
+   version bumped in one file and forgotten in the other fails the gate instead
+   of shipping.
+
+The profile's test-critical zones (form pipelines, per-city price grouping,
+`dovira/v1`, the translate commands) are all theme-side and untouched.
+
+### Docs to update
+
+- `docs/features/ga-telegram-bridge/FEATURE.md` → UI (task 1)
+- `wp-content/plugins/ga-telegram-bridge/CLAUDE.md` → Admin (task 1)
+- `docs/features/ga-telegram-bridge/PRODUCTION-CHECKLIST.md` — new (task 2)
+- `docs/ARCHITECTURE.md` → Environments (task 2)
+- Not touched, deliberately: `docs/DATA-MODEL.md` (nothing new is stored — the
+  version is read, not saved), `docs/DECISIONS.md` (no decision is made or
+  reopened; an owner's change to the send time or the block set during the
+  checklist's execution is what would earn an entry), `docs/DESIGN.md` (n/a for
+  this feature), `docs/TESTING.md`, `docs/DOMAIN.md`, `docs/TECH-STACK.md` (no
+  dependency).
+- At the close, `/close-step` adds the verification guide, the WORKLOG entry,
+  the tick in `SPRINT-2.md` — and, because this is the sprint's last step,
+  `SPRINT-2-CLOSE.md`.
+
+### Checks
+
+- **ANTI-PATTERNS:** none violated. The list is theme-shaped (ACF groups and
+  blocks, `service-city`, city branching, `assets/`, ops directories, post-type
+  registration, `mu-plugins/`, Kyiv-only changes on `master`, CF7 ids). Two
+  reach this step and both are honoured: **no Kyiv-only change on `master`** —
+  the plugin has no per-city code at all, the difference between the two installs
+  is configuration typed into each of them, which is exactly why nothing about
+  Kyiv enters the code; and **no globally installed tooling** — section C of the
+  checklist uses the plugin's own buttons instead of uploading a probe script to
+  a production host. No dependency is added, so core rule 4 is not in play.
+- **Docs vs reality:** four items, all settled here, none of them a question:
+  1. **"The run log shows the plugin version" is a line, not a column.**
+     `SPRINT-2.md` → Step 4 lists no `docs/DATA-MODEL.md` change, so nothing new
+     is stored per run; and `FEATURE.md` → UI fixes screen `Run log` at six
+     columns on purpose ("Six columns and no **next run** column"). A version
+     recorded per row would be both. The screen therefore names the build it is
+     running now, which is what a support screenshot needs.
+  2. **The step's own title outruns what a step may do.** "Production readiness
+     on both Dovira installs" cannot end on the installs: environments track
+     `master` and no step deploys (root `CLAUDE.md` → git model), and the step's
+     own Verification says it is "verified by the sprint-boundary deploy". So
+     this step writes and rehearses the checklist; sections B–E of it are
+     executed at the boundary, which the sprint's Definition of Done already
+     owns. Not a question — the sprint settles it.
+  3. **`readme.txt` is English while the screen is Ukrainian.** The WordPress
+     readme format is English by convention and the plugin's source strings are
+     English (area `CLAUDE.md`); only the four link labels are translated. Naming
+     the readme in the link text is what tells a Ukrainian reader where the click
+     lands.
+  4. **The dev install keeps both secrets in `gatb_settings`, not in the
+     constants** — checked live today, not remembered: `defined()` answers no for
+     both `GATB_*`. DECISIONS "Plugin structure, storage and secrets" expects
+     Dovira installs to define them in `wp-config.php`, and section B of the
+     checklist is that item. This is what Question 1 asks about.
+- **Design:** n/a — DECISIONS "No UI design phase; message format and
+  configurable blocks" forbids a design phase and `docs/DESIGN.md` changes for
+  this feature; the screen is stock wp-admin and `FEATURE.md` → UI is the record
+  that gains the new line.
+- **Check command:** `bin/check.sh` (`docs/TECH-STACK.md` → Check command) —
+  exists and is green on `master` right now: `OK (260 tests, 827 assertions)`,
+  PHPCS + PHPStan level 8 clean, 108 theme files linted.
+- **Not locally verifiable:** **both production installs.** Sections B–E of the
+  checklist — the two constants in each `wp-config.php`, *Check GA* and *Check
+  Telegram* on each, the send time, the outbound HTTPS and `openssl` of the two
+  hosts, and the two consecutive mornings whose **Run log** rows read
+  *Schedule · Sent* — are verified by the one real run named in `SPRINT-2.md`:
+  the sprint-boundary deploy of `master` (Kharkiv) and `kyiv` (Kyiv) and the two
+  mornings after it. Nothing here can stand in for them: this machine reaches
+  neither host, the plugin is on neither install yet, and both need credentials
+  this session never handles. What *is* verified here is the checklist's wording,
+  rehearsed against the dev install in task 3.
+
+### Questions / ambiguities
+
+1. **Should the constants item be rehearsed on the dev install?** Section B of
+   the checklist says each install defines `GATB_GA_SERVICE_ACCOUNT_JSON` and
+   `GATB_TELEGRAM_BOT_TOKEN` in its own `wp-config.php`. That path has unit tests
+   (`SettingsSecretConstantsTest`) but has never run on a real install: dev keeps
+   both secrets in `gatb_settings`. The tasks differ:
+   - **(a) Rehearse it on dev, and leave the constants in place** — task 3 gains
+     one step: both constants are written into DDEV's gitignored `wp-config.php`
+     by a snippet that copies them out of the option **inside the container**, so
+     no value is ever printed or passes through this session; then the screen
+     must show both fields read-only as "set in configuration" and *Check GA* and
+     *Check Telegram* must still pass. The stored option values are **not**
+     cleared, so nothing can be lost — the constants simply win. Cost: one
+     configuration change to the local site, reversible by deleting two lines.
+   - **(b) Leave dev as it is** — the constants path stays proven only by unit
+     tests until the first production install is configured from the checklist,
+     which is the worst moment to discover a typo in a document.
+   **Recommendation: (a).** It is the riskiest line of the checklist and the only
+   one this machine can rehearse at all; it costs nothing to undo; and it moves
+   the dev site to the state DECISIONS already expects of a Dovira install.
+   **Resolved: approved as recommended — (a).** Task 3 rehearses the constants
+   on the dev install and leaves them in place; the stored option values stay
+   untouched, and no secret is printed or handled by this session.
+   *(Clearing the two stored values afterwards, so the key and the token stop
+   travelling in `mysql.sql`, is deliberately **not** part of either answer: the
+   key file was deleted with `spike/` at the Sprint 1 boundary, so the option row
+   is now the only copy on this machine. Rotating those credentials belongs to
+   the retro or to `/adhoc`, where a fresh key can be issued first.)*

@@ -236,11 +236,29 @@ final class Admin {
 	 * The table is the whole of screen `Run log` in Sprint 1; the next-run
 	 * column belongs to the scheduler and arrives with it.
 	 *
+	 * Above it stands the version this build declares — once, not per row: a
+	 * screenshot from Kharkiv or Kyiv has to say which build produced these
+	 * rows, and what a run was made by is not something the log stores.
+	 *
 	 * @param list<array{time: int, trigger: string, date: string, status: string, attempt: int, message: string}> $entries The runs.
 	 */
 	public static function render_log_section( array $entries ): void {
 		?>
 		<h2><?php echo esc_html__( 'Run log', 'ga-telegram-bridge' ); ?></h2>
+		<p class="description">
+			<?php
+			printf(
+				/* translators: %s: the plugin's version, as its own header declares it. */
+				esc_html__( 'Plugin version %s', 'ga-telegram-bridge' ),
+				esc_html( Plugin::version() )
+			);
+			?>
+		</p>
+		<?php
+		self::readme_link(
+			__( 'Nothing arrived this morning? readme.txt, Frequently Asked Questions.', 'ga-telegram-bridge' )
+		);
+		?>
 		<table class="wp-list-table widefat striped">
 			<thead>
 				<tr>
@@ -621,6 +639,10 @@ final class Admin {
 		self::section_description(
 			__( 'Read access to one GA4 property: create a service account in Google Cloud, give its e-mail address Viewer on the property and paste its key file here.', 'ga-telegram-bridge' )
 		);
+
+		self::readme_link(
+			__( 'How to create the service account and its key: readme.txt, Installation step 1.', 'ga-telegram-bridge' )
+		);
 	}
 
 	/**
@@ -629,6 +651,10 @@ final class Admin {
 	public static function render_telegram_section(): void {
 		self::section_description(
 			__( 'Where the report is sent. Create a bot with BotFather; to post into a channel, add the bot to it as an administrator.', 'ga-telegram-bridge' )
+		);
+
+		self::readme_link(
+			__( 'How to create the bot and find the chat id: readme.txt, Installation step 2.', 'ga-telegram-bridge' )
 		);
 	}
 
@@ -645,6 +671,10 @@ final class Admin {
 			self::wp_cron_disabled(),
 			RunLog::last_cron_hit(),
 			time()
+		);
+
+		self::readme_link(
+			__( 'What has to run WP-Cron, and the crontab line for it: readme.txt, Installation step 5.', 'ga-telegram-bridge' )
 		);
 	}
 
@@ -925,5 +955,35 @@ final class Admin {
 	 */
 	private static function section_description( string $description ): void {
 		printf( '<p>%s</p>', esc_html( $description ) );
+	}
+
+	/**
+	 * The address of the readme this plugin ships with.
+	 *
+	 * Built in one place: every link on the screen leads into the same file, and
+	 * plugins_url() is what knows where the plugin directory ended up on this
+	 * install.
+	 */
+	private static function readme_url(): string {
+		return plugins_url( 'readme.txt', GATB_PLUGIN_FILE );
+	}
+
+	/**
+	 * Prints one link into readme.txt.
+	 *
+	 * The whole sentence is the link, so that no translated string has to carry
+	 * markup — and it says which part of the readme it leads to, because a
+	 * plain-text file opens at the top and is read by scrolling. It opens in a
+	 * tab of its own: a click from a half-filled form must not cost the person
+	 * what they have typed.
+	 *
+	 * @param string $label What the link says, and therefore where it leads.
+	 */
+	private static function readme_link( string $label ): void {
+		printf(
+			'<p class="description"><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>',
+			esc_url( self::readme_url() ),
+			esc_html( $label )
+		);
 	}
 }

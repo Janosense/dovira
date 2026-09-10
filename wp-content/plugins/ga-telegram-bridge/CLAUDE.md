@@ -40,7 +40,10 @@ references the `dovira` theme, its functions, options or data.
 - Admin: Settings API, capability `manage_options`, nonce on every action,
   `esc_html`/`esc_attr` on output, `sanitize_*` on input. No custom CSS/JS
   unless a step plan approves it. The screen never calls `settings_errors()`:
-  wp-admin prints the notices of every screen under Settings itself.
+  wp-admin prints the notices of every screen under Settings itself. The version
+  it shows is read from the plugin header (`Plugin::version()`), never copied into
+  a constant beside it, and every link into `readme.txt` goes through
+  `Admin::readme_link()`, which builds that URL in one place.
 - Data: only the options `gatb_settings`, `gatb_state`, `gatb_log`, the
   transient `gatb_google_access_token` and the cron hooks `gatb_daily_report`,
   `gatb_retry_report` — all removed by `uninstall.php`. No custom tables.

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Google Analytics → Telegram bridge 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ga-telegram-bridge\n"
-"POT-Creation-Date: 2026-09-09T22:54:51+03:00\n"
+"POT-Creation-Date: 2026-09-10T09:57:08+03:00\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
@@ -78,7 +78,7 @@ msgstr "Ідентифікатор чату"
 msgid "A number: a person's chat id is positive, a group or channel id starts with a minus (for example -1001234567890)."
 msgstr "Число: у людини ідентифікатор додатний, у групи чи каналу — починається з мінуса (наприклад, -1001234567890)."
 
-#: src/Admin.php:145 src/Admin.php:297
+#: src/Admin.php:145 src/Admin.php:315
 msgid "Schedule"
 msgstr "Розклад"
 
@@ -110,173 +110,195 @@ msgstr "Блоки"
 msgid "Google Analytics → Telegram"
 msgstr ""
 
-#: src/Admin.php:243
+#: src/Admin.php:247
 msgid "Run log"
 msgstr "Журнал запусків"
 
-#: src/Admin.php:247
+#. translators: %s: the plugin's version, as its own header declares it.
+#: src/Admin.php:252
+#, php-format
+msgid "Plugin version %s"
+msgstr "Версія плагіна %s"
+
+#: src/Admin.php:259
+msgid "Nothing arrived this morning? readme.txt, Frequently Asked Questions."
+msgstr "Сьогодні вранці нічого не надійшло? readme.txt, розділ Frequently Asked Questions."
+
+#: src/Admin.php:265
 msgid "Time"
 msgstr "Час"
 
-#: src/Admin.php:248
+#: src/Admin.php:266
 msgid "Started by"
 msgstr "Запуск"
 
-#: src/Admin.php:249
+#: src/Admin.php:267
 msgid "Report for"
 msgstr "Звіт за"
 
-#: src/Admin.php:250
+#: src/Admin.php:268
 msgid "Result"
 msgstr "Результат"
 
-#: src/Admin.php:251
+#: src/Admin.php:269
 msgid "Attempt"
 msgstr "Спроба"
 
-#: src/Admin.php:252
+#: src/Admin.php:270
 msgid "Details"
 msgstr "Деталі"
 
-#: src/Admin.php:258
+#: src/Admin.php:276
 msgid "Nothing has been sent yet."
 msgstr "Ще нічого не надсилалося."
 
-#: src/Admin.php:296 src/Admin.php:429
+#: src/Admin.php:314 src/Admin.php:447
 msgid "Send now"
 msgstr "Надіслати зараз"
 
-#: src/Admin.php:298
+#: src/Admin.php:316
 msgid "Retry"
 msgstr "Повтор"
 
-#: src/Admin.php:311
+#: src/Admin.php:329
 msgid "Sent"
 msgstr "Надіслано"
 
-#: src/Admin.php:312
+#: src/Admin.php:330
 msgid "Failed"
 msgstr "Помилка"
 
-#: src/Admin.php:391 src/Admin.php:423
+#: src/Admin.php:409 src/Admin.php:441
 msgid "Preview"
 msgstr "Попередній перегляд"
 
-#: src/Admin.php:392
+#: src/Admin.php:410
 msgid "The message as Telegram would receive it, tags and all. Nothing was sent."
 msgstr "Повідомлення в тому вигляді, у якому його отримає Telegram, разом із тегами. Нічого не надіслано."
 
-#: src/Admin.php:406
+#: src/Admin.php:424
 msgid "Connection"
 msgstr "З’єднання"
 
-#: src/Admin.php:407
+#: src/Admin.php:425
 msgid "Save the settings first, then check each side separately."
 msgstr "Спочатку збережіть налаштування, потім перевірте кожен бік окремо."
 
-#: src/Admin.php:411
+#: src/Admin.php:429
 msgid "Check GA"
 msgstr "Перевірити GA"
 
-#: src/Admin.php:412
+#: src/Admin.php:430
 msgid "Asks Google whether this site can read the configured property. Sends nothing to Telegram."
 msgstr "Запитує Google, чи може цей сайт читати вказаний ресурс. У Telegram нічого не надсилає."
 
-#: src/Admin.php:417
+#: src/Admin.php:435
 msgid "Check Telegram"
 msgstr "Перевірити Telegram"
 
-#: src/Admin.php:418
+#: src/Admin.php:436
 msgid "Really posts a short test message into the configured chat, so you can see it arrive."
 msgstr "Справді надсилає коротке тестове повідомлення у вказаний чат, щоб ви побачили, як воно прийде."
 
-#: src/Admin.php:424
+#: src/Admin.php:442
 msgid "Reads yesterday from Google and shows the message it would send. Sends nothing."
 msgstr "Читає вчорашній день із Google і показує повідомлення, яке було б надіслане. Нічого не надсилає."
 
-#: src/Admin.php:430
+#: src/Admin.php:448
 msgid "Builds the report and really sends it to the configured chat, even if today's report has already gone out."
 msgstr "Формує звіт і справді надсилає його у вказаний чат, навіть якщо сьогоднішній звіт уже надійшов."
 
-#: src/Admin.php:464 src/Admin.php:498 src/Admin.php:534 src/Admin.php:561
+#: src/Admin.php:482 src/Admin.php:516 src/Admin.php:552 src/Admin.php:579
 msgid "You are not allowed to configure this plugin."
 msgstr "Ви не маєте права налаштовувати цей плагін."
 
 #. translators: 1: the GA4 property id, 2: the property's reporting time zone.
-#: src/Admin.php:475
+#: src/Admin.php:493
 #, php-format
 msgid "Google answered for property %1$s. Its reporting time zone is %2$s — that is the day the report calls \"yesterday\"."
 msgstr "Google відповів для ресурсу %1$s. Його часовий пояс звітності — %2$s; саме за ним визначається день, який звіт називає «вчора»."
 
 #. translators: %s: the configured Telegram chat id.
-#: src/Admin.php:511
+#: src/Admin.php:529
 #, php-format
 msgid "Telegram accepted a test message for chat %s. Open that chat to see it."
 msgstr "Telegram прийняв тестове повідомлення для чату %s. Відкрийте цей чат, щоб його побачити."
 
 #. translators: %s: the site's host name.
-#: src/Admin.php:589
+#: src/Admin.php:607
 #, php-format
 msgid "📊 <b>%s</b> — test message from the Google Analytics → Telegram bridge. The daily report will arrive in this chat."
 msgstr "📊 <b>%s</b> — тестове повідомлення від плагіна Google Analytics → Telegram. Щоденний звіт приходитиме в цей чат."
 
-#: src/Admin.php:622
+#: src/Admin.php:640
 msgid "Read access to one GA4 property: create a service account in Google Cloud, give its e-mail address Viewer on the property and paste its key file here."
 msgstr "Доступ на читання до одного ресурсу GA4: створіть сервісний акаунт у Google Cloud, надайте його адресі роль «Переглядач» для ресурсу і вставте сюди файл ключа."
 
-#: src/Admin.php:631
+#: src/Admin.php:644
+msgid "How to create the service account and its key: readme.txt, Installation step 1."
+msgstr "Як створити сервісний акаунт і ключ до нього: readme.txt, розділ Installation, крок 1."
+
+#: src/Admin.php:653
 msgid "Where the report is sent. Create a bot with BotFather; to post into a channel, add the bot to it as an administrator."
 msgstr "Куди надсилається звіт. Створіть бота через BotFather; щоб публікувати в каналі, додайте бота до нього адміністратором."
 
-#: src/Admin.php:640
+#: src/Admin.php:657
+msgid "How to create the bot and find the chat id: readme.txt, Installation step 2."
+msgstr "Як створити бота і дізнатися ідентифікатор чату: readme.txt, розділ Installation, крок 2."
+
+#: src/Admin.php:666
 msgid "When the report goes out by itself. The time is site-local, and a saved change takes effect immediately."
 msgstr "Коли звіт надсилається сам. Час — за годинником сайту, а збережена зміна діє одразу."
 
-#: src/Admin.php:666
+#: src/Admin.php:677
+msgid "What has to run WP-Cron, and the crontab line for it: readme.txt, Installation step 5."
+msgstr "Що має запускати WP-Cron і який рядок додати в crontab: readme.txt, розділ Installation, крок 5."
+
+#: src/Admin.php:696
 msgid "The report is not scheduled yet. Save these settings once and it will be."
 msgstr "Звіт ще не заплановано. Збережіть ці налаштування один раз — і він буде запланований."
 
 #. translators: %s: the date and time of the next scheduled report, in the site's time zone.
-#: src/Admin.php:672
+#: src/Admin.php:702
 #, php-format
 msgid "Next run: %s"
 msgstr "Наступний запуск: %s"
 
 #. translators: %s: the URL of wp-cron.php on this site.
-#: src/Admin.php:687
+#: src/Admin.php:717
 #, php-format
 msgid "WP-Cron is switched off in wp-config.php (DISABLE_WP_CRON), and nothing has called %s in the last 24 hours — so nothing will send the report. Set up a system cron that calls that address, for example every 15 minutes."
 msgstr "WP-Cron вимкнено у wp-config.php (DISABLE_WP_CRON), і за останні 24 години ніхто не викликав %s — тож звіт не надішле ніщо. Налаштуйте системний cron, який звертається до цієї адреси, наприклад кожні 15 хвилин."
 
-#: src/Admin.php:706
+#: src/Admin.php:736
 msgid "What the message contains. The visitors block is always sent."
 msgstr "Що містить повідомлення. Блок відвідувачів надсилається завжди."
 
-#: src/Admin.php:826
+#: src/Admin.php:856
 msgid "Set in configuration (wp-config.php); the field is ignored."
 msgstr "Задано в конфігурації (wp-config.php); поле ігнорується."
 
-#: src/Admin.php:870
+#: src/Admin.php:900
 msgid "(always sent)"
 msgstr "(надсилається завжди)"
 
-#: src/Admin.php:888 src/MessageRenderer.php:126
+#: src/Admin.php:918 src/MessageRenderer.php:126
 msgid "Visitors"
 msgstr "Відвідувачі"
 
-#: src/Admin.php:889
+#: src/Admin.php:919
 msgid "Top pages"
 msgstr "Топ сторінок"
 
-#: src/Admin.php:890
+#: src/Admin.php:920
 msgid "Traffic sources"
 msgstr "Джерела трафіку"
 
-#: src/Admin.php:891
+#: src/Admin.php:921
 msgid "Cities"
 msgstr "Міста"
 
-#: src/Admin.php:892
+#: src/Admin.php:922
 msgid "Devices"
 msgstr "Пристрої"
 
@@ -449,7 +471,7 @@ msgstr "%1$d. %2$s — %3$s"
 msgid "j F (l)"
 msgstr "j F (l)"
 
-#: src/Plugin.php:107
+#: src/Plugin.php:123
 msgid "Google Analytics → Telegram bridge needs the PHP OpenSSL extension to sign Google API requests. Ask your host to enable it, then activate the plugin again."
 msgstr "Плагіну Google Analytics → Telegram bridge потрібне розширення PHP OpenSSL, щоб підписувати запити до Google API. Попросіть хостинг увімкнути його і активуйте плагін ще раз."
 
