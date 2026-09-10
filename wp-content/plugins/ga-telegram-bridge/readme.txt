@@ -1,4 +1,4 @@
-=== Google Analytics → Telegram bridge ===
+=== Google Analytics -> Telegram bridge ===
 Contributors: dovira
 Tags: analytics, google analytics, ga4, telegram, reports
 Requires at least: 7.1
@@ -18,7 +18,7 @@ opens Google Analytics still sees whether people come to the site and from where
 
 The message is one screenful:
 
-* **Visitors** — yesterday against the average of the seven days before it, and
+* **Visitors** -- yesterday against the average of the seven days before it, and
   the last 28 days against the 28 before those. Always sent.
 * **Top 5 pages** yesterday, and over 28 days.
 * **Traffic sources**, **cities** and **devices** over 28 days, as shares.
@@ -45,19 +45,19 @@ two accounts first and the WordPress screen last.
 1. Open the [Google Cloud console](https://console.cloud.google.com/) and pick a
    project, or create one. Any project will do; it is only a container for the
    credential.
-2. **APIs & Services → Library**, search for **Google Analytics Data API**, press
-   *Enable*. That is the only Google API this plugin uses — the Analytics Admin
-   API is deliberately not needed, so there is nothing else to switch on.
-3. **APIs & Services → Credentials → Create credentials → Service account**. Give
-   it a name; it needs no project role at all.
-4. Open the service account, **Keys → Add key → Create new key → JSON**. The file
-   downloads once. Keep it somewhere safe — the plugin needs its whole contents,
-   and Google will not show it again.
+2. **APIs & Services -> Library**, search for **Google Analytics Data API**,
+   press *Enable*. That is the only Google API this plugin uses -- the Analytics
+   Admin API is deliberately not needed, so there is nothing else to switch on.
+3. **APIs & Services -> Credentials -> Create credentials -> Service account**.
+   Give it a name; it needs no project role at all.
+4. Open the service account, **Keys -> Add key -> Create new key -> JSON**. The
+   file downloads once. Keep it somewhere safe -- the plugin needs its whole
+   contents, and Google will not show it again.
 5. Copy the service account's e-mail address. It looks like
    `something@your-project.iam.gserviceaccount.com`.
-6. In **Google Analytics → Admin → Property access management**, add that address
-   with the **Viewer** role on the property you want reported.
-7. In **Admin → Property settings**, copy the **property id**: a number such as
+6. In **Google Analytics -> Admin -> Property access management**, add that
+   address with the **Viewer** role on the property you want reported.
+7. In **Admin -> Property settings**, copy the **property id**: a number such as
    `533779496`. It is *not* the measurement id `G-XXXXXXXXXX`, which this plugin
    cannot use.
 
@@ -67,20 +67,20 @@ two accounts first and the WordPress screen last.
    questions, and keep the token it gives you. It looks like
    `123456789:AAExampleExampleExampleExampleExample`.
 2. Decide who receives the report:
-   * **a person** — that person has to write to the bot once, or Telegram will
+   * **a person** -- that person has to write to the bot once, or Telegram will
      not let the bot message them;
-   * **a group or channel** — add the bot to it *as an administrator*, or it may
+   * **a group or channel** -- add the bot to it *as an administrator*, or it may
      not post there.
 3. Find the numeric chat id: post any message into that chat, then open
    `https://api.telegram.org/botYOUR_TOKEN/getUpdates` in a browser, with your own
-   token in place of `YOUR_TOKEN`, and read `"chat":{"id":…}`. A person's id is
-   positive; a group or channel id begins with a minus, usually `-100…`.
-   That URL contains your token — do not paste it into a chat, an issue or a
+   token in place of `YOUR_TOKEN`, and read `"chat":{"id":...}`. A person's id is
+   positive; a group or channel id begins with a minus, usually `-100...`.
+   That URL contains your token -- do not paste it into a chat, an issue or a
    screenshot.
 
 = 3. The settings screen =
 
-Install and activate the plugin, then open **Settings → GA → Telegram**
+Install and activate the plugin, then open **Settings -> GA -> Telegram**
 (administrators only) and fill in the property id, the whole key file, the bot
 token and the chat id. Set the time the report should go out at, and how many
 attempts a day is given. Save.
@@ -92,7 +92,7 @@ Under the form, **Connection** has four buttons, and this is the order to press
 them in:
 
 1. *Check GA* asks Google whether this site can read the configured property, and
-   reports the property's reporting time zone — the zone that decides which day
+   reports the property's reporting time zone -- the zone that decides which day
    the report calls "yesterday". It sends nothing to Telegram.
 2. *Check Telegram* really posts a short test message into the chat, which is the
    only way to prove the bot may write there. Open the chat and look.
@@ -138,7 +138,7 @@ to accept on the send time. The settings screen says so itself when
 
 = Which day does the report cover, and how fresh are the numbers? =
 
-Yesterday — in the **property's** own reporting time zone, not the site's. Every
+Yesterday -- in the **property's** own reporting time zone, not the site's. Every
 range the plugin asks for is relative (`yesterday`, `28daysAgo`), so Google
 decides where the day starts; *Check GA* names that time zone. The send time, by
 contrast, follows the site's clock.
@@ -162,7 +162,7 @@ A scheduled report that Google or Telegram refuses is tried again an hour later,
 as many times as **Maximum attempts** allows. After the last attempt a short
 notice goes to the same chat saying that the day could not be reported, and the
 reason stays in the run log. A day is never sent twice, and a report sent by hand
-with *Send now* is not retried — the reason is on the screen, and the button is
+with *Send now* is not retried -- the reason is on the screen, and the button is
 there to press again.
 
 = Can it read two properties, or send to two chats? =
@@ -182,8 +182,8 @@ has the token removed from it first.
 
 Deactivating takes away only the schedule: the settings, the run log and the
 record of what has been sent all survive, and activating again resumes where it
-left off. Deleting the plugin removes everything it owns — the three options, the
-cached Google token and both scheduled events — and leaves no `gatb_` row behind.
+left off. Deleting the plugin removes everything it owns -- the three options, the
+cached Google token and both scheduled events -- and leaves no `gatb_` row behind.
 
 = Does anything go anywhere else? =
 
@@ -194,7 +194,7 @@ service, no telemetry, and no request made from a visitor's page view.
 == Changelog ==
 
 = 0.1.0 =
-* The daily report — visitors, top pages, traffic sources, cities and devices —
+* The daily report -- visitors, top pages, traffic sources, cities and devices --
   read from one GA4 property through the Data API and sent to one Telegram chat.
 * Settings screen with per-field validation, the two secrets overridable by
   `wp-config.php` constants, and the buttons *Check GA*, *Check Telegram*,

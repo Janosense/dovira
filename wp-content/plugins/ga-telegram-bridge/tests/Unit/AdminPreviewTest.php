@@ -35,6 +35,9 @@ final class AdminPreviewTest extends TestCase {
 		Functions\stubTranslationFunctions();
 		Functions\stubEscapeFunctions();
 		Functions\when( 'esc_url' )->returnArg();
+		// The run log names the build it is running and links to the readme.
+		Functions\when( 'get_file_data' )->justReturn( array( 'Version' => '0.1.0' ) );
+		Functions\when( 'plugins_url' )->justReturn( 'https://dovira.vet/wp-content/plugins/ga-telegram-bridge/readme.txt' );
 		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
 		Functions\when( 'is_wp_error' )->justReturn( false );
 		Functions\when( 'home_url' )->justReturn( 'https://dovira.vet' );

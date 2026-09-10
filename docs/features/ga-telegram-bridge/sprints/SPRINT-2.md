@@ -50,7 +50,7 @@ uninstall. A readme lets another site set the plugin up from scratch.
 - **Docs to update:** `docs/DATA-MODEL.md` (uninstall note); `docs/features/ga-telegram-bridge/FEATURE.md` → Interfaces if any hook was added.
 - **Depends on:** Step 2
 
-### [ ] Step 4 — Production readiness on both Dovira installs
+### [x] Step 4 — Production readiness on both Dovira installs
 - **Tasks:**
   - Pre-flight checklist executed by the developer (this step writes and runs it, not code): both `wp-config.php` files carry the two constants; each install's numeric property id points at its own GA4 property (the one whose web data stream has measurement id `G-HKYZFG0E2W` for Kharkiv and `G-Q597WTF16L` for Kyiv, per `docs/ARCHITECTURE.md` → Integrations — a measurement id is not a property id); each install has its own chat id; send time agreed with the owner; `Check GA` and `Check Telegram` green on both.
   - Harden the admin page for production: the run log shows the plugin version; the settings page links to the readme sections.
