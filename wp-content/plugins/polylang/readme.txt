@@ -3,9 +3,9 @@ Contributors: Chouby, manooweb, raaaahman, marianne38, sebastienserre, greglone,
 Donate link: https://polylang.pro
 Tags: multilingual, translate, translation, language, localization
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.8.4
+Stable tag: 3.8.9
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -58,10 +58,9 @@ Helps optimizing the time spent translating your site with some very useful extr
 * Ability to use the WooCommerce REST API (available with Polylang Pro).
 * **Access to a Premium Support for personalized assistance.**
 
-= Our other free plugins =
+= Switching from WPML? =
 
-* [WPML to Polylang](https://wordpress.org/plugins/wpml-to-polylang/) allows migrating from WPML to Polylang.
-* [Site Editor Classic Features](https://wordpress.org/plugins/fse-classic/) allows to use classic widgets (including the Polylang language switcher) and menus in the site editor (FSE).
+* [WPML to Polylang](https://wordpress.org/plugins/wpml-to-polylang/) allows migrating from WPML to Polylang in a few clicks.
 
 = Credits =
 
@@ -104,6 +103,38 @@ Wherever third party code has been used, credit has been given in the code’s c
 4. The Edit Post screen with the Languages metabox
 
 == Changelog ==
+
+= 3.8.9 (2026-09-08) =
+
+* Fix wrong redirect on home when the URL includes a query var #1998
+
+= 3.8.8 (2026-09-07) =
+
+* Security: Fix exposure of some draft posts metadata to non-authorized users. Reported by Patchstack.
+* Pro: Allow plugins requiring Polylang to be installed when Polylang Pro is active #3051 #3116
+* Pro: Fix warning `WP_Post conversion to int` with WooCommerce #3101
+* Pro: Fix creation of translation in block editor for WP < 6.7 #3105
+* Fix duplicated posts page #1992
+
+= 3.8.7 (2026-08-17) =
+
+* Pro: Add the translation of new blocks introduced by WP 7.1 #3048
+* Fix quick edit parent page dropdown for hierarchical custom post types #1947
+* Fix wp-editor script enqueued together with the new widgets editor #1968
+
+= 3.8.6 (2026-07-20) =
+
+* Pro: Security: Ensure the user has the required capability for ACF fields when switching language in the editor #3029
+* Security: Fix exposure of some private posts metadata to non-authorized users. Reported by Patchstack.
+* Security: Fix server side default language encoding for the block editor
+* Fix 404 for post type or taxonomy sitemap when its name ends with a language code #1909
+
+= 3.8.5 (2026-06-16) =
+
+* Pro: Fix language switcher block error in Widget screen #1905
+* Pro: Fix "edit" button wrongly disabled in the languages sidebar in the block editor #3011
+* Fix edited images files deleted when deleting the first media translation #1887
+* Fix error in AJAX context when the parameter `lang` is passed a locale instead of a language code #1896
 
 = 3.8.4 (2026-05-18) =
 

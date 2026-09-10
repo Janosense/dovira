@@ -1,0 +1,519 @@
+# Translation of Plugins - Enable Media Replace - Stable (latest release) in Russian
+# This file is distributed under the same license as the Plugins - Enable Media Replace - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2025-10-02 10:16:16+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 1 : 2);\n"
+"X-Generator: GlotPress/4.0.3\n"
+"Language: ru\n"
+"Project-Id-Version: Plugins - Enable Media Replace - Stable (latest release)\n"
+
+#: classes/ViewController.php:105
+msgid "This error is shown because you try to move the image to another folder, which already has this file"
+msgstr "Эта ошибка появляется из-за того, что вы пытаетесь переместить изображение в другую папку, в которой уже есть этот файл"
+
+#: classes/ViewController.php:123
+msgid "Path: %s is not within basedir reported as: %s"
+msgstr "Путь: %s не находится в пределах, о чем сообщается как: %s"
+
+#: views/success.php:27
+msgid "( %s ) or %s click here to continue %s"
+msgstr "( %s ) или %s нажмите здесь, чтобы продолжить %s"
+
+#: classes/uihelper.php:421
+msgid "Click here to upload or drop file in area"
+msgstr "Нажмите здесь, чтобы загрузить или перетащить файл в область"
+
+#: classes/uihelper.php:426
+msgid "Current"
+msgstr "Текущий"
+
+#: views/screen.php:172
+msgid "Options"
+msgstr "Параметры"
+
+#: views/error.php:26
+msgid "You can return to %s previous page %s"
+msgstr "Вы можете вернуться к %s предыдущей странице %s"
+
+#: classes/ViewController.php:86
+msgid "You don't have permission to edit this image"
+msgstr "У вас нет прав на редактирование этого изображения"
+
+#: classes/ViewController.php:83
+msgid "You don't have permission to upload images. Please refer to your administrator"
+msgstr "У вас нет разрешения на загрузку изображений. Обратитесь к администратору"
+
+#: views/success.php:16
+msgid "Your image has been replaced!"
+msgstr "Ваше изображение было заменено!"
+
+#: views/success.php:18
+msgid "Your image has been successfully replaced!"
+msgstr "Ваше изображение успешно заменено!"
+
+#: classes/ViewController.php:111
+msgid "Copying replacement file to destination failed"
+msgstr "Не удалось скопировать файл замены в место назначения"
+
+#: views/error.php:18
+msgid "An error occured"
+msgstr "Произошла ошибка"
+
+#: classes/ViewController.php:131
+msgid "Fail to validate form nonce. Please try again"
+msgstr "Не удалось проверить одноразовый номер формы. Попробуйте еще раз"
+
+#: classes/ViewController.php:114
+msgid "Error updating WordPress post in the database"
+msgstr "Ошибка обновления записи WordPress в базе данных"
+
+#: classes/api.php:83
+msgid "No permission for user"
+msgstr "Нет разрешения для пользователя"
+
+#: views/prepare-remove-background.php:82
+msgid "Replace this image with another one instead!"
+msgstr "Замените это изображение другим!"
+
+#: classes/ViewController.php:137
+msgid "Replacement Image could not be downloaded or does not exist"
+msgstr "Замещающее изображение не может быть загружено или не существует"
+
+#: classes/ViewController.php:108
+msgid "Something went wrong while writing the file or directory"
+msgstr "Что-то пошло не так при записи файла или каталога"
+
+#: classes/ViewController.php:92
+msgid "The custom time format submitted is invalid"
+msgstr "Представленный пользовательский формат времени недействителен"
+
+#: classes/ViewController.php:101
+msgid "The upload from your browser seem to have failed"
+msgstr "Загрузка из вашего браузера, похоже, не удалась"
+
+#: views/screen.php:231
+msgid "File is offloaded and can't be moved to other directory"
+msgstr "Файл выгружен и не может быть перемещен в другой каталог"
+
+#: classes/ViewController.php:141
+msgid "An unknown error has occured"
+msgstr "Произошла неизвестная ошибка"
+
+#: views/success.php:21
+msgid "Did you know that you can also optimize the images on your website to make them load faster?"
+msgstr "Знаете ли вы, что вы также можете оптимизировать изображения на своем веб-сайте, чтобы они загружались быстрее?"
+
+#: views/screen.php:41
+msgid "Drop File"
+msgstr "Перетащите файл"
+
+#: views/error.php:30
+msgid "If you need help, please see the plugin %sdocumentation%s. It contains clear solutions to most of the problems you may encounter when using our plugin."
+msgstr "Если вам нужна помощь, обратитесь к %sдокументации%s плагина. Он содержит четкие решения большинства проблем, с которыми вы можете столкнуться при использовании нашего плагина."
+
+#: classes/ViewController.php:98
+msgid "The file upload has been rejected for security reason. WordPress might not allow uploading this extension or filetype"
+msgstr "Загрузка файла отклонена по соображениям безопасности. WordPress может запретить загрузку этого расширения или типа файла"
+
+#: classes/ViewController.php:89
+msgid "The form submitted is missing various fields"
+msgstr "В отправленной форме отсутствуют некоторые поля"
+
+#: classes/ViewController.php:95
+msgid "Updating the WordPress attachment failed"
+msgstr "Не удалось обновить вложение WordPress"
+
+#: views/success.php:23
+msgid "Try the %sShortPixel Image Optimizer%s plugin!"
+msgstr "Попробуйте плагин %sShortPixel Image Optimizer%s!"
+
+#: views/success.php:26
+msgid "You will be redirect to the image screen in a few seconds."
+msgstr "Через несколько секунд вы будете перенаправлены на экран изображения."
+
+#: classes/external/wp-offload.php:49 classes/external/wp-offload.php:59
+msgid "Your S3-Offload plugin version doesn't seem to be compatible. Please upgrade the S3-Offload plugin"
+msgstr "Ваша версия плагина S3-Offload несовместима. Пожалуйста, обновите плагин S3-Offload"
+
+#: views/screen.php:68
+msgid "\t\t\tYou are about to replace %s in your media library. This will be %spermanent%s. %s You can click on the new image panel and select a file from your computer. You can also drag and drop a file into this window"
+msgstr "\t\t\tВы собираетесь заменить %s в вашей медиатеке. Это будет %s постоянным %s. %s Вы можете щелкнуть на панели нового изображения и выбрать файл с вашего компьютера. Вы также можете перетащить файл в это окно"
+
+#: classes/uihelper.php:418
+msgid "New"
+msgstr "Новый"
+
+#: classes/ViewController.php:104
+msgid "The target file already exists in this directory. Please try another name / directory"
+msgstr "Целевой файл уже существует в этом каталоге. Пожалуйста, попробуйте другое имя / каталог"
+
+#: classes/ViewController.php:132
+msgid "This can happen when the window is open for a long time and/or there has been a timeout.  You can go back to previous screen and try again. If this happens each time when replacing, contact us"
+msgstr "Это может произойти, если окно открыто в течение длительного времени и/или произошел тайм-аут.  Вы можете вернуться к предыдущему экрану и попробовать снова. Если это происходит каждый раз при замене, свяжитесь с нами"
+
+#: views/prepare-remove-background.php:89
+msgid "If a CDN is used, remember to clear the cache for this image!"
+msgstr "Если используется CDN, не забудьте очистить кэш для этого изображения!"
+
+#: classes/api.php:298
+msgid "This file seems not available anymore. Please try again"
+msgstr "Похоже, этот файл больше недоступен. Пожалуйста, попробуйте еще раз"
+
+#: views/screen.php:146
+msgid "Note: This option requires you to upload a file of the same type (%s) as the file you want to replace. The attachment name will remain the same (%s) regardless of what the file you upload is called. If a CDN is used, remember to clear the cache for this image!"
+msgstr "Примечание: Эта опция требует загрузки файла того же типа (%s), что и файл, который вы хотите заменить. Имя вложения останется прежним (%s) независимо от того, как будет называться загруженный вами файл. Если используется CDN, не забудьте очистить кэш для этого изображения!"
+
+#: views/screen.php:226
+msgid "Place the newly uploaded file in this folder: "
+msgstr "Поместить новый загруженный файл в папку: "
+
+#: views/screen.php:59
+msgid "Select Replacement Media"
+msgstr "Выбор медиафайла для замены"
+
+#: classes/uihelper.php:426 views/prepare-remove-background.php:376
+msgid "Preview"
+msgstr "Предпросмотр"
+
+#: views/prepare-remove-background.php:377
+msgid "Replace"
+msgstr "Заменить"
+
+#: views/prepare-remove-background.php:109
+msgid "Background Color:"
+msgstr "Цвет фона:"
+
+#: views/prepare-remove-background.php:105
+msgid "If you select this option, the image will have a solid color background and you can choose the color code from the color picker below."
+msgstr "Если выбрать эту опцию, изображение будет иметь одноцветный фон, и вы сможете самостоятельно задать код цвета из приведенного ниже списка цветов."
+
+#: views/prepare-remove-background.php:102
+msgid "Solid background"
+msgstr "Сплошной фон"
+
+#: views/prepare-remove-background.php:96
+msgid "Returns a transparent background if it is a PNG image, or a white one if it is a JPG image."
+msgstr "Задает прозрачный фон, если это PNG-изображение, или белый, если это JPG-изображение."
+
+#: views/prepare-remove-background.php:93
+msgid "Transparent/white background"
+msgstr "Прозрачный/белый фон"
+
+#: views/prepare-remove-background.php:86
+msgid "Background Removal Options"
+msgstr "Варианты удаления фона"
+
+#: views/screen.php:120
+msgid "New! Click here to remove the background of this image!"
+msgstr "Новинка! Щёлкнуть, чтобы удалить фон этого изображения!"
+
+#: views/screen.php:124
+msgid "Remove the background after replacing this image!"
+msgstr "Удалите фон после замены этого изображения!"
+
+#: views/prepare-remove-background.php:67
+msgid "Remove Media Background"
+msgstr "Удалить фон у изображения"
+
+#: classes/uihelper.php:465
+msgid "Removing background..."
+msgstr "Удаление фона..."
+
+#: views/prepare-remove-background.php:34
+msgid "Hello! %s This is a report of a background removal that did not go well %s Url: {url} %s Settings : {settings} %s Thank you! %s"
+msgstr "Здравствуйте! %s Это сообщение о неудачном удалении фона %s URL: {url} %s Настройки: {settings} %s Спасибо! %s"
+
+#: views/screen.php:76
+msgid "The replacement file does not have the same file type. This can lead to unexpected issues ( %s )"
+msgstr "Заменяемый файл не совпадает с типом используемого файла. Это может привести к неожиданным ошибкам ( %s )"
+
+#: views/do-replace-background.php:56
+msgid "Temp file does not exist"
+msgstr "Временный файл не существует"
+
+#: views/do-replace-background.php:16
+msgid "Error while sending form (no key). Please try again."
+msgstr "Ошибка при отправке формы (нет ключа). Пожалуйста, попробуйте еще раз."
+
+#: classes/emr-plugin.php:582
+msgid "Remove  background"
+msgstr "Удалить фон"
+
+#: classes/emr-plugin.php:547
+msgid "To remove the background, click the link."
+msgstr "Чтобы убрать фон, щёлкните на ссылку."
+
+#: classes/emr-plugin.php:477
+msgid "To remove the background, click the link and select the options."
+msgstr "Чтобы удалить фон, щелкните ссылку и выберите настройки."
+
+#: classes/emr-plugin.php:177 classes/emr-plugin.php:477
+#: classes/emr-plugin.php:545 classes/emr-plugin.php:547
+msgid "Remove background"
+msgstr "Удалить фон"
+
+#: classes/api.php:242
+msgid "The background could not be removed in a reasonable amount of time. The file might be too big, or the API could be busy. Please try again later!"
+msgstr "Фон не может быть удален в течение короткого промежутка времени. Файл возможно слишком большой, или API был сильно загружен. Пожалуйста, повторите попытку позже!"
+
+#: classes/uihelper.php:516
+msgid "%s New Beta Feature! %s %s Enable Media Replace now gives you the ability to remove the background of any image. Try it out in the Media Library: hover over an image and click on Remove Background. Or just click on Remove background from the image editing window! %s  "
+msgstr "%s Новая функция бета-версии! %s %s Плагин теперь позволяет удалить фон любого изображения. Попробуйте это сделать из Медиатеки: наведите курсор на изображение и нажмите кнопку Удалить фон. Или нажмите кнопку Удалить фон в окне редактирования изображения! %s  "
+
+#: build/shortpixel/notices/src/NoticeModel.php:291
+msgid "Dismiss this notice"
+msgstr "Закрыть это уведомление"
+
+#: classes/api.php:309
+msgid "Download failed"
+msgstr "Скачивание не удалось."
+
+#: views/prepare-remove-background.php:75
+msgid "Report bad background removal"
+msgstr "Сообщить о неправильном удалении фона"
+
+#: views/prepare-remove-background.php:33
+msgid "Bad remove of background report"
+msgstr "Сообщение о неверном удалении фона"
+
+#: views/prepare-remove-background.php:119
+msgid "Opacity:"
+msgstr "Непрозрачность:"
+
+#: classes/api.php:76
+msgid "No attachment ID given"
+msgstr "ID вложения не указан"
+
+#: classes/ViewController.php:117
+msgid "Specified directory is outside the upload directory. This is not allowed for security reasons"
+msgstr "Указанный каталог находится вне каталога загрузки. Это не допускается по соображениям безопасности"
+
+#: views/prepare-remove-background.php:191
+msgid "Activate"
+msgstr "Активировать"
+
+#: views/screen.php:206
+msgid "Now"
+msgstr "Сейчас"
+
+#: views/upsell.php:115
+msgid "ShortPixel Adaptive Images"
+msgstr "Адаптивные изображения ShortPixel"
+
+#: views/upsell.php:62 views/upsell.php:97 views/upsell.php:131
+msgid "ACTIVATE"
+msgstr "АКТИВИРОВАТЬ"
+
+#: views/do-replace-background.php:21
+msgid "Error in request. Please try again"
+msgstr "Ошибка в запросе. Попробуйте еще раз"
+
+#: views/screen.php:149
+msgid "If you replace the file with a different filetype, this file might become unreadable and / or cause unexpected issues"
+msgstr "Если вы замените файл другим типом файла, этот файл может стать нечитаемым и/или вызвать непредвиденные проблемы"
+
+#: views/upsell.php:120
+msgid "In Minutes"
+msgstr "За минуты"
+
+#: views/upsell.php:58 views/upsell.php:93 views/upsell.php:127
+msgid "INSTALL NOW"
+msgstr "УСТАНОВИТЬ СЕЙЧАС"
+
+#: classes/emr-plugin.php:327
+msgid "Installing ..."
+msgstr "Установка..."
+
+#: views/screen.php:190
+msgid "Replace the date with the current date %s(%s)%s"
+msgstr "Замените дату на текущую %s(%s)%s"
+
+#: views/upsell.php:65
+msgid "Shortpixel activated!"
+msgstr "Shortpixel активирован!"
+
+#: views/upsell.php:134
+msgid "Shortpixel Adaptive Images activated!"
+msgstr "Адаптивные изображения ShortPixel активированы!"
+
+#: views/upsell.php:45
+msgid "ShortPixel Image Optimizer"
+msgstr "Оптимизатор изображения ShortPixel"
+
+#: views/upsell.php:119
+msgid "Start Serving %s Optimized, %s Nextgen images %s From a global CDN"
+msgstr "Начать обслуживание %s оптимизированных, %s Nextgen изображений %s с глобальной CDN"
+
+#: classes/ViewController/RemoveBackgroundViewController.php:46
+#: classes/ViewController/RemoveBackgroundViewController.php:97
+#: classes/ViewController/ReplaceViewController.php:38
+#: views/do-replace-background.php:27
+msgid "You do not have permission to upload files for this author."
+msgstr "У вас нет разрешения на загрузку файлов для этого автора."
+
+#: views/screen.php:163
+msgid "Note: If you enable this option, the name and type of the file you are uploading will replace the old file. All links pointing to the current file (%s) will be updated to point to the new file name. (If other websites link directly to the file, those links will no longer work. Be careful!)"
+msgstr "Примечание: Если вы отметите эту опцию, имя и тип файла, который вы собираетесь загрузить, заменят старый файл. Все ссылки, указывающие на текущий файл (%s), будут обновлены и будут указывать на новое имя файла. (Если какие-либо другие веб-сайты ссылаются на файл напрямую, эти ссылки больше не будут работать. Будьте осторожны.)"
+
+#: build/shortpixel/notices/src/NoticeModel.php:282
+msgid "Hide Details"
+msgstr "Скрыть подробности"
+
+#: build/shortpixel/notices/src/NoticeModel.php:282
+msgid "See Details"
+msgstr "Показать подробности"
+
+#: classes/emr-plugin.php:622
+msgid "Replaced By"
+msgstr "Заменено на"
+
+#: classes/ViewController.php:127
+msgid "Specified new directory does not exist. Path must be a relative path from the upload directory and exist"
+msgstr "Указанный новый каталог не существует. Путь должен быть относительным путем от каталога загрузки и существовать"
+
+#: classes/emr-plugin.php:466 classes/emr-plugin.php:537
+msgid "Upload a new file"
+msgstr "Загрузить новый файл"
+
+#: classes/emr-plugin.php:466 classes/emr-plugin.php:537
+msgid "To replace the current file, click the link and upload a replacement file."
+msgstr "Для того, чтобы заменить текущий файл, нажмите на ссылку и загрузите замену."
+
+#: views/screen.php:28
+msgid "You do not have permission to upload files."
+msgstr "У вас нет прав для загрузки файлов."
+
+#: views/screen.php:43
+msgid "Replace Media Upload"
+msgstr "Загрузка файла для замены"
+
+#: views/screen.php:142
+msgid "Just replace the file"
+msgstr "Только заменить файл"
+
+#: views/screen.php:242
+msgid "Upload"
+msgstr "Загрузить"
+
+#: views/prepare-remove-background.php:177
+#: views/prepare-remove-background.php:378 views/screen.php:243
+msgid "Cancel"
+msgstr "Отмена"
+
+#: classes/emr-plugin.php:611
+msgid "Revised"
+msgstr "Проверено"
+
+#. Plugin Name of the plugin
+#: enable-media-replace.php views/error.php:15 views/success.php:14
+msgid "Enable Media Replace"
+msgstr "Enable Media Replace"
+
+#. Description of the plugin
+#: enable-media-replace.php
+msgid "Enable replacing media files by uploading a new file in the \"Edit Media\" section of the WordPress Media Library."
+msgstr "Включает замену медиафайлов через загрузку нового файла в разделе \"Редактировать медиа\" медиабиблиотеки WordPress."
+
+#: views/screen.php:165
+msgid "Please note that if you upload a new image, only the embeds/links of the original size image will be replaced in your posts."
+msgstr "Обратите внимание, если вы загрузите новое изображение, только внедренные объекты или ссылки на оригинальный файл будут заменены в ваших записях."
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: enable-media-replace.php
+msgid "https://shortpixel.com"
+msgstr "https://shortpixel.com"
+
+#. Author of the plugin
+#: enable-media-replace.php
+msgid "ShortPixel"
+msgstr "ShortPixel"
+
+#: classes/emr-plugin.php:608
+msgid "M j, Y @ H:i"
+msgstr "d.m.Y H:i"
+
+#: classes/emr-plugin.php:502 views/screen.php:208
+msgid "Original"
+msgstr "Оригинал"
+
+#: classes/emr-plugin.php:492
+msgid "Thumbnails were not generated"
+msgstr "Миниатюры не были созданы"
+
+#: build/shortpixel/log/src/DebugItem.php:35
+msgid "[Data]"
+msgstr "[Данные]"
+
+#: views/screen.php:73
+msgid "%s f %s exceeds the maximum upload size for this site."
+msgstr "%s f %s превышает максимальный размер загрузки для этого сайта."
+
+#: views/screen.php:196
+msgid "Custom Date"
+msgstr "Пользовательская дата"
+
+#: build/shortpixel/replacer/src/Replacer.php:109
+msgid "Fail Safe :: Source Location returned empty string. Not replacing content"
+msgstr "Fail Safe :: Source Location возвращает пустую строку. Не заменяет содержимое"
+
+#: build/shortpixel/replacer/src/Replacer.php:102
+msgid "Fail Safe :: Source Location seems to be a directory."
+msgstr "Fail Safe :: Source Location, похоже, является каталогом."
+
+#: views/do-replace-background.php:85
+msgid "File successfully replaced"
+msgstr "Файл успешно заменён"
+
+#: views/screen.php:191
+msgid "Keep the date %s(%s)%s"
+msgstr "Сохраните дату %s(%s)%s"
+
+#: views/screen.php:72
+msgid "Maximum file size: <strong>%s</strong>"
+msgstr "Макс. размер файла: <strong>%s</strong>"
+
+#: views/screen.php:62
+msgid "NOTE: You are about to replace the media file \"%s\". There is no undo. Think about it!"
+msgstr "ПРИМЕЧАНИЕ: Вы собираетесь заменить медиафайл \"%s\". Отмены не существует. Подумайте об этом!"
+
+#: classes/emr-plugin.php:448
+msgid "Replace Media"
+msgstr "Заменить медиа файлы"
+
+#: classes/emr-plugin.php:176 classes/emr-plugin.php:535
+#: classes/emr-plugin.php:578
+msgid "Replace media"
+msgstr "Заменить медиа файлы"
+
+#: classes/emr-plugin.php:451
+msgid "Replaced Thumbnails Preview"
+msgstr "Предпросмотр замененных миниатюр"
+
+#: views/screen.php:80
+msgid "The replacement file type does not seem to be allowed by WordPress. This can lead to unexpected issues"
+msgstr "Замена типа файла, похоже, не разрешена WordPress. Это может вызвать неожиданные проблемы"
+
+#: views/screen.php:131
+msgid "Replacement Options"
+msgstr "Параметры замены"
+
+#: views/screen.php:192
+msgid "Set a Custom Date"
+msgstr "Установить пользовательскую дату"
+
+#: build/shortpixel/replacer/src/Replacer.php:186
+msgid "There was an issue with updating your image URLS: Search and replace have different amount of values. Aborting updating thumbnails"
+msgstr "Возникла проблема с обновлением URL-адресов изображений: Поиск и замена имеют разное количество значений. Прерывание обновления миниатюр"
+
+#: views/screen.php:188
+msgid "When replacing the media, do you want to:"
+msgstr "При замене медиа файлов необходимо:"
+
+#: views/screen.php:160
+msgid "Replace the file, use the new file name, and update all links"
+msgstr "Заменить файл, использовать новое имя и обновить все ссылки"
