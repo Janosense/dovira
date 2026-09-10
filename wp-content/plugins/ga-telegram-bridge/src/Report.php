@@ -19,7 +19,9 @@ namespace GaTelegramBridge;
  *
  * Shares and changes are worked out when the report is built, not when it is
  * rendered, because the `gatb_report_data` filter hands this object to other
- * people's code as the finished numbers.
+ * people's code as the finished numbers. The same goes for a page's title: it is
+ * the title of the post at that path on this site, or the path itself when no
+ * post lives there — never GA's pageTitle.
  */
 final class Report {
 

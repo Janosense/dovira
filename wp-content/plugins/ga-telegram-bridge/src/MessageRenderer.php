@@ -24,7 +24,8 @@ use Exception;
  * separator really is the string "&nbsp;") are decoded back into the character
  * they stand for. And a block is printed only when it has rows: null means the
  * administrator switched it off, an empty array means Google had nothing to
- * report, and neither is worth a heading with nothing underneath it.
+ * report, and neither is worth a heading with nothing underneath it. The blocks
+ * that are printed are set apart by one blank line each.
  */
 final class MessageRenderer {
 
@@ -56,10 +57,11 @@ final class MessageRenderer {
 	public static function render( Report $report ): string {
 		$report = self::filtered_report( $report );
 
-		$lines = array_merge(
+		$blocks = array(
 			array( self::header( $report ) ),
 			self::visitors( $report ),
 			self::pages(
+				'📄',
 				sprintf(
 					/* translators: %d: how many pages the block lists. */
 					__( 'Top %d pages yesterday', 'ga-telegram-bridge' ),
@@ -68,6 +70,7 @@ final class MessageRenderer {
 				$report->pages_yesterday
 			),
 			self::pages(
+				'📅',
 				sprintf(
 					/* translators: %d: how many pages the block lists. */
 					__( 'Top %d pages over 28 days', 'ga-telegram-bridge' ),
@@ -75,12 +78,20 @@ final class MessageRenderer {
 				),
 				$report->pages_28_days
 			),
-			self::shares( __( 'Sources over 28 days', 'ga-telegram-bridge' ), $report->channels ),
-			self::shares( __( 'Cities over 28 days', 'ga-telegram-bridge' ), $report->cities ),
-			self::shares( __( 'Devices over 28 days', 'ga-telegram-bridge' ), $report->devices )
+			self::shares( '🧭', __( 'Sources over 28 days', 'ga-telegram-bridge' ), $report->channels, false ),
+			self::shares( '📍', __( 'Cities over 28 days', 'ga-telegram-bridge' ), $report->cities, true ),
+			self::shares( '📱', __( 'Devices over 28 days', 'ga-telegram-bridge' ), $report->devices, true ),
 		);
 
-		return self::filtered_html( implode( "\n", $lines ), $report );
+		$printed = array();
+
+		foreach ( $blocks as $lines ) {
+			if ( array() !== $lines ) {
+				$printed[] = implode( "\n", $lines );
+			}
+		}
+
+		return self::filtered_html( implode( "\n\n", $printed ), $report );
 	}
 
 	/**
@@ -123,7 +134,7 @@ final class MessageRenderer {
 	 */
 	private static function visitors( Report $report ): array {
 		return array(
-			self::heading( __( 'Visitors', 'ga-telegram-bridge' ) ),
+			self::heading( '👥', __( 'Visitors', 'ga-telegram-bridge' ) ),
 			sprintf(
 				/* translators: 1: how many people visited yesterday, 2: the change against the seven-day average, for example "▲ 23%". */
 				__( 'Yesterday: %1$s (%2$s to the 7-day average)', 'ga-telegram-bridge' ),
@@ -142,16 +153,17 @@ final class MessageRenderer {
 	/**
 	 * Writes one of the two page blocks, or nothing at all.
 	 *
+	 * @param string                                                    $icon    The emoji in front of the block's title.
 	 * @param string                                                    $heading The block's title.
 	 * @param list<array{title: string, path: string, views: int}>|null $pages   The pages, or null when the block is off.
 	 * @return list<string>
 	 */
-	private static function pages( string $heading, ?array $pages ): array {
+	private static function pages( string $icon, string $heading, ?array $pages ): array {
 		if ( null === $pages || array() === $pages ) {
 			return array();
 		}
 
-		$lines = array( self::heading( $heading ) );
+		$lines = array( self::heading( $icon, $heading ) );
 		$place = 0;
 
 		foreach ( $pages as $page ) {
@@ -161,7 +173,7 @@ final class MessageRenderer {
 				/* translators: 1: the page's place in the list, 2: the page title, 3: how many times it was viewed. */
 				__( '%1$d. %2$s — %3$s', 'ga-telegram-bridge' ),
 				$place,
-				esc_html( $page['title'] ),
+				self::page_link( $page ),
 				self::number( $page['views'] )
 			);
 		}
@@ -170,13 +182,36 @@ final class MessageRenderer {
 	}
 
 	/**
-	 * Writes one share block on a single line, or nothing at all.
+	 * Writes a page's title as a link to the page.
 	 *
-	 * @param string                                                       $heading The block's title.
-	 * @param list<array{label: string, value: int, share: int|null}>|null $rows The rows, or null when the block is off.
+	 * A path that does not start with a slash is not an address on the site —
+	 * GA reports "(not set)" for a hit that carried no page — so it is printed
+	 * as it is, rather than linked to somewhere that does not exist.
+	 *
+	 * @param array{title: string, path: string, views: int} $page The page.
+	 */
+	private static function page_link( array $page ): string {
+		if ( ! str_starts_with( $page['path'], '/' ) ) {
+			return esc_html( $page['title'] );
+		}
+
+		return sprintf(
+			'<a href="%1$s">%2$s</a>',
+			esc_url( ReportBuilder::page_url( $page['path'] ) ),
+			esc_html( $page['title'] )
+		);
+	}
+
+	/**
+	 * Writes one share block, or nothing at all.
+	 *
+	 * @param string                                                       $icon         The emoji in front of the block's title.
+	 * @param string                                                       $heading      The block's title.
+	 * @param list<array{label: string, value: int, share: int|null}>|null $rows         The rows, or null when the block is off.
+	 * @param bool                                                         $one_per_line Whether each row gets its own line, rather than all of them one line together.
 	 * @return list<string>
 	 */
-	private static function shares( string $heading, ?array $rows ): array {
+	private static function shares( string $icon, string $heading, ?array $rows, bool $one_per_line ): array {
 		if ( null === $rows || array() === $rows ) {
 			return array();
 		}
@@ -191,9 +226,9 @@ final class MessageRenderer {
 			);
 		}
 
-		return array(
-			self::heading( $heading ),
-			implode( self::SHARE_SEPARATOR, $printed ),
+		return array_merge(
+			array( self::heading( $icon, $heading ) ),
+			$one_per_line ? $printed : array( implode( self::SHARE_SEPARATOR, $printed ) )
 		);
 	}
 
@@ -272,10 +307,14 @@ final class MessageRenderer {
 	/**
 	 * Wraps a block title in the only markup the message uses for it.
 	 *
+	 * The emoji stays out of the translated title, the way the header's does:
+	 * which picture marks a block is not a question of language.
+	 *
+	 * @param string $icon The emoji in front of the title.
 	 * @param string $text The title.
 	 */
-	private static function heading( string $text ): string {
-		return sprintf( '<b>%s</b>', esc_html( $text ) );
+	private static function heading( string $icon, string $text ): string {
+		return sprintf( '%1$s <b>%2$s</b>', $icon, esc_html( $text ) );
 	}
 
 	/**

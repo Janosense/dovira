@@ -42,6 +42,8 @@ final class AdminPreviewTest extends TestCase {
 		Functions\when( 'is_wp_error' )->justReturn( false );
 		Functions\when( 'home_url' )->justReturn( 'https://dovira.vet' );
 		Functions\when( 'wp_parse_url' )->alias( 'parse_url' );
+		// No post names the recorded pages here; naming them is ReportBuilderTest's.
+		Functions\when( 'url_to_postid' )->justReturn( 0 );
 		Functions\when( 'wp_timezone_string' )->justReturn( 'Europe/Kyiv' );
 		Functions\when( 'get_transient' )->justReturn( 'a-cached-access-token' );
 		Functions\when( 'number_format_i18n' )->alias(

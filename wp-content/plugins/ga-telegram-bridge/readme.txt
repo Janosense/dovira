@@ -20,7 +20,8 @@ The message is one screenful:
 
 * **Visitors** -- yesterday against the average of the seven days before it, and
   the last 28 days against the 28 before those. Always sent.
-* **Top 5 pages** yesterday, and over 28 days.
+* **Top 5 pages** yesterday, and over 28 days, each named by the title of its
+  post on the site (or by its path, when no post lives there).
 * **Traffic sources**, **cities** and **devices** over 28 days, as shares.
 
 Every block except visitors can be switched off, and a block with nothing in it
