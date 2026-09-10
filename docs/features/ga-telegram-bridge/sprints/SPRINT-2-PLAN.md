@@ -779,7 +779,7 @@ never a task here.)
     commit (core rule 8).
   → commit `feat(ga-telegram-bridge): name the build and link the readme on the settings screen`
 
-- [ ] **2. The pre-flight checklist both installs are set up from.** New
+- [x] **2. The pre-flight checklist both installs are set up from.** New
   `docs/features/ga-telegram-bridge/PRODUCTION-CHECKLIST.md` — the step's first
   task, written as a document the developer works through install by install,
   because nothing here is code:

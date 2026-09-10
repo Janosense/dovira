@@ -148,3 +148,18 @@ cross-site switcher; content differs per install (separate DBs), code is shared.
 Built assets (`assets/`) and Composer `vendor/` are committed — a deploy is a
 file sync, no build step on the server. `origin/main` exists on GitHub but is
 not part of this flow.
+
+**Plugin `ga-telegram-bridge` per install.** The code is the same everywhere and
+holds nothing about a city; each install carries its own configuration. The
+service-account key and the bot token are `define()`d in that install's own
+`wp-config.php` (`GATB_GA_SERVICE_ACCOUNT_JSON`, `GATB_TELEGRAM_BOT_TOKEN`),
+which is gitignored on every environment and never committed; everything else —
+the numeric GA4 property id, the chat id, the send time, the number of attempts
+and the blocks — is saved on the settings screen into that install's
+`gatb_settings`. One property and one chat per install: Kharkiv reads the
+property whose web data stream is `G-HKYZFG0E2W` and Kyiv the one that is
+`G-Q597WTF16L` (→ Integrations), and each sends to its own chat. The plugin has
+zero runtime dependencies, so the file sync is the whole deploy. Setting an
+install up, or checking one after a deploy, is
+`docs/features/ga-telegram-bridge/PRODUCTION-CHECKLIST.md`; no value from it is
+written into this repository.
