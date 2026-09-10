@@ -40,7 +40,7 @@ uninstall. A readme lets another site set the plugin up from scratch.
 - **Docs to update:** `docs/ARCHITECTURE.md` → Integrations (failure behaviour for both rows); `docs/LEARNINGS.md` if a failure mode surprised.
 - **Depends on:** Step 1
 
-### [ ] Step 3 — Lifecycle, readme, translations
+### [x] Step 3 — Lifecycle, readme, translations
 - **Tasks:**
   - `uninstall.php`: delete the three options, the transient and both cron hooks; deactivation hook clears cron only (settings survive deactivation).
   - `readme.txt` (WordPress readme format): what the plugin sends, Google Cloud setup (project, enable Google Analytics Data API, service account, Viewer on the property, JSON key), Telegram setup (bot, chat id, channel admin), the two `wp-config.php` constants, the WP-Cron caveat with the `DISABLE_WP_CRON` + system cron recipe, data freshness note, requirements (PHP 8.1, `openssl`, outbound HTTPS).

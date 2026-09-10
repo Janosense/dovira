@@ -19,6 +19,18 @@ Entry format:
 
 ---
 
+## 2026-09-10 — [ga-telegram-bridge] A test that asserted nothing passed the gate
+- **Incident:** `UninstallTest::test_the_hooks_are_not_cleared_by_arguments` was written as a Brain\Monkey expectation (`Functions\expect( 'wp_clear_scheduled_hook' )->never()`) with no PHPUnit assertion after it. PHPUnit marked it **risky** — "This test did not perform any assertions" — and `bin/check.sh` still printed `==> check: all green`, because `phpunit.xml.dist` sets `failOnWarning`, `failOnNotice` and `failOnDeprecation` but not `failOnRisky`. The test was rewritten to record the calls and assert the empty list, so it now fails if the wrong function is ever used.
+- **Root cause:** The gate's own configuration decides what "green" means, and one class of broken test — the one that checks nothing — was outside it. Nothing in the project said so; it took a risky test in the output to notice, and a less careful reading would have committed on `all green`.
+- **Fix applied here:** The test asserts for real. The configuration was left alone deliberately — `failOnRisky="true"` would gate every commit and belongs in a step of its own, not folded into this one (core rule 5) — so the retro decides: it is a one-line change to `phpunit.xml.dist` with, today, no failing test behind it.
+- **Transferred to playbook:** pending
+
+## 2026-09-10 — [ga-telegram-bridge] The plan's file list missed a config the gate reads, one step after the last time
+- **Incident:** The Step 3 plan listed `uninstall.php` and its test but not `phpstan.neon.dist`, whose `paths` name files one by one (`ga-telegram-bridge.php`, `src`, `tests`). Without that line the new file would have been the only source file in the plugin outside static analysis, and nothing would have said so. It was caught while writing the code, not while planning.
+- **Root cause:** The previous step's entry took the rule too narrowly — "the code area's `CLAUDE.md` belongs in the file list". The general rule is that a new file has to be *let into* the project's own machinery, and this project's machinery is explicit about what it covers: PHPStan lists paths, PHPCS scans a directory, PHPUnit declares suites, the `.pot` has an exclude list. Only one of those four needed a change here, and only reading the config said which.
+- **Fix applied here:** `uninstall.php` is in the PHPStan paths (commit `2435991`). Rule taken, wider than last time: **when a step adds a file, the plan checks each gate config for whether it has to learn about the file** — and lists the ones that do.
+- **Transferred to playbook:** pending
+
 ## 2026-09-09 — [ga-telegram-bridge] A whole options row was printed to read two of its fields, and it held the real key and the bot token
 - **Incident:** Starting the live check of Sprint 2 Step 2, I ran `ddev wp option get gatb_settings --format=json` to see how the dev install was configured. The row came back with the real service-account private key and the real Telegram bot token in it, both now in the session transcript. Core rule 7 says secrets are never logged; the plugin is built so that nothing but `Settings`' getters ever touches those two fields, and the one command that ignores that design is `wp option get` on the row that contains them.
 - **Root cause:** The rule was read as being about the code (do not write a secret into a log, a notice or an exception) and not about the agent's own shell. Nothing in the project's instructions says how to *look* at a settings row that holds credentials, and the obvious command is the wrong one. The step's own plan had even recorded that this install was unconfigured, so the row was expected to be empty — an expectation is not a safeguard.

@@ -510,7 +510,7 @@ Sprint 1):
    retry or sends the failure notice; a failed manual run counts its attempt
    and is logged, exactly as it is today.*
 
-## Plan — Sprint 2, Step 3: Lifecycle, readme, translations   (status: implemented, awaiting close)
+## Plan — Sprint 2, Step 3: Lifecycle, readme, translations   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-2-runs-by-itself` ← `master`
