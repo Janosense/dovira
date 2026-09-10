@@ -17,6 +17,7 @@ use GaTelegramBridge\MessageRenderer;
 use GaTelegramBridge\Report;
 use GaTelegramBridge\ReportBuilder;
 use GaTelegramBridge\Settings;
+use GaTelegramBridge\Tests\SitePosts;
 use GaTelegramBridge\Tests\TestCase;
 
 /**
@@ -48,6 +49,7 @@ final class MessageRendererTest extends TestCase {
 		Functions\when( 'wp_timezone_string' )->justReturn( 'Europe/Kyiv' );
 		Functions\when( 'home_url' )->justReturn( 'https://dovira.vet' );
 		Functions\when( 'wp_parse_url' )->alias( 'parse_url' );
+		SitePosts::given( 'https://dovira.vet' );
 		Functions\when( 'wp_remote_retrieve_response_code' )->alias(
 			static fn( array $response ): int => (int) $response['response']['code']
 		);
@@ -163,27 +165,38 @@ final class MessageRendererTest extends TestCase {
 			"\n",
 			array(
 				'📊 <b>dovira.vet — 9 September (Tuesday)</b>',
-				'<b>Visitors</b>',
+				'',
+				'👥 <b>Visitors</b>',
 				'Yesterday: 69 (▲ 23% to the 7-day average)',
 				'Last 28 days: 1,560 (▼ 1% to the previous 28)',
-				'<b>Top 5 pages yesterday</b>',
-				'1. Ветеринарна клініка у Харкові– Лікування собак та кішок — 73',
-				'2. Послуги — 31',
-				'3. Контакти - Ветеринарна клініка Довіра — 25',
-				'4. Ветеринарний прийом у Харкові – огляд собак та кішок без черги — 16',
-				'5. Рентген для тварин у Харкові – ветеринарна радіологія для собак та кішок — 11',
-				'<b>Top 5 pages over 28 days</b>',
-				'1. Ветеринарна клініка у Харкові– Лікування собак та кішок — 1,176',
-				'2. Ветеринарна клініка DOVIRA – турбота цілодобово - Ветеринарна клініка в Києві та Харкові — 913',
-				'3. Послуги — 602',
-				'4. Контакти - Ветеринарна клініка Довіра — 465',
-				'5. Ветеринарні послуги DOVIRA – діагностика, лікування — 370',
-				'<b>Sources over 28 days</b>',
+				'',
+				'📄 <b>Top 5 pages yesterday</b>',
+				'1. <a href="https://dovira.vet/">Головна сторінка</a> — 101',
+				'2. <a href="https://dovira.vet/services/">Послуги</a> — 60',
+				'3. <a href="https://dovira.vet/contacts/">Контакти</a> — 29',
+				'4. <a href="https://dovira.vet/services/reception-department/">Приймальне відділення</a> — 22',
+				'5. <a href="https://dovira.vet/services/dental-services/">Стоматологічні послуги</a> — 16',
+				'',
+				'📅 <b>Top 5 pages over 28 days</b>',
+				'1. <a href="https://dovira.vet/">Головна сторінка</a> — 2,237',
+				'2. <a href="https://dovira.vet/services/">Послуги</a> — 1,000',
+				'3. <a href="https://dovira.vet/contacts/">Контакти</a> — 471',
+				'4. <a href="https://dovira.vet/services/reception-department/">Приймальне відділення</a> — 396',
+				'5. <a href="https://dovira.vet/about/">Про нас</a> — 200',
+				'',
+				'🧭 <b>Sources over 28 days</b>',
 				'Organic Search 70% · Direct 16% · Referral 7% · Organic Social 7% · AI Assistant 1% · Paid Search 0% · Unassigned 0%',
-				'<b>Cities over 28 days</b>',
-				'Kharkiv 52% · Kyiv 30% · Dnipro 11% · Lviv 7%',
-				'<b>Devices over 28 days</b>',
-				'mobile 80% · desktop 19% · tablet 1%',
+				'',
+				'📍 <b>Cities over 28 days</b>',
+				'Kharkiv 52%',
+				'Kyiv 30%',
+				'Dnipro 11%',
+				'Lviv 7%',
+				'',
+				'📱 <b>Devices over 28 days</b>',
+				'mobile 80%',
+				'desktop 19%',
+				'tablet 1%',
 			)
 		);
 
@@ -191,7 +204,8 @@ final class MessageRendererTest extends TestCase {
 	}
 
 	/**
-	 * A switched-off block leaves no trace in the message.
+	 * A switched-off block leaves no trace in the message — not even its blank
+	 * line, whether it sat between two blocks or at the end.
 	 */
 	public function test_a_switched_off_block_is_left_out_entirely(): void {
 		$message = MessageRenderer::render( $this->without_pages_and_devices( $this->recorded_report() ) );
@@ -199,12 +213,14 @@ final class MessageRendererTest extends TestCase {
 		$this->assertStringNotContainsString( 'pages', $message );
 		$this->assertStringNotContainsString( 'Devices', $message );
 		$this->assertStringNotContainsString( 'mobile', $message );
-		$this->assertStringContainsString( '<b>Sources over 28 days</b>', $message );
-		$this->assertStringContainsString( '<b>Cities over 28 days</b>', $message );
+		$this->assertStringContainsString( "\n\n🧭 <b>Sources over 28 days</b>\n", $message );
+		$this->assertStringContainsString( "\n\n📍 <b>Cities over 28 days</b>\n", $message );
+		$this->assertStringNotContainsString( "\n\n\n", $message );
+		$this->assertStringEndsWith( 'Lviv 7%', $message );
 		$this->assertCount(
-			8,
+			14,
 			explode( "\n", $message ),
-			'the header, the visitors block of three lines, and two blocks of two'
+			'the header, the visitors block of three lines, sources of two, cities of five, and a blank line between each'
 		);
 	}
 
@@ -283,13 +299,39 @@ final class MessageRendererTest extends TestCase {
 			)
 		);
 
-		$this->assertStringContainsString( '1. Ціни &lt;b&gt;дешево&lt;/b&gt; &amp; &quot;акції&quot; — 7', $message );
+		$this->assertStringContainsString( '1. <a href="https://dovira.vet/prices/">Ціни &lt;b&gt;дешево&lt;/b&gt; &amp; &quot;акції&quot;</a> — 7', $message );
 		$this->assertStringContainsString( 'Ivano-Frankivsk &amp; Co 100%', $message );
 		$this->assertSame(
 			4,
 			substr_count( $message, '<b>' ),
-			'the only markup left is the message\'s own bold: the header and three headings'
+			'the only bold left is the message\'s own: the header and three headings'
 		);
+		$this->assertSame( 1, substr_count( $message, '<a ' ), 'and the only link is the page\'s' );
+	}
+
+	/**
+	 * A page GA could not place on the site is printed, but not linked.
+	 *
+	 * GA reports "(not set)" for a hit that carried no page; a link built from
+	 * it would point at an address that does not exist.
+	 */
+	public function test_a_page_that_is_not_an_address_is_not_linked(): void {
+		$message = MessageRenderer::render(
+			$this->report_with(
+				array(
+					'pages_28_days' => array(
+						array(
+							'title' => '(not set)',
+							'path'  => '(not set)',
+							'views' => 4,
+						),
+					),
+				)
+			)
+		);
+
+		$this->assertStringContainsString( "\n1. (not set) — 4", $message );
+		$this->assertStringNotContainsString( '<a ', $message );
 	}
 
 	/**

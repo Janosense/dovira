@@ -14,6 +14,7 @@ use Brain\Monkey\Functions;
 use GaTelegramBridge\Report;
 use GaTelegramBridge\ReportBuilder;
 use GaTelegramBridge\Settings;
+use GaTelegramBridge\Tests\SitePosts;
 use GaTelegramBridge\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -29,6 +30,11 @@ final class ReportBuilderTest extends TestCase {
 	private const NOON = 1757505600;
 
 	/**
+	 * The site the tests pretend to run on.
+	 */
+	private const HOME = 'https://dovira.vet';
+
+	/**
 	 * Stubs the WordPress helpers the builder goes through.
 	 */
 	protected function setUp(): void {
@@ -39,6 +45,9 @@ final class ReportBuilderTest extends TestCase {
 		Functions\when( 'is_wp_error' )->justReturn( false );
 		Functions\when( 'get_transient' )->justReturn( 'a-cached-access-token' );
 		Functions\when( 'wp_timezone_string' )->justReturn( 'Europe/Kyiv' );
+		Functions\when( 'home_url' )->justReturn( self::HOME );
+		Functions\when( 'wp_parse_url' )->alias( 'parse_url' );
+		SitePosts::given( self::HOME );
 		Functions\when( 'wp_remote_retrieve_response_code' )->alias(
 			static fn( array $response ): int => (int) $response['response']['code']
 		);
@@ -245,8 +254,8 @@ final class ReportBuilderTest extends TestCase {
 	 */
 	public static function provide_block_requests(): array {
 		return array(
-			'top pages yesterday' => array( 'pages_yesterday', array( 'pagePath', 'pageTitle' ), 'screenPageViews', 5, 'yesterday' ),
-			'top pages 28 days'   => array( 'pages_28_days', array( 'pagePath', 'pageTitle' ), 'screenPageViews', 5, '28daysAgo' ),
+			'top pages yesterday' => array( 'pages_yesterday', array( 'pagePath' ), 'screenPageViews', 5, 'yesterday' ),
+			'top pages 28 days'   => array( 'pages_28_days', array( 'pagePath' ), 'screenPageViews', 5, '28daysAgo' ),
 			'traffic sources'     => array( 'channels', array( 'sessionDefaultChannelGroup' ), 'sessions', null, '28daysAgo' ),
 			'cities'              => array( 'cities', array( 'city' ), 'activeUsers', 5, '28daysAgo' ),
 			'devices'             => array( 'devices', array( 'deviceCategory' ), 'activeUsers', null, '28daysAgo' ),
@@ -369,7 +378,11 @@ final class ReportBuilderTest extends TestCase {
 	}
 
 	/**
-	 * The pages block keeps the title, the path and the views of each row.
+	 * The pages block keeps the path and the views of each row, and names each
+	 * page by its post.
+	 *
+	 * GA knows the home page as "Ветеринарна клініка у Харкові– Лікування собак
+	 * та кішок", its SEO title; the owner's editors call it "Головна сторінка".
 	 */
 	public function test_the_pages_block_is_read_from_the_recorded_rows(): void {
 		$this->given_the_recorded_property();
@@ -378,20 +391,107 @@ final class ReportBuilderTest extends TestCase {
 		$pages  = $report->pages_yesterday;
 
 		$this->assertIsArray( $pages );
-		$this->assertCount( 5, $pages );
-		$this->assertSame( '/', $pages[0]['path'] );
-		$this->assertSame( 73, $pages[0]['views'] );
-		$this->assertStringContainsString( 'Ветеринарна клініка', $pages[0]['title'] );
+		$this->assertSame(
+			array( '/', '/services/', '/contacts/', '/services/reception-department/', '/services/dental-services/' ),
+			array_column( $pages, 'path' )
+		);
+		$this->assertSame( 101, $pages[0]['views'] );
+		$this->assertSame( 'Головна сторінка', $pages[0]['title'] );
+		$this->assertSame( 'Стоматологічні послуги', $pages[4]['title'] );
 		$this->assertGreaterThan( $pages[4]['views'], $pages[0]['views'], 'rows arrive ordered by views' );
 	}
 
 	/**
-	 * A page GA cannot name is labelled with its path instead.
+	 * Over 28 days a page is one row, whatever its title was during them.
 	 *
-	 * The recording holds no such row — every page of the live site has a title
-	 * — so the two shapes are given directly to the parser.
+	 * Asked by path and title, the home page came back as two rows of 1,176 and
+	 * 913 views, because its SEO title was rewritten in the period.
 	 */
-	public function test_a_page_without_a_title_is_labelled_with_its_path(): void {
+	public function test_a_page_is_one_row_over_the_whole_period(): void {
+		$this->given_the_recorded_property();
+
+		$pages = ReportBuilder::build( self::NOON )->pages_28_days;
+
+		$this->assertIsArray( $pages );
+		$paths = array_column( $pages, 'path' );
+
+		$this->assertSame( array_values( array_unique( $paths ) ), $paths );
+		$this->assertSame( 2237, $pages[0]['views'] );
+		$this->assertSame( 'Про нас', $pages[4]['title'] );
+	}
+
+	/**
+	 * A page no post can name is labelled with its path.
+	 *
+	 * The recording holds no such row — every page of the live site's top five
+	 * is a post — so the shapes are given directly to the parser.
+	 */
+	public function test_a_page_no_post_can_name_is_labelled_with_its_path(): void {
+		SitePosts::given_lookups(
+			array(
+				self::HOME . '/untitled/' => array( 5, self::HOME . '/untitled/', '' ),
+				self::HOME . '/services'  => array( 12, self::HOME . '/services/', 'Послуги' ),
+			)
+		);
+
+		$pages = $this->pages_of(
+			array(
+				$this->page_row( '/no-post/', 9 ),
+				$this->page_row( '(not set)', 8 ),
+				$this->page_row( '/untitled/', 7 ),
+				$this->page_row( '/services', 6 ),
+			)
+		);
+
+		$this->assertSame(
+			array( '/no-post/', '(not set)', '/untitled/', 'Послуги' ),
+			array_column( $pages, 'title' ),
+			'no post, no path, no title — and a missing trailing slash still finds its post'
+		);
+	}
+
+	/**
+	 * A post WordPress finds for a path but keeps at another address does not
+	 * name the page.
+	 *
+	 * WordPress's url_to_postid() ignores Polylang's language prefix: on the
+	 * local copy of the site `/blog/` resolved to the Russian page, whose
+	 * permalink is `/ru/blog/`. Taking its title would name one language's page with the
+	 * other's.
+	 */
+	public function test_a_post_that_lives_at_another_address_does_not_name_the_page(): void {
+		SitePosts::given_lookups(
+			array(
+				self::HOME . '/ru/services/' => array( 12, self::HOME . '/services/', 'Послуги' ),
+			)
+		);
+
+		$pages = $this->pages_of( array( $this->page_row( '/ru/services/', 3 ) ) );
+
+		$this->assertSame( '/ru/services/', $pages[0]['title'] );
+	}
+
+	/**
+	 * A page's address starts at the host, not at WordPress's home.
+	 *
+	 * GA's path already contains a subdirectory the site is installed in, so
+	 * appending it to such a home would name the directory twice.
+	 */
+	public function test_a_page_address_starts_at_the_host(): void {
+		$this->assertSame( 'https://dovira.vet/services/', ReportBuilder::page_url( '/services/' ) );
+
+		Functions\when( 'home_url' )->justReturn( 'https://example.com:8443/blog' );
+
+		$this->assertSame( 'https://example.com:8443/blog/hello/', ReportBuilder::page_url( '/blog/hello/' ) );
+	}
+
+	/**
+	 * Builds a report whose yesterday's pages are the given rows.
+	 *
+	 * @param list<array<string, mixed>> $rows The rows of the pages report.
+	 * @return list<array{title: string, path: string, views: int}>
+	 */
+	private function pages_of( array $rows ): array {
 		$this->given_blocks(
 			array(
 				'visitors' => true,
@@ -406,13 +506,7 @@ final class ReportBuilderTest extends TestCase {
 					array(
 						'reports' => array(
 							array( 'rows' => array() ),
-							array(
-								'rows' => array(
-									$this->page_row( '/no-title/', '', 9 ),
-									$this->page_row( '/not-set/', '(not set)', 8 ),
-									$this->page_row( '/named/', 'A page', 7 ),
-								),
-							),
+							array( 'rows' => $rows ),
 							array( 'rows' => array() ),
 						),
 					)
@@ -423,22 +517,20 @@ final class ReportBuilderTest extends TestCase {
 		$pages = ReportBuilder::build( self::NOON )->pages_yesterday;
 
 		$this->assertIsArray( $pages );
-		$this->assertSame( '/no-title/', $pages[0]['title'] );
-		$this->assertSame( '/not-set/', $pages[1]['title'] );
-		$this->assertSame( 'A page', $pages[2]['title'] );
+
+		return $pages;
 	}
 
 	/**
 	 * Builds one row of a pages report.
 	 *
 	 * @param string $path  The page path.
-	 * @param string $title The page title GA reported.
 	 * @param int    $views The view count.
 	 * @return array<string, mixed>
 	 */
-	private function page_row( string $path, string $title, int $views ): array {
+	private function page_row( string $path, int $views ): array {
 		return array(
-			'dimensionValues' => array( array( 'value' => $path ), array( 'value' => $title ) ),
+			'dimensionValues' => array( array( 'value' => $path ) ),
 			'metricValues'    => array( array( 'value' => (string) $views ) ),
 		);
 	}

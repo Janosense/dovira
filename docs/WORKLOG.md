@@ -17,6 +17,12 @@ Entry format:
 
 ---
 
+## 2026-09-10 — [adhoc] [ga-telegram-bridge] — Report format: spaced sections, icons, top pages linked and named by their post
+- Changed: `ReportBuilder` groups both top-pages requests by `pagePath` alone and names each row by the post `url_to_postid()` finds at that address, trusted only when its permalink is that address (otherwise the path); new `ReportBuilder::page_url()`. `MessageRenderer` links each page, sets the printed blocks apart with one blank line, puts an emoji before every heading (👥 📄 📅 🧭 📍 📱, outside the translated strings — no `.pot`/`.mo` change) and lists cities and devices one row per line; sources keep their line. Call-1's two pages reports re-recorded against the live property; new `tests/SitePosts.php`; 265 → 269 tests.
+- Decisions: DECISIONS "Top pages are counted by path and named by their post" — supersedes "labelled by `pageTitle`" and settles the duplicate-path item both sprint closes deferred (the home page had taken places 1 and 2 of the 28-day five).
+- Verified on the local site against the live property: the rendered message and the admin *Попередній перегляд* both show the new format, and all six links open their pages. Nothing was sent to Telegram.
+- Open: how the links and spacing look in a real Telegram client — *Надіслати зараз*, or the first scheduled morning after the deploy; merging `master` into `kyiv` and both production deploys are manual. A translated page whose slug WordPress maps to the other language is labelled by its path. A browser screenshot of screen `Settings` captured the dev install's key and token (LEARNINGS) — rotating them is now more pressing.
+
 ## 2026-09-10 — [ga-telegram-bridge] Sprint 2 Step 4 — Production readiness on both Dovira installs
 - Changed: screen `Settings` now names the build it is running — `Версія плагіна 0.1.0`, read from the plugin header (`Plugin::version()`), printed once above the run log and never per row — and links into `readme.txt` from the four sections that raise a question (Google → Installation 1, Telegram → 2, Розклад → 5, Журнал запусків → the FAQ). New `docs/features/ga-telegram-bridge/PRODUCTION-CHECKLIST.md`: sections A–F worked through once per install, with `ARCHITECTURE.md` → Environments recording the same shape. 5 new tests, 265 in all; five new strings translated.
 - Shared code: none of the theme, no gate config. Inside the plugin only `Admin` and `Plugin` gained methods; four existing tests learned to stub `get_file_data`/`plugins_url` because the run log now calls them.
