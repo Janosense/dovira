@@ -1,0 +1,158 @@
+# Translation of Plugins - Simple Custom Post Order - Stable (latest release) in Russian
+# This file is distributed under the same license as the Plugins - Simple Custom Post Order - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2026-07-18 13:00:08+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 1 : 2);\n"
+"X-Generator: GlotPress/4.1.0\n"
+"Language: ru\n"
+"Project-Id-Version: Plugins - Simple Custom Post Order - Stable (latest release)\n"
+
+#: simple-custom-post-order.php:1675
+msgid "Order"
+msgstr "Заказ"
+
+#: simple-custom-post-order.php:1755
+msgid "Invalid item."
+msgstr "Недействительная позиция."
+
+#: simple-custom-post-order.php:328
+msgid "Order saved"
+msgstr "Заказ сохранен"
+
+#: simple-custom-post-order.php:1019
+msgid "Drag handle"
+msgstr "Перетащить указатель"
+
+#: settings.php:26
+msgid "Save Changes"
+msgstr "Сохранить изменения"
+
+#: settings.php:83
+msgid "Support"
+msgstr "Поддержка"
+
+#: settings.php:119
+msgid "Resetting..."
+msgstr "Сброс..."
+
+#: settings.php:138 settings.php:143
+msgid "An error occurred."
+msgstr "Произошла ошибка."
+
+#: simple-custom-post-order.php:227
+msgid "Settings"
+msgstr "Настройки"
+
+#: simple-custom-post-order.php:715 simple-custom-post-order.php:744
+#: simple-custom-post-order.php:821 simple-custom-post-order.php:848
+#: simple-custom-post-order.php:937 simple-custom-post-order.php:1747
+#: simple-custom-post-order.php:1761 simple-custom-post-order.php:2093
+msgid "Permission denied."
+msgstr "Доступ запрещен."
+
+#: simple-custom-post-order.php:722 simple-custom-post-order.php:828
+msgid "Invalid data."
+msgstr "Неверные данные."
+
+#: simple-custom-post-order.php:1028
+msgid "Advanced Options"
+msgstr "Расширенные параметры"
+
+#: simple-custom-post-order.php:1258
+msgid "Post Types"
+msgstr "Типы постов"
+
+#: simple-custom-post-order.php:1297
+msgid "Taxonomies"
+msgstr "Таксономия"
+
+#: simple-custom-post-order.php:2101
+msgid "No items selected."
+msgstr "Элементы не выбраны."
+
+#: settings.php:75
+msgid "Reset Order"
+msgstr "Сбросить порядок"
+
+#: settings.php:89
+msgid "leave a review"
+msgstr "оставить отзыв"
+
+#: simple-custom-post-order.php:807 simple-custom-post-order.php:914
+#: simple-custom-post-order.php:1791
+msgid "Order updated."
+msgstr "Заказ обновлен."
+
+#: simple-custom-post-order.php:972
+msgid "Sortable Post Types"
+msgstr "Сортируемые Типы Постов"
+
+#: simple-custom-post-order.php:988
+msgid "Sortable Taxonomies"
+msgstr "Сортируемые таксономии"
+
+#: simple-custom-post-order.php:1035
+msgid "Advanced View"
+msgstr "Продвинутый Вид"
+
+#: class-simple-review.php:85
+msgid "Don't show again"
+msgstr "Не показывать снова"
+
+#: class-simple-review.php:84
+msgid "Remind me later"
+msgstr "Напомнить позже"
+
+#: class-simple-review.php:83
+msgid "Rate the plugin"
+msgstr "Оценить плагин"
+
+#: class-simple-review.php:82
+msgid "Hi there! Stoked to see you're using Simple Custom Post Order for a few days now - hope you like it! And if you do, please consider rating it. It would mean the world to us.  Keep on rocking!"
+msgstr "Привет! Рады видеть, что вы используете Simple Custom Post Order уже несколько дней — надеюсь, он вам нравится! Если это так, пожалуйста, оцените его. Для нас это будет очень важно.  Продолжайте в том же духе!"
+
+#. Author of the plugin
+#: simple-custom-post-order.php
+msgid "Colorlib"
+msgstr "Colorlib"
+
+#: simple-custom-post-order.php:154
+msgid "Get started !"
+msgstr "Начать!"
+
+#. Author URI of the plugin
+#: simple-custom-post-order.php
+msgid "https://colorlib.com/"
+msgstr "https://colorlib.com/"
+
+#: simple-custom-post-order.php:155
+msgid "Dismiss this notice."
+msgstr "Скрыть это уведомление."
+
+#. Plugin URI of the plugin
+#: simple-custom-post-order.php
+msgid "https://wordpress.org/plugins-wp/simple-custom-post-order/"
+msgstr "https://wordpress.org/plugins-wp/simple-custom-post-order/"
+
+#: simple-custom-post-order.php:206
+msgid "SCPOrder"
+msgstr "SCPOrder"
+
+#. Plugin Name of the plugin
+#: simple-custom-post-order.php simple-custom-post-order.php:150
+#: simple-custom-post-order.php:205
+msgid "Simple Custom Post Order"
+msgstr "Simple Custom Post Order"
+
+#. Description of the plugin
+#: simple-custom-post-order.php
+msgid "Order Items (Posts, Pages, and Custom Post Types) using a Drag and Drop Sortable JavaScript."
+msgstr "Упорядочивание элементов (записей, страниц и пользовательских типов записей) с помощью JavaScript с возможностью перетаскивания и вставки."
+
+#: simple-custom-post-order.php:152
+msgid "Thank you for installing our awesome plugin, in order to enable it you need to go to the settings page and select which custom post or taxonomy you want to order."
+msgstr "Спасибо, что установили наш замечательный плагин. Перейдите на страницу настроек и укажите типы постов или таксономий которые вы хотите упорядочить."
