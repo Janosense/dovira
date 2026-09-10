@@ -217,7 +217,13 @@ scrubbed of the bot token before they are thrown and never carry the
 service-account key. A stored entry is completed and typed on the way out, so a
 row edited by hand cannot break the table that prints it.
 
-`uninstall.php` (Sprint 2) removes both options, the settings and the transient.
+`uninstall.php` removes everything above when the plugin is **deleted**: the
+three options `gatb_settings`, `gatb_state` and `gatb_log`, the transient
+`gatb_google_access_token`, and both cron events (`wp_unschedule_hook()`, so the
+retry goes with the day it carries). It runs with the plugin unloaded, so the
+names are literals in that file and a unit test holds each one to the constant it
+must equal. **Deactivating** the plugin is a different thing and takes only the
+schedule: the settings, the state and the log survive being switched off.
 
 ## Relations
 ```

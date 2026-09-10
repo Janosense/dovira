@@ -59,7 +59,10 @@
   tried again a configured number of times and then announced as missing to the
   same chat, never silently skipped and never filled with guesses.
 - The report's periods follow Google Analytics' calendar for the property;
-  the delivery time follows the site's own clock.
+  the delivery time follows the site's own clock. A day is reported once and
+  never revised, and Google is often still processing it — so a morning report
+  is a provisional reading of yesterday, and the same day can show larger
+  figures in Google later.
 
 ## Roles
 | Role | Can do |

@@ -509,3 +509,223 @@ Sprint 1):
    *Resolved: approved as recommended — only a `cron` or `retry` run books a
    retry or sends the failure notice; a failed manual run counts its attempt
    and is logged, exactly as it is today.*
+
+## Plan — Sprint 2, Step 3: Lifecycle, readme, translations   (status: closed)
+
+### Branch
+`ga-telegram-bridge/sprint-2-runs-by-itself` ← `master`
+(root `CLAUDE.md` → git model: simple — task branch → `master`; the name is the
+**Branch** line of `SPRINT-2.md`. Recreated from `master`, deleted at the close,
+as in Steps 1 and 2.)
+
+### Tasks (ordered)
+
+- [x] **1. Deleting the plugin leaves nothing behind.** New
+  `wp-content/plugins/ga-telegram-bridge/uninstall.php`, the file core includes
+  when a plugin is deleted from wp-admin:
+  - It deletes the three options `gatb_settings`, `gatb_state`, `gatb_log`, the
+    transient `gatb_google_access_token`, and both cron events through
+    `wp_unschedule_hook( 'gatb_daily_report' )` / `( 'gatb_retry_report' )` —
+    the function Step 2 established, because `wp_clear_scheduled_hook()` matches
+    only events registered without arguments and a pending retry carries its day.
+    That list is exactly what the plugin owns: the audit for this plan
+    (`grep` over `src/` for every `add_option`, `update_option`, `set_transient`)
+    finds nothing else, and the one other transient the code touches —
+    `settings_errors` — is **core's own**, written by `wp-admin/options.php` the
+    same way and expiring in 30 seconds, so the plugin must not delete it.
+  - **The names are literals in this file, not class constants.** Core
+    `define()`s `WP_UNINSTALL_PLUGIN` and `include`s uninstall.php with the
+    plugin itself unloaded (`wp-admin/includes/plugin.php` → `uninstall_plugin()`,
+    read while planning), so there is no autoloader and no `Settings::OPTION` to
+    read. What keeps the literals honest is the test: it compares every deleted
+    key with the class constant it must equal, so a renamed option fails the gate.
+  - The file guards with `if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) { exit; }` —
+    the WordPress convention. That line cannot have a unit test (an `exit` inside
+    the suite would end the run), so it is a negative check of the manual guide
+    instead: requesting the file over HTTP deletes nothing.
+  - Single-site cleanup, like the rest of the plugin: `Plugin::activate()`
+    already ignores `$network_wide` and nothing here is network-aware. A
+    multisite network would keep the rows of its other sites — no document asks
+    for more, and neither Dovira install is a network.
+  The other half of the step's first task — "deactivation clears cron only,
+  settings survive" — was built in Sprint 2 Step 1 and is asserted by
+  `PluginTest::test_deactivation_clears_the_schedule_and_nothing_else`; nothing
+  to change, and the guide re-checks it.
+  `docs/DATA-MODEL.md`, `FEATURE.md` → Data, the plugin's `CLAUDE.md` and
+  `docs/TESTING.md` are updated in the same commit.
+  → `feat(gatb): remove every trace when the plugin is deleted`
+
+- [x] **2. The readme sets a strange site up from scratch.** `readme.txt`
+  rewritten into the WordPress readme format — `== Description ==`,
+  `== Installation ==`, `== Frequently Asked Questions ==`, `== Changelog ==` —
+  around what is already there (Steps 3, 5, 7, 8 and Sprint 2 wrote the field
+  descriptions, the buttons, the run log, the schedule and the retries; that
+  material is kept, not rewritten for its own sake — `SPRINT-1-CLOSE.md` →
+  Contradiction 3). What this task adds is what a reader cannot work out alone:
+  - **Google Cloud, in order:** pick or create a project → enable the *Google
+    Analytics Data API* (and only that one — DECISIONS ""Check GA" proves the
+    connection through the Data API, not the Admin API") → create a service
+    account → create a JSON key for it → in GA4 give that service account's
+    e-mail address at least *Viewer* on the property → read the **numeric
+    property id** from Admin → Property settings, which is not the measurement
+    id `G-…`.
+  - **Telegram, in order:** create a bot with BotFather and keep the token →
+    decide the recipient (a person must write to the bot once; a channel needs
+    the bot added as an administrator) → find the numeric chat id, with the
+    `getUpdates` call written against a placeholder token, never a real one.
+  - **The two `wp-config.php` constants** as the recommended place for the key
+    and the token, with the reason stated: what is in the options row travels in
+    every database dump.
+  - **WP-Cron**, with the recipe the step asks for: what WP-Cron does and does
+    not guarantee, and for `DISABLE_WP_CRON` installs an actual crontab line
+    calling `wp-cron.php`, next to the screen's own warning.
+  - **Data freshness**, written from what this project knows rather than from a
+    number nobody here measured (LEARNINGS "An option was put to the user with a
+    benefit that had never been measured"): the report covers *yesterday in the
+    property's own reporting time zone*, every range is relative and resolved by
+    Google, the day is sent once and never revised, so figures that Google is
+    still processing can move after the message was sent. Any window quoted for
+    Google's own processing is attributed to Google's documentation in the
+    sentence itself.
+  - **Requirements** in one place: WordPress, PHP 8.1, the `openssl` extension
+    (refused at activation without it), outbound HTTPS to `oauth2.googleapis.com`,
+    `analyticsdata.googleapis.com` and `api.telegram.org`.
+  The `== Changelog ==` entry for 0.1.0 stops saying "plugin skeleton" and says
+  what 0.1.0 contains; the version is **not** bumped and `Requires at least: 7.1`
+  is left alone — DECISIONS parks the minimum-WordPress question for packaging,
+  which `SPRINT-2.md` → Out of scope excludes.
+  → `docs(gatb): write the setup guide into readme.txt`
+
+- [x] **3. Translations.** Regenerate `languages/ga-telegram-bridge.pot` per the
+  plugin's `CLAUDE.md` and read it back on the host (LEARNINGS "Two files looked
+  unchanged because DDEV had not synced them yet"). **The expected outcome is
+  that nothing moved:** this step adds no `__()` anywhere — `uninstall.php` has
+  no user-facing text and `readme.txt` is not scanned — so the 122 entries should
+  come back as 122 with only `POT-Creation-Date` different, in which case the
+  regeneration is discarded and the task closes with no commit. If any entry did
+  move, it is translated in `-uk.po`, the `.mo` is rebuilt and all three files
+  are committed.
+  → `chore(gatb): translate …` — **or no commit**, with the entry count recorded
+  in the close report.
+
+No task touches shared code: nothing outside
+`wp-content/plugins/ga-telegram-bridge/` except three project docs. The plugin
+hosts one feature.
+
+### Files to create/change
+**Create**
+- `wp-content/plugins/ga-telegram-bridge/uninstall.php`
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/UninstallTest.php`
+
+**Change**
+- `readme.txt` (task 2)
+- `wp-content/plugins/ga-telegram-bridge/CLAUDE.md` — the area's Data bullet
+  gains why uninstall.php spells its names out; listed here deliberately, after
+  LEARNINGS "The plan's file list missed the code area's own CLAUDE.md again"
+- `docs/DATA-MODEL.md`, `docs/features/ga-telegram-bridge/FEATURE.md`,
+  `docs/TESTING.md`
+- `docs/features/ga-telegram-bridge/sprints/SPRINT-2-PLAN.md` (checkboxes)
+- `languages/*` only if the `.pot` entry count moves (task 3)
+
+Not touched: every class in `src/`. This step adds no runtime code path —
+`uninstall.php` is never loaded while the plugin runs.
+
+### Tests to write
+`UninstallTest` (new; it defines `WP_UNINSTALL_PLUGIN` and `include`s the file
+once per test — the file declares no function and no class, so including it
+repeatedly is safe):
+1. the three options are deleted, and the assertion names them through
+   `Settings::OPTION`, `RunLog::STATE_OPTION` and `RunLog::LOG_OPTION`, so
+   renaming an option without changing `uninstall.php` fails the gate
+2. the transient `GoogleAuth::TRANSIENT` is deleted
+3. both `Scheduler::DAILY_HOOK` and `Scheduler::RETRY_HOOK` go through
+   `wp_unschedule_hook()` — the function that removes an event whatever
+   arguments it carries
+4. negative: **nothing else** is deleted — the set of keys passed to
+   `delete_option()` is exactly those three, so core's `settings_errors`
+   transient, another plugin's rows and WordPress's own options are untouched
+5. negative: `wp_clear_scheduled_hook()` is never called, which is how the
+   Step 2 lesson stays fixed
+
+`PluginTest` already covers the deactivation half
+(`test_deactivation_clears_the_schedule_and_nothing_else`: both hooks cleared,
+`delete_option()` never called) — no change.
+
+### Docs to update
+- `docs/DATA-MODEL.md` — the line "`uninstall.php` (Sprint 2) removes both
+  options, the settings and the transient" becomes the exact list, the two cron
+  events included, and says what deactivation does instead
+- `docs/features/ga-telegram-bridge/FEATURE.md` → Data — `uninstall.php` exists
+  and is named as the one thing that removes the feature's data; Interfaces is
+  unchanged, because this step adds no hook (the step's own docs line makes that
+  conditional)
+- `wp-content/plugins/ga-telegram-bridge/CLAUDE.md` — one line: uninstall.php
+  runs with the plugin unloaded, so it spells the names out and a unit test holds
+  them to the constants
+- `docs/TESTING.md` — one sentence: the fixed suite order is about the `GATB_*`
+  secret constants; `UninstallTest` defines `WP_UNINSTALL_PLUGIN`, which no other
+  test reads, so it stays in the first suite
+- At the close: `docs/WORKLOG.md`, the verification guide, the sprint tick.
+  `docs/DECISIONS.md` only if something is decided that these tasks do not
+  already carry.
+
+### Checks
+- **ANTI-PATTERNS:** none violated. The list is theme-shaped (ACF groups and
+  blocks, `service-city`, city branching, `assets/`, ops directories, post-type
+  registration, `mu-plugins/`, Kyiv-only changes on `master`, CF7 ids); this step
+  adds one plugin file, one test class and prose. The one rule that reaches the
+  plugin — no globally installed tooling — is untouched: no dependency is added,
+  so core rule 4 is not in play either.
+- **Docs vs reality:** seven items, all settled here, none of them a question:
+  1. **Half of task 1 is already shipped.** "Deactivation clears cron only" was
+     built in Step 1 and hardened in Step 2; this step adds only `uninstall.php`.
+  2. **The readme overlaps** (`SPRINT-1-CLOSE.md` → Contradiction 3). Everything
+     the step lists except the Google Cloud and Telegram walkthroughs, the cron
+     recipe and the freshness note is already written; task 2 keeps that text and
+     restructures around it rather than writing it twice.
+  3. **`uk`, not `uk_UA`** (Contradiction 2). The locale on these installs is
+     `uk`; a `uk_UA` file would never load, and the strings of Sprints 1–2 were
+     translated step by step, so task 3 is a confirmation rather than a backlog.
+  4. **Seven `msgstr` are empty on purpose.** They are the plugin name, the
+     author, the author URI and the brand labels *GA → Telegram*, *Google
+     Analytics*, *Telegram*, *Google Analytics → Telegram*, whose Ukrainian is
+     the same text; gettext falls back to the source, so the screen is fully
+     Ukrainian already. Translating them would add noise, not language.
+  5. **`docs/DATA-MODEL.md` undercounts what uninstall removes** — its current
+     line omits the two cron events. Corrected in task 1.
+  6. **Nothing in this project has measured GA4's own data freshness.** The
+     Sprint 1 spike measured request latency (185–356 ms, ~610 ms, ~923 ms), not
+     how long Google keeps processing a day. The note therefore describes the
+     mechanism — yesterday in the property's zone, relative ranges, one message
+     per day, never revised — and attributes any processing window to Google's
+     documentation in the sentence that carries it.
+  7. **The version fields stay as they are.** DECISIONS parks lowering
+     `Requires at least: 7.1` as a packaging question and `SPRINT-2.md` → Out of
+     scope excludes packaging, so `readme.txt` keeps its header and the changelog
+     entry describes 0.1.0 instead of bumping it.
+  One observation that changes no task: the dev install now keeps the
+  service-account key and the bot token in `gatb_settings` rather than in the two
+  `wp-config.php` constants, so the uninstall check in the guide is destructive
+  unless the row is copied first — the guide does that with `wp eval`, without
+  ever printing the row (LEARNINGS "A whole options row was printed to read two
+  of its fields").
+- **Design:** n/a — DECISIONS "No UI design phase; message format and
+  configurable blocks" forbids a design phase and `docs/DESIGN.md` changes for
+  this feature, and this step changes no screen at all.
+- **Check command:** `bin/check.sh` (`docs/TECH-STACK.md` → Check command) —
+  exists and is green on `master` right now: `OK (255 tests, 815 assertions)`,
+  PHPCS + PHPStan level 8 clean, 108 theme files linted.
+- **Not locally verifiable:** **a fresh install configured by following only the
+  readme, ending in a successful *Send now*.** Every other promise of this step
+  is checked on the dev site and written into the guide: deactivation leaves the
+  options and takes both events, `wp plugin uninstall ga-telegram-bridge
+  --skip-delete` (the same code path wp-admin's *Delete* takes, without removing
+  the files this repository versions) leaves no `gatb_*` row, no `gatb_*` event
+  and no transient, and a direct HTTP request to `uninstall.php` deletes nothing.
+  The readme-only setup is the reader's own run, because it means typing in a
+  service-account key and a bot token — credentials this session never handles —
+  and because a readme is only proven by someone who does not already know the
+  answers.
+
+### Questions / ambiguities
+none

@@ -44,6 +44,9 @@ references the `dovira` theme, its functions, options or data.
 - Data: only the options `gatb_settings`, `gatb_state`, `gatb_log`, the
   transient `gatb_google_access_token` and the cron hooks `gatb_daily_report`,
   `gatb_retry_report` — all removed by `uninstall.php`. No custom tables.
+  `uninstall.php` runs with the plugin unloaded (core `define()`s
+  `WP_UNINSTALL_PLUGIN` and includes it), so it has no autoloader and spells its
+  names out; `UninstallTest` holds every literal against the class constant.
 - Cron: `Scheduler` is the only class that schedules or clears events; every
   run passes through `Runner` and its date guard. A settings save is caught on
   **both** `update_option_gatb_settings` and `add_option_gatb_settings`: while

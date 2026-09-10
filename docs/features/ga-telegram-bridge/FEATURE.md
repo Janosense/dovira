@@ -30,7 +30,7 @@ the one copy of it), `gatb_log` (last 30 runs); one transient
 `gatb_google_access_token`; cron hooks `gatb_daily_report` (recurring) and
 `gatb_retry_report` (single, carrying the day it is for as its one argument). Constants `GATB_GA_SERVICE_ACCOUNT_JSON` and
 `GATB_TELEGRAM_BOT_TOKEN` override the two secrets. No other feature writes
-to this data; `uninstall.php` removes all of it.
+to this data; `uninstall.php` removes all of it when the plugin is deleted, while deactivation takes only the two cron events.
 
 ## Invariants
 - A report for a given date is sent at most once: every run compares the day of
