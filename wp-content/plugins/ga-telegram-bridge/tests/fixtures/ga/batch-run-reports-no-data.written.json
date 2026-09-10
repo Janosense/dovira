@@ -1,0 +1,110 @@
+{
+    "status": 200,
+    "body": {
+        "reports": [
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "dateRange"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "activeUsers",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rowCount": 0,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            },
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "pagePath"
+                    },
+                    {
+                        "name": "pageTitle"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "screenPageViews",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rowCount": 0,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            },
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "pagePath"
+                    },
+                    {
+                        "name": "pageTitle"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "screenPageViews",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rowCount": 0,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            },
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "sessionDefaultChannelGroup"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "sessions",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rowCount": 0,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            },
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "city"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "activeUsers",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rowCount": 0,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            }
+        ],
+        "kind": "analyticsData#batchRunReports"
+    },
+    "ms": 240
+}

@@ -1,0 +1,78 @@
+{
+    "status": 200,
+    "body": {
+        "reports": [
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "dateRange"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "activeUsers",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rows": [
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "date_range_3"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "1577"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "date_range_2"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "1559"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "date_range_1"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "394"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "date_range_0"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "66"
+                            }
+                        ]
+                    }
+                ],
+                "rowCount": 4,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            }
+        ],
+        "kind": "analyticsData#batchRunReports"
+    },
+    "ms": 923
+}

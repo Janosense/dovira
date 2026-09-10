@@ -1,0 +1,27 @@
+{
+    "status": 200,
+    "body": {
+        "metricHeaders": [
+            {
+                "name": "activeUsers",
+                "type": "TYPE_INTEGER"
+            }
+        ],
+        "rows": [
+            {
+                "metricValues": [
+                    {
+                        "value": "66"
+                    }
+                ]
+            }
+        ],
+        "rowCount": 1,
+        "metadata": {
+            "currencyCode": "USD",
+            "timeZone": "Europe/Kiev"
+        },
+        "kind": "analyticsData#runReport"
+    },
+    "ms": 610
+}

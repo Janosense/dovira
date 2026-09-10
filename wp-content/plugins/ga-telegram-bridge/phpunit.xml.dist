@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+	bootstrap="tests/bootstrap.php"
+	colors="true"
+	failOnWarning="true"
+	failOnNotice="true"
+	failOnDeprecation="true"
+	cacheDirectory=".phpunit.cache">
+	<testsuites>
+		<!-- Order matters, so it is written down rather than left to the
+		     alphabet: SettingsSecretConstantsTest defines the real
+		     GATB_* secret constants, and a constant cannot be undefined
+		     again. Every test that needs an unset secret therefore has
+		     to run before it. -->
+		<testsuite name="Unit">
+			<directory>tests/Unit</directory>
+			<exclude>tests/Unit/SettingsSecretConstantsTest.php</exclude>
+		</testsuite>
+		<testsuite name="Secret constants">
+			<file>tests/Unit/SettingsSecretConstantsTest.php</file>
+		</testsuite>
+	</testsuites>
+</phpunit>

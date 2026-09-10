@@ -1,0 +1,11 @@
+{
+    "status": 429,
+    "body": {
+        "error": {
+            "code": 429,
+            "message": "Exhausted property tokens for a project per hour. To learn more, see https://developers.google.com/analytics/devguides/reporting/data/v1/quotas",
+            "status": "RESOURCE_EXHAUSTED"
+        }
+    },
+    "ms": 210
+}

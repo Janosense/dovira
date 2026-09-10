@@ -1,0 +1,66 @@
+{
+    "status": 200,
+    "body": {
+        "reports": [
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "deviceCategory"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "activeUsers",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rows": [
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "mobile"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "1248"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "desktop"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "304"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "tablet"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "10"
+                            }
+                        ]
+                    }
+                ],
+                "rowCount": 3,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
+            }
+        ],
+        "kind": "analyticsData#batchRunReports"
+    },
+    "ms": 509
+}
