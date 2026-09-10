@@ -19,6 +19,12 @@ Entry format:
 
 ---
 
+## 2026-09-10 — [ga-telegram-bridge] The link was asserted, not opened, and what it opened was unreadable
+- **Incident:** Step 4 put four links to `readme.txt` on the settings screen. Three unit tests asserted the anchors, a `curl` confirmed `200`, and the rendered markup was read back from the real install — all green. Then the link was actually clicked, and the readme came up as mojibake: this server sends `text/plain` with no charset, the browser guessed a Cyrillic codepage, and the file's 28 non-ASCII characters (13 `→`, 13 `—`, 2 `…`) turned into `в†'` and `вЂ"`. Everything that had been checked was true; the deliverable was still broken.
+- **Root cause:** Sprint 1's rule was "a step whose deliverable is a wp-admin screen is not implemented until the screen has been opened and its buttons pressed" — and it was followed to the letter: the screen was opened, both buttons pressed. A link is neither a screen nor a button, and an assertion on an `href` says nothing about what is at the other end of it. The status code says nothing either: a `200` of unreadable bytes is still a `200`.
+- **Fix applied here:** `readme.txt` is ASCII (commit `a4c1d28`) and the plugin's `CLAUDE.md` records why, so the next typographic dash does not come back silently. Rule taken, widening the Sprint 1 one: **a step that adds an outbound link or a file the UI points at is not implemented until that target has been opened and read in a browser** — not fetched, not asserted, read.
+- **Transferred to playbook:** pending
+
 ## 2026-09-10 — [ga-telegram-bridge] A test that asserted nothing passed the gate
 - **Incident:** `UninstallTest::test_the_hooks_are_not_cleared_by_arguments` was written as a Brain\Monkey expectation (`Functions\expect( 'wp_clear_scheduled_hook' )->never()`) with no PHPUnit assertion after it. PHPUnit marked it **risky** — "This test did not perform any assertions" — and `bin/check.sh` still printed `==> check: all green`, because `phpunit.xml.dist` sets `failOnWarning`, `failOnNotice` and `failOnDeprecation` but not `failOnRisky`. The test was rewritten to record the calls and assert the empty list, so it now fails if the wrong function is ever used.
 - **Root cause:** The gate's own configuration decides what "green" means, and one class of broken test — the one that checks nothing — was outside it. Nothing in the project said so; it took a risky test in the output to notice, and a less careful reading would have committed on `all green`.
