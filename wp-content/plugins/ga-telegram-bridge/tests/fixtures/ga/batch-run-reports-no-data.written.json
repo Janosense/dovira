@@ -25,9 +25,6 @@
                 "dimensionHeaders": [
                     {
                         "name": "pagePath"
-                    },
-                    {
-                        "name": "pageTitle"
                     }
                 ],
                 "metricHeaders": [
@@ -47,9 +44,6 @@
                 "dimensionHeaders": [
                     {
                         "name": "pagePath"
-                    },
-                    {
-                        "name": "pageTitle"
                     }
                 ],
                 "metricHeaders": [

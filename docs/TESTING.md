@@ -71,10 +71,19 @@ logic in a plugin.
   `ReportBuilder` composes, recorded against the live property. They are worth
   reading before changing the parser, because the real data carries the awkward
   cases — the visitors rows come back ordered by metric (`date_range_3` first,
-  `date_range_0` last), the cities list contains a real `(not set)` row, and the
-  28-day pages list holds the same path twice under two titles. The empty-property
+  `date_range_0` last) and the cities list contains a real `(not set)` row. The
+  two pages reports inside `call-1` (positions 1 and 2) were re-recorded on
+  2026-09-10, when the request dropped `pageTitle` and grouped by `pagePath`
+  alone (DECISIONS "Top pages are counted by path and named by their post"); the
+  rest of both files is the Sprint 1 recording, unchanged. The empty-property
   shape is the one written fixture (`batch-run-reports-no-data.written.json`):
   a property with traffic cannot produce it.
+- A page is named by the post WordPress finds at its path — `url_to_postid()`,
+  `get_permalink()`, `get_post_field()`. Those are WordPress globals, so they are
+  stubbed, by `tests/SitePosts.php`, with what a local copy of the Kharkiv site
+  answered for the recorded paths on 2026-09-10. A test that builds a real report
+  but is not about page names stubs `url_to_postid()` with `0`, which labels
+  every page by its path.
 - `MessageRenderer` is asserted as **whole messages**, built from those same
   recorded payloads through the real `ReportBuilder`. Two WordPress functions
   are stubbed inside it — `wp_date()` and `number_format_i18n()` — with what

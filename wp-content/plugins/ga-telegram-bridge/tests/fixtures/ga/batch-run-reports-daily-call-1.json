@@ -75,9 +75,6 @@
                 "dimensionHeaders": [
                     {
                         "name": "pagePath"
-                    },
-                    {
-                        "name": "pageTitle"
                     }
                 ],
                 "metricHeaders": [
@@ -91,14 +88,11 @@
                         "dimensionValues": [
                             {
                                 "value": "/"
-                            },
-                            {
-                                "value": "Ветеринарна клініка у Харкові– Лікування собак та кішок"
                             }
                         ],
                         "metricValues": [
                             {
-                                "value": "73"
+                                "value": "101"
                             }
                         ]
                     },
@@ -106,14 +100,11 @@
                         "dimensionValues": [
                             {
                                 "value": "/services/"
-                            },
-                            {
-                                "value": "Послуги"
                             }
                         ],
                         "metricValues": [
                             {
-                                "value": "31"
+                                "value": "60"
                             }
                         ]
                     },
@@ -121,14 +112,11 @@
                         "dimensionValues": [
                             {
                                 "value": "/contacts/"
-                            },
-                            {
-                                "value": "Контакти - Ветеринарна клініка Довіра"
                             }
                         ],
                         "metricValues": [
                             {
-                                "value": "25"
+                                "value": "29"
                             }
                         ]
                     },
@@ -136,9 +124,18 @@
                         "dimensionValues": [
                             {
                                 "value": "/services/reception-department/"
-                            },
+                            }
+                        ],
+                        "metricValues": [
                             {
-                                "value": "Ветеринарний прийом у Харкові – огляд собак та кішок без черги"
+                                "value": "22"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/services/dental-services/"
                             }
                         ],
                         "metricValues": [
@@ -146,24 +143,9 @@
                                 "value": "16"
                             }
                         ]
-                    },
-                    {
-                        "dimensionValues": [
-                            {
-                                "value": "/services/radiology/"
-                            },
-                            {
-                                "value": "Рентген для тварин у Харкові – ветеринарна радіологія для собак та кішок"
-                            }
-                        ],
-                        "metricValues": [
-                            {
-                                "value": "11"
-                            }
-                        ]
                     }
                 ],
-                "rowCount": 42,
+                "rowCount": 56,
                 "metadata": {
                     "currencyCode": "USD",
                     "timeZone": "Europe/Kiev"
@@ -174,9 +156,6 @@
                 "dimensionHeaders": [
                     {
                         "name": "pagePath"
-                    },
-                    {
-                        "name": "pageTitle"
                     }
                 ],
                 "metricHeaders": [
@@ -190,29 +169,11 @@
                         "dimensionValues": [
                             {
                                 "value": "/"
-                            },
-                            {
-                                "value": "Ветеринарна клініка у Харкові– Лікування собак та кішок"
                             }
                         ],
                         "metricValues": [
                             {
-                                "value": "1176"
-                            }
-                        ]
-                    },
-                    {
-                        "dimensionValues": [
-                            {
-                                "value": "/"
-                            },
-                            {
-                                "value": "Ветеринарна клініка DOVIRA – турбота цілодобово - Ветеринарна клініка в Києві та Харкові"
-                            }
-                        ],
-                        "metricValues": [
-                            {
-                                "value": "913"
+                                "value": "2237"
                             }
                         ]
                     },
@@ -220,14 +181,11 @@
                         "dimensionValues": [
                             {
                                 "value": "/services/"
-                            },
-                            {
-                                "value": "Послуги"
                             }
                         ],
                         "metricValues": [
                             {
-                                "value": "602"
+                                "value": "1000"
                             }
                         ]
                     },
@@ -235,34 +193,40 @@
                         "dimensionValues": [
                             {
                                 "value": "/contacts/"
-                            },
-                            {
-                                "value": "Контакти - Ветеринарна клініка Довіра"
                             }
                         ],
                         "metricValues": [
                             {
-                                "value": "465"
+                                "value": "471"
                             }
                         ]
                     },
                     {
                         "dimensionValues": [
                             {
-                                "value": "/services/"
-                            },
-                            {
-                                "value": "Ветеринарні послуги DOVIRA – діагностика, лікування"
+                                "value": "/services/reception-department/"
                             }
                         ],
                         "metricValues": [
                             {
-                                "value": "370"
+                                "value": "396"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "/about/"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "200"
                             }
                         ]
                     }
                 ],
-                "rowCount": 243,
+                "rowCount": 111,
                 "metadata": {
                     "currencyCode": "USD",
                     "timeZone": "Europe/Kiev"

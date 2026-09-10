@@ -17,6 +17,7 @@ use GaTelegramBridge\MessageRenderer;
 use GaTelegramBridge\Report;
 use GaTelegramBridge\ReportBuilder;
 use GaTelegramBridge\Settings;
+use GaTelegramBridge\Tests\SitePosts;
 use GaTelegramBridge\Tests\TestCase;
 
 /**
@@ -48,6 +49,7 @@ final class MessageRendererTest extends TestCase {
 		Functions\when( 'wp_timezone_string' )->justReturn( 'Europe/Kyiv' );
 		Functions\when( 'home_url' )->justReturn( 'https://dovira.vet' );
 		Functions\when( 'wp_parse_url' )->alias( 'parse_url' );
+		SitePosts::given( 'https://dovira.vet' );
 		Functions\when( 'wp_remote_retrieve_response_code' )->alias(
 			static fn( array $response ): int => (int) $response['response']['code']
 		);
@@ -167,17 +169,17 @@ final class MessageRendererTest extends TestCase {
 				'Yesterday: 69 (▲ 23% to the 7-day average)',
 				'Last 28 days: 1,560 (▼ 1% to the previous 28)',
 				'<b>Top 5 pages yesterday</b>',
-				'1. Ветеринарна клініка у Харкові– Лікування собак та кішок — 73',
-				'2. Послуги — 31',
-				'3. Контакти - Ветеринарна клініка Довіра — 25',
-				'4. Ветеринарний прийом у Харкові – огляд собак та кішок без черги — 16',
-				'5. Рентген для тварин у Харкові – ветеринарна радіологія для собак та кішок — 11',
+				'1. Головна сторінка — 101',
+				'2. Послуги — 60',
+				'3. Контакти — 29',
+				'4. Приймальне відділення — 22',
+				'5. Стоматологічні послуги — 16',
 				'<b>Top 5 pages over 28 days</b>',
-				'1. Ветеринарна клініка у Харкові– Лікування собак та кішок — 1,176',
-				'2. Ветеринарна клініка DOVIRA – турбота цілодобово - Ветеринарна клініка в Києві та Харкові — 913',
-				'3. Послуги — 602',
-				'4. Контакти - Ветеринарна клініка Довіра — 465',
-				'5. Ветеринарні послуги DOVIRA – діагностика, лікування — 370',
+				'1. Головна сторінка — 2,237',
+				'2. Послуги — 1,000',
+				'3. Контакти — 471',
+				'4. Приймальне відділення — 396',
+				'5. Про нас — 200',
 				'<b>Sources over 28 days</b>',
 				'Organic Search 70% · Direct 16% · Referral 7% · Organic Social 7% · AI Assistant 1% · Paid Search 0% · Unassigned 0%',
 				'<b>Cities over 28 days</b>',

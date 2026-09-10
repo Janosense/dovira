@@ -121,14 +121,14 @@ final class ReportBuilder {
 
 		if ( ! empty( $blocks['pages'] ) ) {
 			$requests['pages_yesterday'] = self::ranked(
-				array( 'pagePath', 'pageTitle' ),
+				array( 'pagePath' ),
 				'screenPageViews',
 				self::range( 'yesterday', 'yesterday' ),
 				self::TOP_ROWS
 			);
 
 			$requests['pages_28_days'] = self::ranked(
-				array( 'pagePath', 'pageTitle' ),
+				array( 'pagePath' ),
 				'screenPageViews',
 				$month,
 				self::TOP_ROWS
@@ -230,6 +230,11 @@ final class ReportBuilder {
 	/**
 	 * Reads a pages report, labelling each row the way the message shows it.
 	 *
+	 * The rows are grouped by path alone. GA's pageTitle is the document title —
+	 * the SEO title wherever a plugin sets one — so asking for it as well split a
+	 * path into one row per title it had during the period, and a rewritten
+	 * title took two of the five places.
+	 *
 	 * @param array<string, mixed> $report The pages report.
 	 * @return list<array{title: string, path: string, views: int}>
 	 */
@@ -237,17 +242,57 @@ final class ReportBuilder {
 		$pages = array();
 
 		foreach ( self::rows( $report ) as $row ) {
-			$path  = self::dimension( $row, 0 );
-			$title = self::dimension( $row, 1 );
+			$path = self::dimension( $row, 0 );
 
 			$pages[] = array(
-				'title' => ( '' === $title || self::NOT_SET === $title ) ? $path : $title,
+				'title' => self::page_title( $path ),
 				'path'  => $path,
 				'views' => self::metric( $row, 0 ),
 			);
 		}
 
 		return $pages;
+	}
+
+	/**
+	 * Names a page by the post that lives at its path, as its editors titled it.
+	 *
+	 * WordPress's url_to_postid() knows nothing about language prefixes: on a
+	 * Polylang site it maps a path to whichever post owns the slug, which can be
+	 * the other language's. A post is therefore trusted only when its own permalink is the
+	 * address GA counted; anything else — no post, another post, an untitled
+	 * one — is labelled with its path, as a page GA could not name always was.
+	 *
+	 * @param string $path The page path GA reported.
+	 */
+	private static function page_title( string $path ): string {
+		$url     = self::page_url( $path );
+		$post_id = url_to_postid( $url );
+
+		if ( 0 === $post_id || rtrim( (string) get_permalink( $post_id ), '/' ) !== rtrim( $url, '/' ) ) {
+			return $path;
+		}
+
+		$title = get_post_field( 'post_title', $post_id, 'raw' );
+
+		return '' !== $title ? $title : $path;
+	}
+
+	/**
+	 * Returns the address of a page GA reported, on this site.
+	 *
+	 * GA's path starts at the host, not at WordPress's home, so the home's own
+	 * path is taken off first — on a site installed in a subdirectory the path
+	 * already contains it. Public because the message links each page with the
+	 * same address the post was looked up by.
+	 *
+	 * @param string $path The page path GA reported.
+	 */
+	public static function page_url( string $path ): string {
+		$home = home_url();
+		$base = (string) wp_parse_url( $home, PHP_URL_PATH );
+
+		return substr( $home, 0, strlen( $home ) - strlen( $base ) ) . $path;
 	}
 
 	/**
