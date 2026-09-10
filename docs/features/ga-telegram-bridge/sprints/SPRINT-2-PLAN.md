@@ -732,7 +732,7 @@ none
 
 ---
 
-## Plan — Sprint 2, Step 4: Production readiness on both Dovira installs   (status: approved, in progress)
+## Plan — Sprint 2, Step 4: Production readiness on both Dovira installs   (status: implemented, awaiting close)
 
 ### Branch
 `ga-telegram-bridge/sprint-2-runs-by-itself` ← `master`
