@@ -60,18 +60,25 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
 - **Screens:** `Settings` (wp-admin page: credentials, recipient, schedule, blocks, buttons *Check GA*, *Check Telegram*, *Preview*, *Send now*; the Schedule section prints when the next run is due — read from `wp_next_scheduled()`, never stored — and warns when `DISABLE_WP_CRON` is set and nothing has called `wp-cron.php` for 24 h; states: unconfigured, secrets set in configuration, check ok/error, nothing scheduled yet; each configuration section links into `readme.txt` — Google and Telegram to the Installation steps that set them up, Schedule to the WP-Cron recipe), `Run log` (table on the same page under the buttons, newest first: time, what started the run, the day the report was about, sent or failed, attempt and one line of detail; above it the version this build declares, read from the plugin header and printed once rather than per row — the log records what a run did, not what it was made by — and a link to the readme's FAQ for a report that did not arrive; states: empty, with errors. Six columns and no **next run** column: the next run is one value about the future and belongs to the Schedule section above, not to a list of past runs). No design export — stock wp-admin components.
 - **Reuses:** — (not a theme screen; `docs/DESIGN.md` does not apply)
 - **Introduces:** —
-- **Message template (HTML parse mode; `{}` = data, `[...]` = block, blocks 2–5 optional; one line per row, no blank lines):**
+- **Message template (HTML parse mode; `{}` = data, `[...]` = block, blocks 2–5 optional; one line per row, one blank line between the blocks that are printed, never a blank line for a block left out):**
   ```
   📊 <b>{site_host} — {report_date, "9 Вересня (Вівторок)"}</b>
-  <b>Відвідувачі</b>
+
+  👥 <b>Відвідувачі</b>
   Вчора: {n} ({▲|▼} {pct}% до середнього за 7 днів)
   За 28 днів: {n} ({▲|▼} {pct}% до попередніх 28)
-  [<b>Топ‑5 сторінок вчора</b>  1. {title} — {views} … ]
-  [<b>Топ‑5 сторінок за 28 днів</b>  1. {title} — {views} … ]
-  [<b>Джерела за 28 днів</b>  {channel} {pct}% · … ]
-  [<b>Міста за 28 днів</b>  {city} {pct}% · … ]
-  [<b>Пристрої за 28 днів</b>  {device} {pct}% · … ]
+
+  [📄 <b>Топ‑5 сторінок вчора</b>  1. <a href="{home origin}{path}">{post title}</a> — {views} … ]
+
+  [📅 <b>Топ‑5 сторінок за 28 днів</b>  1. <a href="{home origin}{path}">{post title}</a> — {views} … ]
+
+  [🧭 <b>Джерела за 28 днів</b>  {channel} {pct}% · {channel} {pct}% · … ]
+
+  [📍 <b>Міста за 28 днів</b>  {city} {pct}%, one city per line … ]
+
+  [📱 <b>Пристрої за 28 днів</b>  {device} {pct}%, one device per line … ]
   ```
+  A page is named by the post at its path, or by the path when no post lives there (DECISIONS "Top pages are counted by path and named by their post"), and a path that is not an address — GA's `(not set)` — is printed without a link. The emoji are not part of the translated titles.
   Failure notice: `⚠️ <b>{site_host}</b> — звіт за {report_date} не сформовано. Деталі в журналі плагіна.`
   Source strings are English (text domain `ga-telegram-bridge`); the `uk` translation shipped in `languages/` is what the template above shows; `—` when a baseline is 0.
   The date is `wp_date()` on the property's own day: WordPress declines the month itself and capitalises month and weekday the way its Ukrainian translation writes them, hence "9 Вересня (Вівторок)".
