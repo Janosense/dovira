@@ -76,12 +76,12 @@ function acf_add_post_type_service_fields(): void {
 		),
 	) );
 
-//	$repeater->addLink( 'linked_page', array(
-//		'label' => __( 'Linked page', 'dovira' ),
-//		'wrapper'       => array(
-//			'width' => '11',
-//		)
-//	));
+	$repeater->addLink( 'linked_page', array(
+		'label' => __( 'Linked page', 'dovira' ),
+		'wrapper'       => array(
+			'width' => '11',
+		)
+	));
 
 	$repeater->addCheckbox( 'cities', array(
 		'label'         => __( 'Cities', 'dovira' ),

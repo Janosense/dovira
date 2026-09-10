@@ -16,6 +16,33 @@
   font-size: 14px;
   border-radius: 12px;
   background-color: var(--color-white);
+
+  h2 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  h4 {
+    margin: 0 0 16px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  a {
+    color: var(--color-violet-light);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
 }
 
 .seo-description__content ul,
