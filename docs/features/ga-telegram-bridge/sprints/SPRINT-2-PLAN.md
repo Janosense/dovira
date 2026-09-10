@@ -823,7 +823,8 @@ never a task here.)
     stay out of the repository.
   → commit `docs(ga-telegram-bridge): pre-flight checklist for the two production installs`
 
-- [ ] **3. Run here what can be run here.** No commit — this is the "and runs it"
+- [x] **3. Run here what can be run here.** One commit after all (see the last
+  bullet); the rest is a run — this is the "and runs it"
   half of the step, as far as this machine reaches:
   - On `https://dovira.ddev.site/wp-admin/options-general.php?page=gatb-settings`:
     the version line under **Run log** reads `Версія плагіна 0.1.0`, the four
@@ -838,6 +839,14 @@ never a task here.)
     checklist's wording before either production is touched by it.
   - The constants rehearsal is Question 1 below.
   - Nothing on either production install is touched: no step deploys.
+  - **Found by the run, fixed with the user's approval in chat:** the readme
+    links open, but DDEV's nginx serves `readme.txt` as `text/plain` with **no
+    charset**, so the browser guesses a Cyrillic codepage and the file's 28
+    non-ASCII characters (13 `→`, 13 `—`, 2 `…`) become mojibake. The file is now
+    ASCII (`->`, `--`, `...`), which every charset guess renders alike, and the
+    plugin's `CLAUDE.md` records that as a convention — the screen links to this
+    file, so it has to be readable wherever it is served from.
+    → commit `fix(ga-telegram-bridge): keep readme.txt ASCII so the links the screen prints open a readable page`
 
 ### Files to create/change
 

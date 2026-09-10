@@ -28,6 +28,9 @@ references the `dovira` theme, its functions, options or data.
   `ga-telegram-bridge`; source strings in English, the `uk` translation in
   `languages/` (the locale is `uk`, not `uk_UA` — a `uk_UA` file never loads).
   A new or changed string means regenerating the `.pot` and the `.mo` below.
+  `readme.txt` is **ASCII only** (`->`, `--`, `...`): the settings screen links to
+  it, and a server that serves `text/plain` without a charset — DDEV's nginx, for
+  one — leaves a browser to guess, which turns anything else into mojibake.
 - WordPress Coding Standards (PHPCS `phpcs.xml.dist`), PHPStan
   (`phpstan.neon.dist`) — both gate every commit through root `bin/check.sh`.
 - Network only through `wp_remote_post`/`wp_remote_get` with explicit timeouts,
