@@ -101,11 +101,11 @@ schedule yet. The project has a check command that gates every commit.
 - **Depends on:** Step 5, Step 7
 
 ## Definition of Done
-- [ ] Every step closed via /close-step (report + verification guide + worklog)
-- [ ] `bin/check.sh` green on the sprint branch
-- [ ] Docs match reality (DATA-MODEL, ARCHITECTURE, DECISIONS, TECH-STACK current)
-- [ ] Merged to `master`; deployed to dev by the sprint-boundary push to `dev`; plugin activated and configured on dev with the constants in its `wp-config.php`; "Send now" delivers the report there
-- [ ] Spike code removed; no secret or key file in the repo (`git log -p` checked for the JSON key)
+- [x] Every step closed via /close-step (report + verification guide + worklog)
+- [x] `bin/check.sh` green on the sprint branch
+- [x] Docs match reality (DATA-MODEL, ARCHITECTURE, DECISIONS, TECH-STACK current)
+- [x] Merged to `master`; deployed to dev by the sprint-boundary push to `dev`; plugin activated and configured on dev with the constants in its `wp-config.php`; "Send now" delivers the report there
+- [x] Spike code removed; no secret or key file in the repo (`git log -p` checked for the JSON key)
 
 ## Out of scope
 - Scheduling, retries, failure notice, next-run display → Sprint 2
