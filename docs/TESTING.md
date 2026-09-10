@@ -29,8 +29,9 @@ logic in a plugin.
   test sees a secret it cannot control: `Settings::telegram_bot_token()` returns
   the constant no matter what `get_option()` is stubbed to. Any test that needs
   an unset or a chosen secret must therefore be in the first suite. Adding a
-  test class needs nothing; adding a second class that defines constants means
-  moving it into the last suite too.
+  test class needs nothing; adding a second class that defines **secret**
+  constants means moving it into the last suite too. `UninstallTest` defines
+  `WP_UNINSTALL_PLUGIN`, which nothing else reads, and stays in the first suite.
 
 ## Fixtures
 - Google responses live in `tests/fixtures/ga/*.json` (Data API and the token
