@@ -61,9 +61,9 @@ uninstall. A readme lets another site set the plugin up from scratch.
 - **Depends on:** Step 3
 
 ## Definition of Done
-- [ ] Every step closed via /close-step (report + verification guide + worklog)
-- [ ] `bin/check.sh` green on the sprint branch
-- [ ] Docs match reality (DATA-MODEL, ARCHITECTURE, DECISIONS, TECH-STACK current)
+- [x] Every step closed via /close-step (report + verification guide + worklog) — close commits `6c51a32`, `d1eb20b`, `3bb5d43`, `a40a32e`; guides `verification/sprint-2-step-1.md`…`-4.md`; four WORKLOG entries
+- [x] `bin/check.sh` green on the sprint branch — simple git model, so on `master` at `67589b4`, 2026-09-15: exit 0, `OK (269 tests, 854 assertions)`, PHPStan level 8 no errors, 108 theme files linted
+- [x] Docs match reality (DATA-MODEL, ARCHITECTURE, DECISIONS, TECH-STACK current) — each step's docs self-check in its close commit; checked again in `SPRINT-2-CLOSE.md` → Definition of Done
 - [ ] Merged to `master`; `master` merged into `kyiv`; both productions deployed by hand; constants set in both `wp-config.php`; the owner receives the Kharkiv and Kyiv reports on two consecutive mornings
 - [ ] `SPRINT-1-CLOSE.md` Deferred/Contradictions items settled or carried into DECISIONS.md
 
