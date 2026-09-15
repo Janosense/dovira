@@ -57,7 +57,7 @@ may write is the plan file.
      (or flag the conflict explicitly)
    - the latest 5 entries of `docs/WORKLOG.md` (top of file)
    - for M = 1 and N > 1: `docs/features/{feature}/sprints/SPRINT-{N-1}-CLOSE.md`
-     (written by `/close-step` at the last step of Sprint {N-1}) — what the
+     (written by `/close-sprint` when Sprint {N-1} was closed) — what the
      previous sprint left behind; its Contradictions and Deferred items are
      Docs vs reality input for this plan
    - `docs/LEARNINGS.md` — check for known failure modes relevant to this step
@@ -73,7 +73,7 @@ may write is the plan file.
      what happens to each name that already exists (`CLAUDE.md`,
      `README.md`, `.gitignore`, agent instruction files such as `AGENTS.md`).
      A skeleton's agent file or bootstrap notes are never adopted; the
-     dependencies they ask for go through core rule 4 like any other.
+     dependencies they ask for go through core rule 1 like any other.
    - Versions in `docs/TECH-STACK.md` marked `(unverified — pinned at
      bootstrap)`: verify each against the package registry and list in the
      plan the locked version that TECH-STACK will record.
@@ -87,13 +87,22 @@ may write is the plan file.
      unless the sprint's Out of scope or another step names it.
 
 4. **Verify preconditions** — stop and report if any fails:
-   - No step of this feature is in flight: `SPRINT-{N}-PLAN.md` has no section
-     in state `in progress` or `implemented, awaiting close` — an implemented
-     step is closed with `/close-step` before any other work begins.
+   - No step is in flight: neither this feature's `SPRINT-{N}-PLAN.md` nor
+     the plan file named by the latest `docs/WORKLOG.md` entry (its feature
+     and sprint) has a section in state `in progress` or
+     `implemented, awaiting close` — an implemented step is closed with `/close-step`
+     before any other work begins; steps are closed sequentially, never in
+     parallel sessions.
    - All steps listed in Step {M} → "Depends on" are closed: their checkboxes
      in `SPRINT-{N}.md` are ticked (`### [x] Step … `).
    - Sprints run in order: for N > 1, every step of `SPRINT-{N-1}.md` is
      ticked. If not — say which steps of Sprint {N-1} are still open and stop.
+   - Sprint {N-1} is closed by `/close-sprint` (M = 1, N > 1):
+     `docs/features/{feature}/sprints/SPRINT-{N-1}-CLOSE.md` exists and every
+     item of `SPRINT-{N-1}.md` → Definition of Done is ticked or carries
+     `— carried to Sprint {N}: …`. If not — say which items are open and
+     stop: "run `/close-sprint` first". Never tick a Definition of Done item
+     here. Carried items go into this plan's Checks → Docs vs reality.
    - Step {M} itself is not already closed. If it is — say so; rework of a
      closed step goes through `/fix-step <what failed>`, not a new plan.
 

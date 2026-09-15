@@ -3,16 +3,18 @@ description: Re-open a closed step whose manual verification failed — diagnose
 argument-hint: <what failed>   # e.g. "guide item 3: notes:add '   ' creates a note instead of exiting 1"
 ---
 
-A fix is rework of a step that was already implemented or closed: the user
-followed the verification guide (or used the feature) and something the step
-promised does not hold. This command never plans new work and never executes
+A fix is rework of a step that was already closed: the user followed the
+verification guide (or used the feature) and something the step promised
+does not hold. This command never plans new work and never executes
 an approved plan — `/plan-step` and `/do-step` do that.
 
 **Enter plan mode.** Call the `EnterPlanMode` tool before anything else.
-Everything up to the approved mini-plan is read-only: no file, git or
-shell change. A reproduction that would write to the working tree waits
-for the regression test of step 4. Tool unavailable (non-interactive
-session): keep the same discipline and print the mini-plan in the chat.
+Everything up to the approved mini-plan is read-only: no write to the
+working tree, no git change, no install. Reading files, running the guide's
+item, the tests or the failing command is allowed. A reproduction that would
+write to the working tree waits for the regression test of step 4. Tool
+unavailable (non-interactive session): keep the same discipline and print
+the mini-plan in the chat.
 
 **Which step.** The failure belongs to the step whose verification guide or
 whose Verification (manual) promised the behaviour. The user's report names
@@ -29,12 +31,17 @@ step yourself.
   happened instead (a guide item number is enough when it is precise). Empty
   or "something is broken" → ask for the observation first; do not go looking
   for bugs.
-- The step's plan section is `closed` or `implemented, awaiting close`.
-  `awaiting approval` or `in progress` → the step is in flight: not a fix —
-  finish it with `/do-step` (its rule 2 handles surprises). No plan section
-  at all → the step was never done → `/plan-step`.
-- No other step of any feature is in flight (`in progress` or `implemented,
-  awaiting close`) — close it first.
+- The step's plan section is `closed`. `implemented, awaiting close` → the
+  step is not closed yet: run `/close-step` first (it writes the guide the
+  verification follows; its task branch is still unmerged, so a `-reopen`
+  branch would lose it). `awaiting approval` or `in progress` → the step is
+  in flight: not a fix — finish it with `/do-step` (its rule 2 handles
+  surprises). No plan section at all → the step was never done →
+  `/plan-step`.
+- No step is in flight: the latest `docs/WORKLOG.md` entry's feature has no
+  plan section in state `in progress` or `implemented, awaiting close` (in
+  any of its `SPRINT-{N}-PLAN.md` files) — close it first. Steps are closed
+  sequentially, never in parallel sessions.
 - The failure is inside this step: the step's Verification (manual), its
   verification guide, or its tasks promise the behaviour. Behaviour the step
   never promised is not a fix: released behaviour or another feature →
@@ -98,7 +105,7 @@ step yourself.
    task branch was merged and deleted by `/close-step`); every commit goes
    there. One task → check command (`docs/TECH-STACK.md` → Check command)
    exit 0 → conventional commit (`test:` / `fix:` / `docs:`). Docs that
-   describe the changed code are updated in the same commit (core rule 8).
+   describe the changed code are updated in the same commit (core rule 5).
    Tick the Reopen checkboxes as tasks complete. Anything the diagnosis
    missed — a second cause, a needed dependency, a mismatch — stop, describe
    it and wait; a fix never grows silently.

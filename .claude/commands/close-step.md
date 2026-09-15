@@ -9,8 +9,10 @@ the feature from the latest `docs/WORKLOG.md` entry, open
 state `implemented, awaiting close` — exactly one: that is the step; none or
 several: STOP and ask which step to close. Never pick a step yourself.
 
-1. **Completeness check.** The plan section is `implemented, awaiting close`,
-   all its checkboxes are ticked, and the check command (`docs/TECH-STACK.md`
+1. **Completeness check.** The plan section is `implemented, awaiting close`
+   (on a re-close: `implemented, awaiting close — reopened: …`), all its
+   checkboxes — on a re-close, those of the latest `### Reopen` subsection
+   too — are ticked, and the check command (`docs/TECH-STACK.md`
    → Check command) exits 0 on the task branch. If not — list what's missing
    and stop.
 
@@ -49,10 +51,10 @@ several: STOP and ask which step to close. Never pick a step yourself.
 
 5. **Status and commit.** Tick the step's checkbox in
    `docs/features/{feature}/sprints/SPRINT-{N}.md` (`### [x] Step {M} — …`),
-   mark the plan section `(status: closed)`. If this tick leaves no unticked
-   step in `SPRINT-{N}.md`, write the sprint's close file now (step 8, first
-   part). Then commit everything from steps 2–5 on the task branch:
-   `chore(step): close sprint {N} step {M}` (`re-close` on a re-close).
+   mark the plan section `(status: closed)`. Then commit everything from
+   steps 2–5 on the task branch: `chore(step): close sprint {N} step {M}`
+   (`re-close` on a re-close). The sprint's Definition of Done is not yours:
+   its boxes are ticked by `/close-sprint`, never here.
 
 6. **Merge.** Merge the task branch into its base (both named in the plan's
    `### Branch`) with `--no-ff`, message `merge: sprint {N} step {M} — {title}`,
@@ -75,48 +77,17 @@ several: STOP and ask which step to close. Never pick a step yourself.
    - Design: n/a | unchanged | changed — `docs/DESIGN.md` (Tokens / Components "In code" / Screens) and `FEATURE.md` → UI updated in this close
    - Open questions:
    - Next: /plan-step [feature] {N} {M+1}   (feature name required when several exist)
-     — or, if this was the last step of the sprint, the sprint-boundary
-     line chosen below
+     — or, if this was the last step of the sprint, the line of step 8
    ```
 
 8. **Last step of the sprint.** When every step of `SPRINT-{N}.md` is now
-   ticked:
+   ticked, the report's Next line — and the last sentence of your reply —
+   is exactly:
 
-   First (before the closing commit of step 5) write
-   `docs/features/{feature}/sprints/SPRINT-{N}-CLOSE.md` — the sprint's
-   handoff to the retro, the re-planning chat and `/plan-step {N+1} 1`. It is
-   a report, not a sprint file; write it from the files and the code, never
-   from memory of the session:
-   - **Definition of Done** — every item of `SPRINT-{N}.md` with its evidence
-     (check command output, commit, verification guide) or `open — {why}`
-   - **Built** — modules, actions, policies, components, schema (names and
-     paths) that the next sprint inherits
-   - **Not locally verifiable** — artefacts still pending their real run
-   - **Deferred** — every item the sprint's plans, reports or WORKLOG entries
-     pushed to "the sprint boundary" or to a later sprint
-   - **Contradictions** — cross-read `FEATURE.md` (Roadmap, UI),
-     `SPRINT-{N}.md` → Out of scope, `SPRINT-{N+1}.md` if it exists,
-     `docs/DESIGN.md` and `docs/DECISIONS.md`: list every item two files place
-     differently (which files, which placements) — do not resolve them
-   - **LEARNINGS** — entries of this sprint still marked `pending`
+   > Sprint {N}: every step is closed. Next — mandatory: run `/close-sprint` (it writes SPRINT-{N}-CLOSE.md, ticks the Definition of Done, merges into `main` and names what comes after the deploy).
 
-   Then check whether `docs/features/{feature}/sprints/SPRINT-{N+1}.md`
-   exists and put exactly one of these on the Next line:
-   - it exists → "Sprint {N} complete — check the Definition of Done in
-     SPRINT-{N}.md, then the sprint boundary (merge into `main`, deploy from
-     `main`, retro over SPRINT-{N}-CLOSE.md). Next:
-     `/plan-step [feature] {N+1} 1`". The next sprint starts from its file;
-     re-planning is needed only if the retro changed its scope or
-     SPRINT-{N}-CLOSE.md → Contradictions touches its scope.
-   - it does not exist but `FEATURE.md` → Roadmap lists Sprint {N+1} →
-     "Sprint {N} complete — SPRINT-{N+1}.md is missing: open a re-planning
-     chat in the Cowork Project (DISCOVERY → Feature mode, Re-planning) — it
-     reads SPRINT-{N}-CLOSE.md first — to write it; then
-     `/plan-step [feature] {N+1} 1`".
-   - the Roadmap ends at Sprint {N} → "Sprint {N} complete — this was the
-     feature's last sprint; the next feature starts with a discovery chat in
-     the Cowork Project (Feature mode)".
-   Re-planning and discovery never run in Claude Code: you never write or
-   extend a sprint file. If the user asks you to "re-plan" or "plan Sprint
-   {N+1}", answer with the matching line above — the chat to open and the
-   file it will write — never with a bare "not my job".
+   Do not write `SPRINT-{N}-CLOSE.md`, do not tick the Definition of Done,
+   do not merge into `main`, do not name the next sprint or a re-planning
+   chat — that is `/close-sprint`'s job. If the user asks to "start Sprint
+   {N+1}" or to "re-plan" now, answer with the same line: the sprint is not
+   closed until `/close-sprint` says so.

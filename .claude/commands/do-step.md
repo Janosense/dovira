@@ -21,8 +21,11 @@ several: STOP and ask which step to run. Never pick a step yourself.
   differently by the user is resolved with the user's words.
 
 **Not this command.** If the user reports that a step's manual verification
-failed and its plan section is `implemented, awaiting close` or `closed`,
-answer with `/fix-step <what failed>` — never patch or re-run the step here.
+failed and its plan section is `closed`, answer with
+`/fix-step <what failed>` — never patch or re-run the step here. If the section is
+`implemented, awaiting close`, the step is not closed yet: answer with
+`/close-step` first (it writes the verification guide; the failure is then
+reported against that guide via `/fix-step`).
 A section in state `in progress — reopened: …` belongs to `/fix-step` too:
 continue it there, not here.
 
@@ -58,12 +61,12 @@ Mark the plan section `(status: approved, in progress)` and execute:
    payload shape, `ARCHITECTURE.md` for a new module/endpoint/flow,
    `TECH-STACK.md` for an approved dependency, `DESIGN.md` for a new or
    changed token or shared UI component) are updated in the same commit as
-   the change (core rule 8).
+   the change (core rule 5).
 6. **Tick the checkboxes** in `SPRINT-{N}-PLAN.md` as tasks complete.
 7. Do **not** write the WORKLOG entry or the verification guide, tick the
    step in `SPRINT-{N}.md`, or merge the branch — that is `/close-step`'s job.
 
-When all tasks are done: run the full test suite and lint once more, mark the
+When all tasks are done: run the check command once more (exit 0), mark the
 plan section `(status: implemented, awaiting close)`, and finish with:
 
 > Step {M} implemented. Run `/close-step` to produce the report, verification guide and docs updates.
