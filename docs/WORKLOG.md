@@ -3,7 +3,7 @@
 <!-- Add-only project memory for the agent: entries are never edited or
      removed. Written ONLY by /close-step (and /adhoc for off-cycle tasks),
      newest entry at the TOP, directly under the entry format. A fresh Claude
-     Code session reads the latest 5 entries at start (CLAUDE.md core rule 9).
+     Code session reads the latest 5 entries at start (CLAUDE.md core rule 6).
      Keep entries 3–6 lines; this is a memory index, not a diary — details live
      in commits and verification guides. -->
 
@@ -16,6 +16,11 @@ Entry format:
 - Open: {{unresolved questions carried forward, or "—"}}
 
 ---
+
+## 2026-09-15 — [adhoc] — Playbook v1.14 → v1.17
+- Changed: `.claude/commands/` copied from the playbook (new `/close-sprint`; `close-step`, `do-step`, `fix-step`, `plan-step` updated) and `templates/` added at the root. In root `CLAUDE.md`, Core rules (9 → 6) and Step protocol are now word for word from the template without "(PLAYBOOK CORE)", the header says v1.17, the `Origin:` and developer-reviewed `Verification:` lines are gone, and the Git model says deploys happen at the sprint boundary via `/close-sprint`. Features keeps only the router sentence and the table. The rule numbers in the TECH-STACK, DATA-MODEL and WORKLOG header comments now read 1/5/6. `bin/check.sh` passes.
+- Decisions: —
+- Open: the Definition of Done boxes in ga-telegram-bridge `SPRINT-1.md` and `SPRINT-2.md` are all unticked, and under v1.17 `/plan-step` for Sprint 3 needs `/close-sprint` first. "core rule N" citations in DECISIONS, LEARNINGS and the sprint files still use the v1.14 numbers, and so does `PRODUCTION-CHECKLIST.md` ("core rule 6" is now 3). This file's header still doesn't name `/close-sprint` as a writer. `kyiv` gets `master` merged in by hand.
 
 ## 2026-09-10 — [adhoc] [ga-telegram-bridge] — Report format: spaced sections, icons, top pages linked and named by their post
 - Changed: `ReportBuilder` groups both top-pages requests by `pagePath` alone and names each row by the post `url_to_postid()` finds at that address, trusted only when its permalink is that address (otherwise the path); new `ReportBuilder::page_url()`. `MessageRenderer` links each page, sets the printed blocks apart with one blank line, puts an emoji before every heading (👥 📄 📅 🧭 📍 📱, outside the translated strings — no `.pot`/`.mo` change) and lists cities and devices one row per line; sources keep their line. Call-1's two pages reports re-recorded against the live property; new `tests/SitePosts.php`; 265 → 269 tests.

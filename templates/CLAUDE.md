@@ -1,28 +1,24 @@
-# Dovira — website of the Dovira veterinary clinic (dovira.vet, kyiv.dovira.vet)
+# {{PROJECT_NAME}} — {{one-line description}}
 
 <!-- playbook: v1.17 — Core rules and Step protocol are verbatim copies of
      templates/CLAUDE.md; never edit them here. -->
 
-A WordPress site that tells pet owners what the clinic offers, at what price
-and in which city, and turns contact / vacancy / blood-donor forms into admin
-records with Telegram notifications. Staff assemble pages from ACF blocks and
-edit prices themselves. One codebase serves two installs (Kharkiv `dovira.vet`,
-Kyiv `kyiv.dovira.vet`) in Ukrainian and Russian; all custom code is the theme.
+{{2–4 sentences: what the product does, who uses it, the one platform-level
+truth if there is one (e.g. "HubSpot is the source of truth for CRM data").}}
 
 ## Project profile
-- Deploy: manual — never assume push-to-deploy. Production Kharkiv by hand
-  from `master`, production Kyiv by hand from `kyiv` (= `master` + Kyiv
-  analytics ids in `header.php`); only dev auto-deploys (GitHub Actions FTP
-  on push to `dev`). See ARCHITECTURE.md
+- Verification: {{omit the line if the user reads code | user-verified — the
+  user does not read code: plans, reports and verification guides in plain
+  language, for a non-developer}}
+- Deploy: {{manual — never assume push-to-deploy | describe pipeline}}
 - Test-critical zones (code without tests here = unfinished task):
-  form-to-record pipelines (CF7 → `conversation`/`application`, REST →
-  `questionary`) and their Telegram notification; per-city price grouping of
-  a Service; REST routes under `dovira/v1`; `wp dovira translate*` commands
-- Git model: simple: task branch → `master` (branch names carry the feature
-  name: {feature}/sprint-N-short-name). Environments track `master` (or the
-  deployment branch named under Deploy) — never a task or sprint branch;
-  deploys happen at the sprint boundary via `/close-sprint`, never inside a
-  step.
+  {{e.g. payments/entitlements, access control, webhook idempotency, AI output validation}}
+- Git model: {{chained sprint branches: {feature}/sprint-N ← main, task
+  branches {feature}/sprint-N-short-name merged --no-ff | simple: task
+  branch → main. Sprint numbers are per feature, so branch names carry the
+  feature name}}. Environments track `main` (or the deployment branch named
+  under Deploy) — never a task or sprint branch; deploys happen at the sprint
+  boundary via `/close-sprint`, never inside a step.
 
 ## Documentation (read before the relevant task)
 | File | When to read |
@@ -40,7 +36,7 @@ Kyiv `kyiv.dovira.vet`) in Ukrainian and Russian; all custom code is the theme.
 | `docs/features/{feature}/sprints/SPRINT-N-CLOSE.md` | At the first step of Sprint N+1: what Sprint N left behind — built, deferred, contradictions between docs |
 | `docs/WORKLOG.md` | At session start: latest 5 entries (top of file) = project memory |
 | `docs/LEARNINGS.md` | When something went wrong before — check if it's a known failure mode |
-| `wp-content/themes/dovira/temp-data/README.md` | Before touching Yoast meta or the SEO import script (one-off ops tooling, not a feature) |
+| {{project-specific docs, e.g. spike notes, client-plans}} | {{when}} |
 
 ## Core rules
 1. New dependencies only after explicit approval. Propose, explain why, wait for a "yes". This includes transitive tooling (linters, build plugins).
@@ -77,40 +73,21 @@ Outside the step cycle:
   an open step's commits or plan.
 
 ## Domain invariants
-1. A form submission is saved as a post (`conversation`, `application`,
-   `questionary`) BEFORE any Telegram call; a Telegram failure never loses it.
-2. `service-city` is shared across languages and never Polylang-translatable:
-   Service price field names derive from its term ids (`price_city_{term_id}`,
-   `city_{term_id}`); city names are translated as Polylang strings.
-3. A price row applies only to the cities ticked in its `cities` checklist; a
-   city without a price shows that city's phone from the options page, never
-   a blank or a fabricated amount.
-4. Kharkiv vs Kyiv is decided once, from the site URL (`kyiv` in
-   `get_site_url()`); no other per-city branching in templates.
-5. Editors get only the theme's `acf/*` blocks on every post type except
-   `post` (`allowed_block_types_all`); core blocks are not re-enabled ad hoc.
-6. All field groups are PHP (ACF Builder) and version-controlled; never
-   create field groups in the ACF admin UI.
-7. Ukrainian is the source language; Russian is a Polylang translation
-   (`/ru/` is `noindex`). ACF options are per language (`options_*`, `options_ru_*`).
-8. Public `dovira/v1` REST routes validate required fields before writing anything.
+{{Numbered, non-negotiable, project-specific rules — e.g. "server-side
+entitlement checks on every endpoint", "all LLM responses validated with Zod
+before touching DB", "persist message to DB first, then broadcast".}}
 
 ## Features
-This table is the router: /plan-step resolves paths through it, not through
+This table is the router: a feature's docs are `docs/features/{feature}/`,
+its code is the Code path below — resolve through the table, never through
 the file hierarchy.
 
 | Feature | Docs (FEATURE.md + sprints) | Code |
 |---|---|---|
-| core | `docs/features/core/` | `wp-content/themes/dovira/` (the theme as-is; new features: `inc/features/{name}/`) |
-| ga-telegram-bridge | `docs/features/ga-telegram-bridge/` | `wp-content/plugins/ga-telegram-bridge/` (standalone plugin, own `CLAUDE.md`) |
+| {{core}} | `docs/features/{{core}}/` | `{{src/ or wp-content/...}}` |
 
 ## Commands
 ```bash
-bin/check.sh                                          # check command: PHPCS + PHPStan + PHPUnit (plugin) + php -l (theme)
-ddev start                                            # local WP at https://dovira.ddev.site (PHP 8.3, MariaDB 10.11, nginx)
-ddev import-db --file=mysql.sql                       # load the DB snapshot from the repo root
-cd wp-content/themes/dovira && npm install && composer install
-cd wp-content/themes/dovira && npm start              # Vite dev server :3000, sets WP_ENVIRONMENT_TYPE=development in .env
-cd wp-content/themes/dovira && npm run build          # production bundle into assets/ (committed), WP_ENVIRONMENT_TYPE=production
-ddev wp dovira translate --post-type=page --dry-run   # AI translation uk→ru; needs ANTHROPIC_API_KEY in the theme .env
+{{check command from docs/TECH-STACK.md first (the commit gate), then
+  dev / lint / test / build / migrate — exact, copy-pasteable}}
 ```

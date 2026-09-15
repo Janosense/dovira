@@ -2,7 +2,7 @@
 
 <!-- This file MUST match the actual schema at all times. A schema change
      without updating this file in the same commit = unfinished task
-     (CLAUDE.md core rule 8). Adoption: documented from the code as-is, 2026-09-08. -->
+     (CLAUDE.md core rule 5). Adoption: documented from the code as-is, 2026-09-08. -->
 
 ## Conventions
 - Standard WordPress tables (`wp_` prefix; `wp_posts`, `wp_postmeta`,

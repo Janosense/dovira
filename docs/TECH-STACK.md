@@ -84,7 +84,7 @@ changes) — DECISIONS "Testing tooling and the project check command".
 
 ## Dependency policy
 New dependencies (runtime AND dev/tooling) only after explicit user approval —
-see CLAUDE.md core rule 4. Record approved additions here with one line of
+see CLAUDE.md core rule 1. Record approved additions here with one line of
 justification.
 
 ## Approved dependencies log
