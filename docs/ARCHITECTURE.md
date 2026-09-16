@@ -147,8 +147,10 @@ cross-site switcher; content differs per install (separate DBs), code is shared.
 | Production Kyiv | `kyiv.dovira.vet` | branch `kyiv` (= `master` merged in + Kyiv analytics ids in `header.php`) | **manual** deploy by the developer; after each `master` release, merge `master` into `kyiv` and deploy |
 
 Built assets (`assets/`) and Composer `vendor/` are committed — a deploy is a
-file sync, no build step on the server. `origin/main` exists on GitHub but is
-not part of this flow.
+file sync, no build step on the server. The deployment branches are published
+on GitHub as their deploy remotes: local `master` as `origin/main` — the remote
+has no `master` — and local `kyiv` as `origin/kyiv` (DECISIONS "`origin/main` is
+the deploy remote").
 
 **Plugin `ga-telegram-bridge` per install.** The code is the same everywhere and
 holds nothing about a city; each install carries its own configuration. The

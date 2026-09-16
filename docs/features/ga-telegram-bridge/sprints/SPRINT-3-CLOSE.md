@@ -89,6 +89,8 @@ Cross-read of `FEATURE.md` (Roadmap, UI), `SPRINT-3.md` → Out of scope, `docs/
    **24 commits ahead** of it — the whole of Sprint 3 and the two closes before it.
    `SPRINT-3.md` → Risks asked for this to be raised with the developer *before* the
    boundary; it reaches the boundary unsettled and needs a DECISIONS entry or a remote rename.
+   *Resolved after the close, on 2026-09-16, by DECISIONS "`origin/main` is the deploy
+   remote" — no rename.*
 4. *Not a contradiction, but the fact whoever reads this next needs:* `FEATURE.md` → Roadmap
    ends at Sprint 3. Everything after it is under "Later (not planned)" — key events, a weekly
    digest, a PNG chart, translated GA labels, several properties or chats, packaging. There is

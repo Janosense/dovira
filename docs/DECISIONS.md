@@ -142,6 +142,12 @@ Entry format:
 - **Alternatives rejected:** a configurable URL — one more field for a link that is fully derived; the account-qualified form `#/a{account}p{property}` — the plugin does not know the account id and the UI resolves it itself; a link in the admin settings only — the owner is the one who wants it; a button (`reply_markup`) — a second Telegram feature for one link.
 - **Consequences:** the UI address format is undocumented by Google and taken from the web app as it works today — if it changes, the link breaks and the report does not; the link opens data only for a Google account with access to the property (readme FAQ says so); one new translatable string; `MessageRendererTest` snapshots gain the line and assert the property id is HTML-escaped; `FEATURE.md` → UI template gains the line.
 
+## 2026-09-16 — `origin/main` is the deploy remote
+- **Context:** DECISIONS "Verification profile and deploy model" (2026-09-08) ends "`origin/main` is unused", and `ARCHITECTURE.md` → Environments said it "is not part of this flow". Git has said otherwise since adoption: local `master` tracks `origin/main` (`branch.master.merge = refs/heads/main`), the remote has no `master` branch, and the releases that reached production were pushed there. `SPRINT-2-CLOSE.md` (Contradiction 5) and `SPRINT-3-CLOSE.md` (Contradiction 3) carried the disagreement and asked for this entry or a rename.
+- **Decision:** `origin/main` is the deploy remote — the published copy of the deployment branch `master`, from which production Kharkiv is deployed. `origin/kyiv` is the same for `kyiv` and production Kyiv. The names stay as they are: local `master`, remote `main`. Deploys remain manual file syncs from the working copy; this names where the deployment branches live on GitHub, not a new way of deploying.
+- **Alternatives rejected:** renaming the remote `main` to `master` — it is the GitHub default branch and the upstream every existing clone is configured with, and the rename buys nothing but matching names; renaming local `master` to `main` — root `CLAUDE.md`'s git model, the deploy notes, every sprint file and the Definition of Done wording all say `master`.
+- **Consequences:** supersedes the "`origin/main` is unused" clause of "Verification profile and deploy model"; the rest of that entry stands. `ARCHITECTURE.md` → Environments names both deploy remotes. The contradiction carried by the Sprint 2 and Sprint 3 closes is resolved.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
