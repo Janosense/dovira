@@ -78,6 +78,7 @@ Entry format:
 - **Incident:** After `ddev wp cron event run gatb_daily_report`, the screen said the next run was 17:21 tomorrow — not the 18:05 that had just been saved. Nothing was broken: WordPress reschedules a recurring event from the moment it actually ran (`wp_reschedule_event()` adds the interval to `time()` when the event was not yet due), so forcing a run moves the slot for good.
 - **Root cause:** The step's verification asks for a forced run; a reader who then looks at "Next run" would take the shifted time for a defect of the plugin.
 - **Fix applied here:** §3 of `verification/sprint-2-step-1.md` states it and has the reader save the settings again to put the time back.
+- **Resolved (2026-09-16, Sprint 3 Step 3):** the plugin no longer leaves the slot where WordPress puts it. `Scheduler::run_daily()` re-anchors the event to the configured local time at the end of every scheduled run, so a forced run no longer moves it for good — and neither does a clock change, which was the same mechanism seen twice a year (DECISIONS "The daily event is re-anchored after every scheduled run"). The Sprint 2 guide keeps its instruction to re-save: it is the record of a step that closed before this fix existed.
 - **Transferred to playbook:** n/a — project-technical.
 
 ## 2026-09-09 — [ga-telegram-bridge] Two files looked unchanged because DDEV had not synced them yet

@@ -56,13 +56,15 @@ final class Scheduler {
 	 *
 	 * Whatever was registered before is cleared first, so a changed send time
 	 * replaces the event instead of adding a second one. Hooked on the settings
-	 * save and called on activation.
+	 * save, called on activation, and called again by every scheduled run.
+	 *
+	 * @param int|null $now The current Unix time; injected by the tests.
 	 */
-	public static function reschedule(): void {
+	public static function reschedule( ?int $now = null ): void {
 		wp_clear_scheduled_hook( self::DAILY_HOOK );
 
 		wp_schedule_event(
-			self::next_occurrence( wp_timezone(), Settings::send_time(), time() ),
+			self::next_occurrence( wp_timezone(), Settings::send_time(), $now ?? time() ),
 			'daily',
 			self::DAILY_HOOK
 		);
@@ -121,15 +123,28 @@ final class Scheduler {
 	}
 
 	/**
-	 * The callback of the daily event: one run, with the date guard on.
+	 * The callback of the daily event: one run, then the next one is anchored.
 	 *
 	 * The guard compares the day of the report that was built — the property's
 	 * own day, not the server's (DECISIONS "The date guard runs after the report
 	 * is built, not before") — so a second firing for a day already delivered
 	 * sends nothing and logs nothing.
+	 *
+	 * The event is then registered again from the configured time rather than
+	 * left to WordPress, which reschedules a recurring event by adding a fixed
+	 * interval: 86 400 seconds is not a day on the two nights a year the clock
+	 * moves, and the report drifted by an hour until somebody saved the settings
+	 * (DECISIONS "The daily event is re-anchored after every scheduled run").
+	 * In `finally`, because a run that fails in a way Runner does not catch must
+	 * still leave a schedule behind. Only DAILY_HOOK is cleared, so a retry this
+	 * run booked — another hook, carrying its own day — stays where it is.
 	 */
 	public static function run_daily(): void {
-		Runner::run( 'cron' );
+		try {
+			Runner::run( 'cron' );
+		} finally {
+			self::reschedule();
+		}
 	}
 
 	/**

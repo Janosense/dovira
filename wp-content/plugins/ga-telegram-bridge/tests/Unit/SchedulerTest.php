@@ -13,6 +13,7 @@ use Brain\Monkey\Functions;
 use DateTimeImmutable;
 use DateTimeZone;
 use GaTelegramBridge\RunLog;
+use GaTelegramBridge\Runner;
 use GaTelegramBridge\Scheduler;
 use GaTelegramBridge\Settings;
 use GaTelegramBridge\Tests\TestCase;
@@ -337,6 +338,177 @@ final class SchedulerTest extends TestCase {
 
 		$this->assertSame( self::at( '2026-03-29 04:30:00' ), $next );
 		$this->assertSame( '2026-03-29 04:30', self::local( $next ) );
+	}
+
+	/**
+	 * A scheduled run registers its own next occurrence, once.
+	 *
+	 * WordPress has already rescheduled the event by the time this callback
+	 * runs — by adding a fixed 86 400 s — so the run replaces that with the
+	 * configured time of day. One clear and one schedule, no more.
+	 */
+	public function test_a_scheduled_run_re_anchors_the_daily_event_once(): void {
+		Scheduler::run_daily();
+
+		$daily = $this->daily_cron_calls();
+
+		$this->assertCount( 2, $daily, 'one clear, one schedule' );
+		$this->assertSame( array( 'clear', 'gatb_daily_report' ), $daily[0] );
+		$this->assertSame( 'schedule', $daily[1][0] );
+		$this->assertSame( 'daily', $daily[1][2] );
+		$this->assertStringEndsWith( '07:15', self::local( (int) $daily[1][1] ), 'at the configured time, site-local' );
+	}
+
+	/**
+	 * A run that could not be read re-anchors all the same.
+	 *
+	 * The schedule is not a reward for a successful run: a property that was
+	 * unreadable this morning must still be asked tomorrow morning. The retry
+	 * this failure books is a different hook carrying its own day, and the
+	 * clear must not take it with it.
+	 */
+	public function test_a_failed_scheduled_run_re_anchors_and_keeps_its_retry(): void {
+		$this->options[ Settings::OPTION ]['property_id'] = '';
+
+		Scheduler::run_daily();
+
+		$entries = RunLog::entries();
+		$this->assertSame( 'failed', $entries[0]['status'], 'the run really did fail' );
+
+		$daily = $this->daily_cron_calls();
+		$this->assertCount( 2, $daily, 'cleared and registered again' );
+		$this->assertStringEndsWith( '07:15', self::local( (int) $daily[1][1] ) );
+
+		$retries = array_values(
+			array_filter(
+				$this->cron_calls,
+				static fn( array $call ): bool => 'single' === $call[0]
+			)
+		);
+
+		$this->assertCount( 1, $retries, 'the hour-later attempt was booked' );
+		$this->assertSame( 'gatb_retry_report', $retries[0][2] );
+		$this->assertNotContains(
+			array( 'clear', 'gatb_retry_report' ),
+			$this->cron_calls,
+			're-anchoring the daily event does not touch the retry'
+		);
+	}
+
+	/**
+	 * Only the schedule re-anchors the schedule.
+	 *
+	 * "Send now" and a retry are runs, but neither is the daily event, and
+	 * neither may move when it is due: pressing a button at midday must not
+	 * push the morning report to midday.
+	 */
+	public function test_send_now_and_a_retry_leave_the_daily_event_alone(): void {
+		Runner::run( 'manual', true );
+
+		$this->assertSame( array(), $this->daily_cron_calls(), 'Send now is not the schedule' );
+
+		RunLog::mark_sent( '1999-01-01' );
+		Scheduler::run_retry( '2026-09-15' );
+
+		$this->assertSame( array(), $this->daily_cron_calls(), 'and neither is a retry' );
+	}
+
+	/**
+	 * The night the clock goes back is 25 hours long, and the report keeps its
+	 * local time through it.
+	 *
+	 * This is the drift the step exists to end: a fixed daily interval would
+	 * put the 25th of October's report an hour early and leave it there.
+	 */
+	public function test_the_daily_event_keeps_its_local_time_when_the_clock_goes_back(): void {
+		$this->assertSame(
+			array( '2026-10-24 07:15', '2026-10-25 07:15', '2026-10-26 07:15' ),
+			$this->anchors_from( '2026-10-23 07:15:00', 3 )
+		);
+
+		$this->assertSame(
+			90000,
+			self::at( '2026-10-25 07:15:00' ) - self::at( '2026-10-24 07:15:00' ),
+			'that night is 25 hours, so a fixed 86 400 s interval cannot land on it'
+		);
+	}
+
+	/**
+	 * And the night it goes forward is 23 hours long.
+	 */
+	public function test_the_daily_event_keeps_its_local_time_when_the_clock_goes_forward(): void {
+		$this->assertSame(
+			array( '2027-03-27 07:15', '2027-03-28 07:15', '2027-03-29 07:15' ),
+			$this->anchors_from( '2027-03-26 07:15:00', 3 )
+		);
+
+		$this->assertSame(
+			82800,
+			self::at( '2027-03-28 07:15:00' ) - self::at( '2027-03-27 07:15:00' ),
+			'that night is 23 hours'
+		);
+	}
+
+	/**
+	 * The event a run registers cannot be picked up by the same cron request.
+	 *
+	 * The clock is the configured time itself, because that is when the event
+	 * fires: a run at 07:15 must register the next 07:15, not this one, or
+	 * WP-Cron would find something due inside the request that is running it.
+	 * The gap is then a night — 23 hours and not 24, because the spring night
+	 * really is 23 hours long and a stricter assertion would fail once a year.
+	 */
+	public function test_the_re_anchored_event_is_a_night_away(): void {
+		$fires = self::at( '2026-09-16 07:15:00' );
+
+		Scheduler::reschedule( $fires );
+
+		$daily      = $this->daily_cron_calls();
+		$registered = (int) $daily[1][1];
+
+		$this->assertGreaterThanOrEqual( $fires + 82800, $registered, 'a night away, never inside this request' );
+		$this->assertSame( '2026-09-17 07:15', self::local( $registered ), 'tomorrow, not the moment it is running at' );
+	}
+
+	/**
+	 * Runs a series of re-anchors, each from the moment the last one fell due.
+	 *
+	 * The clock is injected rather than stubbed: time() is a PHP function, and
+	 * this is the same clock parameter Runner and ReportBuilder take.
+	 *
+	 * @param string $first   The first run's local moment, Y-m-d H:i:s.
+	 * @param int    $runs    How many runs to make.
+	 * @return list<string> The local time each run registered.
+	 */
+	private function anchors_from( string $first, int $runs ): array {
+		$now        = self::at( $first );
+		$registered = array();
+
+		foreach ( range( 1, $runs ) as $ignored ) {
+			$this->cron_calls = array();
+
+			Scheduler::reschedule( $now );
+
+			$daily        = $this->daily_cron_calls();
+			$now          = (int) $daily[1][1];
+			$registered[] = self::local( $now );
+		}
+
+		return $registered;
+	}
+
+	/**
+	 * Everything that was done to the daily event, in order.
+	 *
+	 * @return list<array<int, mixed>>
+	 */
+	private function daily_cron_calls(): array {
+		return array_values(
+			array_filter(
+				$this->cron_calls,
+				static fn( array $call ): bool => 'gatb_daily_report' === end( $call )
+			)
+		);
 	}
 
 	/**

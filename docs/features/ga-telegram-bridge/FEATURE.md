@@ -45,6 +45,7 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
 - Secrets never appear in `gatb_log`, error messages, notices or test output.
 - All GA date ranges are relative (`yesterday`, `NdaysAgo`) and thus resolved
   in the property's reporting time zone; the send time is site-local.
+- The schedule is re-anchored at the end of every scheduled run: the next `gatb_daily_report` is registered from the configured local time, never by adding a fixed interval, so the report keeps its time of day across a clock change without anyone re-saving the settings. Only the schedule does this — *Send now* and a retry never move it.
 - Never more than 2 `batchRunReports` calls per run; a disabled block issues no request.
 - Public pages never call Google or Telegram synchronously: all network work
   runs inside the cron callback or an admin-initiated request.
