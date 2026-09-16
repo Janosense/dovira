@@ -475,3 +475,147 @@ the `.pot` exclude list is unaffected; the plugin's `CLAUDE.md` gains nothing �
 
 ### Questions / ambiguities
 none
+
+## Plan — Sprint 3, Step 3: Re-anchor the daily event after every scheduled run   (status: implemented, awaiting close)
+
+### Branch
+`ga-telegram-bridge/sprint-3-trend` ← `master`
+(root `CLAUDE.md` → git model: simple — task branch → `master`; the name is the
+**Branch** line of `SPRINT-3.md`. Recreated from `master`, deleted at the close,
+as in Steps 1–2.)
+
+### Tasks (ordered)
+
+- [x] **1. The scheduled run re-anchors its own event.**
+  `Scheduler::run_daily()` becomes:
+
+  ```php
+  public static function run_daily(): void {
+      try {
+          Runner::run( 'cron' );
+      } finally {
+          self::reschedule();
+      }
+  }
+  ```
+
+  `finally` is what "whatever the outcome" asks for: `Runner::run()` catches the
+  Google and Telegram refusals itself, but anything it does not catch would
+  otherwise leave the event un-anchored, and the schedule is the one thing that
+  must survive a bad run. `reschedule()` clears **only** `DAILY_HOOK`, so a
+  retry booked during the run — `gatb_retry_report`, a different hook carrying
+  its day — is untouched.
+
+  `reschedule()` gains `?int $now = null`, passed on to `next_occurrence()`.
+  That is the file's own convention for a clock (`schedule_retry( $date, ?int $now )`,
+  `Runner::run( …, ?int $now )`, `ReportBuilder::build( ?int $now )`) and it is
+  what makes the step's own test — "a fixed-clock series of daily runs across
+  the change" — possible at all: `time()` is a PHP function and Brain\Monkey
+  cannot stub it. Every existing caller (the two settings-save hooks,
+  activation, `run_daily()`) passes nothing and keeps real time.
+
+  Docs in the same commit (core rule 5): `docs/ARCHITECTURE.md` → Data flows
+  ("Daily GA report": the event is re-anchored after every scheduled run, not
+  only on a settings save), `FEATURE.md` → Invariants (one line), the plugin's
+  own `CLAUDE.md` → Cron (one clause beside the settings-save rule), and the
+  resolution of `docs/LEARNINGS.md` 2026-09-09 "Running a cron event by hand
+  moved the daily slot" — the same mechanism, fixed here.
+  → `fix(gatb): re-anchor the daily event after every scheduled run`
+
+- [x] **2. Version 0.2.0.** `ga-telegram-bridge.php` header `Version: 0.1.0` →
+  `0.2.0`; `readme.txt` `Stable tag: 0.1.0` → `0.2.0` — the same statement of
+  the same version, and leaving it behind would make the readme claim the
+  release before this one. The `= 0.2.0 =` changelog section Step 2 opened gains
+  the schedule fix. `Plugin::version()` reads the header, so nothing else moves:
+  there is no constant to keep in step (DECISIONS-era rule, Sprint 2 Step 4).
+  → `chore(gatb): release 0.2.0`
+
+### Files to create/change
+- `wp-content/plugins/ga-telegram-bridge/src/Scheduler.php` (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/SchedulerTest.php` (task 1)
+- `wp-content/plugins/ga-telegram-bridge/ga-telegram-bridge.php` (task 2)
+- `wp-content/plugins/ga-telegram-bridge/readme.txt` (task 2)
+- `docs/ARCHITECTURE.md`, `docs/features/ga-telegram-bridge/FEATURE.md`,
+  `docs/LEARNINGS.md`, `wp-content/plugins/ga-telegram-bridge/CLAUDE.md` (task 1)
+
+Checked and **not** changed: no new file, so `phpstan.neon.dist`,
+`phpcs.xml.dist` and `phpunit.xml.dist` have nothing to learn; the step adds no
+user-facing string, so the `.pot` and the `uk` translation stay as they are (the
+version is read from the header, never translated); the four test stubs that
+return `array( 'Version' => '0.1.0' )` for `get_file_data()` stay at that value —
+they prove the header is *read*, not what it says, and pinning them to the real
+version would make them re-break at every release.
+
+### Tests to write
+All in `SchedulerTest`, whose harness already records every WP-Cron call in
+order (`clear` / `schedule` / `unschedule` / `single`) and whose configured send
+time is `07:15` in `Europe/Kiev`:
+
+- **the re-anchor happens once per scheduled run** — after `run_daily()`, the
+  recorded calls hold exactly one `clear` of `gatb_daily_report` and one
+  `schedule` of it with recurrence `daily`, at the next `07:15` local;
+- **a failed run re-anchors too** — with the property id emptied the run fails,
+  books its retry (`single`, `gatb_retry_report`, carrying the day), **and**
+  still clears and re-registers the daily event; the retry is not cleared by it;
+- **only the schedule re-anchors** — `Runner::run( 'manual', true )` (*Send now*)
+  and `Scheduler::run_retry( … )` leave the daily hook alone: no `clear`, no
+  `schedule`. The step names *Send now*; the retry is the same rule ("it is not
+  the schedule") and is asserted in the same test rather than left to chance;
+- **the autumn change** — a fixed-clock series from 2026-10-23 through
+  2026-10-27: every re-anchor lands on `07:15` local, and the step across the
+  night of the 25th is **90 000 s (25 h)**, never 86 400;
+- **the spring change** — the same across 2027-03-28: the step is **82 800 s
+  (23 h)**, never 86 400. Both are what a fixed `daily` interval cannot do, and
+  both are the bug this step closes;
+- **it cannot fire twice in one request** — the timestamp the run registers is at
+  least 23 h ahead of the run's own clock, so the cron request that is executing
+  the event now cannot pick the new one up. 23 h and not 24: the spring night is
+  genuinely 23 h long, and an assertion of 24 would fail once a year.
+
+### Docs to update
+- `docs/ARCHITECTURE.md` → Data flows, "Daily GA report" — the event is
+  re-anchored after every scheduled run.
+- `docs/features/ga-telegram-bridge/FEATURE.md` → Invariants — one line: the
+  schedule is re-anchored after every scheduled run, so the configured local
+  time survives a clock change.
+- `wp-content/plugins/ga-telegram-bridge/CLAUDE.md` → Cron — one clause next to
+  the settings-save rule.
+- `docs/LEARNINGS.md` — the 2026-09-09 entry "Running a cron event by hand moved
+  the daily slot" gets a **Resolved** line. Its incident is this step's bug seen
+  from the other end: WordPress reschedules a recurring event from the moment it
+  ran, which is why a forced run moved the slot for good and why a clock change
+  moved it by an hour. The entry is appended to, not rewritten, and the Sprint 2
+  guide it points at stays as it was — that guide is the record of a closed step.
+- `readme.txt` — `Stable tag`, and the schedule fix in the `0.2.0` changelog.
+
+### Checks
+- **ANTI-PATTERNS:** none violated. No ACF, no theme block, no city branching, no
+  hand-edited assets, no new dependency or tool — `Scheduler` stays the only
+  class that touches cron, which is the plugin `CLAUDE.md`'s own rule.
+- **Docs vs reality:** three notes, none of which changes a task.
+  1. The step says to re-anchor "before any retry is booked by `Runner`". That
+     ordering cannot exist: `Runner::run()` books the retry inside itself, so
+     anything after it returns is after the retry. It also does not matter —
+     `reschedule()` clears `DAILY_HOOK` alone, and the retry is a different hook
+     carrying its day. The step's own next clause ("retries are not touched by
+     this") is what the code will honour.
+  2. The step names `wp_unschedule_hook` in its test list, but `reschedule()`
+     calls `wp_clear_scheduled_hook`, which is right for a hook registered with
+     no arguments; `wp_unschedule_hook` is what `clear()` uses, because the
+     retry carries one. The tests assert what the code really calls; no
+     behaviour changes.
+  3. `docs/LEARNINGS.md` has no entry titled for DST. The one this step resolves
+     is 2026-09-09 "Running a cron event by hand moved the daily slot" — same
+     mechanism, and the only entry about the daily slot moving.
+- **Design:** n/a. No screen changes: the Schedule section already prints
+  `wp_next_scheduled()`, which is where the re-anchored time appears by itself.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command).
+  Verified before planning: exit 0 on `master` at `b4ce8e03`.
+- **Not locally verifiable:** the clock change itself. A fixed-clock test proves
+  the arithmetic and a forced cron run proves the re-anchor, but only the real
+  night of **2026-10-25** proves it on a production install — which is why
+  `SPRINT-3.md` → Definition of Done carries that item to a second
+  `/close-sprint` run rather than to this step.
+
+### Questions / ambiguities
+none
