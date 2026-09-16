@@ -22,6 +22,13 @@ logic in a plugin.
 - Plugin only: `cd wp-content/plugins/ga-telegram-bridge && composer install`,
   then `composer test` (PHPUnit), `composer lint` / `composer lint:fix` (PHPCS /
   PHPCBF) and `composer analyse` (PHPStan).
+- **A test that asserts nothing fails the run.** `phpunit.xml.dist` sets
+  `failOnRisky="true"` beside `failOnWarning`, `failOnNotice` and
+  `failOnDeprecation`, so PHPUnit's "This test did not perform any assertions"
+  stops the gate instead of passing inside a green run. It was added in Sprint 3
+  Step 1 with no failing test behind it; a test written as a Brain\Monkey
+  expectation (`Functions\expect( … )->never()`) has to record what happened and
+  assert it, rather than relying on the expectation alone.
 - **Suite order is fixed, not alphabetical.** `phpunit.xml.dist` declares two
   suites so that `SettingsSecretConstantsTest` — the one class that defines the
   real `GATB_GA_SERVICE_ACCOUNT_JSON` and `GATB_TELEGRAM_BOT_TOKEN` — runs last.

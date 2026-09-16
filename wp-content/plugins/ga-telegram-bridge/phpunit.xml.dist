@@ -6,6 +6,7 @@
 	failOnWarning="true"
 	failOnNotice="true"
 	failOnDeprecation="true"
+	failOnRisky="true"
 	cacheDirectory=".phpunit.cache">
 	<testsuites>
 		<!-- Order matters, so it is written down rather than left to the
