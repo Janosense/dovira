@@ -17,6 +17,12 @@ Entry format:
 
 ---
 
+## 2026-09-16 — [ga-telegram-bridge] Sprint 3 closed
+- Merged: simple git model, so the three step branches went straight into `master` (`7d338fe1`, `b4ce8e03`, `932f2715`), and `master` is merged into `kyiv` (`bc1be64b`). `bin/check.sh` exit 0 on both: `OK (294 tests, 1060 assertions)`, PHPStan level 8 no errors, 108 theme files linted — and "green" now excludes a test that asserts nothing, since `failOnRisky` went in with Step 1.
+- Deployed: both productions by hand, and the morning report on each install arrived carrying the 28-day sparkline — confirmed by the developer on 2026-09-16. The owner now sees the trend without opening anything, which was the sprint's goal, and the plugin is 0.2.0 on both.
+- Carried: the October clock change (2026-10-25/26) — the date is five weeks out, so the run-log rows confirm it at the next boundary, as that item's own wording provides. The mechanism is proven by a fixed-clock test over the real nights and by an event put an hour early and corrected by one run on the local install.
+- Open beyond the Definition of Done: fifteen LEARNINGS entries still `pending` for the retro, and three contradictions `SPRINT-3-CLOSE.md` lists — the screen registry, `Requires at least: 7.1` versus "any WordPress site", and `origin/main`, which is now 24 commits behind `master` while two documents call it unused. `FEATURE.md` → Roadmap ends here: everything beyond Sprint 3 is "Later (not planned)".
+
 ## 2026-09-16 — [ga-telegram-bridge] Sprint 3 Step 3 — Re-anchor the daily event after every scheduled run
 - Changed: `Scheduler::run_daily()` registers the next `gatb_daily_report` from the configured local time when it ends, in a `finally`, instead of leaving it to WordPress's fixed 86 400 s interval — so the report keeps its time of day across a clock change with nobody re-saving the settings. Only `DAILY_HOOK` is cleared, so a retry the same run booked survives; *Send now* and a retry never re-anchor. `reschedule()` takes the optional clock the rest of the plugin's entry points take. The plugin is **0.2.0** (header and the readme's `Stable tag`). 288 → 294 tests.
 - Shared code: none of the theme, no gate config. Inside the plugin only `Scheduler` changed; `Runner` was not touched, and `reschedule()`'s new parameter is optional, so every existing caller behaves as before.
