@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Google Analytics → Telegram bridge 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ga-telegram-bridge\n"
-"POT-Creation-Date: 2026-09-16T10:53:07+03:00\n"
+"POT-Creation-Date: 2026-09-16T13:11:03+03:00\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
@@ -468,14 +468,20 @@ msgstr "Вчора: %1$s (%2$s до середнього за 7 днів)"
 msgid "Last 28 days: %1$s (%2$s to the previous 28)"
 msgstr "За 28 днів: %1$s (%2$s до попередніх 28)"
 
+#. translators: 1: the quietest day of the last 28 days, 2: the busiest.
+#: src/MessageRenderer.php:190
+#, php-format
+msgid "%1$s–%2$s"
+msgstr "%1$s–%2$s"
+
 #. translators: 1: the page's place in the list, 2: the page title, 3: how many times it was viewed.
-#: src/MessageRenderer.php:174
+#: src/MessageRenderer.php:218
 #, php-format
 msgid "%1$d. %2$s — %3$s"
 msgstr "%1$d. %2$s — %3$s"
 
 #. translators: The report's date, in the letters of the PHP date() function — https://www.php.net/date.
-#: src/MessageRenderer.php:294
+#: src/MessageRenderer.php:338
 msgid "j F (l)"
 msgstr "j F (l)"
 
