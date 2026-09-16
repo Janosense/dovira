@@ -19,6 +19,13 @@ Entry format:
 
 ---
 
+## 2026-09-16 — [ga-telegram-bridge] A number in the plan was true of the scenario the plan imagined, not of the test it asked for
+
+- **Incident:** The Step 3 plan specified a test asserting that a re-anchored event is "at least 23 h ahead", and explained the 23 rather than 24 carefully (the spring night really is 23 hours). The assertion was right about the code and wrong about the test: it only holds when the run fires *at* its configured time, and the test as planned drove `run_daily()` from real time — 13:43, against a send time of 07:15 — so the next occurrence was 17 hours away. The gate failed on the first run and the test was rewritten to fix the clock at the send time, which is the real scenario and what the step meant by "a test with a fixed clock".
+- **Root cause:** The number was derived from the production scenario in the author's head, not from the harness the test would actually run in — whose clock is real time and whose send time is a fixture value. The same family as this sprint's Step 1 entry: a quantitative claim written into a plan without being checked against the thing it describes. Step 1's was checked against a fixture file, this one against a test harness; neither was checked at all.
+- **Fix applied here:** The test fixes the clock at the configured time and additionally pins the registered moment to the next day, which is the edge `next_occurrence()`'s `<=` exists for. Rule taken, widening Step 1's: **a number a plan asserts — an interval, a count, a figure — names the clock, file or fixture it is measured from, and is checked against it while the plan is being written.** Cost here was one failing gate run, which is what the gate is for; the cost in Step 1 was a decision put to the developer on a wrong premise.
+- **Transferred to playbook:** pending
+
 ## 2026-09-16 — [ga-telegram-bridge] The plan read the code and the tests, but not what the fixtures quietly rely on
 
 - **Incident:** The Step 1 plan worked through `Settings`, `ReportBuilder`, `Report` and every affected test, and said re-recording `call-2` was routine. It was not: the trend report is the first fixture whose rows carry calendar dates, and the suite runs at a clock pinned to 2025-09-10. A recording made today would have matched none of the 28 days the parser walks, filled 28 zeros, and passed. The step had to be stopped mid-task and put to the user. Worse, the options put to them claimed "every asserted number stays, because call-1 carries no dates" — true of call-1, wrong about the **devices** block, which lives in call-2 and moved when it was re-recorded.

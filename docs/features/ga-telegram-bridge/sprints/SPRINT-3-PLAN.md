@@ -476,7 +476,7 @@ the `.pot` exclude list is unaffected; the plugin's `CLAUDE.md` gains nothing �
 ### Questions / ambiguities
 none
 
-## Plan — Sprint 3, Step 3: Re-anchor the daily event after every scheduled run   (status: implemented, awaiting close)
+## Plan — Sprint 3, Step 3: Re-anchor the daily event after every scheduled run   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-3-trend` ← `master`
