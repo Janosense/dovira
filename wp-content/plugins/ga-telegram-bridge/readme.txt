@@ -172,6 +172,17 @@ reason stays in the run log. A day is never sent twice, and a report sent by han
 with *Send now* is not retried -- the reason is on the screen, and the button is
 there to press again.
 
+= The link at the end of the report opens nothing, or asks me to sign in. Why? =
+
+The last line of every report links to the property in Google Analytics. Google
+shows a property only to a Google account that has access to it -- at least the
+Viewer role, granted in Google Analytics under Admin -> Property access
+management. The service account the plugin reads the numbers with is not a
+person's login and cannot open the link for anyone: whoever should follow it
+needs access of their own. Without it, Google asks them to sign in or says they
+have no access; the report itself is not affected. The notice sent when a day
+could not be reported carries no link.
+
 = Can it read two properties, or send to two chats? =
 
 No. One property, one chat, one message a day. Two sites mean two installs, each

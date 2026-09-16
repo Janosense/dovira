@@ -19,6 +19,13 @@ Entry format:
 
 ---
 
+## 2026-09-16 — [ga-telegram-bridge] The plan named the tests a change would break by grepping for one shape of assertion
+
+- **Incident:** The analytics-link ad-hoc's plan said "three assertions pin where the message ends; nothing else does", from a grep for `assertStringEndsWith` and line counts. The first gate run failed five tests: the three named, and two that pin how many **links** the message holds — "the only link is the page's", "`(not set)` is not linked" — which a closing link makes false without touching what they guard. They were fixed in the same commit by narrowing each to links into the site, and the report says so; but "nothing else does" was stated as a finding when it was only the result of one search.
+- **Root cause:** The third time today, and the same family as the two Sprint 3 entries above: a claim written into a plan without being checked against the thing it describes. What is new here is the shape of the check that was done. A grep proves that the pattern searched for exists; it cannot prove that nothing else depends on what changes, because the dependency may be written in a shape nobody thought to search for.
+- **Fix applied here:** The five assertions each say what they guard. Rule taken: **a plan's list of tests a change will break is marked as the result of a search, never as complete — the gate's first run is the list** — and a failure outside it in the same category (an existing assertion the approved change makes false) is fixed and reported, while one outside the category stops the work.
+- **Transferred to playbook:** pending
+
 ## 2026-09-16 — [ga-telegram-bridge] A number in the plan was true of the scenario the plan imagined, not of the test it asked for
 
 - **Incident:** The Step 3 plan specified a test asserting that a re-anchored event is "at least 23 h ahead", and explained the 23 rather than 24 carefully (the spring night really is 23 hours). The assertion was right about the code and wrong about the test: it only holds when the run fires *at* its configured time, and the test as planned drove `run_daily()` from real time — 13:43, against a send time of 07:15 — so the next occurrence was 17 hours away. The gate failed on the first run and the test was rewritten to fix the clock at the send time, which is the real scenario and what the step meant by "a test with a fixed clock".
