@@ -56,9 +56,9 @@ nothing.
 - **Depends on:** Step 1 (shares the branch model and the version bump order; no code dependency)
 
 ## Definition of Done
-- [ ] Every step closed via /close-step (report + verification guide + worklog) — evidence: three `### [x]` in this file, three guides under `verification/`, three WORKLOG entries
-- [ ] `bin/check.sh` green — evidence: exit 0 on `master` after the last merge, with `failOnRisky` in effect
-- [ ] Docs match reality (DATA-MODEL, ARCHITECTURE, DECISIONS current) — evidence: `gatb_settings.blocks` lists `trend`; the "Daily GA report" flow mentions the re-anchor; the three 2026-09-16 DECISIONS entries have no contradicting text left in FEATURE.md or the sprint files
+- [x] Every step closed via /close-step (report + verification guide + worklog) — Steps 1–3 are `### [x]` above and `(status: closed)` in `SPRINT-3-PLAN.md`; close commits `0a326600`, `65774b3f`, `20c7ed25`; guides `verification/sprint-3-step-1.md` … `-3.md`; three WORKLOG entries of 2026-09-16
+- [x] `bin/check.sh` green — exit 0 on `master` at `932f2715` on 2026-09-16: PHPCS clean, PHPStan level 8 `[OK] No errors`, `OK (294 tests, 1060 assertions)`, 108 theme files linted, with `failOnRisky="true"` in `phpunit.xml.dist` since `932662e`
+- [x] Docs match reality (DATA-MODEL, ARCHITECTURE, DECISIONS current) — `gatb_settings.blocks` lists `trend` and the stored-vs-submitted default rule; ARCHITECTURE's "Daily GA report" flow carries the re-anchor and both rows say a full report is seven reports; the three 2026-09-16 DECISIONS entries have no contradicting text left, and DECISIONS gained "The tests' pinned clock belongs to the GA recordings". Detail in `SPRINT-3-CLOSE.md` → Definition of Done
 - [ ] Merged to `master`; `master` merged into `kyiv`; both productions deployed by hand — evidence: the developer confirms both deploys, and the newest run-log row on each install shows `Розклад · Надіслано` for a morning after the deploy with the trend line visible in the owner's chat
 - [ ] The October clock change passes without a shifted report — evidence: the run-log rows of 2026-10-25/26 on either production install carry the configured time (this item is ticked by `/close-sprint`'s second run after the developer confirms it; if the sprint closes before that date, it is confirmed at the next sprint boundary and noted in SPRINT-3-CLOSE)
 
