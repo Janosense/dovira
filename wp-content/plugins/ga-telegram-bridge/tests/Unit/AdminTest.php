@@ -192,6 +192,34 @@ final class AdminTest extends TestCase {
 	}
 
 	/**
+	 * The trend block is offered like any other, with a line saying what it is.
+	 *
+	 * It is the one block that adds a line to another block rather than a
+	 * section of its own, so the label alone would not say where it appears.
+	 */
+	public function test_the_trend_block_is_offered_with_its_description(): void {
+		$this->stub_checkbox_helpers();
+
+		$markup = $this->render(
+			static function (): void {
+				Admin::block_checkboxes( array_fill_keys( Settings::BLOCKS, true ) );
+			}
+		);
+
+		$this->assertMatchesRegularExpression( '/id="gatb_block_trend"[^>]*checked="checked"/', $markup );
+		$this->assertDoesNotMatchRegularExpression( '/id="gatb_block_trend"[^>]*disabled="disabled"/', $markup );
+		$this->assertStringContainsString(
+			'<span class="description">A 28-day sparkline inside the visitors block.</span>',
+			$markup
+		);
+		$this->assertSame(
+			2,
+			substr_count( $markup, 'class="description"' ),
+			'two description spans in the fieldset: visitors "(always sent)" and this one'
+		);
+	}
+
+	/**
 	 * An unchecked box still reaches the sanitizer, as a zero.
 	 */
 	public function test_every_block_posts_a_value_even_when_it_is_unchecked(): void {
