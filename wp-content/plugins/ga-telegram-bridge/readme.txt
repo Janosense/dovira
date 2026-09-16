@@ -4,7 +4,7 @@ Tags: analytics, google analytics, ga4, telegram, reports
 Requires at least: 7.1
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -205,6 +205,10 @@ service, no telemetry, and no request made from a visitor's page view.
   two figures, scaled between the quietest and the busiest day of the period,
   with both of those numbers beside it. It is a report block like the others and
   can be switched off on the settings screen.
+* The daily report keeps its time of day when the clocks change. Each scheduled
+  run registers the next one from the configured local time instead of adding
+  24 hours, so the report no longer drifts by an hour twice a year until the
+  settings are saved again.
 
 = 0.1.0 =
 * The daily report -- visitors, top pages, traffic sources, cities and devices --

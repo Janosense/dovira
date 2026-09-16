@@ -45,7 +45,7 @@ nothing.
 - **Docs to update:** `docs/features/ga-telegram-bridge/FEATURE.md` → UI (already carries the line; adjust only if a string changed); `readme.txt` (what the plugin sends: the trend line; changelog 0.2.0).
 - **Depends on:** Step 1
 
-### [ ] Step 3 — Re-anchor the daily event after every scheduled run
+### [x] Step 3 — Re-anchor the daily event after every scheduled run
 - **Tasks:**
   - `Scheduler::run_daily()`: after `Runner::run( 'cron', … )` returns — whatever the outcome, and before any retry is booked by `Runner` — call `reschedule()`, so the recurring `gatb_daily_report` is cleared and registered again for the next occurrence of the configured `HH:MM` in `wp_timezone()`; retries (`gatb_retry_report`) are not touched by this.
   - Make sure re-anchoring inside the running cron callback does not re-fire the event in the same request (WP-Cron has already popped the event; registering a new one ≥ 23 h ahead is safe — assert it in a test with a fixed clock).
