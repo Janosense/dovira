@@ -27,7 +27,16 @@ final class RunnerTest extends TestCase {
 	/**
 	 * A moment in the middle of a day, so "yesterday" is unambiguous.
 	 */
-	private const NOON = 1757505600;
+	/**
+	 * The instant every fixture-driven test pretends it is: noon UTC of the day
+	 * the recordings were made, so the report is about the day before.
+	 *
+	 * It is pinned to the recordings rather than chosen freely because the
+	 * trend report is the one recorded block whose rows carry calendar dates:
+	 * ReportBuilder walks the 28 days ending on the report date, and a clock
+	 * that disagreed with the recording would read every one of them as 0.
+	 */
+	private const NOON = 1789560000;
 
 	/**
 	 * A token of the right shape that belongs to no bot.
@@ -186,7 +195,12 @@ final class RunnerTest extends TestCase {
 		$body     = (array) json_decode( (string) $arguments['body'], true );
 		$requests = isset( $body['requests'] ) && is_array( $body['requests'] ) ? count( $body['requests'] ) : 0;
 
-		return $this->fixture( 'ga/batch-run-reports-daily-call-' . ( $requests > 1 ? '1' : '2' ) . '.json' );
+		// The first call carries five requests, the second the two that are
+		// left; anything smaller is a run with blocks switched off, which fits
+		// into the first call alone.
+		return $this->fixture(
+			'ga/batch-run-reports-daily-call-' . ( $requests > 2 ? '1' : '2' ) . '.json'
+		);
 	}
 
 	/**
@@ -224,11 +238,11 @@ final class RunnerTest extends TestCase {
 		$this->assertIsArray( $entry );
 		$this->assertSame( 'manual', $entry['trigger'] );
 		$this->assertSame( 'sent', $entry['status'] );
-		$this->assertSame( '2025-09-09', $entry['date'], 'the property\'s day, not the server\'s' );
+		$this->assertSame( '2026-09-15', $entry['date'], 'the property\'s day, not the server\'s' );
 		$this->assertSame( 1, $entry['attempt'] );
 		$this->assertStringContainsString( self::CHAT_ID, $entry['message'] );
 
-		$this->assertSame( '2025-09-09', RunLog::last_report_date() );
+		$this->assertSame( '2026-09-15', RunLog::last_report_date() );
 		$this->assertSame( 0, RunLog::attempt() );
 		$this->assertSame( array( $entry ), RunLog::entries() );
 		$this->assertCount( 1, $this->telegram_calls(), 'one message, not one per block' );
@@ -255,7 +269,7 @@ final class RunnerTest extends TestCase {
 		$this->assertIsArray( $sent );
 		$this->assertSame( self::CHAT_ID, $sent['chat_id'] );
 		$this->assertSame( 'HTML', $sent['parse_mode'] );
-		$this->assertStringContainsString( '📊 <b>dovira.vet — 9 September (Tuesday)</b>', $sent['text'] );
+		$this->assertStringContainsString( '📊 <b>dovira.vet — 15 September (Tuesday)</b>', $sent['text'] );
 		$this->assertStringContainsString( 'Yesterday: 69', $sent['text'] );
 	}
 
@@ -269,7 +283,7 @@ final class RunnerTest extends TestCase {
 
 		$this->assertIsArray( $entry );
 		$this->assertSame( 'failed', $entry['status'] );
-		$this->assertSame( '2025-09-09', $entry['date'] );
+		$this->assertSame( '2026-09-15', $entry['date'] );
 		$this->assertStringContainsString( 'cannot find that chat', $entry['message'] );
 
 		$this->assertSame( '', RunLog::last_report_date(), 'the day was not delivered, so it is not remembered' );
@@ -350,11 +364,11 @@ final class RunnerTest extends TestCase {
 		$this->assertSame( array(), $this->telegram_calls(), 'and the chat is not told yet' );
 
 		$this->booked = array();
-		$second       = Runner::run( 'retry', false, self::NOON, '2025-09-09' );
+		$second       = Runner::run( 'retry', false, self::NOON, '2026-09-15' );
 
 		$this->assertIsArray( $second );
 		$this->assertSame( 2, $second['attempt'] );
-		$this->assertSame( '2025-09-09', $second['date'], 'the day the retry was booked for' );
+		$this->assertSame( '2026-09-15', $second['date'], 'the day the retry was booked for' );
 		$this->assertSame( array(), $this->booked, 'nothing more is booked' );
 		$this->assertCount( 1, $this->telegram_calls(), 'the notice is the only thing sent' );
 		$this->assertStringContainsString( 'No attempts are left', $second['message'] );
@@ -380,12 +394,12 @@ final class RunnerTest extends TestCase {
 			}
 		);
 
-		Runner::run( 'cron', false, self::NOON, '2025-09-09' );
+		Runner::run( 'cron', false, self::NOON, '2026-09-15' );
 
 		$this->assertIsArray( $sent );
 		$this->assertSame( self::CHAT_ID, $sent['chat_id'] );
 		$this->assertStringContainsString( '⚠️', $sent['text'] );
-		$this->assertStringContainsString( '9 September', $sent['text'] );
+		$this->assertStringContainsString( '15 September', $sent['text'] );
 	}
 
 	/**
@@ -410,13 +424,13 @@ final class RunnerTest extends TestCase {
 	 * was booked for, gives it up and sends nothing but the notice.
 	 */
 	public function test_a_retry_whose_day_has_passed_gives_that_day_up(): void {
-		$entry = Runner::run( 'retry', false, self::NOON, '2025-09-08' );
+		$entry = Runner::run( 'retry', false, self::NOON, '2026-09-14' );
 
 		$this->assertIsArray( $entry );
 		$this->assertSame( 'failed', $entry['status'] );
-		$this->assertSame( '2025-09-08', $entry['date'], 'the day the attempt was for, not the day Google now has' );
+		$this->assertSame( '2026-09-14', $entry['date'], 'the day the attempt was for, not the day Google now has' );
 		$this->assertStringContainsString( 'can no longer be built', $entry['message'] );
-		$this->assertStringContainsString( '2025-09-09', $entry['message'], 'and what the property calls yesterday now' );
+		$this->assertStringContainsString( '2026-09-15', $entry['message'], 'and what the property calls yesterday now' );
 		$this->assertSame( array(), $this->booked, 'no later attempt could do better' );
 		$this->assertCount( 1, $this->telegram_calls(), 'only the notice' );
 		$this->assertSame( '', RunLog::last_report_date(), 'the report it happened to hold is not this run\'s to send' );

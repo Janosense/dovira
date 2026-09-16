@@ -57,8 +57,10 @@ references the `dovira` theme, its functions, options or data.
   run passes through `Runner` and its date guard. A settings save is caught on
   **both** `update_option_gatb_settings` and `add_option_gatb_settings`: while
   the stored row still equals the registered default, core writes it through
-  `add_option()`. Only a `cron` or `retry` run books another attempt; `manual`
-  never does. `gatb_retry_report` carries its day as an argument, so it is
+  `add_option()`. A scheduled run re-anchors the daily event when it ends, in
+  a `finally`, so the configured local time survives a clock change — `manual`
+  and `retry` runs never touch it. Only a `cron` or `retry` run books another
+  attempt; `manual` never does. `gatb_retry_report` carries its day as an argument, so it is
   registered with one accepted argument and removed with `wp_unschedule_hook()`
   — `wp_clear_scheduled_hook()` matches only events registered with none.
 - Tests: `tests/Unit/` with PHPUnit + Brain\Monkey, fixtures in
@@ -78,6 +80,11 @@ ddev exec wp i18n make-pot wp-content/plugins/ga-telegram-bridge \
   --domain=ga-telegram-bridge --exclude=vendor,tests,spike,.phpunit.cache
 # DDEV syncs container writes to the host a moment later: read the .pot back and
 # check its entry count changed before rebuilding the .po from it.
+# merge the new entries into the uk .po with --no-wrap: this file keeps one line
+# per string, and msgmerge would otherwise rewrap all 129 of them at 80 columns.
+msgmerge --update --backup=none --no-fuzzy-matching --no-wrap \
+  wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge-uk.po \
+  wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge.pot
 # translate the new entries in languages/ga-telegram-bridge-uk.po, then:
 ddev exec wp i18n make-mo \
   wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge-uk.po \

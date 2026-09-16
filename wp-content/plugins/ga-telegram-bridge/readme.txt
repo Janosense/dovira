@@ -4,7 +4,7 @@ Tags: analytics, google analytics, ga4, telegram, reports
 Requires at least: 7.1
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,12 @@ The message is one screenful:
 
 * **Visitors** -- yesterday against the average of the seven days before it, and
   the last 28 days against the 28 before those. Always sent.
+* **Trend** -- under those two figures, a 28-character bar of the last four
+  weeks, one character per day from the oldest on the left to yesterday on the
+  right, with the quietest and the busiest day printed beside it. It shows the
+  shape of the four weeks, not a total: the daily figures do not add up to the
+  28-day one, because somebody who came on three days counts three times in the
+  sum and once in the period.
 * **Top 5 pages** yesterday, and over 28 days, each named by the title of its
   post on the site (or by its path, when no post lives there).
 * **Traffic sources**, **cities** and **devices** over 28 days, as shares.
@@ -193,6 +199,16 @@ to read the report, and to `api.telegram.org` to send it. There is no third-part
 service, no telemetry, and no request made from a visitor's page view.
 
 == Changelog ==
+
+= 0.2.0 =
+* The visitors block carries the 28-day trend: one character per day under the
+  two figures, scaled between the quietest and the busiest day of the period,
+  with both of those numbers beside it. It is a report block like the others and
+  can be switched off on the settings screen.
+* The daily report keeps its time of day when the clocks change. Each scheduled
+  run registers the next one from the configured local time instead of adding
+  24 hours, so the report no longer drifts by an hour twice a year until the
+  settings are saved again.
 
 = 0.1.0 =
 * The daily report -- visitors, top pages, traffic sources, cities and devices --

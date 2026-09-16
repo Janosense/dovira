@@ -22,6 +22,13 @@ logic in a plugin.
 - Plugin only: `cd wp-content/plugins/ga-telegram-bridge && composer install`,
   then `composer test` (PHPUnit), `composer lint` / `composer lint:fix` (PHPCS /
   PHPCBF) and `composer analyse` (PHPStan).
+- **A test that asserts nothing fails the run.** `phpunit.xml.dist` sets
+  `failOnRisky="true"` beside `failOnWarning`, `failOnNotice` and
+  `failOnDeprecation`, so PHPUnit's "This test did not perform any assertions"
+  stops the gate instead of passing inside a green run. It was added in Sprint 3
+  Step 1 with no failing test behind it; a test written as a Brain\Monkey
+  expectation (`Functions\expect( … )->never()`) has to record what happened and
+  assert it, rather than relying on the expectation alone.
 - **Suite order is fixed, not alphabetical.** `phpunit.xml.dist` declares two
   suites so that `SettingsSecretConstantsTest` — the one class that defines the
   real `GATB_GA_SERVICE_ACCOUNT_JSON` and `GATB_TELEGRAM_BOT_TOKEN` — runs last.
@@ -75,7 +82,24 @@ logic in a plugin.
   two pages reports inside `call-1` (positions 1 and 2) were re-recorded on
   2026-09-10, when the request dropped `pageTitle` and grouped by `pagePath`
   alone (DECISIONS "Top pages are counted by path and named by their post"); the
-  rest of both files is the Sprint 1 recording, unchanged. The empty-property
+  rest of `call-1` is the Sprint 1 recording, unchanged. `call-2` was re-recorded
+  whole on 2026-09-16, when the trend block made the seventh request: it now
+  holds **two** reports, `devices` then `trend`, and the one-report recording it
+  replaced is kept as `batch-run-reports-daily-call-2-no-trend.json` for the test
+  that switches the trend off. Re-recording moved the device figures, so the
+  shares in `ReportBuilderTest` and in the message snapshot are those of the new
+  day.
+- **The pinned clock belongs to the recordings.** `NOON` in `ReportBuilderTest`,
+  `MessageRendererTest` and `RunnerTest` is noon UTC of the day `call-2` was
+  recorded, so the report is about the day before it. Until Sprint 3 the value
+  was arbitrary, because no recorded row carried a calendar date — the visitors
+  report is keyed by `date_range_0…3` and every other block by a label. The trend
+  report is the first whose rows *are* dates, and `ReportBuilder` walks the 28
+  days ending on the report date: a clock that disagreed with the recording would
+  read all 28 as 0 and the test would still pass. Re-recording the daily calls
+  therefore means moving that constant with them. The other dates in the suite —
+  `report_date()`'s own midnight tests, `render_failure()`'s argument, the log
+  rows in `AdminSendNowTest` — are self-contained and stay where they are. The empty-property
   shape is the one written fixture (`batch-run-reports-no-data.written.json`):
   a property with traffic cannot produce it.
 - A page is named by the post WordPress finds at its path — `url_to_postid()`,

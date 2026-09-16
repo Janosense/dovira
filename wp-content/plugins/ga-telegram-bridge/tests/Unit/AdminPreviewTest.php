@@ -209,10 +209,19 @@ final class AdminPreviewTest extends TestCase {
 		$posted = array();
 
 		Functions\when( 'wp_remote_post' )->alias(
-			function ( string $url ) use ( &$posted ): array {
+			function ( string $url, array $arguments ) use ( &$posted ): array {
 				$posted[] = $url;
 
-				return $this->fixture( 'batch-run-reports-daily-call-1.json' );
+				// Answered per call: five requests in the first, two in the
+				// second. One fixture for both would hand the second call five
+				// reports for two requests, and the preview this test is about
+				// would fail before it could send anything anywhere.
+				$body     = (array) json_decode( (string) $arguments['body'], true );
+				$requests = isset( $body['requests'] ) && is_array( $body['requests'] ) ? count( $body['requests'] ) : 0;
+
+				return $this->fixture(
+					'batch-run-reports-daily-call-' . ( $requests > 2 ? '1' : '2' ) . '.json'
+				);
 			}
 		);
 

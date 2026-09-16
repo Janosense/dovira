@@ -24,7 +24,7 @@ and wordpress.org, any change to the theme's own Telegram code.
 ## Data
 Owns three non-autoloaded `wp_options` rows (details in `docs/DATA-MODEL.md`):
 `gatb_settings` (property id, service-account JSON, bot token, chat id, send
-time, max attempts, enabled blocks), `gatb_state` (`last_report_date`,
+time, max attempts, enabled blocks — six: `visitors` always on, `pages`, `channels`, `cities`, `devices`, `trend`), `gatb_state` (`last_report_date`,
 `attempt`, `last_cron_hit` — the next run is not stored: `wp_next_scheduled()` is
 the one copy of it), `gatb_log` (last 30 runs); one transient
 `gatb_google_access_token`; cron hooks `gatb_daily_report` (recurring) and
@@ -45,6 +45,7 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
 - Secrets never appear in `gatb_log`, error messages, notices or test output.
 - All GA date ranges are relative (`yesterday`, `NdaysAgo`) and thus resolved
   in the property's reporting time zone; the send time is site-local.
+- The schedule is re-anchored at the end of every scheduled run: the next `gatb_daily_report` is registered from the configured local time, never by adding a fixed interval, so the report keeps its time of day across a clock change without anyone re-saving the settings. Only the schedule does this — *Send now* and a retry never move it.
 - Never more than 2 `batchRunReports` calls per run; a disabled block issues no request.
 - Public pages never call Google or Telegram synchronously: all network work
   runs inside the cron callback or an admin-initiated request.
@@ -53,7 +54,7 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
 ## Interfaces
 - **Admin:** Settings → "GA → Telegram" (`manage_options`), screen names in UI below.
 - **Cron hooks:** `gatb_daily_report` (no arguments) and `gatb_retry_report` (one argument, the day `Y-m-d` the attempt is for) — the only schedulers are in `Scheduler`, and both are cleared with `wp_unschedule_hook()` so an event carrying arguments goes too.
-- **Filters (public surface, stable):** `gatb_report_data` (the normalized `Report` before rendering — `apply_filters( 'gatb_report_data', Report $report )`; a return value that is not a `Report` is ignored and the built one is rendered; a page row's `title` is the title of the post at that path, or the path when no post lives there) and `gatb_message_html` (final HTML before sending — `apply_filters( 'gatb_message_html', string $html, ?Report $report )`, `null` for the failure notice). Both are applied in `MessageRenderer`. Changing their payload = "touches shared surface".
+- **Filters (public surface, stable):** `gatb_report_data` (the normalized `Report` before rendering — `apply_filters( 'gatb_report_data', Report $report )`; a return value that is not a `Report` is ignored and the built one is rendered; a page row's `title` is the title of the post at that path, or the path when no post lives there; `visitors_by_day` carries the trend block's 28 daily figures as `array<string, int>` keyed `Y-m-d`, oldest first, and is `null` when that block is off — added in Sprint 3, so a reader written for Sprint 2 sees one more readonly property and nothing moved) and `gatb_message_html` (final HTML before sending — `apply_filters( 'gatb_message_html', string $html, ?Report $report )`, `null` for the failure notice). Both are applied in `MessageRenderer`. Changing their payload = "touches shared surface".
 - **CLI / REST:** none in v1.
 
 ## UI
@@ -67,6 +68,7 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
   👥 <b>Відвідувачі</b>
   Вчора: {n} ({▲|▼} {pct}% до середнього за 7 днів)
   За 28 днів: {n} ({▲|▼} {pct}% до попередніх 28)
+  [<code>{28 × ▁▂▃▄▅▆▇█, oldest day left, yesterday right}</code> {min}–{max}]
 
   [📄 <b>Топ‑5 сторінок вчора</b>  1. <a href="{home origin}{path}">{post title}</a> — {views} … ]
 
@@ -82,9 +84,11 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
   Failure notice: `⚠️ <b>{site_host}</b> — звіт за {report_date} не сформовано. Деталі в журналі плагіна.`
   Source strings are English (text domain `ga-telegram-bridge`); the `uk` translation shipped in `languages/` is what the template above shows; `—` when a baseline is 0.
   The date is `wp_date()` on the property's own day: WordPress declines the month itself and capitalises month and weekday the way its Ukrainian translation writes them, hence "9 Вересня (Вівторок)".
+  The trend line (block `trend`, Sprint 3) sits inside the visitors block with no heading and no blank line of its own: 28 characters, one per day from `28daysAgo` to `yesterday`, scaled from the period's minimum to its maximum, then the two numbers; a flat period prints 28 × `▄`; a day GA does not return counts as 0; when `trend` is off, the line is absent (DECISIONS "A 28-day trend sparkline in the visitors block").
   A block with no rows is left out exactly like a switched-off one — the message has no place for a heading with nothing under it, though the `Report` keeps the two states apart (`null` = off, `array()` = on and empty).
 
 ## Roadmap
 - Sprint 1 — the full report reaches Telegram from the admin's "Send now" on the dev site (`sprints/SPRINT-1.md`)
 - Sprint 2 — the report goes out by itself every day on both production installs, with retries and a run log (`sprints/SPRINT-2.md`)
-- Later (not planned): key events block, weekly digest, several properties/chats, packaging for other sites
+- Sprint 3 — the visitors block shows the 28-day trend as a sparkline, and the daily event no longer drifts across a DST change (`sprints/SPRINT-3.md`)
+- Later (not planned): key events block, weekly digest, a PNG chart via `sendPhoto`, GA labels translated, several properties/chats, packaging for other sites

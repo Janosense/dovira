@@ -872,7 +872,8 @@ final class Admin {
 	 * @param array<string, bool> $blocks The stored block switches.
 	 */
 	public static function block_checkboxes( array $blocks ): void {
-		$labels = self::block_labels();
+		$labels       = self::block_labels();
+		$descriptions = self::block_descriptions();
 
 		echo '<fieldset>';
 
@@ -899,6 +900,10 @@ final class Admin {
 					if ( $required ) {
 						echo ' <span class="description">' . esc_html__( '(always sent)', 'ga-telegram-bridge' ) . '</span>';
 					}
+
+					if ( isset( $descriptions[ $block ] ) && '' !== $descriptions[ $block ] ) {
+						echo ' <span class="description">' . esc_html( $descriptions[ $block ] ) . '</span>';
+					}
 					?>
 				</label>
 			</p>
@@ -920,6 +925,21 @@ final class Admin {
 			'channels' => __( 'Traffic sources', 'ga-telegram-bridge' ),
 			'cities'   => __( 'Cities', 'ga-telegram-bridge' ),
 			'devices'  => __( 'Devices', 'ga-telegram-bridge' ),
+			'trend'    => __( 'Trend', 'ga-telegram-bridge' ),
+		);
+	}
+
+	/**
+	 * Returns the line printed after a block's label, for the blocks that need one.
+	 *
+	 * Most block names say what they are. Trend does not: it is the one block
+	 * that adds a line to another block instead of a section of its own.
+	 *
+	 * @return array<string, string>
+	 */
+	private static function block_descriptions(): array {
+		return array(
+			'trend' => __( 'A 28-day sparkline inside the visitors block.', 'ga-telegram-bridge' ),
 		);
 	}
 

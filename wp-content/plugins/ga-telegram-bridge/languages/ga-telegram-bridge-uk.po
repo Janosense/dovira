@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Google Analytics → Telegram bridge 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ga-telegram-bridge\n"
-"POT-Creation-Date: 2026-09-10T09:57:08+03:00\n"
+"POT-Creation-Date: 2026-09-16T13:11:03+03:00\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
@@ -278,29 +278,37 @@ msgstr "Що містить повідомлення. Блок відвідув�
 msgid "Set in configuration (wp-config.php); the field is ignored."
 msgstr "Задано в конфігурації (wp-config.php); поле ігнорується."
 
-#: src/Admin.php:900
+#: src/Admin.php:901
 msgid "(always sent)"
 msgstr "(надсилається завжди)"
 
-#: src/Admin.php:918 src/MessageRenderer.php:126
+#: src/Admin.php:923 src/MessageRenderer.php:137
 msgid "Visitors"
 msgstr "Відвідувачі"
 
-#: src/Admin.php:919
+#: src/Admin.php:924
 msgid "Top pages"
 msgstr "Топ сторінок"
 
-#: src/Admin.php:920
+#: src/Admin.php:925
 msgid "Traffic sources"
 msgstr "Джерела трафіку"
 
-#: src/Admin.php:921
+#: src/Admin.php:926
 msgid "Cities"
 msgstr "Міста"
 
-#: src/Admin.php:922
+#: src/Admin.php:927
 msgid "Devices"
 msgstr "Пристрої"
+
+#: src/Admin.php:928
+msgid "Trend"
+msgstr "Тренд"
+
+#: src/Admin.php:942
+msgid "A 28-day sparkline inside the visitors block."
+msgstr "Спарклайн за 28 днів у блоці «Відвідувачі»."
 
 #: src/GaClient.php:49
 msgid "Google Analytics answered without any report in it."
@@ -419,55 +427,61 @@ msgid "Google refused to issue an access token (HTTP %1$d): %2$s"
 msgstr "Google відмовився видати токен доступу (HTTP %1$d): %2$s"
 
 #. translators: %d: how many pages the block lists.
-#: src/MessageRenderer.php:65
+#: src/MessageRenderer.php:67
 #, php-format
 msgid "Top %d pages yesterday"
 msgstr "Топ‑%d сторінок вчора"
 
 #. translators: %d: how many pages the block lists.
-#: src/MessageRenderer.php:73
+#: src/MessageRenderer.php:76
 #, php-format
 msgid "Top %d pages over 28 days"
 msgstr "Топ‑%d сторінок за 28 днів"
 
-#: src/MessageRenderer.php:78
+#: src/MessageRenderer.php:81
 msgid "Sources over 28 days"
 msgstr "Джерела за 28 днів"
 
-#: src/MessageRenderer.php:79
+#: src/MessageRenderer.php:82
 msgid "Cities over 28 days"
 msgstr "Міста за 28 днів"
 
-#: src/MessageRenderer.php:80
+#: src/MessageRenderer.php:83
 msgid "Devices over 28 days"
 msgstr "Пристрої за 28 днів"
 
 #. translators: 1: the site's host name, 2: the day the report was about.
-#: src/MessageRenderer.php:97
+#: src/MessageRenderer.php:108
 #, php-format
 msgid "⚠️ <b>%1$s</b> — the report for %2$s was not built. The details are in the plugin's run log."
 msgstr "⚠️ <b>%1$s</b> — звіт за %2$s не сформовано. Деталі в журналі плагіна."
 
 #. translators: 1: how many people visited yesterday, 2: the change against the seven-day average, for example "▲ 23%".
-#: src/MessageRenderer.php:129
+#: src/MessageRenderer.php:140
 #, php-format
 msgid "Yesterday: %1$s (%2$s to the 7-day average)"
 msgstr "Вчора: %1$s (%2$s до середнього за 7 днів)"
 
 #. translators: 1: how many people visited in the last 28 days, 2: the change against the 28 days before those.
-#: src/MessageRenderer.php:135
+#: src/MessageRenderer.php:146
 #, php-format
 msgid "Last 28 days: %1$s (%2$s to the previous 28)"
 msgstr "За 28 днів: %1$s (%2$s до попередніх 28)"
 
+#. translators: 1: the quietest day of the last 28 days, 2: the busiest.
+#: src/MessageRenderer.php:190
+#, php-format
+msgid "%1$s–%2$s"
+msgstr "%1$s–%2$s"
+
 #. translators: 1: the page's place in the list, 2: the page title, 3: how many times it was viewed.
-#: src/MessageRenderer.php:162
+#: src/MessageRenderer.php:218
 #, php-format
 msgid "%1$d. %2$s — %3$s"
 msgstr "%1$d. %2$s — %3$s"
 
 #. translators: The report's date, in the letters of the PHP date() function — https://www.php.net/date.
-#: src/MessageRenderer.php:259
+#: src/MessageRenderer.php:338
 msgid "j F (l)"
 msgstr "j F (l)"
 
@@ -501,23 +515,23 @@ msgstr "Спроб не залишилось, і повідомити чат т�
 msgid "No attempts are left, so the chat has been told that this day could not be reported."
 msgstr "Спроб не залишилось, тому в чат надіслано повідомлення, що звіт за цей день не сформовано."
 
-#: src/Settings.php:184
+#: src/Settings.php:222
 msgid "The GA4 property id must consist of digits only (for example 123456789). The previous value was kept."
 msgstr "Ідентифікатор ресурсу GA4 має складатися лише з цифр (наприклад, 123456789). Збережено попереднє значення."
 
-#: src/Settings.php:199
+#: src/Settings.php:237
 msgid "The service-account key must be the JSON file Google generated, containing client_email, private_key and token_uri. The previous key was kept."
 msgstr "Ключ сервісного акаунта має бути JSON-файлом, згенерованим Google, який містить client_email, private_key і token_uri. Збережено попередній ключ."
 
-#: src/Settings.php:220
+#: src/Settings.php:258
 msgid "The chat id must be a number, with a leading minus for groups and channels (for example -1001234567890). The previous value was kept."
 msgstr "Ідентифікатор чату має бути числом, із мінусом на початку для груп і каналів (наприклад, -1001234567890). Збережено попереднє значення."
 
-#: src/Settings.php:233
+#: src/Settings.php:271
 msgid "The send time must be given as HH:MM in 24-hour form (for example 09:00). The previous value was kept."
 msgstr "Час надсилання треба вказати як HH:MM у 24-годинному форматі (наприклад, 09:00). Збережено попереднє значення."
 
-#: src/Settings.php:246
+#: src/Settings.php:284
 msgid "The number of attempts must be a whole number between 1 and 10. The previous value was kept."
 msgstr "Кількість спроб має бути цілим числом від 1 до 10. Збережено попереднє значення."
 

@@ -1,0 +1,621 @@
+# SPRINT 3 — step plans (ga-telegram-bridge)
+
+<!-- Written by /plan-step, one section per step, executed by /do-step and
+     closed by /close-step. Sections of closed steps are never edited. -->
+
+## Plan — Sprint 3, Step 1: Trend data — block `trend`, the daily-visitors request and `Report::visitors_by_day`   (status: closed)
+
+### Branch
+`ga-telegram-bridge/sprint-3-trend` ← `master`
+(root `CLAUDE.md` → git model: simple — task branch → `master`; the name is the
+**Branch** line of `SPRINT-3.md`. Recreated from `master` for each step and
+deleted at the close, as in Sprints 1–2.)
+
+### Tasks (ordered)
+
+- [x] **1. `Settings` learns the sixth block, and an absent key stops meaning
+  "off".** `Settings::BLOCKS` gains `'trend'` after `'devices'`; `defaults()`
+  needs no change (`array_fill_keys( self::BLOCKS, true )` already makes it
+  default-on).
+
+  The step asks to *confirm* that an install whose stored `blocks` array
+  predates the key gets `trend => true`. It does not: `merge_blocks()` writes
+  `! empty( $stored[ $block ] )` for every known block, so an absent key is
+  `false`. The two callers need different rules and therefore become two
+  methods:
+  - `merge_blocks( $stored )` — the **stored-option** path (`merge_defaults()`,
+    `blocks()`): `array_key_exists()` decides. A key that is there is taken as
+    it is; a key that is not there takes the default for that block, which is
+    `true`. `visitors` stays forced on.
+  - new `submitted_blocks( $raw )` — the **form** path, called from
+    `sanitize_settings()`: unchanged behaviour, an absent key is off. This is a
+    rule the shipped code states and tests in as many words
+    (`SettingsTest::test_the_block_switches_follow_the_submitted_checkboxes`:
+    "an unchecked box is off whether it arrives as 0 or not at all"), and
+    `Admin::block_checkboxes()` prints a hidden `0` before every checkbox, so
+    in the real form every key always arrives anyway. Folding the two paths
+    into one rule would make a block impossible to switch off for any caller
+    that posts a partial array — hence two methods rather than a flag.
+
+  `docs/DATA-MODEL.md`'s `blocks` row is corrected in the same commit (core
+  rule 5): six keys, and "a key the stored row does not carry yet takes its
+  default" next to "unknown keys dropped".
+  → `feat(gatb): add the trend block and default an unknown block to on`
+
+- [x] **2. The sixth checkbox on screen `Settings`.** `Admin::block_labels()`
+  gains `'trend' => __( 'Trend', … )`; a parallel `block_descriptions()` returns
+  one optional line per block (only `trend` has one today), which
+  `block_checkboxes()` prints after the label as
+  `<span class="description">…</span>` — the same element the `(always sent)`
+  note beside `visitors` already uses, so no new markup pattern and no CSS.
+  Proposed English source strings:
+  - label: `Trend`
+  - description: `A 28-day sparkline inside the visitors block.`
+
+  Two new strings, so per the plugin's `CLAUDE.md` the `.pot` is regenerated
+  and the `uk` `.po`/`.mo` rebuilt in the same commit (`Тренд`, `Спарклайн за
+  28 днів у блоці «Відвідувачі».`). The `.pot` goes from 127 entries to 129,
+  and — per LEARNINGS 2026-09-09, "Two files looked unchanged because DDEV had
+  not synced them yet" — the host copy is read back and its entry count checked
+  before the `.po` is rebuilt from it.
+  → `feat(gatb): offer the trend block on the settings screen`
+
+- [x] **3. `Report` carries the series.** A fourteenth constructor parameter
+  `?array $visitors_by_day`, appended **last**: `Settings::BLOCKS` and
+  `ReportBuilder::requests()` both put `trend` last, and appending keeps the
+  three existing `new Report()` call sites a one-argument change
+  (`ReportBuilder::to_report()`, and `report_with()` plus `without_pages_and_devices()`
+  in `MessageRendererTest`). `has_block()` gains `'trend' => $this->visitors_by_day`
+  so the method keeps answering for every optional block; the class docblock's
+  "four optional blocks" becomes five. `to_report()` passes `null` for now — the
+  request does not exist until task 4, so the branch stays green and no message
+  changes.
+
+  `docs/features/ga-telegram-bridge/FEATURE.md` → Interfaces records in the same
+  commit that the `gatb_report_data` payload gains `visitors_by_day`
+  (**touches shared surface** — the filter is the plugin's public, documented
+  contract; no other feature in this repo consumes it, and appending a readonly
+  property breaks no reader).
+  → `feat(gatb): add visitors_by_day to the Report value object`
+
+- [x] **4. The seventh request, its parser, and the recordings.** In
+  `ReportBuilder::requests()`, after `devices`:
+
+  ```php
+  if ( ! empty( $blocks['trend'] ) ) {
+      $requests['trend'] = array(
+          'dimensions' => array( array( 'name' => 'date' ) ),
+          'metrics'    => array( array( 'name' => 'activeUsers' ) ),
+          'dateRanges' => array( $month ),          // 28daysAgo → yesterday
+          'orderBys'   => array(
+              array(
+                  'dimension' => array( 'dimensionName' => 'date' ),
+                  'desc'      => false,
+              ),
+          ),
+          'limit'      => self::PERIOD_DAYS,
+      );
+  }
+  ```
+
+  Built inline like the `visitors` request, not through `ranked()`, which orders
+  by metric. Chunking is untouched: seven requests split 5 + 2, still two
+  `batchRunReports` calls (FEATURE.md invariant), and a switched-off `trend`
+  issues nothing.
+
+  New `private static function visitors_by_day( array $report, string $report_date ): array`:
+  the rows are keyed by their `date` dimension (`YYYYMMDD`) rather than read by
+  position — GA orders rows by metric unless told otherwise, and LEARNINGS
+  "Sprint 1 spike findings" is explicit that an index-based parser is how blocks
+  get swapped. It then walks the 28 calendar days ending on `$report_date`,
+  built with an explicit `UTC` `DateTimeZone` so `modify( '+1 day' )` does pure
+  date arithmetic, and writes `array<string, int>` keyed `Y-m-d`, oldest first,
+  with `0` for any day GA left out. `to_report()` hoists the report date into a
+  variable (it is now needed twice) and fills the field when the response is
+  there.
+
+  Fixtures, per `docs/TESTING.md` ("a new fixture is added in the same commit as
+  the parser that reads it"):
+  - `tests/fixtures/ga/batch-run-reports-daily-call-2.json` re-recorded against
+    the live property — now **two** reports, `devices` then `trend` — checked
+    for the property id, the service-account address and any token before it is
+    committed;
+  - today's one-report recording kept as
+    `tests/fixtures/ga/batch-run-reports-daily-call-2-no-trend.json`, read by the
+    "trend off" test.
+
+  Test plumbing that has to learn about the 5 + 2 split (all of it existing
+  scaffolding, no new behaviour):
+  - `ReportBuilderTest::identify()` — a request whose dimension is `date` is
+    `trend`; today's fallback would call it `devices`.
+  - `ReportBuilderTest::recorded_report()` — `devices` is report 0 of call 2,
+    `trend` report 1.
+  - `SchedulerTest`, `RunnerTest`, `AdminSendNowTest` — each stubs
+    `wp_remote_post` with `$requests > 1 ? call-1 : call-2`; with two requests in
+    call 2 that hands call 2 the five-report file and `answers()` throws. The
+    stub keys on the real count instead (five → call 1, otherwise call 2).
+  - `AdminPreviewTest::test_previewing_posts_nothing_to_telegram` answers every
+    call with call-1's five reports; same fix.
+  - The tests that configure blocks by **omission** — `ReportBuilderTest`'s
+    `test_visitors_alone_is_one_request_naming_no_other_block`, `pages_of()` and
+    `test_a_property_with_no_traffic_reports_nothing_without_failing`, and
+    `MessageRendererTest::silent_report()` — now spell out `false` for what they
+    want off, because after task 1 an absent key means "default", not "off".
+
+  `docs/ARCHITECTURE.md` is corrected in the same commit (core rule 5): the
+  plugin row and the Google integration row both say a full report is **six**
+  reports, which this task makes seven. "At most two `batchRunReports` calls"
+  stays as it is. `docs/TESTING.md` → Never mocked gets the new shape of
+  `call-2` and the kept `-no-trend` recording.
+  → `feat(gatb): read 28 daily visitor counts for the trend block`
+
+- [x] **5. A test that asserts nothing fails the gate.** `phpunit.xml.dist`
+  gains `failOnRisky="true"` beside the three `failOn*` attributes already
+  there. Verified before planning: `vendor/bin/phpunit --fail-on-risky` on
+  `master` at `0cfb3d3` is green (269 tests, 854 assertions, nothing risky), so
+  there is nothing to fix or delete — the deferral in SPRINT-2-CLOSE and in
+  LEARNINGS 2026-09-10 ("the retro decides: it is a one-line change with, today,
+  no failing test behind it") is settled by this line.
+  `docs/TESTING.md` → How to run states the rule, which is what the step means
+  by "replaces the LEARNINGS note"; the LEARNINGS entry itself is not edited
+  (it is an add-only incident log, and its `Transferred to playbook` line is the
+  retro's to fill).
+  → `chore(gatb): fail the suite on a risky test`
+
+### Decided during the step
+
+Task 4 was stopped and put to the user, because neither the step nor this plan
+had seen it: the trend report is the **first** fixture whose rows carry calendar
+dates. Every other recorded block is keyed by `date_range_0…3` or by a label, so
+the suite's pinned clock (`NOON`, 2025-09-10) could be any instant. A trend
+report recorded today is dated 2026-08-19…2026-09-15, and `ReportBuilder` walks
+the 28 days ending on the report date — with the old clock it would have read
+all 28 as `0` and the test would still have passed.
+
+Chosen, of three options: **move the clock to the recording.** `NOON` becomes
+`1789560000` (2026-09-16 12:00 UTC, report date 2026-09-15) in the three
+fixture-driven test classes, and the dates that come out of `build( NOON )` move
+with it. The self-contained date tests — `report_date()`'s own midnight cases,
+`render_failure()`'s argument, `AdminSendNowTest`'s hand-written log rows — were
+left alone. Rejected: re-recording call-1 as well (every asserted figure, both
+message snapshots and `tests/SitePosts.php` would move, nearly all of it
+unrelated to this step) and shifting the recorded dates onto the old window
+(the report would stop being a recording).
+
+One correction to what the options said: re-recording `call-2` also moved the
+**device** figures, which live in that call — mobile 1248/desktop 304/tablet 10
+became 1230/284/8, so the mobile share is 81% where it was 80%, in
+`ReportBuilderTest` and in the whole-message snapshot. Nothing else changed.
+
+### Files to create/change
+
+Code — `wp-content/plugins/ga-telegram-bridge/`:
+- `src/Settings.php` (tasks 1)
+- `src/Admin.php` (task 2)
+- `src/Report.php` (task 3)
+- `src/ReportBuilder.php` (task 4)
+
+Config:
+- `phpunit.xml.dist` (task 5)
+- Checked and **not** changed, per LEARNINGS "The plan's file list missed a
+  config the gate reads": `phpstan.neon.dist` already analyses
+  `ga-telegram-bridge.php`, `uninstall.php`, `src`, `tests`, and this step adds
+  no PHP file outside them; `phpcs.xml.dist` scans the same tree; the `.pot`
+  exclude list (`vendor,tests,spike,.phpunit.cache`) is unaffected; the plugin's
+  own `CLAUDE.md` names no block list and no fixture, so it has nothing to learn.
+
+Translations (task 2): `languages/ga-telegram-bridge.pot`,
+`languages/ga-telegram-bridge-uk.po`, `languages/ga-telegram-bridge-uk.mo`.
+
+Fixtures (task 4): `tests/fixtures/ga/batch-run-reports-daily-call-2.json`
+(re-recorded), `tests/fixtures/ga/batch-run-reports-daily-call-2-no-trend.json`
+(new — today's recording under its new name).
+
+Tests: `tests/Unit/SettingsTest.php`, `tests/Unit/AdminTest.php`,
+`tests/Unit/ReportBuilderTest.php`, `tests/Unit/MessageRendererTest.php`,
+`tests/Unit/AdminPreviewTest.php`, `tests/Unit/AdminSendNowTest.php`,
+`tests/Unit/RunnerTest.php`, `tests/Unit/SchedulerTest.php`.
+
+Docs: `docs/DATA-MODEL.md` (task 1),
+`docs/features/ga-telegram-bridge/FEATURE.md` → Interfaces (task 3),
+`docs/ARCHITECTURE.md` (task 4), `docs/TESTING.md` (tasks 4 and 5).
+
+### Tests to write
+
+From the step, plus the profile's test-critical zones (per-city pricing and the
+form pipelines are not touched; the GA request/response path is this plugin's
+equivalent and is covered below):
+
+- `SettingsTest`
+  - the defaults array now carries six blocks, `trend` among them, all `true`;
+  - **new:** a stored `blocks` row holding the five Sprint-2 keys and no `trend`
+    reads back as `trend => true`, through both `merge_defaults()` and
+    `blocks()` — the "old install" case the step names;
+  - **new:** a submission whose `blocks` array omits a key still switches that
+    key off, so the two merges cannot be collapsed by accident later;
+  - `test_a_submission_without_blocks_leaves_them_untouched` and
+    `test_the_getters_report_the_stored_block_switches` restated against the new
+    rule: they assert "off" by omission today, and must name `false` to keep
+    meaning it (the second also gains `trend` in its `array_keys` list).
+- `ReportBuilderTest`
+  - **new:** the trend request asks for dimension `date`, metric `activeUsers`,
+    `28daysAgo`–`yesterday`, `orderBys` on the dimension ascending, `limit` 28;
+  - the split test becomes five **and two**: seven requests, two calls;
+  - **new:** with `trend` off, six requests, two calls, no `date` dimension
+    anywhere in what was asked, and `visitors_by_day` is `null` (reads the
+    `-no-trend` recording);
+  - **new:** the recorded 28-row response parses to 28 entries, keys ascending
+    `Y-m-d` ending on the recorded day, integer values;
+  - **new:** a response missing days fills those days with `0` and keeps the
+    other 27 in place;
+  - **new:** a response with no rows at all gives 28 zeros, not `array()`;
+  - the block-combination test runs 32 combinations instead of 16, with `trend`
+    in the loop that asserts `has_block()` — that test exists precisely to catch
+    a request-to-response mis-zip, which is what a seventh block can cause.
+- `AdminTest` — the sixth checkbox renders with id `gatb_block_trend`, follows
+  the stored switch, is not disabled, and prints its description line; the
+  existing hidden-input test already loops `Settings::BLOCKS` and so covers it.
+- The whole suite green with `failOnRisky="true"` (task 5).
+
+### Docs to update
+- `docs/DATA-MODEL.md` — `gatb_settings.blocks`: six keys, and a key absent from
+  a stored row takes its default rather than `false`.
+- `docs/features/ga-telegram-bridge/FEATURE.md` → Interfaces — the
+  `gatb_report_data` payload gains `visitors_by_day` (touches shared surface).
+  Its **Data** and **UI** sections already describe `trend` (written by the
+  re-planning chat, commit `0cfb3d3`) and need nothing.
+- `docs/ARCHITECTURE.md` — "a full report is six" in the plugin row and in the
+  Google integration row.
+- `docs/TESTING.md` — the `failOnRisky` rule under How to run; under Never
+  mocked, what `call-2` now holds and why the one-report recording is kept.
+
+### Checks
+- **ANTI-PATTERNS:** none violated. No ACF field group, block directory or post
+  type is involved (the report "blocks" are settings keys, not editor blocks);
+  no city branching; no hand-edited `assets/`; no Kyiv-only change; no new
+  tool installed globally — `failOnRisky` is an attribute in a committed
+  config, and no dependency is added, so core rule 1 is not engaged.
+- **Docs vs reality:** four mismatches, all resolved inside the tasks.
+  1. The step says to *confirm* that an old install gets `trend => true`; the
+     shipped `merge_blocks()` gives `false`. Task 1 makes the step's sentence
+     true rather than reporting it as confirmed.
+  2. `docs/ARCHITECTURE.md` says a full report is six reports in two places.
+     Not in the step's "Docs to update", but core rule 5 settles it: it
+     describes code this step changes, so it is corrected in task 4's commit.
+  3. `FEATURE.md` → Data and → UI already describe `trend` and the trend line,
+     while no code implements either. Expected — the re-planning chat wrote them
+     on 2026-09-16; Step 1 closes the Data half, Step 2 the UI half.
+  4. Carried out of `SPRINT-2-CLOSE.md`: the local install's service-account key
+     and bot token are pending rotation (they reached two session transcripts),
+     and task 4 re-records a fixture through that same key. The rotation is
+     `SPRINT-3.md` → Out of scope ("operational, the developer's task"); the
+     recording itself carries no credential, and the response body holds no
+     property id — it is checked before the commit all the same.
+  Also noted, changing no task: after Step 1 the screen offers a block that
+  costs one GA request and changes no message; Step 2 renders it. That is the
+  sprint's intended shape, not a defect.
+- **Design:** n/a. `FEATURE.md` → UI records screen `Settings` as stock wp-admin
+  components with no design export, and `docs/DESIGN.md` does not cover this
+  plugin (SPRINT-2-CLOSE → Contradiction 1, still open and out of scope here).
+  The new checkbox reuses the markup `block_checkboxes()` already prints.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command).
+  Verified before planning: exit 0 on `master` at `0cfb3d3`.
+- **Not locally verifiable:** that GA4 accepts the seventh request — the
+  `orderBys` dimension shape and `limit` 28 — is proven by the live call that
+  re-records the fixture and by the step's `wp eval` verification against the
+  real property, never by `bin/check.sh`, which only ever sees the recording.
+  Per LEARNINGS "Sprint 1 spike findings", that snippet is run with `wp eval`
+  and no `const`, `declare()` or `__DIR__`.
+
+### Questions / ambiguities
+none
+
+## Plan — Sprint 3, Step 2: The sparkline in the message   (status: closed)
+
+### Branch
+`ga-telegram-bridge/sprint-3-trend` ← `master`
+(root `CLAUDE.md` → git model: simple — task branch → `master`; the name is the
+**Branch** line of `SPRINT-3.md`. Recreated from `master`, deleted at the close,
+as in Step 1.)
+
+### Tasks (ordered)
+
+- [x] **1. The pure helper.** New `src/Sparkline.php`, one class, no WordPress
+  in it: `render( ?array $series ): string` over the eight block characters
+  `▁▂▃▄▅▆▇█`.
+  - `null` or `array()` → `''`, so the caller has one thing to test rather than
+    three;
+  - `min === max` → `str_repeat( '▄', count( $series ) )` — the flat row of the
+    fixed decision. `count()` rather than a literal 28: the helper is given a
+    series, not a promise about its length;
+  - otherwise each value takes level `round( ( $value - $min ) / ( $max - $min ) * 7 )`,
+    so the quietest day is `▁`, the busiest `█` and everything between is linear.
+    The scale is min–max, never zero-based (DECISIONS: a stable site would
+    otherwise render as one flat `██████` and show nothing).
+
+  Nothing calls it yet, so the branch stays green and the message is unchanged.
+  → `feat(gatb): add the Sparkline helper`
+
+- [x] **2. The line in the visitors block.** `MessageRenderer::visitors()` gains
+  a fourth line, directly under *За 28 днів* — no heading, no blank line, inside
+  the same block:
+
+  ```php
+  $series = null === $report->visitors_by_day ? null : array_values( $report->visitors_by_day );
+  $spark  = Sparkline::render( $series );
+
+  if ( '' !== $spark ) {
+      $lines[] = sprintf(
+          '<code>%1$s</code> %2$s',
+          $spark,
+          sprintf(
+              /* translators: 1: the quietest day of the last 28 days, 2: the busiest. */
+              __( '%1$s–%2$s', 'ga-telegram-bridge' ),
+              self::number( min( $series ) ),
+              self::number( max( $series ) )
+          )
+      );
+  }
+  ```
+
+  The `<code>` wrapper stays **outside** the translated string — markup is not a
+  translator's business — which leaves exactly the one new string the step
+  allows, the range format. Guarding on `'' !== $spark` rather than on `null`
+  covers the empty series too: `min()` of an empty array is a fatal in PHP 8, and
+  `gatb_report_data` can hand this renderer anything.
+
+  The characters need no escaping (none is HTML-special) and the two numbers go
+  through `self::number()` like every other figure, so the Ukrainian thousands
+  separator is decoded the way the rest of the message decodes it.
+
+  One new string, so per the plugin's `CLAUDE.md` the `.pot` (129 → 130) and the
+  `uk` `.po`/`.mo` are regenerated in the same commit, reading the files back on
+  the host before using them.
+  → `feat(gatb): draw the 28-day trend under the visitors figures`
+
+- [x] **3. The readme says what the plugin now sends.** `readme.txt`: the
+  *Visitors* bullet in "What it sends" gains the trend line, and a `= 0.2.0 =`
+  changelog section names it. **The file is ASCII only** (the settings screen
+  links to it and this server serves it without a charset — the plugin's
+  `CLAUDE.md`, LEARNINGS 2026-09-10), so it *describes* the line — "a 28-character
+  bar of the last four weeks, with the quietest and busiest day beside it" — and
+  never prints the block characters themselves.
+  → `docs(gatb): describe the trend line in the readme`
+
+### Files to create/change
+
+Code — `wp-content/plugins/ga-telegram-bridge/`:
+- `src/Sparkline.php` (new, task 1)
+- `src/MessageRenderer.php` (task 2)
+
+Tests: `tests/Unit/SparklineTest.php` (new, task 1),
+`tests/Unit/MessageRendererTest.php` (task 2).
+
+Translations (task 2): `languages/ga-telegram-bridge.pot`,
+`languages/ga-telegram-bridge-uk.po`, `languages/ga-telegram-bridge-uk.mo`.
+
+Docs: `readme.txt` (task 3).
+
+Checked and **not** changed, per LEARNINGS "The plan's file list missed a config
+the gate reads": `phpstan.neon.dist` analyses `src` and `tests` as directories,
+so the new class and its test are covered without a line; `phpcs.xml.dist` scans
+the same tree; `phpunit.xml.dist` declares `tests/Unit` as a directory, and
+`SparklineTest` defines no constant, so it belongs in the first suite by default;
+the `.pot` exclude list is unaffected; the plugin's `CLAUDE.md` gains nothing —
+`Sparkline` introduces no convention its rules do not already cover.
+
+### Tests to write
+
+- `SparklineTest` — the helper on fixed series, nothing stubbed:
+  - a monotonic rise of eight values renders each level once, in order
+    (`▁▂▃▄▅▆▇█`);
+  - a flat series renders `▄` as many times as it is long;
+  - **all zeros renders `▄`, not `▁`** — a site nobody visited shows a flat row
+    at mid height, and this is the case most likely to be "fixed" later by
+    someone who reads `▁` as the natural floor;
+  - a single spike among zeros puts `█` at the spike and `▁` everywhere else;
+  - two values close together against a far larger maximum land on the same
+    level — rounding, not banding, is what the decision asks for;
+  - 28 values in, 28 characters out (`mb_strlen`, not `strlen`: each character
+    is three bytes);
+  - `null` and `array()` both give `''`.
+- `MessageRendererTest`:
+  - the whole-message snapshot gains one line under *Last 28 days*, and it is
+    exactly `<code>▅▄▁▃▂▆▇▆▂▅▇▅██▆▄▅▂▁█▆▇▆▄▄▇▄█</code> 43–77` — the sparkline of
+    the recorded four weeks (43 the quietest day, 77 the busiest);
+  - `test_a_switched_off_block_is_left_out_entirely` counts the message's lines:
+    **14 becomes 15**, and its explanation says the visitors block is four lines
+    now. The trend survives there because that helper passes `visitors_by_day`
+    through, which is the point — switching *pages* off must not take the trend
+    with it;
+  - trend off: no `<code>` anywhere, and the block still ends at *Last 28 days*
+    with no blank line left behind (the existing `"\n\n\n"` assertion covers the
+    blank line, a new one covers the absence of the row);
+  - a flat week renders 28 × `▄` with both numbers equal, built through
+    `report_with()` rather than the recording;
+  - the failure notice is unchanged — it has no report and must not grow one.
+
+### Docs to update
+- `readme.txt` — what the plugin sends, and the `0.2.0` changelog entry.
+- `docs/features/ga-telegram-bridge/FEATURE.md` → UI — **expected: no change.**
+  Its message template already draws the line and its paragraph already states
+  the rules this step implements (28 characters, min–max scale, flat period
+  prints `▄`, a day GA omits counts as 0, absent when the block is off). The
+  task re-reads it against the built string and only touches it if they differ.
+
+### Checks
+- **ANTI-PATTERNS:** none violated. A pure helper class in `src/` with no
+  dependency, no ACF, no theme block, no city branching, no hand-edited assets;
+  no dependency is added, so core rule 1 is not engaged.
+- **Docs vs reality:** three notes, none of which changes a task.
+  1. The changelog gains `= 0.2.0 =` while the plugin header still reads
+     `0.1.0` — Step 3 bumps it. That is the sprint's own division of the work,
+     not a mismatch to resolve here.
+  2. `readme.txt` is ASCII-only, so the one document that describes the feature
+     cannot show it. Resolved in task 3 by describing rather than printing;
+     FEATURE.md → UI is where the characters live.
+  3. Carried from `SPRINT-2-CLOSE.md` → Deferred: the local install's bot token
+     is still pending rotation, and this step's manual verification sends a real
+     message with it. The rotation is `SPRINT-3.md` → Out of scope
+     ("operational, the developer's task"); nothing in this step reads or prints
+     the token.
+- **Design:** matches the message template in `docs/features/ga-telegram-bridge/FEATURE.md`
+  → UI, which is this feature's design record — there is no design export and
+  `docs/DESIGN.md` does not cover the plugin. The template's
+  `[<code>{28 × ▁▂▃▄▅▆▇█, oldest day left, yesterday right}</code> {min}–{max}]`
+  is what task 2 builds, brackets meaning "only when the block is on".
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command).
+  Verified before planning: exit 0 on `master` at `7d338fe`.
+- **Not locally verifiable:** how a monospace run of block characters is drawn by
+  each Telegram client. *Send now* to the test chat and a screenshot from one
+  phone are in the step's manual verification and are as far as this machine
+  reaches; iOS, Android and desktop pick different monospace fonts, so the full
+  answer is the first morning after the sprint-boundary deploy, on the owner's
+  own client (`SPRINT-3.md` → Risks).
+
+### Questions / ambiguities
+none
+
+## Plan — Sprint 3, Step 3: Re-anchor the daily event after every scheduled run   (status: closed)
+
+### Branch
+`ga-telegram-bridge/sprint-3-trend` ← `master`
+(root `CLAUDE.md` → git model: simple — task branch → `master`; the name is the
+**Branch** line of `SPRINT-3.md`. Recreated from `master`, deleted at the close,
+as in Steps 1–2.)
+
+### Tasks (ordered)
+
+- [x] **1. The scheduled run re-anchors its own event.**
+  `Scheduler::run_daily()` becomes:
+
+  ```php
+  public static function run_daily(): void {
+      try {
+          Runner::run( 'cron' );
+      } finally {
+          self::reschedule();
+      }
+  }
+  ```
+
+  `finally` is what "whatever the outcome" asks for: `Runner::run()` catches the
+  Google and Telegram refusals itself, but anything it does not catch would
+  otherwise leave the event un-anchored, and the schedule is the one thing that
+  must survive a bad run. `reschedule()` clears **only** `DAILY_HOOK`, so a
+  retry booked during the run — `gatb_retry_report`, a different hook carrying
+  its day — is untouched.
+
+  `reschedule()` gains `?int $now = null`, passed on to `next_occurrence()`.
+  That is the file's own convention for a clock (`schedule_retry( $date, ?int $now )`,
+  `Runner::run( …, ?int $now )`, `ReportBuilder::build( ?int $now )`) and it is
+  what makes the step's own test — "a fixed-clock series of daily runs across
+  the change" — possible at all: `time()` is a PHP function and Brain\Monkey
+  cannot stub it. Every existing caller (the two settings-save hooks,
+  activation, `run_daily()`) passes nothing and keeps real time.
+
+  Docs in the same commit (core rule 5): `docs/ARCHITECTURE.md` → Data flows
+  ("Daily GA report": the event is re-anchored after every scheduled run, not
+  only on a settings save), `FEATURE.md` → Invariants (one line), the plugin's
+  own `CLAUDE.md` → Cron (one clause beside the settings-save rule), and the
+  resolution of `docs/LEARNINGS.md` 2026-09-09 "Running a cron event by hand
+  moved the daily slot" — the same mechanism, fixed here.
+  → `fix(gatb): re-anchor the daily event after every scheduled run`
+
+- [x] **2. Version 0.2.0.** `ga-telegram-bridge.php` header `Version: 0.1.0` →
+  `0.2.0`; `readme.txt` `Stable tag: 0.1.0` → `0.2.0` — the same statement of
+  the same version, and leaving it behind would make the readme claim the
+  release before this one. The `= 0.2.0 =` changelog section Step 2 opened gains
+  the schedule fix. `Plugin::version()` reads the header, so nothing else moves:
+  there is no constant to keep in step (DECISIONS-era rule, Sprint 2 Step 4).
+  → `chore(gatb): release 0.2.0`
+
+### Files to create/change
+- `wp-content/plugins/ga-telegram-bridge/src/Scheduler.php` (task 1)
+- `wp-content/plugins/ga-telegram-bridge/tests/Unit/SchedulerTest.php` (task 1)
+- `wp-content/plugins/ga-telegram-bridge/ga-telegram-bridge.php` (task 2)
+- `wp-content/plugins/ga-telegram-bridge/readme.txt` (task 2)
+- `docs/ARCHITECTURE.md`, `docs/features/ga-telegram-bridge/FEATURE.md`,
+  `docs/LEARNINGS.md`, `wp-content/plugins/ga-telegram-bridge/CLAUDE.md` (task 1)
+
+Checked and **not** changed: no new file, so `phpstan.neon.dist`,
+`phpcs.xml.dist` and `phpunit.xml.dist` have nothing to learn; the step adds no
+user-facing string, so the `.pot` and the `uk` translation stay as they are (the
+version is read from the header, never translated); the four test stubs that
+return `array( 'Version' => '0.1.0' )` for `get_file_data()` stay at that value —
+they prove the header is *read*, not what it says, and pinning them to the real
+version would make them re-break at every release.
+
+### Tests to write
+All in `SchedulerTest`, whose harness already records every WP-Cron call in
+order (`clear` / `schedule` / `unschedule` / `single`) and whose configured send
+time is `07:15` in `Europe/Kiev`:
+
+- **the re-anchor happens once per scheduled run** — after `run_daily()`, the
+  recorded calls hold exactly one `clear` of `gatb_daily_report` and one
+  `schedule` of it with recurrence `daily`, at the next `07:15` local;
+- **a failed run re-anchors too** — with the property id emptied the run fails,
+  books its retry (`single`, `gatb_retry_report`, carrying the day), **and**
+  still clears and re-registers the daily event; the retry is not cleared by it;
+- **only the schedule re-anchors** — `Runner::run( 'manual', true )` (*Send now*)
+  and `Scheduler::run_retry( … )` leave the daily hook alone: no `clear`, no
+  `schedule`. The step names *Send now*; the retry is the same rule ("it is not
+  the schedule") and is asserted in the same test rather than left to chance;
+- **the autumn change** — a fixed-clock series from 2026-10-23 through
+  2026-10-27: every re-anchor lands on `07:15` local, and the step across the
+  night of the 25th is **90 000 s (25 h)**, never 86 400;
+- **the spring change** — the same across 2027-03-28: the step is **82 800 s
+  (23 h)**, never 86 400. Both are what a fixed `daily` interval cannot do, and
+  both are the bug this step closes;
+- **it cannot fire twice in one request** — the timestamp the run registers is at
+  least 23 h ahead of the run's own clock, so the cron request that is executing
+  the event now cannot pick the new one up. 23 h and not 24: the spring night is
+  genuinely 23 h long, and an assertion of 24 would fail once a year.
+
+### Docs to update
+- `docs/ARCHITECTURE.md` → Data flows, "Daily GA report" — the event is
+  re-anchored after every scheduled run.
+- `docs/features/ga-telegram-bridge/FEATURE.md` → Invariants — one line: the
+  schedule is re-anchored after every scheduled run, so the configured local
+  time survives a clock change.
+- `wp-content/plugins/ga-telegram-bridge/CLAUDE.md` → Cron — one clause next to
+  the settings-save rule.
+- `docs/LEARNINGS.md` — the 2026-09-09 entry "Running a cron event by hand moved
+  the daily slot" gets a **Resolved** line. Its incident is this step's bug seen
+  from the other end: WordPress reschedules a recurring event from the moment it
+  ran, which is why a forced run moved the slot for good and why a clock change
+  moved it by an hour. The entry is appended to, not rewritten, and the Sprint 2
+  guide it points at stays as it was — that guide is the record of a closed step.
+- `readme.txt` — `Stable tag`, and the schedule fix in the `0.2.0` changelog.
+
+### Checks
+- **ANTI-PATTERNS:** none violated. No ACF, no theme block, no city branching, no
+  hand-edited assets, no new dependency or tool — `Scheduler` stays the only
+  class that touches cron, which is the plugin `CLAUDE.md`'s own rule.
+- **Docs vs reality:** three notes, none of which changes a task.
+  1. The step says to re-anchor "before any retry is booked by `Runner`". That
+     ordering cannot exist: `Runner::run()` books the retry inside itself, so
+     anything after it returns is after the retry. It also does not matter —
+     `reschedule()` clears `DAILY_HOOK` alone, and the retry is a different hook
+     carrying its day. The step's own next clause ("retries are not touched by
+     this") is what the code will honour.
+  2. The step names `wp_unschedule_hook` in its test list, but `reschedule()`
+     calls `wp_clear_scheduled_hook`, which is right for a hook registered with
+     no arguments; `wp_unschedule_hook` is what `clear()` uses, because the
+     retry carries one. The tests assert what the code really calls; no
+     behaviour changes.
+  3. `docs/LEARNINGS.md` has no entry titled for DST. The one this step resolves
+     is 2026-09-09 "Running a cron event by hand moved the daily slot" — same
+     mechanism, and the only entry about the daily slot moving.
+- **Design:** n/a. No screen changes: the Schedule section already prints
+  `wp_next_scheduled()`, which is where the re-anchored time appears by itself.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command).
+  Verified before planning: exit 0 on `master` at `b4ce8e03`.
+- **Not locally verifiable:** the clock change itself. A fixed-clock test proves
+  the arithmetic and a forced cron run proves the re-anchor, but only the real
+  night of **2026-10-25** proves it on a production install — which is why
+  `SPRINT-3.md` → Definition of Done carries that item to a second
+  `/close-sprint` run rather than to this step.
+
+### Questions / ambiguities
+none

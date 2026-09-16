@@ -34,7 +34,16 @@ final class MessageRendererTest extends TestCase {
 	/**
 	 * A moment in the middle of a day, so "yesterday" is unambiguous.
 	 */
-	private const NOON = 1757505600;
+	/**
+	 * The instant every fixture-driven test pretends it is: noon UTC of the day
+	 * the recordings were made, so the report is about the day before.
+	 *
+	 * It is pinned to the recordings rather than chosen freely because the
+	 * trend report is the one recorded block whose rows carry calendar dates:
+	 * ReportBuilder walks the 28 days ending on the report date, and a clock
+	 * that disagreed with the recording would read every one of them as 0.
+	 */
+	private const NOON = 1789560000;
 
 	/**
 	 * Stubs the WordPress helpers the renderer and the builder go through.
@@ -138,8 +147,9 @@ final class MessageRendererTest extends TestCase {
 	/**
 	 * Builds the report of a property that has no traffic at all.
 	 *
-	 * Devices are switched off so that the five requests of the written
-	 * fixture and the five reports it answers with match.
+	 * Devices and trend are switched off so that the five requests of the
+	 * written fixture and the five reports it answers with match. Both are
+	 * named: a block a stored row leaves out takes its default, which is on.
 	 */
 	private function silent_report(): Report {
 		$this->given_blocks(
@@ -148,6 +158,8 @@ final class MessageRendererTest extends TestCase {
 				'pages'    => true,
 				'channels' => true,
 				'cities'   => true,
+				'devices'  => false,
+				'trend'    => false,
 			)
 		);
 		Functions\when( 'wp_remote_post' )->alias(
@@ -164,11 +176,12 @@ final class MessageRendererTest extends TestCase {
 		$expected = implode(
 			"\n",
 			array(
-				'📊 <b>dovira.vet — 9 September (Tuesday)</b>',
+				'📊 <b>dovira.vet — 15 September (Tuesday)</b>',
 				'',
 				'👥 <b>Visitors</b>',
 				'Yesterday: 69 (▲ 23% to the 7-day average)',
 				'Last 28 days: 1,560 (▼ 1% to the previous 28)',
+				'<code>▅▄▁▃▂▆▇▆▂▅▇▅██▆▄▅▂▁█▆▇▆▄▄▇▄█</code> 43–77',
 				'',
 				'📄 <b>Top 5 pages yesterday</b>',
 				'1. <a href="https://dovira.vet/">Головна сторінка</a> — 101',
@@ -194,7 +207,7 @@ final class MessageRendererTest extends TestCase {
 				'Lviv 7%',
 				'',
 				'📱 <b>Devices over 28 days</b>',
-				'mobile 80%',
+				'mobile 81%',
 				'desktop 19%',
 				'tablet 1%',
 			)
@@ -218,9 +231,14 @@ final class MessageRendererTest extends TestCase {
 		$this->assertStringNotContainsString( "\n\n\n", $message );
 		$this->assertStringEndsWith( 'Lviv 7%', $message );
 		$this->assertCount(
-			14,
+			15,
 			explode( "\n", $message ),
-			'the header, the visitors block of three lines, sources of two, cities of five, and a blank line between each'
+			'the header, the visitors block of four lines, sources of two, cities of five, and a blank line between each'
+		);
+		$this->assertStringContainsString(
+			"\nLast 28 days: 1,560 (▼ 1% to the previous 28)\n<code>",
+			$message,
+			'the trend is a line of the visitors block, so switching pages off does not take it with them'
 		);
 	}
 
@@ -238,6 +256,72 @@ final class MessageRendererTest extends TestCase {
 		$this->assertStringNotContainsString( 'Sources', $message );
 		$this->assertStringNotContainsString( 'Cities', $message );
 		$this->assertStringContainsString( '<b>Visitors</b>', $message );
+	}
+
+	/**
+	 * The trend is a line of the visitors block: no heading, no blank line.
+	 */
+	public function test_the_trend_is_drawn_under_the_28_day_figure(): void {
+		$message = MessageRenderer::render( $this->recorded_report() );
+
+		$this->assertStringContainsString(
+			"\nLast 28 days: 1,560 (▼ 1% to the previous 28)\n<code>▅▄▁▃▂▆▇▆▂▅▇▅██▆▄▅▂▁█▆▇▆▄▄▇▄█</code> 43–77\n\n",
+			$message,
+			'directly under the 28-day figure, and the blank line after it is the block break'
+		);
+		$this->assertSame( 1, substr_count( $message, '<code>' ) );
+		$this->assertStringNotContainsString( '&#', $message, 'block characters are not entities' );
+	}
+
+	/**
+	 * With the block off there is no line, and nothing left where it stood.
+	 */
+	public function test_the_trend_switched_off_leaves_no_line_and_no_gap(): void {
+		$message = MessageRenderer::render( $this->report_with( array( 'visitors_by_day' => null ) ) );
+
+		$this->assertStringNotContainsString( '<code>', $message );
+		$this->assertStringNotContainsString( '▄', $message );
+		$this->assertStringEndsWith( 'Last 28 days: 1,559 (▼ 1% to the previous 28)', $message );
+		$this->assertStringNotContainsString( "\n\n\n", $message );
+	}
+
+	/**
+	 * A week that never moved is a flat row, and both numbers are the same.
+	 */
+	public function test_a_flat_week_is_drawn_flat_with_one_number_twice(): void {
+		$message = MessageRenderer::render(
+			$this->report_with( array( 'visitors_by_day' => array_fill_keys( $this->four_weeks(), 61 ) ) )
+		);
+
+		$this->assertStringContainsString( '<code>' . str_repeat( '▄', 28 ) . '</code> 61–61', $message );
+	}
+
+	/**
+	 * A series with no days in it draws nothing rather than failing.
+	 *
+	 * No run produces one — ReportBuilder always fills 28 days — but the
+	 * gatb_report_data filter hands this renderer whatever it likes, and
+	 * min() of an empty array is fatal.
+	 */
+	public function test_an_empty_series_is_not_drawn(): void {
+		$message = MessageRenderer::render( $this->report_with( array( 'visitors_by_day' => array() ) ) );
+
+		$this->assertStringNotContainsString( '<code>', $message );
+	}
+
+	/**
+	 * The 28 day keys of the recorded four weeks, for a hand-built series.
+	 *
+	 * @return list<string>
+	 */
+	private function four_weeks(): array {
+		$days = array();
+
+		foreach ( range( 0, 27 ) as $offset ) {
+			$days[] = gmdate( 'Y-m-d', strtotime( '2026-08-19 +' . $offset . ' days' ) );
+		}
+
+		return $days;
 	}
 
 	/**
@@ -422,7 +506,8 @@ final class MessageRendererTest extends TestCase {
 			null,
 			$report->channels,
 			$report->cities,
-			null
+			null,
+			$report->visitors_by_day
 		);
 	}
 
@@ -447,6 +532,7 @@ final class MessageRendererTest extends TestCase {
 				'channels'                   => null,
 				'cities'                     => null,
 				'devices'                    => null,
+				'visitors_by_day'            => null,
 			),
 			$parts
 		);
@@ -464,7 +550,8 @@ final class MessageRendererTest extends TestCase {
 			$values['pages_28_days'],
 			$values['channels'],
 			$values['cities'],
-			$values['devices']
+			$values['devices'],
+			$values['visitors_by_day']
 		);
 	}
 }

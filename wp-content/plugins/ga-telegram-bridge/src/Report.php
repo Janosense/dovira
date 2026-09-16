@@ -12,7 +12,7 @@ namespace GaTelegramBridge;
 /**
  * Everything the message needs and nothing else, already computed.
  *
- * The four optional blocks distinguish two states the renderer must not
+ * The five optional blocks distinguish two states the renderer must not
  * confuse: null means the block is switched off in the settings and is left out
  * of the message entirely, while an empty array means it is switched on and GA
  * had nothing to report for it.
@@ -41,6 +41,7 @@ final class Report {
 	 * @param list<array{label: string, value: int, share: int|null}>|null $channels                Traffic sources, or null when the block is off.
 	 * @param list<array{label: string, value: int, share: int|null}>|null $cities                  Cities, or null when the block is off.
 	 * @param list<array{label: string, value: int, share: int|null}>|null $devices                 Devices, or null when the block is off.
+	 * @param array<string, int>|null                                      $visitors_by_day         Active users per day over the last 28 days, keyed Y-m-d oldest first, or null when the trend block is off.
 	 */
 	public function __construct(
 		public readonly string $date,
@@ -55,7 +56,8 @@ final class Report {
 		public readonly ?array $pages_28_days,
 		public readonly ?array $channels,
 		public readonly ?array $cities,
-		public readonly ?array $devices
+		public readonly ?array $devices,
+		public readonly ?array $visitors_by_day
 	) {
 	}
 
@@ -70,6 +72,7 @@ final class Report {
 			'channels' => $this->channels,
 			'cities'   => $this->cities,
 			'devices'  => $this->devices,
+			'trend'    => $this->visitors_by_day,
 		);
 
 		return array_key_exists( $block, $blocks ) && null !== $blocks[ $block ];

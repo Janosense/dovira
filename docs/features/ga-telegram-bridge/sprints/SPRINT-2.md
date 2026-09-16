@@ -64,8 +64,8 @@ uninstall. A readme lets another site set the plugin up from scratch.
 - [x] Every step closed via /close-step (report + verification guide + worklog) — close commits `6c51a32`, `d1eb20b`, `3bb5d43`, `a40a32e`; guides `verification/sprint-2-step-1.md`…`-4.md`; four WORKLOG entries
 - [x] `bin/check.sh` green on the sprint branch — simple git model, so on `master` at `67589b4`, 2026-09-15: exit 0, `OK (269 tests, 854 assertions)`, PHPStan level 8 no errors, 108 theme files linted
 - [x] Docs match reality (DATA-MODEL, ARCHITECTURE, DECISIONS, TECH-STACK current) — each step's docs self-check in its close commit; checked again in `SPRINT-2-CLOSE.md` → Definition of Done
-- [ ] Merged to `master`; `master` merged into `kyiv`; both productions deployed by hand; constants set in both `wp-config.php`; the owner receives the Kharkiv and Kyiv reports on two consecutive mornings
-- [ ] `SPRINT-1-CLOSE.md` Deferred/Contradictions items settled or carried into DECISIONS.md
+- [x] Merged to `master`; `master` merged into `kyiv`; both productions deployed by hand; constants set in both `wp-config.php`; the owner receives the Kharkiv and Kyiv reports on two consecutive mornings — the four step merges are on `master` (`818a8da`, `2e071b6`, `320f147`, `79967be`), pushed to `origin/main` at `730ef5a`, and `master` is merged into `kyiv` (`06fc831` on the remote, `7b057c9` locally) with the plugin present there; both hand deploys, the constants on both hosts and the two mornings — confirmed by user 2026-09-16
+- [x] `SPRINT-1-CLOSE.md` Deferred/Contradictions items settled or carried into DECISIONS.md — the push to `dev` is settled by DECISIONS "The feature's dev site is the local DDEV install; `dev.dovira.vet` is not part of its flow" (2026-09-16, `0cfb3d3`); GA's own English labels are deferred again in `SPRINT-3.md` → Out of scope; the screen registry (`docs/DESIGN.md` → Screens against DECISIONS "No UI design phase…") stands as a known contradiction, carried in `SPRINT-3.md` → Risks — confirmed by user 2026-09-16
 
 ## Out of scope
 - Key events / conversions block — not planned (FEATURE.md → Roadmap)
