@@ -23,7 +23,7 @@
                         ],
                         "metricValues": [
                             {
-                                "value": "1248"
+                                "value": "1230"
                             }
                         ]
                     },
@@ -35,7 +35,7 @@
                         ],
                         "metricValues": [
                             {
-                                "value": "304"
+                                "value": "284"
                             }
                         ]
                     },
@@ -47,7 +47,7 @@
                         ],
                         "metricValues": [
                             {
-                                "value": "10"
+                                "value": "8"
                             }
                         ]
                     }
@@ -58,9 +58,366 @@
                     "timeZone": "Europe/Kiev"
                 },
                 "kind": "analyticsData#runReport"
+            },
+            {
+                "dimensionHeaders": [
+                    {
+                        "name": "date"
+                    }
+                ],
+                "metricHeaders": [
+                    {
+                        "name": "activeUsers",
+                        "type": "TYPE_INTEGER"
+                    }
+                ],
+                "rows": [
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260819"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "62"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260820"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "59"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260821"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "43"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260822"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "55"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260823"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "50"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260824"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "68"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260825"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "70"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260826"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "65"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260827"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "47"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260828"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "63"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260829"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "74"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260830"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "64"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260831"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "77"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260901"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "77"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260902"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "68"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260903"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "57"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260904"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "61"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260905"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "49"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260906"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "43"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260907"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "76"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260908"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "69"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260909"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "74"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260910"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "69"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260911"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "59"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260912"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "59"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260913"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "70"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260914"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "57"
+                            }
+                        ]
+                    },
+                    {
+                        "dimensionValues": [
+                            {
+                                "value": "20260915"
+                            }
+                        ],
+                        "metricValues": [
+                            {
+                                "value": "76"
+                            }
+                        ]
+                    }
+                ],
+                "rowCount": 28,
+                "metadata": {
+                    "currencyCode": "USD",
+                    "timeZone": "Europe/Kiev"
+                },
+                "kind": "analyticsData#runReport"
             }
         ],
         "kind": "analyticsData#batchRunReports"
     },
-    "ms": 509
+    "ms": 1045
 }

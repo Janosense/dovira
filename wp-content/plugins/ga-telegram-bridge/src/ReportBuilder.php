@@ -18,8 +18,8 @@ use Exception;
  * Report.
  *
  * Two things here are not free choices. The Data API accepts at most five
- * requests per batchRunReports call, so the six reports of a full run cannot be
- * one call — hence FEATURE.md's "never more than 2". And the rows of the
+ * requests per batchRunReports call, so the seven reports of a full run cannot
+ * be one call — hence FEATURE.md's "never more than 2". And the rows of the
  * visitors report come back ordered by metric value rather than by the order
  * the date ranges were asked for, so they are keyed by the dateRange dimension
  * GA adds; reading them by row index would silently swap yesterday with the
@@ -147,6 +147,21 @@ final class ReportBuilder {
 			$requests['devices'] = self::ranked( array( 'deviceCategory' ), 'activeUsers', $month, null );
 		}
 
+		if ( ! empty( $blocks['trend'] ) ) {
+			$requests['trend'] = array(
+				'dimensions' => array( array( 'name' => 'date' ) ),
+				'metrics'    => array( array( 'name' => 'activeUsers' ) ),
+				'dateRanges' => array( $month ),
+				'orderBys'   => array(
+					array(
+						'dimension' => array( 'dimensionName' => 'date' ),
+						'desc'      => false,
+					),
+				),
+				'limit'      => self::PERIOD_DAYS,
+			);
+		}
+
 		return $requests;
 	}
 
@@ -183,9 +198,10 @@ final class ReportBuilder {
 		$previous      = isset( $ranges[3] ) ? $ranges[3] : 0;
 		$average       = Dynamics::average( $previous_week, self::BASELINE_DAYS );
 		$time_zone     = self::time_zone( $visitors );
+		$report_date   = self::report_date( $time_zone, $now );
 
 		return new Report(
-			self::report_date( $time_zone, $now ),
+			$report_date,
 			$time_zone,
 			$yesterday,
 			$average,
@@ -198,7 +214,7 @@ final class ReportBuilder {
 			isset( $responses['channels'] ) ? self::shares( $responses['channels'], false ) : null,
 			isset( $responses['cities'] ) ? self::shares( $responses['cities'], true ) : null,
 			isset( $responses['devices'] ) ? self::shares( $responses['devices'], false ) : null,
-			null
+			isset( $responses['trend'] ) ? self::visitors_by_day( $responses['trend'], $report_date ) : null
 		);
 	}
 
@@ -226,6 +242,41 @@ final class ReportBuilder {
 		}
 
 		return $totals;
+	}
+
+	/**
+	 * Reads the daily report into one figure per day of the period.
+	 *
+	 * The rows are keyed by their own `date` dimension (`Ymd`) and never by
+	 * position: the request asks for them in date order, but GA orders rows by
+	 * metric whenever it is not told otherwise, and an index-based parser is how
+	 * one day's figure ends up under another day's name (docs/LEARNINGS.md,
+	 * "Sprint 1 spike findings"). The 28 days are then walked from the oldest to
+	 * the report's own day, so a day GA left out of the answer — one with no
+	 * visitors at all — is a zero in its place rather than a hole or a shift.
+	 *
+	 * @param array<string, mixed> $report      The daily report.
+	 * @param string               $report_date The day the report is about, Y-m-d.
+	 * @return array<string, int>
+	 */
+	private static function visitors_by_day( array $report, string $report_date ): array {
+		$counted = array();
+
+		foreach ( self::rows( $report ) as $row ) {
+			$counted[ self::dimension( $row, 0 ) ] = self::metric( $row, 0 );
+		}
+
+		$day = ( new DateTimeImmutable( $report_date, new DateTimeZone( 'UTC' ) ) )
+			->modify( '-' . ( self::PERIOD_DAYS - 1 ) . ' days' );
+
+		$days = array();
+
+		for ( $counter = 0; $counter < self::PERIOD_DAYS; $counter++ ) {
+			$days[ $day->format( 'Y-m-d' ) ] = $counted[ $day->format( 'Ymd' ) ] ?? 0;
+			$day                             = $day->modify( '+1 day' );
+		}
+
+		return $days;
 	}
 
 	/**

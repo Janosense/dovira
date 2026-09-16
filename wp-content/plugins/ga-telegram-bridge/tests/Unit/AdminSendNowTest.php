@@ -171,7 +171,12 @@ final class AdminSendNowTest extends TestCase {
 				$body     = (array) json_decode( (string) $arguments['body'], true );
 				$requests = isset( $body['requests'] ) && is_array( $body['requests'] ) ? count( $body['requests'] ) : 0;
 
-				return $this->fixture( 'ga/batch-run-reports-daily-call-' . ( $requests > 1 ? '1' : '2' ) . '.json' );
+				// The first call carries five requests, the second the two that are
+				// left; anything smaller is a run with blocks switched off, which fits
+				// into the first call alone.
+				return $this->fixture(
+					'ga/batch-run-reports-daily-call-' . ( $requests > 2 ? '1' : '2' ) . '.json'
+				);
 			}
 		);
 
