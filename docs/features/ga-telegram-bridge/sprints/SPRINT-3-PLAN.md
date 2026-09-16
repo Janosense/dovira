@@ -310,7 +310,7 @@ equivalent and is covered below):
 ### Questions / ambiguities
 none
 
-## Plan — Sprint 3, Step 2: The sparkline in the message   (status: implemented, awaiting close)
+## Plan — Sprint 3, Step 2: The sparkline in the message   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-3-trend` ← `master`

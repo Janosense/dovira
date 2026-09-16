@@ -35,7 +35,7 @@ nothing.
 - **Docs to update:** `docs/DATA-MODEL.md` (`gatb_settings.blocks` gains `trend`); `docs/features/ga-telegram-bridge/FEATURE.md` → Interfaces (`gatb_report_data` payload gains `visitors_by_day` — "touches shared surface", named in the plan); `docs/TESTING.md` (the `failOnRisky` rule replaces the LEARNINGS note).
 - **Depends on:** —
 
-### [ ] Step 2 — The sparkline in the message
+### [x] Step 2 — The sparkline in the message
 - **Tasks:**
   - New pure helper `Sparkline` (`src/Sparkline.php`): `render( int[] $series ): string` maps each value onto `▁▂▃▄▅▆▇█` between the series' min and max — the min gets `▁`, the max `█`, the rest by linear interpolation rounded to the nearest level; a series whose min equals its max returns 28 × `▄`; an empty or `null` series returns `''`.
   - `MessageRenderer::visitors()`: when `visitors_by_day` is not `null`, append one line `<code>{sparkline}</code> {min}–{max}` right after "За 28 днів", numbers through `number()`, no heading, no blank line; the two numbers are the series' real min and max (`number_format_i18n`). Screen `Settings` → *Preview* shows it without a code change beyond the renderer.
