@@ -133,7 +133,7 @@ final class MessageRenderer {
 	 * @return list<string>
 	 */
 	private static function visitors( Report $report ): array {
-		return array(
+		$lines = array(
 			self::heading( '👥', __( 'Visitors', 'ga-telegram-bridge' ) ),
 			sprintf(
 				/* translators: 1: how many people visited yesterday, 2: the change against the seven-day average, for example "▲ 23%". */
@@ -147,6 +147,50 @@ final class MessageRenderer {
 				self::number( $report->visitors_28_days ),
 				self::change( $report->visitors_change_28_days )
 			),
+		);
+
+		$trend = self::trend( $report->visitors_by_day );
+
+		if ( '' !== $trend ) {
+			$lines[] = $trend;
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * Writes the trend as one line inside the visitors block.
+	 *
+	 * The block characters need no escaping — none of them is special to
+	 * Telegram's HTML — and the <code> around them is what makes the run
+	 * monospace, so the 28 days line up instead of drifting. It is a line of
+	 * the visitors block and not a block of its own: no heading, and no blank
+	 * line before it.
+	 *
+	 * Two states mean "no line": the block is switched off (null), and a series
+	 * with no days in it — which no run produces, but the gatb_report_data
+	 * filter could, and min() of an empty array is fatal in PHP 8. Both are
+	 * refused here rather than left to Sparkline, so that the two numbers
+	 * beside the line are only ever read from a series that has them.
+	 *
+	 * @param array<string, int>|null $by_day Active users per day, or null when the block is off.
+	 */
+	private static function trend( ?array $by_day ): string {
+		if ( null === $by_day || array() === $by_day ) {
+			return '';
+		}
+
+		$series = array_values( $by_day );
+
+		return sprintf(
+			'<code>%1$s</code> %2$s',
+			Sparkline::render( $series ),
+			sprintf(
+				/* translators: 1: the quietest day of the last 28 days, 2: the busiest. */
+				__( '%1$s–%2$s', 'ga-telegram-bridge' ),
+				self::number( min( $series ) ),
+				self::number( max( $series ) )
+			)
 		);
 	}
 
