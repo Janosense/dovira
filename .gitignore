@@ -74,3 +74,6 @@ wp-content/mysql.sql
 /local-xdebuginfo.php
 
 *.sql
+
+# one-off ops exports (price / service comparisons)
+/reports/

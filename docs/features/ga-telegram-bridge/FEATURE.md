@@ -24,7 +24,7 @@ and wordpress.org, any change to the theme's own Telegram code.
 ## Data
 Owns three non-autoloaded `wp_options` rows (details in `docs/DATA-MODEL.md`):
 `gatb_settings` (property id, service-account JSON, bot token, chat id, send
-time, max attempts, enabled blocks), `gatb_state` (`last_report_date`,
+time, max attempts, enabled blocks — six: `visitors` always on, `pages`, `channels`, `cities`, `devices`, `trend`), `gatb_state` (`last_report_date`,
 `attempt`, `last_cron_hit` — the next run is not stored: `wp_next_scheduled()` is
 the one copy of it), `gatb_log` (last 30 runs); one transient
 `gatb_google_access_token`; cron hooks `gatb_daily_report` (recurring) and
@@ -67,6 +67,7 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
   👥 <b>Відвідувачі</b>
   Вчора: {n} ({▲|▼} {pct}% до середнього за 7 днів)
   За 28 днів: {n} ({▲|▼} {pct}% до попередніх 28)
+  [<code>{28 × ▁▂▃▄▅▆▇█, oldest day left, yesterday right}</code> {min}–{max}]
 
   [📄 <b>Топ‑5 сторінок вчора</b>  1. <a href="{home origin}{path}">{post title}</a> — {views} … ]
 
@@ -82,9 +83,11 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
   Failure notice: `⚠️ <b>{site_host}</b> — звіт за {report_date} не сформовано. Деталі в журналі плагіна.`
   Source strings are English (text domain `ga-telegram-bridge`); the `uk` translation shipped in `languages/` is what the template above shows; `—` when a baseline is 0.
   The date is `wp_date()` on the property's own day: WordPress declines the month itself and capitalises month and weekday the way its Ukrainian translation writes them, hence "9 Вересня (Вівторок)".
+  The trend line (block `trend`, Sprint 3) sits inside the visitors block with no heading and no blank line of its own: 28 characters, one per day from `28daysAgo` to `yesterday`, scaled from the period's minimum to its maximum, then the two numbers; a flat period prints 28 × `▄`; a day GA does not return counts as 0; when `trend` is off, the line is absent (DECISIONS "A 28-day trend sparkline in the visitors block").
   A block with no rows is left out exactly like a switched-off one — the message has no place for a heading with nothing under it, though the `Report` keeps the two states apart (`null` = off, `array()` = on and empty).
 
 ## Roadmap
 - Sprint 1 — the full report reaches Telegram from the admin's "Send now" on the dev site (`sprints/SPRINT-1.md`)
 - Sprint 2 — the report goes out by itself every day on both production installs, with retries and a run log (`sprints/SPRINT-2.md`)
-- Later (not planned): key events block, weekly digest, several properties/chats, packaging for other sites
+- Sprint 3 — the visitors block shows the 28-day trend as a sparkline, and the daily event no longer drifts across a DST change (`sprints/SPRINT-3.md`)
+- Later (not planned): key events block, weekly digest, a PNG chart via `sendPhoto`, GA labels translated, several properties/chats, packaging for other sites
