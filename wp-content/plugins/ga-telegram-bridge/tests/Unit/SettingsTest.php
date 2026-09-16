@@ -68,6 +68,7 @@ final class SettingsTest extends TestCase {
 				'channels' => true,
 				'cities'   => true,
 				'devices'  => true,
+				'trend'    => true,
 			),
 			$defaults['blocks']
 		);
@@ -400,6 +401,7 @@ final class SettingsTest extends TestCase {
 				'channels' => false,
 				'cities'   => false,
 				'devices'  => true,
+				'trend'    => false,
 			),
 			$result['values']['blocks'],
 			'an unchecked box is off whether it arrives as 0 or not at all'
@@ -434,6 +436,7 @@ final class SettingsTest extends TestCase {
 			'channels' => true,
 			'cities'   => false,
 			'devices'  => true,
+			'trend'    => false,
 		);
 
 		$result = Settings::sanitize_settings( array( 'property_id' => '42' ), $stored );
@@ -490,6 +493,9 @@ final class SettingsTest extends TestCase {
 
 	/**
 	 * A stored option that switched blocks off is reported as it is.
+	 *
+	 * Every block the row names is taken at its word; a block it does not name
+	 * is the subject of the two tests below, not of this one.
 	 */
 	public function test_the_getters_report_the_stored_block_switches(): void {
 		Functions\when( 'get_option' )->justReturn(
@@ -497,7 +503,10 @@ final class SettingsTest extends TestCase {
 				'blocks' => array(
 					'visitors' => false,
 					'pages'    => true,
+					'channels' => false,
 					'cities'   => true,
+					'devices'  => false,
+					'trend'    => false,
 				),
 			)
 		);
@@ -506,8 +515,60 @@ final class SettingsTest extends TestCase {
 		$this->assertTrue( Settings::is_block_enabled( 'pages' ) );
 		$this->assertFalse( Settings::is_block_enabled( 'channels' ) );
 		$this->assertSame(
-			array( 'visitors', 'pages', 'channels', 'cities', 'devices' ),
+			array( 'visitors', 'pages', 'channels', 'cities', 'devices', 'trend' ),
 			array_keys( Settings::blocks() )
+		);
+	}
+
+	/**
+	 * A block added after the option was last saved arrives switched on.
+	 *
+	 * Sprint 2 wrote rows with five block keys. `trend` is the sixth, and an
+	 * install that updates the plugin must find it on — the block is
+	 * default-on, and a row written before it existed says nothing about it.
+	 */
+	public function test_a_block_the_stored_row_never_heard_of_takes_its_default(): void {
+		$stored = array(
+			'visitors' => true,
+			'pages'    => true,
+			'channels' => false,
+			'cities'   => true,
+			'devices'  => false,
+		);
+
+		$merged = Settings::merge_blocks( $stored );
+
+		$this->assertTrue( $merged['trend'], 'a block the row does not name takes its default' );
+		$this->assertFalse( $merged['channels'], 'a block the row switched off stays off' );
+		$this->assertFalse( $merged['devices'] );
+
+		Functions\when( 'get_option' )->justReturn( array( 'blocks' => $stored ) );
+
+		$this->assertTrue( Settings::is_block_enabled( 'trend' ) );
+		$this->assertSame(
+			array( 'visitors', 'pages', 'channels', 'cities', 'devices', 'trend' ),
+			array_keys( Settings::blocks() )
+		);
+	}
+
+	/**
+	 * On the form path an absent key still means an unticked box.
+	 *
+	 * The two merges must not be collapsed into one: every checkbox posts a
+	 * hidden 0 of the same name, so a block missing from a submission was
+	 * unticked, while a block missing from a stored row was never offered.
+	 */
+	public function test_a_submitted_block_that_is_absent_is_off(): void {
+		$this->assertSame(
+			array(
+				'visitors' => true,
+				'pages'    => true,
+				'channels' => false,
+				'cities'   => false,
+				'devices'  => false,
+				'trend'    => false,
+			),
+			Settings::submitted_blocks( array( 'pages' => '1' ) )
 		);
 	}
 

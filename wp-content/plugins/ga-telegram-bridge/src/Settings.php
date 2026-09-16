@@ -30,8 +30,13 @@ final class Settings {
 
 	/**
 	 * The report blocks, in the order the message prints them.
+	 *
+	 * `trend` is last although the message draws it inside the visitors block:
+	 * a block added by a later version goes to the end, so that the request
+	 * order of the blocks before it — and with it the recorded fixtures — does
+	 * not move.
 	 */
-	public const BLOCKS = array( 'visitors', 'pages', 'channels', 'cities', 'devices' );
+	public const BLOCKS = array( 'visitors', 'pages', 'channels', 'cities', 'devices', 'trend' );
 
 	/**
 	 * The block that is always sent and cannot be switched off.
@@ -118,17 +123,50 @@ final class Settings {
 	}
 
 	/**
-	 * Completes the block switches: every known block, visitors always on.
+	 * Completes the block switches of a stored row, visitors always on.
 	 *
-	 * @param mixed $stored The stored or submitted block switches.
+	 * A block introduced by a later version is missing from every row saved
+	 * before it, and an install must not lose a block by updating the plugin:
+	 * a key that is stored is taken as it is, a key that is not stored takes
+	 * its default. A submitted form is read the other way round — see
+	 * submitted_blocks().
+	 *
+	 * @param mixed $stored The stored block switches.
 	 * @return array<string, bool>
 	 */
 	public static function merge_blocks( $stored ): array {
-		$stored = is_array( $stored ) ? $stored : array();
-		$blocks = array();
+		$stored   = is_array( $stored ) ? $stored : array();
+		$defaults = self::defaults();
+		$on       = is_array( $defaults['blocks'] ) ? $defaults['blocks'] : array();
+		$blocks   = array();
 
 		foreach ( self::BLOCKS as $block ) {
-			$blocks[ $block ] = ! empty( $stored[ $block ] );
+			$blocks[ $block ] = array_key_exists( $block, $stored )
+				? ! empty( $stored[ $block ] )
+				: ! empty( $on[ $block ] );
+		}
+
+		$blocks[ self::REQUIRED_BLOCK ] = true;
+
+		return $blocks;
+	}
+
+	/**
+	 * Reads the block switches a submitted form carries, visitors always on.
+	 *
+	 * Here an absent key is an unticked box and not a block the form did not
+	 * know about: every checkbox on screen Settings is preceded by a hidden
+	 * field of the same name, so a submission names every block it was shown.
+	 *
+	 * @param mixed $submitted The submitted block switches.
+	 * @return array<string, bool>
+	 */
+	public static function submitted_blocks( $submitted ): array {
+		$submitted = is_array( $submitted ) ? $submitted : array();
+		$blocks    = array();
+
+		foreach ( self::BLOCKS as $block ) {
+			$blocks[ $block ] = ! empty( $submitted[ $block ] );
 		}
 
 		$blocks[ self::REQUIRED_BLOCK ] = true;
@@ -251,7 +289,7 @@ final class Settings {
 		}
 
 		if ( array_key_exists( 'blocks', $raw ) ) {
-			$values['blocks'] = self::merge_blocks( $raw['blocks'] );
+			$values['blocks'] = self::submitted_blocks( $raw['blocks'] );
 		}
 
 		return array(

@@ -138,8 +138,9 @@ final class MessageRendererTest extends TestCase {
 	/**
 	 * Builds the report of a property that has no traffic at all.
 	 *
-	 * Devices are switched off so that the five requests of the written
-	 * fixture and the five reports it answers with match.
+	 * Devices and trend are switched off so that the five requests of the
+	 * written fixture and the five reports it answers with match. Both are
+	 * named: a block a stored row leaves out takes its default, which is on.
 	 */
 	private function silent_report(): Report {
 		$this->given_blocks(
@@ -148,6 +149,8 @@ final class MessageRendererTest extends TestCase {
 				'pages'    => true,
 				'channels' => true,
 				'cities'   => true,
+				'devices'  => false,
+				'trend'    => false,
 			)
 		);
 		Functions\when( 'wp_remote_post' )->alias(

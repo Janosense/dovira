@@ -58,6 +58,23 @@ final class ReportBuilderTest extends TestCase {
 	}
 
 	/**
+	 * Switches on exactly the named blocks and every other one off.
+	 *
+	 * Spelled out rather than left to omission: a stored row that does not name
+	 * a block gets that block's default, which is on (Settings::merge_blocks),
+	 * so "off" has to be said.
+	 *
+	 * @param string ...$blocks The blocks to switch on.
+	 * @return array<string, bool>
+	 */
+	private function only( string ...$blocks ): array {
+		return array_merge(
+			array_fill_keys( Settings::BLOCKS, false ),
+			array_fill_keys( $blocks, true )
+		);
+	}
+
+	/**
 	 * Configures which report blocks are switched on.
 	 *
 	 * @param array<string, bool> $blocks The block switches.
@@ -266,7 +283,7 @@ final class ReportBuilderTest extends TestCase {
 	 * With every optional block off, one request goes out and nothing else.
 	 */
 	public function test_visitors_alone_is_one_request_naming_no_other_block(): void {
-		$this->given_blocks( array( 'visitors' => true ) );
+		$this->given_blocks( $this->only( 'visitors' ) );
 		$calls = &$this->given_the_recorded_property();
 
 		$report = ReportBuilder::build( self::NOON );
@@ -492,12 +509,7 @@ final class ReportBuilderTest extends TestCase {
 	 * @return list<array{title: string, path: string, views: int}>
 	 */
 	private function pages_of( array $rows ): array {
-		$this->given_blocks(
-			array(
-				'visitors' => true,
-				'pages'    => true,
-			)
-		);
+		$this->given_blocks( $this->only( 'visitors', 'pages' ) );
 
 		Functions\when( 'wp_remote_post' )->justReturn(
 			array(
@@ -584,14 +596,7 @@ final class ReportBuilderTest extends TestCase {
 	 * nothing to say — and no comparison divides by zero.
 	 */
 	public function test_a_property_with_no_traffic_reports_nothing_without_failing(): void {
-		$this->given_blocks(
-			array(
-				'visitors' => true,
-				'pages'    => true,
-				'channels' => true,
-				'cities'   => true,
-			)
-		);
+		$this->given_blocks( $this->only( 'visitors', 'pages', 'channels', 'cities' ) );
 		$calls = array();
 		Functions\when( 'wp_remote_post' )->alias(
 			function ( string $url, array $arguments ) use ( &$calls ): array {
