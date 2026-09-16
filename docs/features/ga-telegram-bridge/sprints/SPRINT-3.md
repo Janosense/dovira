@@ -23,7 +23,7 @@ nothing.
 
 ## Steps
 
-### [ ] Step 1 — Trend data: block `trend`, the daily-visitors request and `Report::visitors_by_day`
+### [x] Step 1 — Trend data: block `trend`, the daily-visitors request and `Report::visitors_by_day`
 - **Tasks:**
   - `Settings`: add `trend` to `BLOCKS` (after `devices`), default on, label and description in the blocks section of screen `Settings`; confirm that an install whose stored `blocks` array predates the key gets `trend => true` through the defaults merge, not `false`.
   - `ReportBuilder::requests()`: when `trend` is on, add a seventh request — dimension `date`, metric `activeUsers`, date range `28daysAgo`–`yesterday`, `orderBys` on the `date` dimension ascending, `limit` 28 — and keep the chunking at 5 per call (the sprint's invariant: still ≤2 `batchRunReports` calls; a switched-off `trend` issues no request). Parse it into a 28-element list of integers keyed by `Y-m-d`, filling any day the response omits with 0.

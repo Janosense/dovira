@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step, executed by /do-step and
      closed by /close-step. Sections of closed steps are never edited. -->
 
-## Plan — Sprint 3, Step 1: Trend data — block `trend`, the daily-visitors request and `Report::visitors_by_day`   (status: implemented, awaiting close)
+## Plan — Sprint 3, Step 1: Trend data — block `trend`, the daily-visitors request and `Report::visitors_by_day`   (status: closed)
 
 ### Branch
 `ga-telegram-bridge/sprint-3-trend` ← `master`
