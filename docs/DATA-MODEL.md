@@ -137,7 +137,7 @@ completes a partially written row, so a missing key never reaches a getter.
 | `telegram_chat_id` | string | `''` | `/^-?\d+$/` — a person is positive, a group or channel negative |
 | `send_time` | string | `'09:00'` | `HH:MM`, 24-hour (`/^([01]\d\|2[0-3]):[0-5]\d$/`); site-local. Read by the scheduler in Sprint 2 |
 | `max_attempts` | int | `3` | whole number 1–10. Read by the retry logic in Sprint 2 |
-| `blocks` | array<string,bool> | all five `true` | exactly `visitors`, `pages`, `channels`, `cities`, `devices`; unknown keys dropped; `visitors` is forced `true` (the visitors block is always sent) |
+| `blocks` | array<string,bool> | all six `true` | exactly `visitors`, `pages`, `channels`, `cities`, `devices`, `trend`; unknown keys dropped; `visitors` is forced `true` (the visitors block is always sent). A key a **stored** row does not carry takes its default — a row written before a block existed must not switch that block off when the plugin is updated — while a key missing from a **submitted** form is an unticked box and is off (every checkbox posts a hidden `0` of its own name) |
 
 Save semantics: an empty credential is accepted and stored as `''` (an install
 that is not configured yet must be able to save). A value that is present but

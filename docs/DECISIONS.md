@@ -129,6 +129,13 @@ Entry format:
 - **Alternatives rejected:** pushing the plugin to `dev` at the Sprint 3 boundary — a third install to configure with secrets for a plugin already verified in production twice.
 - **Consequences:** `ARCHITECTURE.md` → Environments keeps describing `dev.dovira.vet` as infrastructure that exists; Sprint 1's DoD line is read as "the local install" and Sprint 3's DoD names only the two productions; Contradiction 4 is closed.
 
+## 2026-09-16 — [ga-telegram-bridge] The tests' pinned clock belongs to the GA recordings
+
+- **Context:** Every fixture-driven test runs at one fixed instant (`NOON` in `ReportBuilderTest`, `MessageRendererTest`, `RunnerTest`). Until Sprint 3 its value was free, because no recorded row carried a calendar date: the visitors report is keyed by `date_range_0…3` and every other block by a label. The trend block's report is the first whose rows *are* dates, and `ReportBuilder` walks the 28 days ending on the report date. A clock that disagrees with the recording matches none of them, fills 28 zeros — and the test still passes.
+- **Decision:** The pinned clock is noon UTC of the day the daily fixtures were recorded, so the report is about the day before. Re-recording `batch-run-reports-daily-call-{1,2}.json` means moving that constant with them, and the dated assertions that come out of `build( NOON )` move too. Self-contained date tests — `report_date()`'s own midnight cases, `render_failure()`'s argument, the hand-written log rows in `AdminSendNowTest` — are not touched: they are their own input and output.
+- **Alternatives rejected:** re-recording call-1 as well so the whole set is one real day — every asserted figure, both message snapshots and `tests/SitePosts.php` would move, nearly all of it unrelated to the step that needs the trend; shifting the recorded dates onto the old window — the values would stay real but the report would stop being a recording, which `docs/TESTING.md` keeps apart from a written fixture for a reason.
+- **Consequences:** `NOON` is `1789560000` (2026-09-16 12:00 UTC, report date 2026-09-15) and `docs/TESTING.md` says why it is not arbitrary. `call-1` and `call-2` are now recordings of two different real days — acceptable because no assertion ties them together, and noted in TESTING.md. Re-recording `call-2` also moved the device figures it holds (mobile 1248/desktop 304/tablet 10 → 1230/284/8, so the mobile share reads 81%). Any future re-recording of a dated block repeats this: record, then move the clock.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)

@@ -27,7 +27,16 @@ final class ReportBuilderTest extends TestCase {
 	/**
 	 * A moment in the middle of a day, so "yesterday" is unambiguous.
 	 */
-	private const NOON = 1757505600;
+	/**
+	 * The instant every fixture-driven test pretends it is: noon UTC of the day
+	 * the recordings were made, so the report is about the day before.
+	 *
+	 * It is pinned to the recordings rather than chosen freely because the
+	 * trend report is the one recorded block whose rows carry calendar dates:
+	 * ReportBuilder walks the 28 days ending on the report date, and a clock
+	 * that disagreed with the recording would read every one of them as 0.
+	 */
+	private const NOON = 1789560000;
 
 	/**
 	 * The site the tests pretend to run on.
@@ -55,6 +64,23 @@ final class ReportBuilderTest extends TestCase {
 			static fn( array $response ): string => (string) $response['body']
 		);
 		$this->given_blocks( array_fill_keys( Settings::BLOCKS, true ) );
+	}
+
+	/**
+	 * Switches on exactly the named blocks and every other one off.
+	 *
+	 * Spelled out rather than left to omission: a stored row that does not name
+	 * a block gets that block's default, which is on (Settings::merge_blocks),
+	 * so "off" has to be said.
+	 *
+	 * @param string ...$blocks The blocks to switch on.
+	 * @return array<string, bool>
+	 */
+	private function only( string ...$blocks ): array {
+		return array_merge(
+			array_fill_keys( Settings::BLOCKS, false ),
+			array_fill_keys( $blocks, true )
+		);
 	}
 
 	/**
@@ -143,6 +169,10 @@ final class ReportBuilderTest extends TestCase {
 			return 'channels';
 		}
 
+		if ( in_array( 'date', $dimensions, true ) ) {
+			return 'trend';
+		}
+
 		return in_array( 'city', $dimensions, true ) ? 'cities' : 'devices';
 	}
 
@@ -153,13 +183,15 @@ final class ReportBuilderTest extends TestCase {
 	 * @return array<string, mixed>
 	 */
 	private function recorded_report( string $key ): array {
-		$order = array( 'visitors', 'pages_yesterday', 'pages_28_days', 'channels', 'cities' );
-		$index = array_search( $key, $order, true );
+		$first  = array( 'visitors', 'pages_yesterday', 'pages_28_days', 'channels', 'cities' );
+		$second = array( 'devices', 'trend' );
+		$index  = array_search( $key, $first, true );
 
 		if ( false === $index ) {
-			$body = (array) json_decode( $this->fixture( 'batch-run-reports-daily-call-2.json' )['body'], true );
+			$body  = (array) json_decode( $this->fixture( 'batch-run-reports-daily-call-2.json' )['body'], true );
+			$index = (int) array_search( $key, $second, true );
 
-			return (array) $body['reports'][0];
+			return (array) $body['reports'][ $index ];
 		}
 
 		$body = (array) json_decode( $this->fixture( 'batch-run-reports-daily-call-1.json' )['body'], true );
@@ -168,19 +200,20 @@ final class ReportBuilderTest extends TestCase {
 	}
 
 	/**
-	 * A full report is six requests, which cannot be one call.
+	 * A full report is seven requests, which cannot be one call.
 	 *
 	 * The Data API takes at most five requests per batchRunReports, so this is
-	 * the invariant in FEATURE.md rather than a preference.
+	 * the invariant in FEATURE.md rather than a preference. The trend block
+	 * made the seventh; two calls are still the ceiling.
 	 */
-	public function test_a_full_report_is_split_into_two_calls_of_five_and_one(): void {
+	public function test_a_full_report_is_split_into_two_calls_of_five_and_two(): void {
 		$calls = &$this->given_the_recorded_property();
 
 		ReportBuilder::build( self::NOON );
 
 		$this->assertCount( 2, $calls );
 		$this->assertCount( 5, $calls[0] );
-		$this->assertCount( 1, $calls[1] );
+		$this->assertCount( 2, $calls[1] );
 	}
 
 	/**
@@ -266,7 +299,7 @@ final class ReportBuilderTest extends TestCase {
 	 * With every optional block off, one request goes out and nothing else.
 	 */
 	public function test_visitors_alone_is_one_request_naming_no_other_block(): void {
-		$this->given_blocks( array( 'visitors' => true ) );
+		$this->given_blocks( $this->only( 'visitors' ) );
 		$calls = &$this->given_the_recorded_property();
 
 		$report = ReportBuilder::build( self::NOON );
@@ -280,28 +313,35 @@ final class ReportBuilderTest extends TestCase {
 			$this->assertStringNotContainsString( $dimension, $asked, 'a disabled block issues no request' );
 		}
 
+		// The trend's dimension is checked as a dimension: the bare word "date"
+		// is in every dateRange the visitors request asks for.
+		$this->assertStringNotContainsString( '"dimensions"', $asked, 'a disabled block issues no request' );
+
 		$this->assertNull( $report->pages_yesterday );
 		$this->assertNull( $report->channels );
 		$this->assertNull( $report->cities );
 		$this->assertNull( $report->devices );
+		$this->assertNull( $report->visitors_by_day );
 	}
 
 	/**
 	 * Whatever is switched on, the run never makes a third call, and the report
 	 * carries exactly the blocks that were asked for.
 	 *
-	 * All sixteen combinations, because this is where an off-by-one in the
+	 * All thirty-two combinations, because this is where an off-by-one in the
 	 * request-to-response zipping would put one block's rows under another's
-	 * name.
+	 * name — and a seventh request is exactly the kind of change that causes
+	 * one, since it is the first that does not fit into the opening call.
 	 */
 	public function test_every_block_combination_holds_the_two_call_invariant(): void {
-		foreach ( range( 0, 15 ) as $combination ) {
+		foreach ( range( 0, 31 ) as $combination ) {
 			$blocks = array(
 				'visitors' => true,
 				'pages'    => (bool) ( $combination & 1 ),
 				'channels' => (bool) ( $combination & 2 ),
 				'cities'   => (bool) ( $combination & 4 ),
 				'devices'  => (bool) ( $combination & 8 ),
+				'trend'    => (bool) ( $combination & 16 ),
 			);
 
 			$this->given_blocks( $blocks );
@@ -311,7 +351,7 @@ final class ReportBuilderTest extends TestCase {
 
 			$this->assertLessThanOrEqual( 2, count( $calls ), 'never more than two batchRunReports calls' );
 
-			foreach ( array( 'pages', 'channels', 'cities', 'devices' ) as $block ) {
+			foreach ( array( 'pages', 'channels', 'cities', 'devices', 'trend' ) as $block ) {
 				$this->assertSame(
 					$blocks[ $block ],
 					$report->has_block( $block ),
@@ -319,6 +359,160 @@ final class ReportBuilderTest extends TestCase {
 				);
 			}
 		}
+	}
+
+	/**
+	 * The trend block asks for one row per day, in date order.
+	 *
+	 * Ordered by the dimension rather than by the metric, which is what every
+	 * other ranked block wants: a sparkline read largest-first would be a bar
+	 * chart of the same 28 numbers sorted, not a shape over time.
+	 */
+	public function test_the_trend_request_asks_for_one_row_per_day(): void {
+		$requests = ReportBuilder::requests( array_fill_keys( Settings::BLOCKS, true ) );
+		$trend    = $requests['trend'];
+
+		$this->assertSame( array( array( 'name' => 'date' ) ), $trend['dimensions'] );
+		$this->assertSame( 'activeUsers', $trend['metrics'][0]['name'] );
+		$this->assertSame(
+			array(
+				'startDate' => '28daysAgo',
+				'endDate'   => 'yesterday',
+			),
+			$trend['dateRanges'][0]
+		);
+		$this->assertSame(
+			array(
+				array(
+					'dimension' => array( 'dimensionName' => 'date' ),
+					'desc'      => false,
+				),
+			),
+			$trend['orderBys']
+		);
+		$this->assertSame( 28, $trend['limit'] );
+	}
+
+	/**
+	 * With the trend off the run is six requests and the series is not there.
+	 *
+	 * Null rather than an empty array: the renderer has to tell a block that
+	 * was switched off from one GA had nothing for.
+	 */
+	public function test_the_trend_off_asks_nothing_and_reports_nothing(): void {
+		$this->given_blocks( $this->only( 'visitors', 'pages', 'channels', 'cities', 'devices' ) );
+		$calls = &$this->given_the_recorded_property();
+
+		$report = ReportBuilder::build( self::NOON );
+
+		$this->assertCount( 6, array_merge( ...$calls ), 'six requests without the trend' );
+		$this->assertCount( 2, $calls );
+		$this->assertStringNotContainsString(
+			'"date"',
+			(string) wp_json_encode( $calls ),
+			'a disabled block issues no request'
+		);
+		$this->assertNull( $report->visitors_by_day );
+		$this->assertFalse( $report->has_block( 'trend' ) );
+	}
+
+	/**
+	 * The recorded 28 days are read as one integer per day, oldest first.
+	 */
+	public function test_the_trend_is_read_as_one_figure_per_day_oldest_first(): void {
+		$this->given_the_recorded_property();
+
+		$series = ReportBuilder::build( self::NOON )->visitors_by_day;
+
+		$this->assertIsArray( $series );
+		$this->assertCount( 28, $series );
+
+		$days = array_keys( $series );
+		$this->assertSame( '2026-08-19', $days[0] );
+		$this->assertSame( '2026-09-15', $days[27], 'the last day is the day the report is about' );
+
+		$sorted = $days;
+		sort( $sorted );
+		$this->assertSame( $sorted, $days, 'oldest first' );
+
+		$this->assertSame( 62, $series['2026-08-19'], 'the first day, as the property counted it' );
+		$this->assertSame( 76, $series['2026-09-15'], 'and the day the report is about' );
+		$this->assertSame( 43, min( $series ), 'the quietest day of the recorded four weeks' );
+		$this->assertSame( 77, max( $series ), 'and the busiest' );
+	}
+
+	/**
+	 * A day GA leaves out of the answer is a zero in its place, not a gap.
+	 *
+	 * GA returns no row for a day nobody visited, so the series would
+	 * otherwise be short — and every day after the gap would slide one place
+	 * to the left in the sparkline.
+	 */
+	public function test_a_day_google_did_not_return_counts_as_zero(): void {
+		$series = $this->trend_series(
+			array(
+				$this->day_row( '20260819', 11 ),
+				$this->day_row( '20260915', 22 ),
+			)
+		);
+
+		$this->assertCount( 28, $series );
+		$this->assertSame( 11, $series['2026-08-19'] );
+		$this->assertSame( 22, $series['2026-09-15'] );
+		$this->assertSame( 0, $series['2026-08-20'], 'a day with no row is a day with no visitors' );
+		$this->assertSame( 26, count( array_filter( $series, static fn( int $n ): bool => 0 === $n ) ) );
+	}
+
+	/**
+	 * A property with no traffic at all is twenty-eight zeros, not an empty list.
+	 */
+	public function test_a_trend_with_no_rows_is_twenty_eight_zeros(): void {
+		$series = $this->trend_series( array() );
+
+		$this->assertCount( 28, $series );
+		$this->assertSame( array( 0 ), array_values( array_unique( $series ) ) );
+	}
+
+	/**
+	 * Builds the trend series from rows the test writes itself.
+	 *
+	 * @param list<array<string, mixed>> $rows The rows of the trend report.
+	 * @return array<string, int>
+	 */
+	private function trend_series( array $rows ): array {
+		$this->given_blocks( $this->only( 'visitors', 'trend' ) );
+
+		Functions\when( 'wp_remote_post' )->justReturn(
+			array(
+				'response' => array( 'code' => 200 ),
+				'body'     => (string) wp_json_encode(
+					array(
+						'reports' => array(
+							array( 'metadata' => array( 'timeZone' => 'Europe/Kiev' ) ),
+							array( 'rows' => $rows ),
+						),
+					)
+				),
+			)
+		);
+
+		$series = ReportBuilder::build( self::NOON )->visitors_by_day;
+
+		return is_array( $series ) ? $series : array();
+	}
+
+	/**
+	 * One row of the trend report, the way GA writes it.
+	 *
+	 * @param string $date     The day, Ymd.
+	 * @param int    $visitors Active users that day.
+	 * @return array<string, mixed>
+	 */
+	private function day_row( string $date, int $visitors ): array {
+		return array(
+			'dimensionValues' => array( array( 'value' => $date ) ),
+			'metricValues'    => array( array( 'value' => (string) $visitors ) ),
+		);
 	}
 
 	/**
@@ -350,7 +544,7 @@ final class ReportBuilderTest extends TestCase {
 		$report = ReportBuilder::build( self::NOON );
 
 		$this->assertSame( 'Europe/Kiev', $report->time_zone );
-		$this->assertSame( '2025-09-09', $report->date );
+		$this->assertSame( '2026-09-15', $report->date );
 	}
 
 	/**
@@ -492,12 +686,7 @@ final class ReportBuilderTest extends TestCase {
 	 * @return list<array{title: string, path: string, views: int}>
 	 */
 	private function pages_of( array $rows ): array {
-		$this->given_blocks(
-			array(
-				'visitors' => true,
-				'pages'    => true,
-			)
-		);
+		$this->given_blocks( $this->only( 'visitors', 'pages' ) );
 
 		Functions\when( 'wp_remote_post' )->justReturn(
 			array(
@@ -574,7 +763,7 @@ final class ReportBuilderTest extends TestCase {
 			array( 'mobile', 'desktop', 'tablet' ),
 			array_column( $report->devices, 'label' )
 		);
-		$this->assertSame( 80, $report->devices[0]['share'] );
+		$this->assertSame( 81, $report->devices[0]['share'] );
 	}
 
 	/**
@@ -584,14 +773,7 @@ final class ReportBuilderTest extends TestCase {
 	 * nothing to say — and no comparison divides by zero.
 	 */
 	public function test_a_property_with_no_traffic_reports_nothing_without_failing(): void {
-		$this->given_blocks(
-			array(
-				'visitors' => true,
-				'pages'    => true,
-				'channels' => true,
-				'cities'   => true,
-			)
-		);
+		$this->given_blocks( $this->only( 'visitors', 'pages', 'channels', 'cities' ) );
 		$calls = array();
 		Functions\when( 'wp_remote_post' )->alias(
 			function ( string $url, array $arguments ) use ( &$calls ): array {
@@ -613,7 +795,7 @@ final class ReportBuilderTest extends TestCase {
 		$this->assertSame( array(), $report->channels );
 		$this->assertSame( array(), $report->cities );
 		$this->assertNull( $report->devices, 'switched off is still different from empty' );
-		$this->assertSame( '2025-09-09', $report->date );
+		$this->assertSame( '2026-09-15', $report->date );
 	}
 
 	/**

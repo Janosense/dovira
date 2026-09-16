@@ -34,7 +34,16 @@ final class MessageRendererTest extends TestCase {
 	/**
 	 * A moment in the middle of a day, so "yesterday" is unambiguous.
 	 */
-	private const NOON = 1757505600;
+	/**
+	 * The instant every fixture-driven test pretends it is: noon UTC of the day
+	 * the recordings were made, so the report is about the day before.
+	 *
+	 * It is pinned to the recordings rather than chosen freely because the
+	 * trend report is the one recorded block whose rows carry calendar dates:
+	 * ReportBuilder walks the 28 days ending on the report date, and a clock
+	 * that disagreed with the recording would read every one of them as 0.
+	 */
+	private const NOON = 1789560000;
 
 	/**
 	 * Stubs the WordPress helpers the renderer and the builder go through.
@@ -138,8 +147,9 @@ final class MessageRendererTest extends TestCase {
 	/**
 	 * Builds the report of a property that has no traffic at all.
 	 *
-	 * Devices are switched off so that the five requests of the written
-	 * fixture and the five reports it answers with match.
+	 * Devices and trend are switched off so that the five requests of the
+	 * written fixture and the five reports it answers with match. Both are
+	 * named: a block a stored row leaves out takes its default, which is on.
 	 */
 	private function silent_report(): Report {
 		$this->given_blocks(
@@ -148,6 +158,8 @@ final class MessageRendererTest extends TestCase {
 				'pages'    => true,
 				'channels' => true,
 				'cities'   => true,
+				'devices'  => false,
+				'trend'    => false,
 			)
 		);
 		Functions\when( 'wp_remote_post' )->alias(
@@ -164,7 +176,7 @@ final class MessageRendererTest extends TestCase {
 		$expected = implode(
 			"\n",
 			array(
-				'📊 <b>dovira.vet — 9 September (Tuesday)</b>',
+				'📊 <b>dovira.vet — 15 September (Tuesday)</b>',
 				'',
 				'👥 <b>Visitors</b>',
 				'Yesterday: 69 (▲ 23% to the 7-day average)',
@@ -194,7 +206,7 @@ final class MessageRendererTest extends TestCase {
 				'Lviv 7%',
 				'',
 				'📱 <b>Devices over 28 days</b>',
-				'mobile 80%',
+				'mobile 81%',
 				'desktop 19%',
 				'tablet 1%',
 			)
@@ -422,7 +434,8 @@ final class MessageRendererTest extends TestCase {
 			null,
 			$report->channels,
 			$report->cities,
-			null
+			null,
+			$report->visitors_by_day
 		);
 	}
 
@@ -447,6 +460,7 @@ final class MessageRendererTest extends TestCase {
 				'channels'                   => null,
 				'cities'                     => null,
 				'devices'                    => null,
+				'visitors_by_day'            => null,
 			),
 			$parts
 		);
@@ -464,7 +478,8 @@ final class MessageRendererTest extends TestCase {
 			$values['pages_28_days'],
 			$values['channels'],
 			$values['cities'],
-			$values['devices']
+			$values['devices'],
+			$values['visitors_by_day']
 		);
 	}
 }

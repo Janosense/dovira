@@ -78,6 +78,11 @@ ddev exec wp i18n make-pot wp-content/plugins/ga-telegram-bridge \
   --domain=ga-telegram-bridge --exclude=vendor,tests,spike,.phpunit.cache
 # DDEV syncs container writes to the host a moment later: read the .pot back and
 # check its entry count changed before rebuilding the .po from it.
+# merge the new entries into the uk .po with --no-wrap: this file keeps one line
+# per string, and msgmerge would otherwise rewrap all 129 of them at 80 columns.
+msgmerge --update --backup=none --no-fuzzy-matching --no-wrap \
+  wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge-uk.po \
+  wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge.pot
 # translate the new entries in languages/ga-telegram-bridge-uk.po, then:
 ddev exec wp i18n make-mo \
   wp-content/plugins/ga-telegram-bridge/languages/ga-telegram-bridge-uk.po \
