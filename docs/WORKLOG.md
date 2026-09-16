@@ -17,6 +17,13 @@ Entry format:
 
 ---
 
+## 2026-09-16 — [adhoc] [ga-telegram-bridge] — The report ends with a link into the GA4 property
+- Changed: `MessageRenderer` closes every report, after its last block and one blank line, with `🔗 <a href="https://analytics.google.com/analytics/web/#/p{property_id}/reports/intelligenthome">Детальніше в Google Analytics</a>`; the failure notice has none. The property id is URL-encoded as `GaClient` encodes it, which is what makes the escaping real — the `esc_url` test stub escapes neither quotes nor brackets. One new string (`.pot` 130 → 131), a readme FAQ entry on who can open the link, and 294 → 297 tests.
+- Shared code: none of the theme, no gate config. `MessageRenderer` now reads one setting, the property id — its docblock said "no settings" and no longer does. The `gatb_report_data` payload is untouched: the id comes from `Settings`, not from the `Report`.
+- Decisions: DECISIONS "The message ends with a link into the GA4 property" (2026-09-16), written by the developer and committed with the code. Settled inside the task: no guard for an empty property id, because no report can be built without one.
+- Verified on the local install, sending nothing: the rendered report ends with one blank line and the link in Ukrainian with `p533779496`; `render_failure()` has no link.
+- Open: production is still 0.2.0 without the link until the next hand deploy — no version bump or changelog entry was asked for, so `master` and the deployed 0.2.0 now differ; `kyiv` gets `master` merged in with that deploy. LEARNINGS gained an entry: the plan's list of tests the change breaks came from one grep and missed two.
+
 ## 2026-09-16 — [ga-telegram-bridge] Sprint 3 closed
 - Merged: simple git model, so the three step branches went straight into `master` (`7d338fe1`, `b4ce8e03`, `932f2715`), and `master` is merged into `kyiv` (`bc1be64b`). `bin/check.sh` exit 0 on both: `OK (294 tests, 1060 assertions)`, PHPStan level 8 no errors, 108 theme files linted — and "green" now excludes a test that asserts nothing, since `failOnRisky` went in with Step 1.
 - Deployed: both productions by hand, and the morning report on each install arrived carrying the 28-day sparkline — confirmed by the developer on 2026-09-16. The owner now sees the trend without opening anything, which was the sprint's goal, and the plugin is 0.2.0 on both.
