@@ -309,3 +309,169 @@ equivalent and is covered below):
 
 ### Questions / ambiguities
 none
+
+## Plan — Sprint 3, Step 2: The sparkline in the message   (status: implemented, awaiting close)
+
+### Branch
+`ga-telegram-bridge/sprint-3-trend` ← `master`
+(root `CLAUDE.md` → git model: simple — task branch → `master`; the name is the
+**Branch** line of `SPRINT-3.md`. Recreated from `master`, deleted at the close,
+as in Step 1.)
+
+### Tasks (ordered)
+
+- [x] **1. The pure helper.** New `src/Sparkline.php`, one class, no WordPress
+  in it: `render( ?array $series ): string` over the eight block characters
+  `▁▂▃▄▅▆▇█`.
+  - `null` or `array()` → `''`, so the caller has one thing to test rather than
+    three;
+  - `min === max` → `str_repeat( '▄', count( $series ) )` — the flat row of the
+    fixed decision. `count()` rather than a literal 28: the helper is given a
+    series, not a promise about its length;
+  - otherwise each value takes level `round( ( $value - $min ) / ( $max - $min ) * 7 )`,
+    so the quietest day is `▁`, the busiest `█` and everything between is linear.
+    The scale is min–max, never zero-based (DECISIONS: a stable site would
+    otherwise render as one flat `██████` and show nothing).
+
+  Nothing calls it yet, so the branch stays green and the message is unchanged.
+  → `feat(gatb): add the Sparkline helper`
+
+- [x] **2. The line in the visitors block.** `MessageRenderer::visitors()` gains
+  a fourth line, directly under *За 28 днів* — no heading, no blank line, inside
+  the same block:
+
+  ```php
+  $series = null === $report->visitors_by_day ? null : array_values( $report->visitors_by_day );
+  $spark  = Sparkline::render( $series );
+
+  if ( '' !== $spark ) {
+      $lines[] = sprintf(
+          '<code>%1$s</code> %2$s',
+          $spark,
+          sprintf(
+              /* translators: 1: the quietest day of the last 28 days, 2: the busiest. */
+              __( '%1$s–%2$s', 'ga-telegram-bridge' ),
+              self::number( min( $series ) ),
+              self::number( max( $series ) )
+          )
+      );
+  }
+  ```
+
+  The `<code>` wrapper stays **outside** the translated string — markup is not a
+  translator's business — which leaves exactly the one new string the step
+  allows, the range format. Guarding on `'' !== $spark` rather than on `null`
+  covers the empty series too: `min()` of an empty array is a fatal in PHP 8, and
+  `gatb_report_data` can hand this renderer anything.
+
+  The characters need no escaping (none is HTML-special) and the two numbers go
+  through `self::number()` like every other figure, so the Ukrainian thousands
+  separator is decoded the way the rest of the message decodes it.
+
+  One new string, so per the plugin's `CLAUDE.md` the `.pot` (129 → 130) and the
+  `uk` `.po`/`.mo` are regenerated in the same commit, reading the files back on
+  the host before using them.
+  → `feat(gatb): draw the 28-day trend under the visitors figures`
+
+- [x] **3. The readme says what the plugin now sends.** `readme.txt`: the
+  *Visitors* bullet in "What it sends" gains the trend line, and a `= 0.2.0 =`
+  changelog section names it. **The file is ASCII only** (the settings screen
+  links to it and this server serves it without a charset — the plugin's
+  `CLAUDE.md`, LEARNINGS 2026-09-10), so it *describes* the line — "a 28-character
+  bar of the last four weeks, with the quietest and busiest day beside it" — and
+  never prints the block characters themselves.
+  → `docs(gatb): describe the trend line in the readme`
+
+### Files to create/change
+
+Code — `wp-content/plugins/ga-telegram-bridge/`:
+- `src/Sparkline.php` (new, task 1)
+- `src/MessageRenderer.php` (task 2)
+
+Tests: `tests/Unit/SparklineTest.php` (new, task 1),
+`tests/Unit/MessageRendererTest.php` (task 2).
+
+Translations (task 2): `languages/ga-telegram-bridge.pot`,
+`languages/ga-telegram-bridge-uk.po`, `languages/ga-telegram-bridge-uk.mo`.
+
+Docs: `readme.txt` (task 3).
+
+Checked and **not** changed, per LEARNINGS "The plan's file list missed a config
+the gate reads": `phpstan.neon.dist` analyses `src` and `tests` as directories,
+so the new class and its test are covered without a line; `phpcs.xml.dist` scans
+the same tree; `phpunit.xml.dist` declares `tests/Unit` as a directory, and
+`SparklineTest` defines no constant, so it belongs in the first suite by default;
+the `.pot` exclude list is unaffected; the plugin's `CLAUDE.md` gains nothing —
+`Sparkline` introduces no convention its rules do not already cover.
+
+### Tests to write
+
+- `SparklineTest` — the helper on fixed series, nothing stubbed:
+  - a monotonic rise of eight values renders each level once, in order
+    (`▁▂▃▄▅▆▇█`);
+  - a flat series renders `▄` as many times as it is long;
+  - **all zeros renders `▄`, not `▁`** — a site nobody visited shows a flat row
+    at mid height, and this is the case most likely to be "fixed" later by
+    someone who reads `▁` as the natural floor;
+  - a single spike among zeros puts `█` at the spike and `▁` everywhere else;
+  - two values close together against a far larger maximum land on the same
+    level — rounding, not banding, is what the decision asks for;
+  - 28 values in, 28 characters out (`mb_strlen`, not `strlen`: each character
+    is three bytes);
+  - `null` and `array()` both give `''`.
+- `MessageRendererTest`:
+  - the whole-message snapshot gains one line under *Last 28 days*, and it is
+    exactly `<code>▅▄▁▃▂▆▇▆▂▅▇▅██▆▄▅▂▁█▆▇▆▄▄▇▄█</code> 43–77` — the sparkline of
+    the recorded four weeks (43 the quietest day, 77 the busiest);
+  - `test_a_switched_off_block_is_left_out_entirely` counts the message's lines:
+    **14 becomes 15**, and its explanation says the visitors block is four lines
+    now. The trend survives there because that helper passes `visitors_by_day`
+    through, which is the point — switching *pages* off must not take the trend
+    with it;
+  - trend off: no `<code>` anywhere, and the block still ends at *Last 28 days*
+    with no blank line left behind (the existing `"\n\n\n"` assertion covers the
+    blank line, a new one covers the absence of the row);
+  - a flat week renders 28 × `▄` with both numbers equal, built through
+    `report_with()` rather than the recording;
+  - the failure notice is unchanged — it has no report and must not grow one.
+
+### Docs to update
+- `readme.txt` — what the plugin sends, and the `0.2.0` changelog entry.
+- `docs/features/ga-telegram-bridge/FEATURE.md` → UI — **expected: no change.**
+  Its message template already draws the line and its paragraph already states
+  the rules this step implements (28 characters, min–max scale, flat period
+  prints `▄`, a day GA omits counts as 0, absent when the block is off). The
+  task re-reads it against the built string and only touches it if they differ.
+
+### Checks
+- **ANTI-PATTERNS:** none violated. A pure helper class in `src/` with no
+  dependency, no ACF, no theme block, no city branching, no hand-edited assets;
+  no dependency is added, so core rule 1 is not engaged.
+- **Docs vs reality:** three notes, none of which changes a task.
+  1. The changelog gains `= 0.2.0 =` while the plugin header still reads
+     `0.1.0` — Step 3 bumps it. That is the sprint's own division of the work,
+     not a mismatch to resolve here.
+  2. `readme.txt` is ASCII-only, so the one document that describes the feature
+     cannot show it. Resolved in task 3 by describing rather than printing;
+     FEATURE.md → UI is where the characters live.
+  3. Carried from `SPRINT-2-CLOSE.md` → Deferred: the local install's bot token
+     is still pending rotation, and this step's manual verification sends a real
+     message with it. The rotation is `SPRINT-3.md` → Out of scope
+     ("operational, the developer's task"); nothing in this step reads or prints
+     the token.
+- **Design:** matches the message template in `docs/features/ga-telegram-bridge/FEATURE.md`
+  → UI, which is this feature's design record — there is no design export and
+  `docs/DESIGN.md` does not cover the plugin. The template's
+  `[<code>{28 × ▁▂▃▄▅▆▇█, oldest day left, yesterday right}</code> {min}–{max}]`
+  is what task 2 builds, brackets meaning "only when the block is on".
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command).
+  Verified before planning: exit 0 on `master` at `7d338fe`.
+- **Not locally verifiable:** how a monospace run of block characters is drawn by
+  each Telegram client. *Send now* to the test chat and a screenshot from one
+  phone are in the step's manual verification and are as far as this machine
+  reaches; iOS, Android and desktop pick different monospace fonts, so the full
+  answer is the first morning after the sprint-boundary deploy, on the owner's
+  own client (`SPRINT-3.md` → Risks).
+
+### Questions / ambiguities
+none
