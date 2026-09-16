@@ -197,7 +197,8 @@ final class ReportBuilder {
 			isset( $responses['pages_28_days'] ) ? self::pages( $responses['pages_28_days'] ) : null,
 			isset( $responses['channels'] ) ? self::shares( $responses['channels'], false ) : null,
 			isset( $responses['cities'] ) ? self::shares( $responses['cities'], true ) : null,
-			isset( $responses['devices'] ) ? self::shares( $responses['devices'], false ) : null
+			isset( $responses['devices'] ) ? self::shares( $responses['devices'], false ) : null,
+			null
 		);
 	}
 

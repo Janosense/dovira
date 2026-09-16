@@ -425,7 +425,8 @@ final class MessageRendererTest extends TestCase {
 			null,
 			$report->channels,
 			$report->cities,
-			null
+			null,
+			$report->visitors_by_day
 		);
 	}
 
@@ -450,6 +451,7 @@ final class MessageRendererTest extends TestCase {
 				'channels'                   => null,
 				'cities'                     => null,
 				'devices'                    => null,
+				'visitors_by_day'            => null,
 			),
 			$parts
 		);
@@ -467,7 +469,8 @@ final class MessageRendererTest extends TestCase {
 			$values['pages_28_days'],
 			$values['channels'],
 			$values['cities'],
-			$values['devices']
+			$values['devices'],
+			$values['visitors_by_day']
 		);
 	}
 }
