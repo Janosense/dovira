@@ -17,6 +17,12 @@ Entry format:
 
 ---
 
+## 2026-09-16 — [ga-telegram-bridge] Sprint 2 closed
+- Merged: simple git model, so the four step task branches went straight into `master` (`818a8da`, `2e071b6`, `320f147`, `79967be`), pushed to `origin/main` at `730ef5a`, and `master` is merged into `kyiv` (`06fc831` remote, `7b057c9` local). `bin/check.sh` green on `master` at `0cfb3d3`: exit 0, `OK (269 tests, 854 assertions)`, PHPStan level 8 no errors, 108 theme files linted.
+- Deployed: both productions by hand, the two constants in each `wp-config.php`, and the owner received the Kharkiv and Kyiv reports on two consecutive mornings — confirmed by the developer on 2026-09-16, which ticks the last two Definition of Done items (5/5). The plugin has now run by schedule on both installs.
+- Carried: nothing as a Definition of Done item. Left standing and named in `SPRINT-3.md` → Risks: the screen registry (`docs/DESIGN.md` → Screens lists neither plugin screen while DECISIONS "No UI design phase…" forbids DESIGN.md changes), GA's own English labels (deferred again in Sprint 3's Out of scope), the local install's secret rotation, and Contradiction 5 — `master`'s upstream is `origin/main` while DECISIONS calls `origin/main` unused, to settle before the Sprint 3 boundary.
+- Open: the retro over `SPRINT-2-CLOSE.md` has not run — its eight LEARNINGS entries, and five left from Sprint 1, are still `Transferred to playbook: pending`. `master` is three commits ahead of `origin/main` (docs and commands only).
+
 ## 2026-09-15 — [adhoc] — Playbook v1.14 → v1.17
 - Changed: `.claude/commands/` copied from the playbook (new `/close-sprint`; `close-step`, `do-step`, `fix-step`, `plan-step` updated) and `templates/` added at the root. In root `CLAUDE.md`, Core rules (9 → 6) and Step protocol are now word for word from the template without "(PLAYBOOK CORE)", the header says v1.17, the `Origin:` and developer-reviewed `Verification:` lines are gone, and the Git model says deploys happen at the sprint boundary via `/close-sprint`. Features keeps only the router sentence and the table. The rule numbers in the TECH-STACK, DATA-MODEL and WORKLOG header comments now read 1/5/6. `bin/check.sh` passes.
 - Decisions: —

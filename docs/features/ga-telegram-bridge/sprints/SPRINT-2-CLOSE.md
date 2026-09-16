@@ -4,6 +4,8 @@ Written by `/close-sprint` (Phase 1) on 2026-09-15, from the files, the code and
 replaces the version `/close-step` wrote at the close of Step 4 on 2026-09-10 and takes in
 what reached `master` since: the report-format ad-hoc of 2026-09-10 and playbook v1.17.
 It is the handoff to the sprint boundary, to the retro, and to whatever follows this feature.
+Phase 2 updated the Definition of Done on 2026-09-16, when the boundary was reported done: the two
+rows below that read `open` then were settled, and the sections after them are the 2026-09-15 snapshot.
 
 ## Definition of Done
 
@@ -12,8 +14,8 @@ It is the handoff to the sprint boundary, to the retro, and to whatever follows 
 | Every step closed via /close-step (report + verification guide + worklog) | **ticked** — Steps 1–4 are `### [x]` in `SPRINT-2.md` and `(status: closed)` in `SPRINT-2-PLAN.md`; close commits `6c51a32`, `d1eb20b`, `3bb5d43`, `a40a32e`; guides `verification/sprint-2-step-1.md` … `-4.md`; WORKLOG entries 2026-09-09 ×2 and 2026-09-10 ×2 |
 | `bin/check.sh` green on the sprint branch | **ticked** — simple git model: each step's task branch was merged into `master` (`818a8da`, `2e071b6`, `320f147`, `79967be`) and no sprint branch exists, so the gate ran on `master` at `67589b4` on 2026-09-15 and exited 0: PHPCS clean, PHPStan level 8 `[OK] No errors`, `OK (269 tests, 854 assertions)`, 108 theme files linted |
 | Docs match reality (DATA-MODEL, ARCHITECTURE, DECISIONS, TECH-STACK current) | **ticked** — DATA-MODEL has `gatb_state.last_cron_hit`, the attempt counter's reset, `gatb_retry_report` with its one argument, and the uninstall list. ARCHITECTURE's plugin row names `Runner`, `RunLog`, `Scheduler` and `uninstall.php`, both integration rows give the failure behaviour, and Environments has the per-install configuration paragraph. DECISIONS gained "The schedule is registered from the settings alone…" and "Only the schedule retries…" (2026-09-09), and the ad-hoc added "Top pages are counted by path and named by their post" (2026-09-10), together with its `FEATURE.md` → UI and `TESTING.md` changes. TECH-STACK is unchanged: no dependency was added. Each step's docs self-check is in its close commit. `DESIGN.md` is outside this item's list, and its gap is Contradiction 1 |
-| Merged to `master`; `master` merged into `kyiv`; both productions deployed by hand; constants set in both `wp-config.php`; the owner receives the Kharkiv and Kyiv reports on two consecutive mornings | **open — sprint boundary**. The repo holds the first two parts: the four step merges are on `master`, which is pushed to `origin/main` (`730ef5a`), and `master` was merged into `kyiv` at `06fc831` (pushed to `origin/kyiv`) and again by this close. Nothing in the repo can show the two production deploys, the constants on either host or the two mornings. `PRODUCTION-CHECKLIST.md` is the procedure |
-| `SPRINT-1-CLOSE.md` Deferred/Contradictions items settled or carried into DECISIONS.md | **open — three items are neither settled nor in DECISIONS.md.** Settled: `spike/` is gone; the failure notice ships (Step 2); scheduling, retries, the next-run display and `last_cron_hit` ship (Steps 1–2); `uninstall.php` and the deactivation hook ship (Step 3); the duplicate path in the 28-day pages block is settled by DECISIONS "Top pages are counted by path…"; Contradictions 1, 2, 3, 4 and 6 are resolved. The theme's own Telegram bot is in DECISIONS as open questions 1–2. Still open: **GA's English labels** in the Ukrainian message, **Contradiction 5** (the screen registry, Contradiction 1 below) and **the push to `dev`** (Contradiction 4 below) |
+| Merged to `master`; `master` merged into `kyiv`; both productions deployed by hand; constants set in both `wp-config.php`; the owner receives the Kharkiv and Kyiv reports on two consecutive mornings | **ticked** — the repo half verified again on 2026-09-16: the four step merges are on `master`, pushed to `origin/main` (`730ef5a`), and `master` is merged into `kyiv` (`06fc831` on the remote, `7b057c9` locally), where `wp-content/plugins/ga-telegram-bridge` is present. The two production deploys by hand, the two constants in each `wp-config.php` and the two consecutive mornings — sections B–E of `PRODUCTION-CHECKLIST.md` — confirmed by user 2026-09-16; nothing in the repo can show them |
+| `SPRINT-1-CLOSE.md` Deferred/Contradictions items settled or carried into DECISIONS.md | **ticked** — Settled: `spike/` is gone; the failure notice ships (Step 2); scheduling, retries, the next-run display and `last_cron_hit` ship (Steps 1–2); `uninstall.php` and the deactivation hook ship (Step 3); the duplicate path in the 28-day pages block is settled by DECISIONS "Top pages are counted by path…"; Contradictions 1, 2, 3, 4 and 6 are resolved. The theme's own Telegram bot is in DECISIONS as open questions 1–2. The last three settled on 2026-09-16: **the push to `dev`** by DECISIONS "The feature's dev site is the local DDEV install; `dev.dovira.vet` is not part of its flow" (2026-09-16, `0cfb3d3`), which closes Contradiction 4 below; **GA's English labels** deferred again in `SPRINT-3.md` → Out of scope; **the screen registry** (Contradiction 1 below) left standing as a known contradiction rather than a blocker, carried in `SPRINT-3.md` → Risks — confirmed by user 2026-09-16 |
 
 ## Built
 
@@ -61,7 +63,8 @@ No new option, no table, no dependency.
 
 - **The deploy itself**: `master` to Kharkiv and `kyiv` to Kyiv, by hand, plus the two
   constants on each host. Both branches hold the plugin on the remote; no step may deploy
-  (root `CLAUDE.md` → Git model).
+  (root `CLAUDE.md` → Git model). *Done at the boundary — confirmed by user 2026-09-16; see
+  Definition of Done above.*
 - **The daily event drifts by an hour across a DST change** until the settings are saved
   again (Steps 1 and 2 WORKLOG). WordPress's `daily` schedule is a fixed 86 400 s
   interval, and nothing re-anchors it. For the retro or an `/adhoc`.
