@@ -210,6 +210,8 @@ final class MessageRendererTest extends TestCase {
 				'mobile 81%',
 				'desktop 19%',
 				'tablet 1%',
+				'',
+				'🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>',
 			)
 		);
 
@@ -229,11 +231,11 @@ final class MessageRendererTest extends TestCase {
 		$this->assertStringContainsString( "\n\n🧭 <b>Sources over 28 days</b>\n", $message );
 		$this->assertStringContainsString( "\n\n📍 <b>Cities over 28 days</b>\n", $message );
 		$this->assertStringNotContainsString( "\n\n\n", $message );
-		$this->assertStringEndsWith( 'Lviv 7%', $message );
+		$this->assertStringEndsWith( "Lviv 7%\n\n" . '🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>', $message );
 		$this->assertCount(
-			15,
+			17,
 			explode( "\n", $message ),
-			'the header, the visitors block of four lines, sources of two, cities of five, and a blank line between each'
+			'the header, the visitors block of four lines, sources of two, cities of five, the closing link, and a blank line between each'
 		);
 		$this->assertStringContainsString(
 			"\nLast 28 days: 1,560 (▼ 1% to the previous 28)\n<code>",
@@ -281,7 +283,7 @@ final class MessageRendererTest extends TestCase {
 
 		$this->assertStringNotContainsString( '<code>', $message );
 		$this->assertStringNotContainsString( '▄', $message );
-		$this->assertStringEndsWith( 'Last 28 days: 1,559 (▼ 1% to the previous 28)', $message );
+		$this->assertStringEndsWith( "Last 28 days: 1,559 (▼ 1% to the previous 28)\n\n" . '🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>', $message );
 		$this->assertStringNotContainsString( "\n\n\n", $message );
 	}
 
@@ -390,7 +392,8 @@ final class MessageRendererTest extends TestCase {
 			substr_count( $message, '<b>' ),
 			'the only bold left is the message\'s own: the header and three headings'
 		);
-		$this->assertSame( 1, substr_count( $message, '<a ' ), 'and the only link is the page\'s' );
+		$this->assertSame( 1, substr_count( $message, '<a href="https://dovira.vet/' ), 'the only link into the site is the page\'s' );
+		$this->assertSame( 2, substr_count( $message, '<a ' ), 'and the only other link is the closing one into Google Analytics' );
 	}
 
 	/**
@@ -415,7 +418,8 @@ final class MessageRendererTest extends TestCase {
 		);
 
 		$this->assertStringContainsString( "\n1. (not set) — 4", $message );
-		$this->assertStringNotContainsString( '<a ', $message );
+		$this->assertStringNotContainsString( '<a href="https://dovira.vet', $message, 'no link into the site' );
+		$this->assertStringNotContainsString( '(not set)</a>', $message, 'and the row is not inside any link' );
 	}
 
 	/**
@@ -476,6 +480,52 @@ final class MessageRendererTest extends TestCase {
 		Filters\expectApplied( 'gatb_message_html' )->once()->andReturn( '<b>something else</b>' );
 
 		$this->assertSame( '<b>something else</b>', MessageRenderer::render( $this->recorded_report() ) );
+	}
+
+	/**
+	 * Every report ends with a link into the property on Google Analytics.
+	 *
+	 * After the last printed block and one blank line, whatever was switched
+	 * off — here everything that can be.
+	 */
+	public function test_the_report_ends_with_a_link_into_the_property(): void {
+		$message = MessageRenderer::render( $this->report_with( array() ) );
+		$lines   = explode( "\n", $message );
+
+		$this->assertSame( '🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>', end( $lines ), 'the last line' );
+		$this->assertStringEndsWith( "to the previous 28)\n\n" . '🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>', $message, 'one blank line before it' );
+		$this->assertSame( 1, substr_count( $message, 'analytics.google.com' ) );
+	}
+
+	/**
+	 * The failure notice has no report behind it, and no link either.
+	 */
+	public function test_the_failure_notice_carries_no_link(): void {
+		$notice = MessageRenderer::render_failure( '2026-09-15' );
+
+		$this->assertStringNotContainsString( '<a ', $notice );
+		$this->assertStringNotContainsString( 'analytics.google.com', $notice );
+	}
+
+	/**
+	 * A property id that is not digits cannot close the attribute it sits in.
+	 *
+	 * Settings refuses such a value on save, but the id is read back from the
+	 * options table without being checked again — so the renderer encodes it
+	 * itself, as GaClient does, rather than trusting the row.
+	 */
+	public function test_a_stored_property_id_cannot_break_out_of_the_link(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'property_id' => '12"><b>x</b>',
+				'blocks'      => array_fill_keys( Settings::BLOCKS, true ),
+			)
+		);
+
+		$message = MessageRenderer::render( $this->report_with( array() ) );
+
+		$this->assertStringContainsString( '#/p12%22%3E%3Cb%3Ex%3C%2Fb%3E/reports/intelligenthome">', $message );
+		$this->assertStringNotContainsString( '12"><b>', $message );
 	}
 
 	/**

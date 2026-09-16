@@ -15,7 +15,9 @@ use Exception;
 
 /**
  * Turns a Report into the message fixed by FEATURE.md → UI, and nothing else:
- * no network, no settings, no state.
+ * no network and no state. It reads one setting — the property id, which the
+ * closing link into Google Analytics is built from (DECISIONS "The message ends
+ * with a link into the GA4 property") — and nothing else from the settings.
  *
  * Two constraints shape what comes out. Telegram's HTML parse mode understands
  * only four named entities — &lt;, &gt;, &amp; and &quot; — plus the numeric
@@ -81,6 +83,7 @@ final class MessageRenderer {
 			self::shares( '🧭', __( 'Sources over 28 days', 'ga-telegram-bridge' ), $report->channels, false ),
 			self::shares( '📍', __( 'Cities over 28 days', 'ga-telegram-bridge' ), $report->cities, true ),
 			self::shares( '📱', __( 'Devices over 28 days', 'ga-telegram-bridge' ), $report->devices, true ),
+			array( self::analytics_link() ),
 		);
 
 		$printed = array();
@@ -123,6 +126,26 @@ final class MessageRenderer {
 			'📊 <b>%1$s — %2$s</b>',
 			esc_html( self::host() ),
 			esc_html( self::day( $report->date ) )
+		);
+	}
+
+	/**
+	 * Writes the closing link into the property on Google Analytics.
+	 *
+	 * Always the last line of a report and never part of the failure notice.
+	 * The address is the GA4 web app's own, taken as it works today — Google
+	 * does not document it, so if it ever changes the link breaks and the
+	 * report does not. The property id is URL-encoded before it goes in, as
+	 * GaClient encodes the same value for the Data API: a stored value is not
+	 * re-validated on the way out of the options table, and nothing that came
+	 * from it may close the attribute it sits in. The link opens data only for a
+	 * Google account with access to the property, which the readme's FAQ says.
+	 */
+	private static function analytics_link(): string {
+		return '🔗 ' . sprintf(
+			'<a href="%1$s">%2$s</a>',
+			esc_url( 'https://analytics.google.com/analytics/web/#/p' . rawurlencode( Settings::property_id() ) . '/reports/intelligenthome' ),
+			esc_html__( 'More in Google Analytics', 'ga-telegram-bridge' )
 		);
 	}
 

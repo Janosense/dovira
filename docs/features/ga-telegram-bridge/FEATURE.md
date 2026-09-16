@@ -79,7 +79,10 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
   [📍 <b>Міста за 28 днів</b>  {city} {pct}%, one city per line … ]
 
   [📱 <b>Пристрої за 28 днів</b>  {device} {pct}%, one device per line … ]
+
+  🔗 <a href="https://analytics.google.com/analytics/web/#/p{property_id}/reports/intelligenthome">Детальніше в Google Analytics</a>
   ```
+  The closing link is always present on a report (never on the failure notice), built from the property id alone (DECISIONS "The message ends with a link into the GA4 property").
   A page is named by the post at its path, or by the path when no post lives there (DECISIONS "Top pages are counted by path and named by their post"), and a path that is not an address — GA's `(not set)` — is printed without a link. The emoji are not part of the translated titles.
   Failure notice: `⚠️ <b>{site_host}</b> — звіт за {report_date} не сформовано. Деталі в журналі плагіна.`
   Source strings are English (text domain `ga-telegram-bridge`); the `uk` translation shipped in `languages/` is what the template above shows; `—` when a baseline is 0.
