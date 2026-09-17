@@ -16,6 +16,7 @@ $strings = [
 	'Show less', //Згорнути
 	'kyiv', //Згорнути
 	'kharkiv', //Згорнути
+	'DOVIRA', //Згорнути
 ];
 
 if ( ! empty( $strings ) && function_exists( 'pll_register_string' ) ) {
