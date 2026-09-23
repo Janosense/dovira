@@ -32,6 +32,10 @@
 | Блок звіту (report block) | One section of the daily report: visitors, top pages, traffic sources, cities, devices, trend; the owner's site administrator switches blocks on and off, visitors is always on. Trend is the one block that is not a section of its own — it is a line inside the visitors block |
 | Тренд (trend) | The shape of daily visitors over the last 28 days, drawn as 28 block characters (`▁▂▃▄▅▆▇█`) scaled between the period's quietest and busiest day, with those two numbers beside it. It shows the shape of the four weeks, never a total: 28 daily figures of active users do not add up to the 28-day figure, because someone who came on three days counts three times in the sum and once in the period |
 | Одержувач звіту (report recipient) | The one Telegram chat — a channel or a person — that a site's report goes to |
+| Пошук по сайту (site search) | The three ways a visitor searches on a city site: the header form that opens a results page (global), the filter of the services list on a page that carries the «Послуги» block, and the filter of the price list inside one service page |
+| Пошуковий запит (search query) | What a visitor actually looked for: the text once they stopped typing (or left the field), at least three letters for the two filters, normalized so that «Вакцинація», «вакцинація » and «вакцинація» are one query. For the two filters a query is the pair (text, where it was typed) |
+| Рівень пошуку (search level) | Which of the three searches a query came from — `site`, `services` (the list) or `service` (inside a service); the daily report shows each level in its own block |
+| Нічого не знайдено (nothing found) | A site-search query whose results page showed no results every time it was searched in the period — the sign that people look for something the site does not offer or does not name that way |
 
 ## Rules & invariants
 - Every service, employee and vacancy belongs to exactly one or more cities; a
@@ -64,6 +68,12 @@
   never revised, and Google is often still processing it — so a morning report
   is a provisional reading of yesterday, and the same day can show larger
   figures in Google later.
+- Searches are counted only when a person made them in a browser: a crawler
+  fetching the results page counts for nothing. A search is one row, keeps no
+  personal data (no address, device or cookie), and is forgotten after the
+  retention period; the report shows the five most frequent queries of
+  yesterday and of the last 28 days per level, and a day with no searches adds
+  nothing to the message.
 
 ## Roles
 | Role | Can do |
