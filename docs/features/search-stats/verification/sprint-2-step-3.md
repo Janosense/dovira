@@ -1,222 +1,258 @@
-# Verification — search-stats, Sprint 2, Step 3
+# How to check: the search blocks in the morning report
 
-**The three blocks in the message** · written at close on 2026-09-23
-Branch merged: `search-stats/sprint-2-report` → `master` · the last step of Sprint 2
+**search-stats · Sprint 2, Step 3 — The three blocks in the message** · rewritten for manual testing on 2026-09-23
+Merged into `master` · the last step of Sprint 2
 
-What this step promises:
-- **The morning message ends with up to three search blocks.** They sit
-  after the plugin's own blocks and before the "Детальніше в Google Analytics"
-  link, exactly as `docs/features/search-stats/FEATURE.md` → UI shows them:
-  - «Пошук по сайту», with "· нічого не знайдено" on queries that never found
-    anything;
-  - «Пошук у переліку послуг»;
-  - «Пошук у послугах».
-- **Each block has two lists.** Each has a `Вчора:` and a `За 28 днів:` list
-  of up to five rows. An empty list prints `—`, and a level nobody searched
-  adds no block.
-- **Queries are cut and escaped.**
-  - A query over 40 characters keeps 40 and gets `…`.
-  - Page and service names are the Ukrainian post's, or `(видалено)`.
-  - Every value is escaped so that no search text, however odd, can make
-    Telegram refuse the message.
-- **No searches, no change.** A day with no searches sends the plugin's
-  message exactly as before.
-- **Every run carries the same blocks.** *Preview*, *Send now*, the schedule
-  and a retry all carry the same blocks.
-- **Without the plugin, nothing is hooked or loaded.**
+## What changed, in plain words
+The daily Telegram report the owner receives each morning now ends with up to
+three new sections, placed just before the "Детальніше в Google Analytics"
+link:
 
-Run the commands from the repo root (`/Users/tymofii/Projects/php/dovira`).
-Unless a section says otherwise, every expected output was observed on
-2026-09-23 on the local install while this guide was written. The seeded rows
-were then deleted.
+| Section | What it lists |
+|---|---|
+| 🔎 **Пошук по сайту** | what people typed into the search box in the site header |
+| 🗂 **Пошук у переліку послуг** | what people typed into the filter on the services list page |
+| 💊 **Пошук у послугах** | what people typed into the price-list filter on a service's own page |
 
-> **Credentials on screen `Settings`.** The top of Settings → GA → Telegram
-> prints the stored service-account JSON and the bot token back into their
-> fields. Never screenshot or copy the whole page. After pressing a button,
-> jump to the preview with the browser's find (⌘F) for
-> `Повідомлення в тому вигляді` (LEARNINGS 2026-09-10 and 2026-09-23).
+Each section has two short lists:
+- **Вчора:** yesterday;
+- **За 28 днів:** the last four weeks.
 
-## 1. The gate is green
+Each list holds up to five rows, most frequent first. A header search whose
+every attempt found nothing is marked **· нічого не знайдено**. A list with
+nothing in it shows **—**, and a section nobody used at all is left out.
+
+You test it the way a visitor and the owner would: make some searches on the
+local site, then look at the report in wp-admin (and, if you want, in
+Telegram).
+
+Every expected result below was seen on the local site on 2026-09-23 while this
+guide was written. Only the device percentages (`mobile 81%` …) change from
+day to day.
+
+## Before you start
+You need:
+- a terminal in the project folder `/Users/tymofii/Projects/php/dovira`, with
+  the local site running (`ddev start`);
+- the local wp-admin, logged in as an administrator:
+  https://dovira.ddev.site/wp-admin;
+- only for step 9: the Telegram chat the local site sends its report to.
+
+> ⚠️ **The report's settings page shows secrets at its top.** On
+> Settings → GA → Telegram, the first fields contain the Google key and the
+> Telegram bot token. Never screenshot, copy or share that page as a whole.
+> When a step sends you there, use the browser's search (⌘F) to jump straight
+> to the part you need.
+
+**Optional, for developers.** The automated checks still pass:
 ```bash
 bash bin/check.sh; echo "exit=$?"
 ```
-Expected:
-- `OK (309 tests, 1103 assertions)` for the plugin;
-- `134 files checked`;
-- `OK (92 tests, 229 assertions)` for the theme (83 before this step);
-- `==> check: all green` and `exit=0`.
+It ends with `==> check: all green` and `exit=0`: 309 plugin tests and 92
+theme tests.
 
-## 2. The step's own tests
+---
+
+## Part A — Search like a visitor
+
+### 1. Note where your test starts
+The search log may already hold other people's searches. Write down the last
+entry's number, so that later steps touch only your own searches:
 ```bash
-(cd wp-content/themes/dovira/tests && vendor/bin/phpunit --testdox --filter '/(RendererTest|BootstrapFilterTest)::/')
+ddev wp db query "SELECT COALESCE(MAX(id), 0) FROM wp_dovira_search_queries" --skip-column-names
 ```
-Expected: `OK (9 tests, 17 assertions)`. Among them:
-- *Queries and titles are escaped for telegram*: a query `&nbsp; &copy;`
-  prints `&amp;nbsp; &amp;copy;`, where `esc_html()` would have left them.
-- *The list is untouched when there is nothing to add*.
+You see one number, for example `56`. **Write it down.** Below, it is called
+**N**; replace `N` with your number wherever it appears.
 
-## 3. The theme hooks the report only when the plugin is there
+### 2. Search from the header search box
+Open each address in the browser, in this order. Each time you open the page,
+wait until it has finished loading (about 2 seconds): that moment counts as
+one search.
+
+| Open | How many times | What the page shows |
+|---|---|---|
+| https://dovira.ddev.site/?s=вакцинація | **2** (open it, then reload once) | a list of results |
+| https://dovira.ddev.site/?s=жирафи | **2** | no results |
+| https://dovira.ddev.site/?s=дуже довгий запит про вакцинацію котів і собак | 1 | no results |
+| https://dovira.ddev.site/?s=%3Cb%3E | 1 | no results (this is the search text `<b>`) |
+
+On the last page the heading "Результати пошуку для запиту:" looks empty. That
+is a known, separate problem of the results page (`search.php` prints the
+query unescaped) and not part of this step.
+
+### 3. Search in the services list
+1. Open https://dovira.ddev.site/services/.
+2. Click the field **"Швидкий пошук по послугах:"** above the service cards.
+3. Type `кастрація` and wait **3 seconds**. The cards filter as you type, as
+   before.
+4. Select everything in the field, type `&copy; <i>` exactly like that, and
+   wait **3 seconds**.
+
+### 4. Search in the services list of the Russian site
+1. Open https://dovira.ddev.site/ru/uslugi/ (the page is titled «Услуги»).
+2. Click the same search field, type `стерилизация`, and wait **3 seconds**.
+
+### 5. Search inside one service
+1. Open https://dovira.ddev.site/services/reception-department/ («Приймальне
+   відділення»).
+2. Click the search field of the price list, type `огляд`, and wait
+   **3 seconds**.
+
+### 6. Check that all 10 searches were counted
 ```bash
-ddev wp plugin list --name=ga-telegram-bridge --fields=name,status,version
-ddev wp eval 'echo false !== has_filter( "gatb_extra_blocks", [ "dovira\\SearchStats\\Renderer", "add_to" ] ) ? "hooked" : "not hooked", "\n";'
-ddev wp eval --skip-plugins=ga-telegram-bridge 'echo false !== has_filter( "gatb_extra_blocks", [ "dovira\\SearchStats\\Renderer", "add_to" ] ) ? "hooked" : "not hooked", " renderer loaded=", class_exists( "dovira\\SearchStats\\Renderer", false ) ? "yes" : "no", "\n";'
+ddev wp db query "SELECT COUNT(*) FROM wp_dovira_search_queries WHERE id > N" --skip-column-names
 ```
-Expected:
-- `ga-telegram-bridge	active	0.3.0`;
-- `hooked`;
-- `not hooked renderer loaded=no`. This is the **negative check**: WordPress
-  loaded without the plugin, and the theme hooks nothing and loads no
-  renderer. The plugin's activation is not touched.
+Expected: `10`. If the number is lower, a filter search probably did not wait
+long enough: a filter counts a search only after the typing pauses for
+1.5 seconds, or when you click away.
 
-## 4. Seed searches
+### 7. Pretend the searches happened yesterday
+The report only ever shows **yesterday** and the four weeks before today:
+searches made today wait for tomorrow's report. So that you don't have to
+wait, move your 10 searches back by one day:
 ```bash
-ddev wp db query "SELECT COUNT(*) FROM wp_dovira_search_queries" --skip-column-names
+ddev wp db query "UPDATE wp_dovira_search_queries SET created_at = created_at - INTERVAL 1 DAY WHERE id > N"
 ```
-Expected: `0`. Other rows would share the top five.
+Expected: `Success: Query succeeded. Rows affected: 10`.
 
-The seed is written for the local install's zone, `+03:00` (Step 2's guide
-§3). `@t` is today's local midnight in UTC, computed by the database, and
-every text starts with `zz-verify`.
-```bash
-ddev wp db query "SET @t = CONVERT_TZ( DATE( CONVERT_TZ( UTC_TIMESTAMP(), '+00:00', '+03:00' ) ), '+03:00', '+00:00' );
-INSERT INTO wp_dovira_search_queries (level, query_text, context_id, results, created_at) VALUES
-('site', 'zz-verify вакцинація', 0, 5, @t - INTERVAL 20 HOUR),
-('site', 'zz-verify вакцинація', 0, 5, @t - INTERVAL 19 HOUR),
-('site', 'zz-verify вакцинація', 0, 5, @t - INTERVAL 18 HOUR),
-('site', 'zz-verify рентген', 0, 3, @t - INTERVAL 17 HOUR),
-('site', 'zz-verify рентген', 0, 0, @t - INTERVAL 16 HOUR),
-('site', 'zz-verify груминг', 0, 0, @t - INTERVAL 15 HOUR),
-('site', 'zz-verify груминг', 0, 0, @t - INTERVAL 14 HOUR),
-('services', 'zz-verify кастрація', 1630, NULL, @t - INTERVAL 13 HOUR),
-('service', 'zz-verify узі', 18, NULL, @t - INTERVAL 12 HOUR),
-('service', 'zz-verify зникла послуга', 999999, NULL, @t - INTERVAL 11 HOUR),
-('site', 'zz-verify &nbsp; <b> &copy;', 0, 2, @t - INTERVAL 10 HOUR),
-('site', 'zz-verify дуже довгий запит про вакцинацію котів і собак', 0, 1, @t - INTERVAL 9 HOUR);"
-```
-Expected: `Rows affected: 12`.
+---
 
-The less obvious rows:
-- **`кастрація`** was typed on the **Russian** «Услуги» page (1630). It must
-  be named by the Ukrainian post, `Послуги`.
-- **`зникла послуга`** belongs to post 999999, which does not exist.
-- **The `&nbsp; <b> &copy;` row** is a search text that `esc_html()` would
-  have let through to Telegram.
-- **The long query** is 55 characters.
+## Part B — What the report shows
 
-## 5. The message, from the shell
-This reads GA and sends nothing:
-```bash
-ddev wp eval '$m = GaTelegramBridge\MessageRenderer::compose( GaTelegramBridge\ReportBuilder::build() ); echo "dropped=", $m["dropped"], "\n", implode( "\n", array_slice( explode( "\n", $m["html"] ), -31 ) ), "\n";'
+### 8. Look at the report in *Preview*
+This builds the report and shows it; nothing is sent.
+1. Open https://dovira.ddev.site/wp-admin/options-general.php?page=gatb-settings.
+2. Scroll down to the section **"З’єднання"** and click **Попередній перегляд**.
+3. The page reloads and jumps back to the top, where the secrets are. Don't
+   scroll up: press ⌘F and search for **`Повідомлення в тому вигляді`**.
+4. Below that sentence is a grey box with the report as its raw text. Tags such
+   as `<b>` are shown as text here; in Telegram they become bold.
+
+**Expected.** The box ends like this (the device percentages vary):
 ```
-Expected (the device shares are that day's):
-```
-dropped=0
+📱 <b>Пристрої за 28 днів</b>
+mobile 81%
+desktop 19%
 tablet 0%
 
 🔎 <b>Пошук по сайту</b>
 Вчора:
-1. zz-verify вакцинація — 3
-2. zz-verify груминг — 2 · нічого не знайдено
-3. zz-verify рентген — 2
-4. zz-verify дуже довгий запит про вакцинац… — 1
-5. zz-verify &amp;nbsp; &lt;b&gt; &amp;copy; — 1
+1. жирафи — 2 · нічого не знайдено
+2. вакцинація — 2
+3. <b> — 1 · нічого не знайдено
+4. дуже довгий запит про вакцинацію котів і… — 1 · нічого не знайдено
 За 28 днів:
-1. zz-verify вакцинація — 3
-2. zz-verify груминг — 2 · нічого не знайдено
-3. zz-verify рентген — 2
-4. zz-verify дуже довгий запит про вакцинац… — 1
-5. zz-verify &amp;nbsp; &lt;b&gt; &amp;copy; — 1
+1. жирафи — 2 · нічого не знайдено
+2. вакцинація — 2
+3. <b> — 1 · нічого не знайдено
+4. дуже довгий запит про вакцинацію котів і… — 1 · нічого не знайдено
 
 🗂 <b>Пошук у переліку послуг</b>
 Вчора:
-1. zz-verify кастрація — Послуги — 1
+1. стерилизация — Послуги — 1
+2. &copy; <i> — Послуги — 1
+3. кастрація — Послуги — 1
 За 28 днів:
-1. zz-verify кастрація — Послуги — 1
+1. стерилизация — Послуги — 1
+2. &copy; <i> — Послуги — 1
+3. кастрація — Послуги — 1
 
 💊 <b>Пошук у послугах</b>
 Вчора:
-1. zz-verify зникла послуга — (видалено) — 1
-2. zz-verify узі — Приймальне відділення — 1
+1. огляд — Приймальне відділення — 1
 За 28 днів:
-1. zz-verify зникла послуга — (видалено) — 1
-2. zz-verify узі — Приймальне відділення — 1
+1. огляд — Приймальне відділення — 1
 
 🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">Детальніше в Google Analytics</a>
 ```
-Read it against `FEATURE.md` → UI:
-- one blank line between the blocks;
-- the long query cut at exactly 40 characters (`zz-verify дуже довгий
-  запит про вакцинац`) before `…`;
-- equal counts ordered by the newer search (`довгий` before `&nbsp;`,
-  `зникла` before `узі`).
 
-**Negative checks:**
-- `рентген` carries no marker.
-- No raw `&nbsp;` or `<b>` from a query reaches the message.
+**Check each of these:**
+- [ ] The three new sections come **after** the devices section and **before**
+      the Google Analytics link, one empty line apart.
+- [ ] **Counting.** «вакцинація» and «жирафи» show **2**, because each page
+      was opened twice.
+- [ ] **Ties.** «жирафи» comes before «вакцинація». Both were searched
+      twice, and the one searched more recently goes first.
+- [ ] **Nothing found.** «жирафи» carries **· нічого не знайдено**, because
+      its page found nothing. «вакцинація» does not, because its page found
+      results.
+- [ ] **Long queries are shortened.** The long query is cut after 40
+      characters and ends with **…**.
+- [ ] **The Russian page is named in Ukrainian.** «стерилизация», typed on
+      the Russian «Услуги» page, is shown under the Ukrainian page name
+      **Послуги**.
+- [ ] **Each service is named.** «огляд» shows the service it was typed in:
+      **Приймальне відділення**.
+- [ ] **Odd text stays plain text.** `<b>` and `&copy; <i>` appear exactly
+      as they were typed. They are not turned into bold, italics or a ©
+      sign.
 
-## 6. The same on screen, in *Preview*
-1. Open
-   `https://dovira.ddev.site/wp-admin/options-general.php?page=gatb-settings`.
-2. Press **Попередній перегляд**.
-3. When the page returns, ⌘F for `Повідомлення в тому вигляді`.
+### 9. Optional: send it to Telegram
+⚠️ This sends a real message to the chat the local site is configured with.
 
-The `<pre>` under it ends with the same three blocks as §5, between
-`📱 <b>Пристрої за 28 днів</b>` and the `🔗` line.
+1. On the same page, click **Надіслати зараз**.
+2. ⌘F for **Журнал запусків** to find the run log.
 
-The screen shows that row as `5. zz-verify &nbsp; <b> &copy; — 1`, the plain
-text Telegram will show. The preview prints the message through
-`esc_html()`, which does not re-escape the message's own `&amp;…` and
-`&lt;…`, so they display decoded; the Step 1 guide saw the same with `&amp;`.
-The message itself is §5.
+**Expected:**
+- [ ] The newest row of **Журнал запусків** reads `Звіт за {yesterday's date}
+      надіслано в чат {chat number}.`, and nothing more. No sentence about
+      blocks being left out: the message is far below Telegram's size limit.
+- [ ] In Telegram, the message arrives and ends with the three sections, then
+      the Google Analytics link.
+- [ ] The section headings are **bold**. The rows show `<b>` and
+      `&copy; <i>` as plain text, just as typed.
 
-*Observed:* on 2026-09-23 the preview was checked by reading the `<pre>`
-element only, on a seed without the long and the deleted-post rows:
-- the blocks were in the order devices → site → services list → service →
-  link;
-- there were two markers;
-- both titles were printed.
+---
 
-## 7. *Send now* (sends a message)
-*Not observed while this guide was written.* It posts to the chat the local
-install is configured with.
+## Part C — What must NOT happen
 
-With the §4 rows still in place, press **Надіслати зараз**. Expected:
-- In Telegram, the message ends with the three blocks under bold headings,
-  then the link. The query row reads `zz-verify &nbsp; <b> &copy;` as plain
-  text, and the message was not refused.
-- The notice and the newest row of "Журнал запусків" read
-  `Звіт за {yesterday} надіслано в чат {chat id}.`, with **no** sentence
-  about left-out blocks: the message is far below 4 096 characters.
+### 10. Today's searches do not appear before tomorrow
+1. Open https://dovira.ddev.site/?s=сьогодні once and let it load.
+2. Repeat step 8 (*Preview*).
 
-## 8. No searches: the plugin's message alone
+**Expected:** the word «сьогодні» appears **nowhere** in the report. It
+belongs to today, and today is reported tomorrow.
+
+### 11. No searches, no sections
+Remove every search you made, including the one from step 10:
 ```bash
-ddev wp db query "DELETE FROM wp_dovira_search_queries WHERE query_text LIKE 'zz-verify%'"
-ddev wp db query "SELECT COUNT(*) FROM wp_dovira_search_queries" --skip-column-names
-ddev wp eval '$m = GaTelegramBridge\MessageRenderer::compose( GaTelegramBridge\ReportBuilder::build() ); echo "dropped=", $m["dropped"], " search blocks=", substr_count( $m["html"], "Пошук" ), "\n", implode( "\n", array_slice( explode( "\n", $m["html"] ), -3 ) ), "\n";'
+ddev wp db query "DELETE FROM wp_dovira_search_queries WHERE id > N"
 ```
-Expected:
-- `Rows affected: 12`, then `0`;
-- `dropped=0 search blocks=0`, then the last device row, a blank line and
-  the `🔗` link.
+Expected: `Rows affected: 11`.
 
-This is the **negative check**: an empty table adds nothing, not even an
-empty heading. *Preview* now ends with the devices block and the link.
+Repeat step 8 (*Preview*). **Expected:** the box ends with the devices section,
+one empty line, then the Google Analytics link. There are **no** «Пошук»
+headings and no empty sections: the report looks exactly as it did before this
+feature.
 
-## Not locally verifiable: the sprint-boundary hand deploy
-Sprint 2 reaches the owner only with the developer's hand deploy:
-- `master` goes to Kharkiv as files.
-- `master` is merged into `kyiv`, and `kyiv` goes to Kyiv.
-- Both carry the theme and plugin 0.3.0, with no settings change.
+If the site had real searches from other people in the last four weeks, their
+sections remain. That is correct: only your own were removed.
 
-On **each** install:
-1. The line under "Журнал запусків" reads `Версія плагіна 0.3.0`.
-2. **The Sprint 1 checks.** Both were deferred to this deploy.
-   - The first request creates `{prefix}dovira_search_queries`. The database
-     user needs `CREATE`.
-   - One real search of each kind leaves one row. Delete those test rows
-     afterwards.
-3. **The next morning's report** ends with that install's own search blocks,
-   before the GA link. Kyiv's queries never appear in Kharkiv's message, and
-   the reverse holds too.
-4. **A morning with no searches** on an install sends the plugin's message
-   alone.
+### 12. Without the report plugin, the site adds nothing
+This is a technical check. It starts WordPress once without the
+"GA → Telegram" plugin, without deactivating it:
+```bash
+ddev wp eval --skip-plugins=ga-telegram-bridge 'echo false !== has_filter( "gatb_extra_blocks", [ "dovira\\SearchStats\\Renderer", "add_to" ] ) ? "hooked" : "not hooked", " renderer loaded=", class_exists( "dovira\\SearchStats\\Renderer", false ) ? "yes" : "no", "\n";'
+```
+**Expected:** `not hooked renderer loaded=no`. Without the plugin, the theme
+neither hooks into the report nor loads the code that writes the sections.
+
+---
+
+## Part D — On the live sites, after the hand deploy
+This part can only be checked after the developer's deploy:
+- `master` → Kharkiv (dovira.vet).
+- `master` merged into `kyiv` → Kyiv (kyiv.dovira.vet).
+- Files only, no settings change.
+
+On **each** site:
+1. **The plugin version.** In wp-admin → Settings → GA → Telegram, ⌘F for
+   **Версія плагіна**. It reads `0.3.0`. Do not look at the top of the page.
+2. **Searches are recorded.** Make one search of each kind, as in steps 2–5,
+   using that site's own pages. Afterwards, the developer checks that the log
+   holds them, then deletes them (Sprint 1's check, deferred to this deploy).
+3. **The next morning's report** ends with that site's own search sections,
+   before the Google Analytics link. The Kyiv report never shows Kharkiv's
+   searches, and the reverse holds too.
+4. **A quiet day.** On a morning after a day nobody searched, the report looks
+   exactly as it did before this feature.
