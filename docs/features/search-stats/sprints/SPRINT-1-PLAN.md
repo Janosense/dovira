@@ -347,3 +347,259 @@ were measured while planning.
 **Resolved: approved as recommended — B.** The theme's test tooling is a
 separate dev-only Composer project in `wp-content/themes/dovira/tests/`. The
 theme's own `composer.json` and `vendor/` are not touched. (`/do-step`, 2026-09-23.)
+
+## Plan — Sprint 1, Step 2: Feature bootstrap, the table and the purge   (status: closed)
+
+### Branch
+`search-stats/sprint-1-recording` ← `master`
+(root `CLAUDE.md` → git model: simple, task branch → `master`. The name is the
+**Branch** line of `SPRINT-1.md`. The branch is recreated from `master`, which
+now carries Step 1, and deleted at the close.)
+
+### Tasks (ordered)
+- [x] **1. The feature's bootstrap and the table.**
+  - `inc/features/search-stats/bootstrap.php` requires `Schema.php` and
+    registers two hooks:
+    - `add_action( 'after_switch_theme', [ Schema::class, 'install' ] )`;
+    - `add_action( 'init', [ Schema::class, 'maybe_upgrade' ] )`.
+  - `functions.php` gains one line, `require_once TEMPLATE_DIR .
+    '/inc/features/search-stats/bootstrap.php';`, under a docblock like the
+    others. It goes after the Polylang require (`:56`) and before the `WP_CLI`
+    guard (`:61`), so the feature loads on web, REST, cron and CLI requests
+    alike (Step 1 audit, touchpoint 1).
+  - `inc/features/search-stats/Schema.php` holds `dovira\SearchStats\Schema`
+    (a `final` class, following the theme's `dovira\` / `dovira\CLI`
+    convention; no `declare(strict_types)`, like the rest of the theme's
+    classes):
+    - `VERSION = 1`, `OPTION = 'dovira_search_stats_db_version'`,
+      `TABLE = 'dovira_search_queries'`;
+    - `table_name()` returns `$wpdb->prefix . TABLE`;
+    - `create_table_sql()` returns the `CREATE TABLE` shown under *Files*,
+      written to dbDelta's rules: one column per line, two spaces after
+      `PRIMARY KEY`, `KEY` rather than `INDEX`, lowercase types, no
+      backticks, and `$wpdb->get_charset_collate()` at the end;
+    - `install()` does `require_once ABSPATH . 'wp-admin/includes/upgrade.php'`
+      only when `dbDelta` is not defined yet (this is the front end, and
+      `upgrade.php` is an admin include). It then calls
+      `dbDelta( create_table_sql() )`, and only when `$wpdb->last_error === ''`
+      calls `update_option( OPTION, VERSION, true )`. The option is autoloaded
+      because `init` reads it on every request;
+    - `maybe_upgrade()` calls `install()` only when `(int) get_option( OPTION, 0 ) < VERSION`.
+      Every other request costs one read of an autoloaded option, and dbDelta
+      never runs on every request.
+  - `tests/WpdbDouble.php` is a `dovira\Tests\WpdbDouble` test double for
+    `$wpdb`:
+    - properties `prefix` and `last_error`;
+    - `get_charset_collate()` returns a fixed collate string;
+    - `prepare()` records the query and its arguments and returns the
+      interpolated string;
+    - `query()` records the SQL.
+
+    PSR-4 `dovira\Tests\` → `tests/` from Step 1 autoloads it, so no
+    `composer dump-autoload` is needed.
+  - `tests/Unit/SearchStats/SchemaTest.php`. The class under test is loaded
+    with `require_once` by its path in the theme, not through Composer. The
+    theme loads its classes by path, and a new PSR-4 entry in
+    `tests/composer.json` would not reach an existing `tests/vendor/`: the gate
+    installs only when that directory is missing, so every developer machine
+    would need a manual `composer dump-autoload`.
+
+  Docs in the same commit (core rule 5):
+  - `docs/DATA-MODEL.md`:
+    - Conventions: "No custom tables, no migrations mechanism" becomes one
+      custom table, versioned through dbDelta;
+    - a new section `## Feature search-stats` holding the table (columns,
+      keys, UTC, ownership), the option, and the manual removal (`DROP TABLE`,
+      `wp option delete`).
+  - `docs/ARCHITECTURE.md` → Modules: a `search-stats` row. The Bootstrap row
+    gains "and one `inc/features/{name}/bootstrap.php` per feature".
+  - `docs/TESTING.md` → Rules: the code under test is required by path; the
+    `$wpdb` double is `tests/WpdbDouble.php`.
+
+  **Touches shared code — may affect other features:** `functions.php`, which
+  every theme feature (`core`, `search-stats`) loads on every request.
+  → `feat(search-stats): create the search queries table from a schema version`
+
+- [x] **2. The purge.**
+  - `inc/features/search-stats/Purge.php` holds `dovira\SearchStats\Purge`:
+    - `HOOK = 'dovira_search_stats_purge'`, `FILTER = 'dovira_search_stats_retention_days'`,
+      `DEFAULT_RETENTION_DAYS = 90`, `MIN_RETENTION_DAYS = 29`. The number 90
+      appears once;
+    - `retention_days()` returns
+      `max( MIN_RETENTION_DAYS, (int) apply_filters( FILTER, DEFAULT_RETENTION_DAYS ) )`;
+    - `schedule()` calls `wp_schedule_event( time(), 'daily', HOOK )` only
+      when `wp_next_scheduled( HOOK )` is `false`;
+    - `run( ?int $now = null )` executes
+      `$wpdb->query( $wpdb->prepare( "DELETE FROM {table} WHERE created_at < %s", gmdate( 'Y-m-d H:i:s', $now - retention_days() * DAY_IN_SECONDS ) ) )`,
+      where `$now` defaults to `time()`. The optional clock is the plugin's
+      convention; Brain\Monkey cannot stub `time()`.
+  - `bootstrap.php` gains two hooks:
+    - `add_action( 'init', [ Purge::class, 'schedule' ] )`;
+    - `add_action( Purge::HOOK, [ Purge::class, 'run' ], 10, 0 )`.
+
+    `accepted_args` 0 is deliberate. `do_action()` with no arguments passes
+    `''` (`wp-includes/plugin.php:516`), which would reach `?int $now` as a
+    TypeError. WP-Cron uses `do_action_ref_array( $hook, [] )`
+    (`wp-cron.php:191`), and `WP_Hook` calls a 0-argument callback with none
+    (`class-wp-hook.php:350`).
+  - `tests/bootstrap.php` defines `DAY_IN_SECONDS` (86400, WordPress's own
+    value) when it is not defined, because no WordPress is loaded in the
+    tests. This is the one constant the feature's classes need; the Step 1
+    bootstrap left room for it.
+  - `tests/Unit/SearchStats/PurgeTest.php`.
+
+  Docs in the same commit:
+  - `docs/DATA-MODEL.md` → the feature section gains the cron hook, the filter
+    (default 90, floor 29), "the purge is the only delete", and
+    `wp cron event delete dovira_search_stats_purge` in the removal note.
+  - `docs/ARCHITECTURE.md` → the feature's Modules row gains the purge.
+
+  **Touches shared code — may affect other features:** `tests/bootstrap.php`,
+  the theme test harness, which only `search-stats` consumes today.
+  → `feat(search-stats): purge search rows older than the retention period`
+
+### Files to create/change
+**New: `wp-content/themes/dovira/inc/features/search-stats/`**
+- `bootstrap.php` (task 1; task 2 adds the purge hooks)
+- `Schema.php` (task 1). `create_table_sql()` for prefix `wp_`:
+  ```sql
+  CREATE TABLE wp_dovira_search_queries (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    level varchar(16) NOT NULL,
+    query_text varchar(100) NOT NULL,
+    context_id bigint(20) unsigned NOT NULL DEFAULT 0,
+    results int(10) unsigned NULL,
+    created_at datetime NOT NULL,
+    PRIMARY KEY  (id),
+    KEY level_created_at (level,created_at),
+    KEY created_at (created_at)
+  ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci
+  ```
+  The collate string is what the local install's `$wpdb->get_charset_collate()`
+  returns (checked 2026-09-23). The integer display widths are the ones
+  MariaDB 10.11's `DESCRIBE` prints, so a later dbDelta run finds nothing to
+  alter. `level` and `query_text` are `NOT NULL`: the sprint gives their types,
+  and the only writer (Step 3's route) always sets both.
+- `Purge.php` (task 2)
+
+**New: `wp-content/themes/dovira/tests/`**
+- `WpdbDouble.php` (task 1)
+- `Unit/SearchStats/SchemaTest.php` (task 1), `Unit/SearchStats/PurgeTest.php` (task 2)
+
+**Changed**
+- `wp-content/themes/dovira/functions.php` (task 1, shared)
+- `wp-content/themes/dovira/tests/bootstrap.php` (task 2, shared test harness)
+- `docs/DATA-MODEL.md`, `docs/ARCHITECTURE.md` (tasks 1 and 2), `docs/TESTING.md` (task 1)
+
+**Checked and not changed**
+- `tests/phpunit.xml.dist` scans `Unit/` recursively, so `Unit/SearchStats/`
+  is already included.
+- `tests/composer.json` needs no change, because the classes under test are
+  required by path.
+- The gate's `php -l` stage picks up the six new PHP files (111 → 117).
+- The theme `CLAUDE.md` already states where a feature lives and that
+  `functions.php` gets one line per feature.
+- The feature's `FEATURE.md` → Data already names the table, the option, the
+  hook and the filter.
+- ARCHITECTURE → Feature map already has the row.
+
+### Tests to write
+The clock is pinned to `1790164800`, i.e. 2026-09-23 12:00:00 UTC. The cutoffs
+below were computed from it with `gmdate()` while planning. `$wpdb` is a
+`WpdbDouble` in `$GLOBALS['wpdb']`, set in `setUp()` and removed in
+`tearDown()`. Every WordPress call a test cares about is recorded by a
+`Functions\when()->alias()` and asserted, never left to an expectation alone
+(TESTING.md → How to run).
+
+`SchemaTest`
+- `install()` hands `dbDelta` exactly the SQL above for prefix `wp_`, and the
+  same SQL with prefix `wpk_` for a second prefix. That proves the table name
+  comes from `$wpdb->prefix`, with every column and both keys, and nothing else.
+- A successful run (`last_error` stays `''`) writes the option once:
+  `update_option( 'dovira_search_stats_db_version', 1, true )`.
+- A failed run (the `dbDelta` stub sets `last_error`) writes no option.
+- `maybe_upgrade()` with the option absent (`false`) or behind (`'0'`), via a
+  data provider, calls `dbDelta` once and writes the option.
+- `maybe_upgrade()` with the option current (`'1'`) calls neither `dbDelta`
+  nor `update_option`.
+
+`PurgeTest`
+- With no filter, `run( 1790164800 )` prepares
+  `DELETE FROM wp_dovira_search_queries WHERE created_at < %s` with
+  `['2026-06-25 12:00:00']` (90 days), and `query()` receives the prepared
+  string. Both are asserted.
+- The filter is applied once, with the default `90`.
+- A filter returning `5` gives `2026-08-25 12:00:00` (clamped to 29), one
+  returning `29` gives the same, and one returning `120` gives
+  `2026-05-26 12:00:00` (a data provider).
+- `schedule()` with `wp_next_scheduled()` returning `false` calls
+  `wp_schedule_event` once with `(int, 'daily', 'dovira_search_stats_purge')`.
+  With it returning a timestamp, it calls nothing.
+
+`bin/check.sh` must exit 0 after each task: 297 plugin tests, 117 files linted
+after task 2, and the theme suite at 1 + the new tests.
+
+### Docs to update
+- `docs/DATA-MODEL.md`
+  - Conventions: the custom-table exception.
+  - New section `## Feature search-stats` (custom table + `wp_options`):
+    - the table: columns, types, nullability, keys, `created_at` in UTC,
+      `results` `NULL` except for level `site`;
+    - the option: autoloaded, written only after a successful dbDelta;
+    - the cron hook and the filter;
+    - ownership: no other feature writes to the table;
+    - the manual removal: `DROP TABLE {prefix}dovira_search_queries`,
+      `wp option delete dovira_search_stats_db_version` and
+      `wp cron event delete dovira_search_stats_purge`. A theme has no
+      uninstall.
+
+  This is the step's own item. The Conventions line is core rule 5, because
+  it becomes false.
+- `docs/ARCHITECTURE.md` → Modules:
+  - one row for `search-stats`: location, `Schema` and `Purge`, the hooks it
+    registers; "must never": write another feature's data, delete from a
+    public request;
+  - the Bootstrap row's list of requires (rule 5).
+- `docs/TESTING.md` → Rules: code under test is required by path; the `$wpdb`
+  double. This follows from rule 5, because the step creates the convention.
+
+### Checks
+- **ANTI-PATTERNS:** none violated.
+  - No post type, taxonomy or ACF group is registered.
+  - Nothing goes in `mu-plugins/`, `temp-data/` or `assets/`, and there is no
+    city branching.
+  - No package is added to the theme's `composer.json`.
+  - `functions.php` gets exactly one feature line (theme `CLAUDE.md` →
+    Feature isolation).
+- **Docs vs reality:** mismatch. Resolved and recorded:
+  1. DATA-MODEL → Conventions says "No custom tables, no migrations
+     mechanism". This step adds both. It is updated in task 1.
+  2. The sprint's Verification runs `ddev wp db query "DESCRIBE …"` first, but
+     `wp db` commands do not load WordPress, so `init` has not fired and the
+     table does not exist yet on a fresh install. The verification guide first
+     loads WordPress once (a page, or `ddev wp option get …`). No task changes.
+  3. `after_switch_theme` fires only on a theme switch, from
+     `check_theme_switched()` on `init` at priority 99. On the hand deploy
+     the theme is already active, so the priority-10 `init` check is what
+     creates the table on both productions. After a real switch, dbDelta runs
+     twice in that request, and the second run is a no-op.
+  4. If a production database user cannot `CREATE TABLE`, dbDelta leaves
+     `last_error` set. The option is then not written and `init` retries
+     dbDelta on every request until it succeeds. That is what "written after
+     a successful run" means, so no task changes; it is listed below as not
+     locally verifiable.
+- **Design:** n/a. No screen.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) was
+  green on `master` after the Step 1 merge: 297 plugin tests, 111 files, 1
+  theme test.
+- **Not locally verifiable:** that the first request after the hand deploy
+  creates `{prefix}dovira_search_queries` on each production install, writes
+  `dovira_search_stats_db_version` = 1, and registers
+  `dovira_search_stats_purge`. This also proves the database user may create
+  tables. It is verified at the sprint-boundary deploy with
+  `wp db query "DESCRIBE {prefix}dovira_search_queries"`, `wp option get
+  dovira_search_stats_db_version` and `wp cron event list` over SSH on each
+  install.
+
+### Questions / ambiguities
+none

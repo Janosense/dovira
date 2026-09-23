@@ -43,7 +43,7 @@ Telegram message yet.
 - **Docs to update:** `docs/TECH-STACK.md` → Check command (five stages) and Approved dependencies log (two rows for the theme); `docs/TESTING.md` → How to run (the theme suite), Fixtures, Rules; the theme `CLAUDE.md` → Local commands (`composer test`).
 - **Depends on:** —
 
-### [ ] Step 2 — Feature bootstrap, the table and the purge
+### [x] Step 2 — Feature bootstrap, the table and the purge
 - **Tasks:**
   - `inc/features/search-stats/bootstrap.php` (requires the feature's classes, registers hooks) and one line in `functions.php` (**touches shared code:** `functions.php`; consumers: every theme feature).
   - `Schema` class: the `CREATE TABLE` for `{$wpdb->prefix}dovira_search_queries` (`id` BIGINT UNSIGNED AUTO_INCREMENT, `level` VARCHAR(16), `query_text` VARCHAR(100), `context_id` BIGINT UNSIGNED NOT NULL DEFAULT 0, `results` INT UNSIGNED NULL, `created_at` DATETIME NOT NULL; keys on (`level`, `created_at`) and (`created_at`)), applied through `dbDelta()` on `after_switch_theme` and on `init` when `dovira_search_stats_db_version` is behind the class constant — never on every request.

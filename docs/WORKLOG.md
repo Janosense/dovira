@@ -17,6 +17,28 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] Sprint 1 Step 2 — Feature bootstrap, the table and the purge
+- Changed:
+  - The feature is registered: one line in `functions.php`, plus `inc/features/search-stats/bootstrap.php`.
+  - `Schema` creates `{prefix}dovira_search_queries` (six columns, keys `level_created_at` and `created_at`) with `dbDelta()`. It runs on `after_switch_theme`, and on `init` only while the autoloaded option `dovira_search_stats_db_version` is behind `VERSION = 1`. The version is written only when dbDelta leaves no error.
+  - `Purge` registers the daily `dovira_search_stats_purge` event on `init` when it is absent, and deletes rows whose `created_at` (UTC) is older than `apply_filters( 'dovira_search_stats_retention_days', 90 )` days, never fewer than 29.
+  - Theme tests: 1 → 15. 117 files linted.
+- Shared code:
+  - `functions.php` (one feature line, loaded by `core` and `search-stats` on every request).
+  - `tests/bootstrap.php` (defines `DAY_IN_SECONDS`).
+  - A new shared test double, `tests/WpdbDouble.php`.
+  - No `core` template, route or data changed.
+- Decisions: none new in DECISIONS.md. Settled in the plan:
+  - The purge hook takes 0 arguments, because `do_action()` without arguments passes `''` to `?int $now`.
+  - Tests load the code under test by path, never through a new PSR-4 entry, because the gate would not refresh an existing `tests/vendor/` autoloader (TESTING.md → Rules).
+  - `level` and `query_text` are `NOT NULL`.
+- Verified on the local install from a dropped table:
+  - one page load created the table, the version (autoload `on`) and the event;
+  - a second dbDelta is a no-op;
+  - the purge removed a 100-day row and kept an 89-day one;
+  - the retention reads `90 29 120` for no filter, a filter of 5 and a filter of 120.
+- Open: whether both productions create the table on the first request after the hand deploy (the database user needs CREATE), checked at the sprint-boundary deploy. Nothing writes rows until Step 3's route.
+
 ## 2026-09-23 — [search-stats] Sprint 1 Step 1 — Delta-audit and the theme's test suite in the gate
 - Changed:
   - The theme has a unit suite in `wp-content/themes/dovira/tests/`, its own dev-only Composer project: PHPUnit 12.5.35, Brain\Monkey 2.7.0, platform PHP 8.3, `failOnRisky`, and one smoke test. Its `vendor/` is gitignored and its lock uncommitted.

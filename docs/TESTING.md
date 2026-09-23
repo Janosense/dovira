@@ -170,3 +170,17 @@ The rest of this section is the plugin's
   tooling is its own Composer project in `tests/`").
   - A new test class needs nothing: PHPUnit scans `tests/Unit/`, and the PSR-4
     `dovira\Tests\` → `tests/` autoloads its helpers.
+  - The code under test is loaded with `require_once` by its path in the
+    theme, as the theme itself loads its classes, e.g.
+    `require_once dirname( __DIR__, 3 ) . '/inc/features/search-stats/Schema.php';`
+    from `tests/Unit/SearchStats/`.
+    - Never add a PSR-4 entry for theme code to `tests/composer.json`: the
+      gate installs only when `tests/vendor/` is missing, so an existing
+      install would not see the new mapping until someone ran
+      `composer dump-autoload` by hand.
+    - Never require a feature's `bootstrap.php` in a test either: it
+      registers hooks when it loads.
+  - `$wpdb` is `dovira\Tests\WpdbDouble` (`tests/WpdbDouble.php`), put in
+    `$GLOBALS['wpdb']` in `setUp()` and removed in `tearDown()`. It records
+    `prepare()` and `query()` calls and carries `prefix` and `last_error`.
+    Extend it when a class needs another `$wpdb` method.
