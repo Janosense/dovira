@@ -538,6 +538,77 @@ final class MessageRendererTest extends TestCase {
 	}
 
 	/**
+	 * Blocks other code adds follow the plugin's own and come before the link,
+	 * one blank line apart, in the order they were handed over — and their
+	 * HTML is printed as it came: whoever adds a block escapes its values.
+	 */
+	public function test_extra_blocks_are_printed_after_the_plugins_own_and_before_the_link(): void {
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->once()
+			->andReturn( array( '<b>A &amp; "B"</b>', 'second' ) );
+
+		$this->assertStringEndsWith(
+			"tablet 1%\n\n" . '<b>A &amp; "B"</b>' . "\n\nsecond\n\n" . '🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>',
+			MessageRenderer::render( $this->recorded_report() )
+		);
+	}
+
+	/**
+	 * The filter starts from an empty list and is told which report it is
+	 * adding to — the one gatb_report_data handed back.
+	 */
+	public function test_the_filter_is_given_an_empty_list_and_the_report(): void {
+		$report = $this->report_with( array() );
+
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->once()
+			->with( array(), $report )
+			->andReturn( array() );
+
+		$this->assertStringContainsString( 'Yesterday: 66', MessageRenderer::render( $report ) );
+	}
+
+	/**
+	 * An entry that is not a string, or holds nothing but whitespace, leaves
+	 * no trace — not even a blank line.
+	 */
+	public function test_empty_and_non_string_entries_are_dropped(): void {
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->once()
+			->andReturn( array( '', "  \n", 42, null, array( 'x' ), 'kept' ) );
+
+		$message = MessageRenderer::render( $this->report_with( array() ) );
+
+		$this->assertStringEndsWith(
+			"to the previous 28)\n\nkept\n\n" . '🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>',
+			$message
+		);
+		$this->assertStringNotContainsString( "\n\n\n", $message );
+	}
+
+	/**
+	 * A filter that hands back something other than a list is ignored, and
+	 * the message is the one it would have been without it.
+	 */
+	public function test_a_filter_that_returns_something_other_than_a_list_is_ignored(): void {
+		$report  = $this->report_with( array() );
+		$without = MessageRenderer::render( $report );
+
+		Filters\expectApplied( 'gatb_extra_blocks' )->once()->andReturn( 'not a list' );
+
+		$this->assertSame( $without, MessageRenderer::render( $report ) );
+	}
+
+	/**
+	 * The failure notice is not a report, and nobody is asked to add to it.
+	 */
+	public function test_the_failure_notice_is_given_no_extra_blocks(): void {
+		Filters\expectApplied( 'gatb_extra_blocks' )->never();
+
+		$this->assertStringContainsString( 'was not built', MessageRenderer::render_failure( '2026-09-15' ) );
+	}
+
+	/**
 	 * Returns the recorded report with the two blocks switched off.
 	 *
 	 * @param Report $report The report to take the numbers from.

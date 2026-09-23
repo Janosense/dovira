@@ -54,7 +54,7 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
 ## Interfaces
 - **Admin:** Settings → "GA → Telegram" (`manage_options`), screen names in UI below.
 - **Cron hooks:** `gatb_daily_report` (no arguments) and `gatb_retry_report` (one argument, the day `Y-m-d` the attempt is for) — the only schedulers are in `Scheduler`, and both are cleared with `wp_unschedule_hook()` so an event carrying arguments goes too.
-- **Filters (public surface, stable):** `gatb_report_data` (the normalized `Report` before rendering — `apply_filters( 'gatb_report_data', Report $report )`; a return value that is not a `Report` is ignored and the built one is rendered; a page row's `title` is the title of the post at that path, or the path when no post lives there; `visitors_by_day` carries the trend block's 28 daily figures as `array<string, int>` keyed `Y-m-d`, oldest first, and is `null` when that block is off — added in Sprint 3, so a reader written for Sprint 2 sees one more readonly property and nothing moved) and `gatb_message_html` (final HTML before sending — `apply_filters( 'gatb_message_html', string $html, ?Report $report )`, `null` for the failure notice). Both are applied in `MessageRenderer`. Changing their payload = "touches shared surface".
+- **Filters (public surface, stable):** `gatb_report_data` (the normalized `Report` before rendering — `apply_filters( 'gatb_report_data', Report $report )`; a return value that is not a `Report` is ignored and the built one is rendered; a page row's `title` is the title of the post at that path, or the path when no post lives there; `visitors_by_day` carries the trend block's 28 daily figures as `array<string, int>` keyed `Y-m-d`, oldest first, and is `null` when that block is off — added in Sprint 3, so a reader written for Sprint 2 sees one more readonly property and nothing moved) and `gatb_extra_blocks` (since 0.3.0: blocks other code on the site adds to the report — `apply_filters( 'gatb_extra_blocks', array $blocks, Report $report )`, starting from `array()`, with the report `gatb_report_data` handed back; a list of HTML strings in Telegram's parse mode, printed as they come — the caller escapes its own values — each as one more block after the plugin's own blocks and before the GA link, one blank line before it, in the order given; a return that is not an array is ignored, and an entry that is not a string or is empty after `trim()` is dropped; never applied to the failure notice; DECISIONS "A theme feature that records site search, plugged into the daily report through a new plugin filter") and `gatb_message_html` (final HTML before sending — `apply_filters( 'gatb_message_html', string $html, ?Report $report )`, `null` for the failure notice). All three are applied in `MessageRenderer`. Changing their payload = "touches shared surface".
 - **CLI / REST:** none in v1.
 
 ## UI
@@ -79,6 +79,8 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
   [📍 <b>Міста за 28 днів</b>  {city} {pct}%, one city per line … ]
 
   [📱 <b>Пристрої за 28 днів</b>  {device} {pct}%, one device per line … ]
+
+  [{blocks from gatb_extra_blocks, in the order given, one blank line before each}]
 
   🔗 <a href="https://analytics.google.com/analytics/web/#/p{property_id}/reports/intelligenthome">Детальніше в Google Analytics</a>
   ```

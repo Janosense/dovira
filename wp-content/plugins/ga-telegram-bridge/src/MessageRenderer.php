@@ -27,7 +27,9 @@ use Exception;
  * they stand for. And a block is printed only when it has rows: null means the
  * administrator switched it off, an empty array means Google had nothing to
  * report, and neither is worth a heading with nothing underneath it. The blocks
- * that are printed are set apart by one blank line each.
+ * that are printed are set apart by one blank line each. Other code on the site
+ * may add blocks of its own through gatb_extra_blocks; they follow the plugin's
+ * blocks, and the closing link stays last.
  */
 final class MessageRenderer {
 
@@ -83,7 +85,6 @@ final class MessageRenderer {
 			self::shares( '🧭', __( 'Sources over 28 days', 'ga-telegram-bridge' ), $report->channels, false ),
 			self::shares( '📍', __( 'Cities over 28 days', 'ga-telegram-bridge' ), $report->cities, true ),
 			self::shares( '📱', __( 'Devices over 28 days', 'ga-telegram-bridge' ), $report->devices, true ),
-			array( self::analytics_link() ),
 		);
 
 		$printed = array();
@@ -93,6 +94,9 @@ final class MessageRenderer {
 				$printed[] = implode( "\n", $lines );
 			}
 		}
+
+		$printed   = array_merge( $printed, self::extra_blocks( $report ) );
+		$printed[] = self::analytics_link();
 
 		return self::filtered_html( implode( "\n\n", $printed ), $report );
 	}
@@ -410,6 +414,54 @@ final class MessageRenderer {
 	 */
 	private static function as_report( $filtered, Report $report ): Report {
 		return $filtered instanceof Report ? $filtered : $report;
+	}
+
+	/**
+	 * Asks other code on the site for blocks of its own, and keeps the ones
+	 * that can be printed.
+	 *
+	 * The plugin cannot know what a site wants to add — a theme's search
+	 * figures, say — so it offers a place for it: after the plugin's own
+	 * blocks and before the closing link. A block is HTML in Telegram's parse
+	 * mode and is printed as it was handed over; whoever adds it escapes its
+	 * own values, because only they know which parts are markup. A filter is
+	 * other people's code and may return anything, so anything that is not a
+	 * list is ignored, and an entry that is not a string or holds nothing but
+	 * whitespace is dropped: printed, it would be a gap where a block should be.
+	 *
+	 * @param Report $report The report the message is written from.
+	 * @return list<string>
+	 */
+	private static function extra_blocks( Report $report ): array {
+		/**
+		 * Filters the blocks other code adds to the report.
+		 *
+		 * @param list<string> $blocks The blocks, each one HTML in Telegram's parse mode; empty to start with.
+		 * @param Report       $report The report the message is written from.
+		 */
+		return self::as_blocks( apply_filters( 'gatb_extra_blocks', array(), $report ) );
+	}
+
+	/**
+	 * Returns the printable blocks among what a filter handed back.
+	 *
+	 * @param mixed $filtered What the filter returned.
+	 * @return list<string>
+	 */
+	private static function as_blocks( $filtered ): array {
+		if ( ! is_array( $filtered ) ) {
+			return array();
+		}
+
+		$kept = array();
+
+		foreach ( $filtered as $block ) {
+			if ( is_string( $block ) && '' !== trim( $block ) ) {
+				$kept[] = $block;
+			}
+		}
+
+		return $kept;
 	}
 
 	/**
