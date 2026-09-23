@@ -20,9 +20,13 @@ logic in a plugin or a theme feature.
 | Integration | none automated in v1; the manual verification guides written by `/close-step` (`docs/features/{feature}/verification/`) are the regression suite | — | — |
 
 ## How to run
-- Everything that gates a commit: `bin/check.sh` from the repo root (PHPCS →
-  PHPStan → PHPUnit in the plugin → `php -l` over the theme). Needs PHP ≥ 8.3
-  and Composer on PATH; `ddev exec bash bin/check.sh` works too.
+- Everything that gates a commit: `bin/check.sh` from the repo root. The order is
+  PHPCS → PHPStan → PHPUnit in the plugin → `php -l` over the theme → PHPUnit
+  in the theme's `tests/`.
+  - It needs PHP ≥ 8.3 and Composer on PATH. `ddev exec bash bin/check.sh`
+    works too, including with a `tests/vendor/` installed on the host.
+  - It installs the theme's test tooling by itself when `tests/vendor/` is
+    missing.
 - Plugin only: `cd wp-content/plugins/ga-telegram-bridge && composer install`,
   then `composer test` (PHPUnit), `composer lint` / `composer lint:fix` (PHPCS /
   PHPCBF) and `composer analyse` (PHPStan).

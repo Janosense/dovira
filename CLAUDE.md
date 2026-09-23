@@ -108,7 +108,7 @@ the file hierarchy.
 
 ## Commands
 ```bash
-bin/check.sh                                          # check command: PHPCS + PHPStan + PHPUnit (plugin) + php -l (theme)
+bin/check.sh                                          # check command: PHPCS + PHPStan + PHPUnit (plugin) + php -l + PHPUnit (theme tests/)
 ddev start                                            # local WP at https://dovira.ddev.site (PHP 8.3, MariaDB 10.11, nginx)
 ddev import-db --file=mysql.sql                       # load the DB snapshot from the repo root
 cd wp-content/themes/dovira && npm install && composer install

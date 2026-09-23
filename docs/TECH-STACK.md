@@ -26,13 +26,26 @@
 | CLI | WP-CLI (`wp dovira …` commands in `inc/cli/`) | — | translation and bundle transfer |
 
 ## Check command
-`bin/check.sh` (repo root, committed and executable) — the gate every commit
-passes. In order, stopping at the first failure: PHPCS (WordPress Coding
-Standards) → PHPStan (level 8, analysing against PHP 8.1) → PHPUnit, all inside
-`wp-content/plugins/ga-telegram-bridge/`, then `php -l` over every theme PHP
-file outside `vendor/` and `node_modules/` (108 files today). It runs
-`composer install` in the plugin when `vendor/` is missing and refuses to start
-below PHP 8.3. PHPStan needs two settings of its own, both learned from the gate
+`bin/check.sh` (repo root, committed and executable) is the gate every commit
+passes. It runs five stages in order and stops at the first failure:
+1. PHPCS (WordPress Coding Standards), inside
+   `wp-content/plugins/ga-telegram-bridge/`.
+2. PHPStan (level 8, analysing against PHP 8.1), same place.
+3. PHPUnit, same place.
+4. `php -l` over every theme PHP file outside `vendor/` and `node_modules/`
+   (111 files today; the theme's `tests/*.php` are included and its
+   `tests/vendor/` is not).
+5. PHPUnit in the theme's `tests/` (DECISIONS "The theme gets PHPUnit +
+   Brain\Monkey, run by the check command").
+
+It refuses to start below PHP 8.3. It runs `composer install` in the plugin
+when the plugin's `vendor/` is missing, and in `wp-content/themes/dovira/tests/`
+when `tests/vendor/` is missing. The theme's own committed `vendor/` is never
+installed or touched by the gate (DECISIONS "The theme's test tooling is its
+own Composer project in `tests/`"). Both suites set `failOnRisky`, so a test
+that asserts nothing fails the gate.
+
+PHPStan needs two settings of its own, both learned from the gate
 crashing on code that has no errors: it is capped at **two parallel workers** in
 `phpstan.neon.dist`, because its pool otherwise scales with the CPU count and
 every worker loads the WordPress stubs (on a 14-core machine that alone
