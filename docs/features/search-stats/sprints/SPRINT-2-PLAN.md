@@ -669,7 +669,7 @@ list (LEARNINGS 2026-09-16):
 ### Questions / ambiguities
 none
 
-## Plan — Sprint 2, Step 3: The three blocks in the message   (status: approved, in progress)
+## Plan — Sprint 2, Step 3: The three blocks in the message   (status: implemented, awaiting close)
 
 ### Branch
 `search-stats/sprint-2-report` ← `master`
