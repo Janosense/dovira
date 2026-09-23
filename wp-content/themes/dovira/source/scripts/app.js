@@ -12,6 +12,7 @@
   const {toggleFooterCalls} = await import('@scripts/modules/toggle-footer-calls');
   const {questionaryFormHandler} = await import('@scripts/modules/questionary-form-handler.js');
   const {initImask} = await import('@scripts/modules/init-imask.js');
+  const {recordSiteSearch} = await import('@scripts/features/search-stats/record');
 
   initAnimations();
   initFancybox();
@@ -26,4 +27,5 @@
   toggleFooterCalls();
   questionaryFormHandler();
   initImask()
+  recordSiteSearch();
 })();

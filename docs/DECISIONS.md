@@ -216,6 +216,15 @@ Entry format:
   - The hand deploy has to leave `tests/vendor/` behind, just as it leaves the plugin's dev `vendor/`. The committed `tests/*.php` reach the servers, as the plugin's `tests/` already do.
   - `platform.php 8.3` lets a `tests/vendor/` installed on the host (PHP 8.5) run inside DDEV (PHP 8.3).
 
+## 2026-09-23 — [search-stats] Each filter's input carries the id of the post it searches in
+- **Context:** DECISIONS "Every search is recorded from the browser through one public REST route" (2026-09-22) → Consequences says `single-service.php` and the `services` block template need "nothing — their input ids stay the hook". But the route requires a `context_id` for both filter levels: the page hosting the block for `services`, the service for `service`. SPRINT-1 Step 4 therefore prints `data-search-stats-context` next to each input. Planning Step 4 flagged the contradiction, and the developer approved the plan's recommended answer.
+- **Decision:** `#services-search-input` in `inc/acf/blocks/services/template.php` and `#service-search-input` in `single-service.php` each gain `data-search-stats-context="<?= (int) get_the_ID(); ?>"`. That is the page the block renders in, or the service. The two filter modules pass `Number( input.dataset.searchStatsContext )` to `debouncedRecorder()`.
+- **Alternatives rejected:** leaving both templates untouched and reading the id from WordPress's body class (`page-id-{id}`, `postid-{id}`, both present locally). The recorder would then depend on a presentation class list that plugins can filter, rather than on a value the theme prints for exactly this purpose.
+- **Consequences:**
+  - Supersedes only the templates' "(nothing — their input ids stay the hook)" clause of the 2026-09-22 entry. The rest stands.
+  - The two templates are shared code of `core`. Each change is one attribute, and the input ids stay what the filter modules hook.
+  - FEATURE.md → Fit into the host lists both templates.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)

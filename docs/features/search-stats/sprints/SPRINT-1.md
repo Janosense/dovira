@@ -63,7 +63,7 @@ Telegram message yet.
 - **Docs to update:** `docs/ARCHITECTURE.md` → Modules row of the feature (the route) and the diagram line `dovira/v1 (Telegram, Questionary, search-stats)`; `docs/DATA-MODEL.md` → Relations (`context_id` → `wp_posts.ID`, not enforced).
 - **Depends on:** Step 2
 
-### [ ] Step 4 — Recording from the browser on all three levels
+### [x] Step 4 — Recording from the browser on all three levels
 - **Tasks:**
   - `source/scripts/features/search-stats/record.js`: `recordSearch(level, query, contextId, results)` posting JSON with `navigator.sendBeacon` (a `Blob` of type `application/json`) and `fetch(…, {keepalive: true})` as fallback; a `debouncedRecorder(input, level, contextId)` helper with the 1500 ms pause (named constant), the ≥ 3-character rule and "never the same value twice from this input in this page view".
   - `source/scripts/modules/services-search.js` and `source/scripts/modules/init-service-price-lists.js` (**touches shared code:** the two filters; consumers: the `services` block and `single-service.php`) call the helper; the context id comes from a `data-search-stats-context` attribute printed next to each input (`get_the_ID()` of the hosting page / the service) — `search.php` (**touches shared code:** consumers: the header form) prints `data-search-stats-query` and `data-search-stats-results` on the results section, computed from the three result sets the template already builds; `app.js` (**touches shared code**) imports the module and calls `recordSearch` once when those attributes are present.

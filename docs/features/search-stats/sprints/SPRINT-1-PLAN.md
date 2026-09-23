@@ -920,3 +920,312 @@ That makes 1 + 3 + 3 + 22 + 3 + 1 = 33 tests.
 
 ### Questions / ambiguities
 none
+
+## Plan — Sprint 1, Step 4: Recording from the browser on all three levels   (status: closed)
+
+### Branch
+`search-stats/sprint-1-recording` ← `master`
+(root `CLAUDE.md` → git model: simple, task branch → `master`. The name is the
+**Branch** line of `SPRINT-1.md`. The branch is recreated from `master`, which
+now carries Steps 1–3, and deleted at the close.)
+
+### Tasks (ordered)
+Written for the recommended answer to Question 1 (A). Under answer B, task 2
+changes as that question describes.
+
+- [x] **1. The header search: results count, data attributes, the module, and `app.js`.**
+  - `inc/features/search-stats/ResultsCount.php` holds
+    `dovira\SearchStats\ResultsCount`, a `final` class:
+    - `shown( array $sub_services, array $search_posts ): int` returns how
+      many results `search.php` actually lists: every matched price row
+      (`$sub_services`), the services with `post_parent === 0` (the
+      template's own strict check, `search.php:138`), and every `post`,
+      `page` and `employee` in `$search_posts`.
+    - Anything else in `$search_posts` (a child service, or another post
+      type the core query or the meta query returned) is collected by the
+      page but never printed, so it is not counted. This is the Step 1 audit
+      finding.
+    - The three listed types are one named constant.
+  - `bootstrap.php` requires `ResultsCount.php`.
+  - `search.php`. **Touches shared code — may affect other features:** the
+    header search of `core`.
+    - After the result sets are built (`:72`), it computes
+      `$search_stats_results = \dovira\SearchStats\ResultsCount::shown( $sub_services, $search_posts );`.
+    - The results section (`:74`, `<div class="section section--mb-standard">`)
+      gains
+      `data-search-stats-query="<?= esc_attr( $search_query_var ); ?>"` and
+      `data-search-stats-results="<?= (int) $search_stats_results; ?>"`.
+    - Nothing else in the file changes. The unescaped echo at `:78` stays
+      for `/adhoc`; the new attribute is escaped.
+  - `source/scripts/features/search-stats/record.js`, a new directory, where
+    the theme `CLAUDE.md` puts a feature's scripts:
+    - `ENDPOINT = '/wp-json/dovira/v1/search-stats/record'`. It is
+      root-relative, as `questionary-form-handler.js` builds its URL.
+    - `recordSearch( level, query, contextId, results )`:
+      - The body is `JSON.stringify( { level, query, context_id: contextId, results } )`.
+        `JSON.stringify` drops `undefined` keys. So a filter sends no
+        `results` key at all, which matters because the route refuses one
+        even when it is `null`, and the site level sends no `context_id`.
+        The numbers go as numbers (Step 3's WORKLOG item).
+      - It sends with `navigator.sendBeacon( ENDPOINT, new Blob( [ body ], { type: 'application/json' } ) )`.
+        When `sendBeacon` is missing, returns `false` or throws, it falls
+        back to
+        `fetch( ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true } ).catch( () => {} )`.
+        The do-step browser run notes which transport Chrome used.
+      - Nothing reads the answer, and a failure is silent: recording never
+        disturbs the page. The text goes as typed, because normalization is
+        the server's (FEATURE.md → Invariants).
+    - `recordSiteSearch()` finds `[data-search-stats-query]`. When the
+      element is there and the query is not empty once trimmed, it calls
+      `recordSearch( 'site', query, undefined, Number( results ) )` once. An
+      empty `?s=` sends nothing, since the route would refuse it.
+      - This is "`app.js` calls `recordSearch` once when those attributes
+        are present", written in `app.js`'s own idiom: `app.js` only imports
+        modules and calls their entry functions.
+      - It also matches DECISIONS: "the module sends them once on load".
+  - `source/scripts/app.js`. **Touches shared code — may affect other
+    features:** every front-end module is loaded from it.
+    - It gains one dynamic import,
+      `const {recordSiteSearch} = await import('@scripts/features/search-stats/record');`,
+      and one call, `recordSiteSearch();`, after the existing ones.
+    - The existing lines don't change.
+  - `npm run build` rebuilds `assets/`.
+    - While planning, a build of the unchanged source in a scratch copy
+      (Vite 5.4.19, Node 26.8.2) reproduced the committed `assets/` exactly.
+    - So the diff contains only the chunks this task changes, a new chunk
+      and the manifest.
+    - The theme `.env` already has `WP_ENVIRONMENT_TYPE=production`, so the
+      local site serves `assets/`.
+  - `tests/Unit/SearchStats/ResultsCountTest.php`.
+  - Before the commit, the gate runs, and in Chrome on the local install:
+    - `https://dovira.ddev.site/?s=вакцинація` makes one request to
+      `…/record` with `level: site` and the count the page lists, and writes
+      one row;
+    - `curl 'https://dovira.ddev.site/?s=test'` writes no row.
+
+  Docs in the same commit:
+  - `docs/ARCHITECTURE.md`:
+    - the feature's Modules row gains `ResultsCount` and `record.js`;
+    - Data flows gains the new flow "Site search → statistics row", with the
+      site level;
+    - its "must never" gains "record a search from PHP".
+  - `docs/TECH-STACK.md` → ANTI-PATTERNS: "do not record a search
+    server-side in `search.php`; the browser module is the one recorder".
+    The step names this line.
+  - `docs/features/search-stats/FEATURE.md` → Interfaces, JS: names
+    `recordSiteSearch()`, called once by `app.js`, as the path the results
+    page takes into `recordSearch()`. Rule 5.
+  → `feat(search-stats): record the header search from its results page`
+
+- [x] **2. The two filters: the pause, the context and the calls.**
+  - `record.js` gains `PAUSE_MS = 1500` and `MIN_LENGTH = 3`, both named
+    constants, and `debouncedRecorder( input, level, contextId )`:
+    - Every `input` event restarts a `PAUSE_MS` timer. `blur` sends at once;
+      DECISIONS, FEATURE.md → Invariants and DOMAIN "search query" all say
+      "or the field lost focus", even though the step's line doesn't.
+    - To send, it takes `value = input.value.trim()`. When
+      `value.length >= MIN_LENGTH` and `value !== lastSent`, it sets
+      `lastSent = value` and calls
+      `recordSearch( level, input.value, contextId )`.
+      - `lastSent` lives in the call's closure, so it is per input and per
+        page view.
+      - It compares with the **last** value sent, as DECISIONS says (see
+        Docs vs reality 2).
+      - The trim is a gate, not normalization. The text still goes as
+        typed.
+    - It adds its own listeners, so the filters' own `input` and reset
+      handlers are untouched. A reset sets the value in code, which fires no
+      event. A timer already running then finds an empty value and sends
+      nothing.
+  - The context id. **Touches shared code — may affect other features:**
+    `core`'s `services` block, on every page that carries it, and the
+    service pages.
+    - `inc/acf/blocks/services/template.php:79`: `#services-search-input`
+      gains `data-search-stats-context="<?= (int) get_the_ID(); ?>"`. That
+      is the page hosting the block, because blocks render inside
+      `the_content()` in the loop.
+    - `single-service.php:60`: `#service-search-input` gains the same, which
+      is the service.
+    - Nothing else in either template changes.
+  - `source/scripts/modules/services-search.js`. **Touches shared code**, for
+    the `services` block.
+    - `import {debouncedRecorder} from '@scripts/features/search-stats/record';`.
+    - Inside `if (services.length)`, the one branch where the filter works,
+      it calls
+      `debouncedRecorder(input, 'services', Number(input.dataset.searchStatsContext));`.
+  - `source/scripts/modules/init-service-price-lists.js`. **Touches shared
+    code**, for service pages.
+    - The same import.
+    - Inside `serviceSearch()`'s `if (input)` it calls
+      `debouncedRecorder(input, 'service', Number(input.dataset.searchStatsContext));`.
+      `serviceSearch()` is only wired when the price toggles and lists match
+      (Step 1 audit), so it records exactly where the filter works.
+  - `npm run build` rebuilds `assets/` again.
+  - Before the commit, the gate runs, and in Chrome on the local install,
+    with the Network tab:
+    - On `Послуги` (page 12), typing `вак`, `вакц`, `вакцин` without pausing
+      sends one request after the pause, with `level: services` and
+      `context_id: 12`.
+    - On service 18, typing `кіт`, waiting, deleting it and retyping `кіт`
+      sends one request only.
+    - Leaving the field (`blur`) before the pause sends at once.
+
+  Docs in the same commit:
+  - `docs/ARCHITECTURE.md`: the flow "Site search → statistics row" gains
+    the two filters, and the Modules row gains `debouncedRecorder`.
+  - `docs/features/search-stats/FEATURE.md`:
+    - Invariants: "never the same value twice from the same input" becomes
+      "never the value that input sent last", per DECISIONS;
+    - Fit into the host → Shared code: adds the two templates
+      (`data-search-stats-context`).
+    - Rule 5.
+  - `docs/DECISIONS.md`: a new entry amending one clause of "Every search is
+    recorded from the browser through one public REST route". The
+    templates' "(nothing — their input ids stay the hook)" becomes "each
+    input gains `data-search-stats-context`" (Question 1, answer A).
+  - `docs/DOMAIN.md`: confirmed against the code, no change. "Search query"
+    (pause or focus lost, at least three letters for the two filters,
+    normalized) and "search level" match.
+  → `feat(search-stats): record the two filters' searches after a pause`
+
+### Files to create/change
+**New**
+- `wp-content/themes/dovira/inc/features/search-stats/ResultsCount.php` (task 1)
+- `wp-content/themes/dovira/source/scripts/features/search-stats/record.js` (tasks 1 and 2)
+- `wp-content/themes/dovira/tests/Unit/SearchStats/ResultsCountTest.php` (task 1)
+
+**Changed**
+- `wp-content/themes/dovira/inc/features/search-stats/bootstrap.php` (task 1)
+- Shared (marked in the tasks):
+  - `search.php` and `source/scripts/app.js` (task 1);
+  - `inc/acf/blocks/services/template.php`, `single-service.php`,
+    `source/scripts/modules/services-search.js` and
+    `source/scripts/modules/init-service-price-lists.js` (task 2).
+- `wp-content/themes/dovira/assets/**`, rebuilt by `npm run build` (tasks 1 and 2).
+- `docs/ARCHITECTURE.md` and `docs/features/search-stats/FEATURE.md` (tasks 1
+  and 2); `docs/TECH-STACK.md` (task 1); `docs/DECISIONS.md` (task 2).
+
+**Checked and not changed**
+- The gate picks up the two new PHP files by itself: 122 files now, 124
+  after task 1. The gate does not read JS, so no config learns about it.
+- `vite.config.js`: the `@scripts` alias already resolves
+  `@scripts/features/…`, and no new entry point is needed. The module is
+  imported by `app.js`, and Vite splits it into its own chunk.
+- The theme `CLAUDE.md` already says a feature's scripts go under
+  `source/scripts/features/{name}/`.
+- `header.php` is not touched, so the `master` → `kyiv` merge at the sprint
+  boundary meets no conflict (`kyiv` differs from `master` only in
+  `header.php`).
+- `docs/DOMAIN.md` matches.
+
+### Tests to write
+`ResultsCountTest`: `shown()` through a data provider. Results are plain
+objects carrying `post_parent`, and nothing WordPress-specific is needed.
+- nothing found: `[]` and `[]` give `0`;
+- price rows only: three rows give `3`;
+- every listed kind: 2 price rows, 1 top-level service, 2 posts, 1 page and
+  1 employee give `7`;
+- a child service (`post_parent` 5) next to a top-level one gives `1`;
+- types the page does not list (`vacancy`, `attachment`) next to one page
+  give `1`.
+
+That makes 5 tests.
+
+The JS has no tests: there is no JS runner in the project, and the step says
+so. The route's 33 tests cover the server side. The browser runs listed in
+each task are the check before each commit, and the verification guide
+repeats them.
+
+`bin/check.sh` must exit 0 after each task:
+- 297 plugin tests;
+- 124 files linted;
+- the theme suite at 58 → 63 tests after task 1, unchanged after task 2.
+
+### Docs to update
+- `docs/ARCHITECTURE.md` → Data flows, "Site search → statistics row". This
+  is the step's own item. The Modules row follows from rule 5.
+- `docs/DOMAIN.md`: confirm the terms against the code. This is the step's
+  own item; the terms match and there is no change.
+- `docs/TECH-STACK.md` → ANTI-PATTERNS: the line the step names.
+- `docs/features/search-stats/FEATURE.md` → Interfaces (JS), Invariants (the
+  last-value rule), and Fit into the host (the two templates). Rule 5.
+- `docs/DECISIONS.md`: the amendment, under answer A.
+
+### Checks
+- **ANTI-PATTERNS:** none violated.
+  - `assets/` is rebuilt with `npm run build`, never edited by hand.
+  - Nothing is enqueued by a hand-written path: the module is reached
+    through `app.js` and the Vite manifest.
+  - There is no city branching, and nothing goes in `mu-plugins/`.
+  - No package is added. `sendBeacon` and `fetch` are the browser's own.
+  - The step adds one line to the list.
+- **Docs vs reality:** mismatches, each resolved or asked:
+  1. DECISIONS "Every search is recorded from the browser through one public
+     REST route" → Consequences says `single-service.php` and the `services`
+     block template get "nothing — their input ids stay the hook". Step 4
+     prints `data-search-stats-context` next to each input, which changes
+     both. A DECISIONS entry is not overridden silently, so this is
+     **Question 1**.
+  2. FEATURE.md → Invariants and the sprint say "never the same value twice
+     from the same input in a page view". DECISIONS says "differs from the
+     **last** value that input sent in this page view". They differ for
+     `кіт`, `пес`, `кіт`: that is two rows by the first rule and three by
+     DECISIONS. DECISIONS takes precedence, so the code compares with the
+     last value sent and FEATURE.md is reworded in task 2. The sprint's
+     check ("type `кіт`, wait, delete, retype `кіт`: one request") holds
+     under both.
+  3. DECISIONS says the count is "fuzzy price rows + posts by `key_words` /
+     `key_words_services` + the core query … computed the way the page
+     computes them". The page lists only part of those three sets (Step 1
+     audit). The Sprint Goal says "how many results the page showed", so
+     `ResultsCount` counts what is listed.
+  4. A crawler or prefetcher leaves no row. WordPress's speculative loading
+     defaults to `prefetch` with `conservative` eagerness, which never runs
+     JS, and with pretty permalinks it excludes every URL with a query
+     string (`wp-includes/speculative-loading.php:125`, `:131`, `:217–224`).
+     No task.
+  5. The step's helper line names the pause, the minimum length and the
+     repeat rule, but not `blur`. DECISIONS, FEATURE.md and DOMAIN all say
+     "or the field loses focus", so it is included.
+  6. Carried, not part of this step: `search.php:78` echoes the query
+     unescaped. It stays for `/adhoc`, even though task 1 edits two lines
+     above it.
+- **Design:** n/a. Nothing visible changes: attributes and a script only.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) was
+  green on `master` at `a0ddffb2` after the Step 3 merge: 297 plugin tests,
+  122 files, 58 theme tests.
+- **Not locally verifiable:** both productions after the hand deploy of
+  `master` and `kyiv`.
+  - One search per level on each install must leave one row carrying that
+    install's prefix and post ids.
+  - This also proves Step 3's route answers there.
+  - It is the Step's own "Repeat once on `kyiv.dovira.vet`", checked at the
+    sprint-boundary deploy, with the rows read over SSH.
+
+### Questions / ambiguities
+1. **Where does the browser get the context id?**
+   DECISIONS (Consequences) says the two input templates change nothing.
+   Step 4 prints `data-search-stats-context` on each input.
+   - **A (recommended). Do what Step 4 says.**
+     - Each input gets `data-search-stats-context="<?= (int) get_the_ID(); ?>"`
+       (task 2).
+     - A new DECISIONS entry amends that one clause.
+     - The id sits on the input that uses it, and it is the same
+       data-attribute mechanism `search.php` uses.
+     - Cost: two more shared templates, each one line, marked in task 2.
+   - **B. Keep DECISIONS as written.**
+     - The templates stay untouched. `record.js` reads the id from
+       WordPress's body class: `page-id-12` on the services page and
+       `postid-18` on a service, both observed locally.
+     - Task 2 loses the two template edits, gains a small
+       `contextFromBody()` in `record.js`, and writes no DECISIONS entry.
+     - Cost: the recorder then depends on the body class format, which
+       plugins can filter, instead of a value the theme prints for this
+       purpose.
+
+   Recommendation: A. The step is the more specific, later statement of the
+   same design, and the attribute is explicit.
+
+   Resolved: approved as recommended — A. Each input gets
+   `data-search-stats-context` (task 2), and a DECISIONS entry amends the
+   clause.

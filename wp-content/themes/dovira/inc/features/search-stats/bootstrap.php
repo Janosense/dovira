@@ -11,6 +11,8 @@ require_once __DIR__ . '/Schema.php';
 require_once __DIR__ . '/Purge.php';
 require_once __DIR__ . '/Normalizer.php';
 require_once __DIR__ . '/Repository.php';
+// Called by search.php, which prints the count for the browser module.
+require_once __DIR__ . '/ResultsCount.php';
 // Registered in inc/rest-api.php with the theme's other controllers.
 require_once __DIR__ . '/RecordController.php';
 

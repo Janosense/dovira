@@ -20,7 +20,7 @@ counting visitors without JavaScript.
 - **Code location:** `wp-content/themes/dovira/inc/features/search-stats/` (+ `source/scripts/features/search-stats/`, `tests/Unit/SearchStats/`)
 - **Host area:** theme `dovira` — obeys its `CLAUDE.md` isolation rules
 - **Entry point:** `inc/features/search-stats/bootstrap.php`, required by one line in `functions.php`
-- **Shared code it depends on:** `search.php` (prints the query and its results count as data attributes), `source/scripts/modules/services-search.js` and `source/scripts/modules/init-service-price-lists.js` (call the recorder), `source/scripts/app.js` (imports the module), `dovira\` REST registration in `inc/rest-api.php`; plugin `ga-telegram-bridge` ≥ 0.3.0 for the filter `gatb_extra_blocks` (absent plugin = nothing is rendered, recording continues)
+- **Shared code it depends on:** `search.php` (prints the query and its results count as data attributes), `source/scripts/modules/services-search.js` and `source/scripts/modules/init-service-price-lists.js` (call the recorder), `inc/acf/blocks/services/template.php` and `single-service.php` (print `data-search-stats-context` on the filter's input), `source/scripts/app.js` (imports the module), `dovira\` REST registration in `inc/rest-api.php`; plugin `ga-telegram-bridge` ≥ 0.3.0 for the filter `gatb_extra_blocks` (absent plugin = nothing is rendered, recording continues)
 
 ## Data
 Owns the table `{$wpdb->prefix}dovira_search_queries` (`id`, `level` ∈ `site`
@@ -35,7 +35,7 @@ uninstall, so dropping it is a documented manual step.
 ## Invariants
 - The REST route validates everything before writing and writes at most one row per request (root invariant 8); an invalid request leaves no trace.
 - Normalization happens in one place, on the server (`mb_strtolower`, trim, whitespace collapsed); only the normalized text is stored and printed.
-- One search = one row: the browser sends a value once it has rested for the pause or the field lost focus, at least 3 characters, never the same value twice from the same input in a page view; `search.php` sends its query once per results page.
+- One search = one row: the browser sends a value once it has rested for the pause or the field lost focus, at least 3 characters, never the value that input sent last in this page view; `search.php` sends its query once per results page.
 - No personal data: no IP, user agent, cookie or user id is stored.
 - Public pages never call Telegram: the theme only hands HTML to the plugin's filter, inside the plugin's own run.
 - A purge is the only delete and runs from cron, never from a public request.
@@ -45,7 +45,7 @@ uninstall, so dropping it is a documented manual step.
 - **REST:** `POST dovira/v1/search-stats/record` — public; JSON `{level, query, context_id, results}`; `204` on success, `400` on refusal (WordPress's error body `{code, message, data: {status}}`), `500` when the row could not be written (DECISIONS "Every search is recorded from the browser through one public REST route").
 - **Hook consumed:** `gatb_extra_blocks` (plugin `ga-telegram-bridge`) — the theme returns the plugin's list plus its three blocks (DECISIONS "A theme feature that records site search, plugged into the daily report through a new plugin filter").
 - **Filter exposed:** `dovira_search_stats_retention_days` (int).
-- **JS:** `recordSearch(level, query, contextId, results)` from `source/scripts/features/search-stats/record.js`; the two filters and `search.php` are its only callers.
+- **JS:** `recordSearch(level, query, contextId, results)` from `source/scripts/features/search-stats/record.js`; the two filters and `search.php` are its only callers — `search.php` through `recordSiteSearch()`, which `app.js` calls once on load and which reads the results section's `data-search-stats-query` / `data-search-stats-results`.
 
 ## UI
 - **Screens:** none of its own — the three blocks inside the plugin's message (no design export; DECISIONS "No UI design phase; the three sections are fixed as a template in FEATURE.md"):

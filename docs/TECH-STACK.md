@@ -102,6 +102,12 @@ changes) — DECISIONS "Testing tooling and the project check command".
     without the package.
   - The theme's test tooling lives in `tests/composer.json` (DECISIONS "The
     theme's test tooling is its own Composer project in `tests/`").
+- Do not record a search server-side in `search.php`. The browser module
+  (`source/scripts/features/search-stats/record.js`) is the one recorder: a
+  results page fetched by a crawler or a prefetcher runs no JavaScript and so
+  leaves no row, which a PHP recorder could only approximate with a user-agent
+  list (DECISIONS "Every search is recorded from the browser through one
+  public REST route").
 
 ## Dependency policy
 New dependencies (runtime AND dev/tooling) only after explicit user approval —
