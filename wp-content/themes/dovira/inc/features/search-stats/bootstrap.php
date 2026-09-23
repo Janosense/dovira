@@ -17,6 +17,7 @@ require_once __DIR__ . '/ResultsCount.php';
 require_once __DIR__ . '/RecordController.php';
 // The daily report's reading side (Sprint 2); nothing calls it until the report hooks in.
 require_once __DIR__ . '/Periods.php';
+require_once __DIR__ . '/TopQuery.php';
 
 add_action( 'after_switch_theme', [ Schema::class, 'install' ] );
 add_action( 'init', [ Schema::class, 'maybe_upgrade' ] );

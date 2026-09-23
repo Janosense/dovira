@@ -413,7 +413,7 @@ plugin 0.2.0, which requires PHP 8.1, so production is on 8.1 or later.
 
   → `feat(search-stats): compute yesterday and the last 28 days in the site's zone`
 
-- [ ] **2. `Repository::top()` and `TopQuery`.**
+- [x] **2. `Repository::top()` and `TopQuery`.**
   *The `tests/WpdbDouble.php` part touches shared code — may affect other features (theme tests; users today: `search-stats` only).*
   - `TopQuery.php`: `final class TopQuery`, with promoted readonly
     `string $query`, `int $context_id`, `int $count` and

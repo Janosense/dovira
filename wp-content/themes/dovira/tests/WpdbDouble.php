@@ -45,6 +45,22 @@ final class WpdbDouble {
 	 */
 	public int|false $insert_result = 1;
 
+	/**
+	 * Every SQL string passed to get_results(), in order.
+	 *
+	 * @var list<string>
+	 */
+	public array $selected = [];
+
+	/**
+	 * What get_results() answers, one entry per call in order: a list of rows
+	 * shaped as WordPress returns them (stdClass, every value a string or null),
+	 * or null. An empty queue answers [].
+	 *
+	 * @var list<list<\stdClass>|null>
+	 */
+	public array $results = [];
+
 	public function __construct( string $prefix = 'wp_' ) {
 		$this->prefix = $prefix;
 	}
@@ -60,6 +76,17 @@ final class WpdbDouble {
 		$this->prepared[] = [ $query, $args ];
 
 		return vsprintf( str_replace( '%s', "'%s'", $query ), $args );
+	}
+
+	/**
+	 * Records the query and answers with the next entry of $results.
+	 *
+	 * @return list<\stdClass>|null
+	 */
+	public function get_results( string $query, string $output = 'OBJECT' ): ?array {
+		$this->selected[] = $query;
+
+		return [] === $this->results ? [] : array_shift( $this->results );
 	}
 
 	public function query( string $sql ): int {
