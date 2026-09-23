@@ -603,3 +603,320 @@ after task 2, and the theme suite at 1 + the new tests.
 
 ### Questions / ambiguities
 none
+
+## Plan — Sprint 1, Step 3: The REST route that records a search   (status: implemented, awaiting close)
+
+### Branch
+`search-stats/sprint-1-recording` ← `master`
+(root `CLAUDE.md` → git model: simple, task branch → `master`. The name is the
+**Branch** line of `SPRINT-1.md`. The branch is recreated from `master`, which
+now carries Steps 1 and 2, and deleted at the close.)
+
+### Tasks (ordered)
+- [x] **1. The normalizer.**
+  - `inc/features/search-stats/Normalizer.php` holds
+    `dovira\SearchStats\Normalizer`, a `final` class with one static method,
+    like `Schema` and `Purge`:
+    - `normalize( string $text ): string` does three things. It collapses
+      every run of whitespace to one space with
+      `preg_replace( '/\s+/u', ' ', $text )`, trims the ends, and lowercases
+      with `mb_strtolower()`.
+    - With `/u`, `\s` also matches Unicode whitespace such as the
+      non-breaking space. This was checked on 2026-09-23 on PHP 8.3.32 in DDEV
+      and PHP 8.5.4 on the host.
+    - For invalid UTF-8, `preg_replace()` returns `null` and `normalize()`
+      returns `''`, which the route refuses as empty. A string from
+      `json_decode()` can never be invalid UTF-8, because `json_decode()`
+      rejects it, and rejects a lone `\ud800` escape as well. So this branch
+      only guards direct callers. It also keeps `trim( null )` from raising a
+      deprecation.
+    - It does nothing else: no `sanitize_text_field()` and no tag stripping.
+      The DECISIONS rule is exactly lowercase, trim and collapse. The text
+      reaches SQL only through `$wpdb->insert()`'s formats, and it is escaped
+      where Sprint 2 prints it.
+  - `bootstrap.php` requires `Normalizer.php` next to `Schema.php` and
+    `Purge.php`. No hook is added.
+  - `tests/Unit/SearchStats/NormalizerTest.php`.
+
+  Docs in the same commit (core rule 5):
+  - `docs/ARCHITECTURE.md`: the feature's Modules row gains `Normalizer`,
+    the one place text is normalized.
+  - `docs/TESTING.md` → Levels: the theme row drops "Today it holds only the
+    bootstrap's smoke test", which has been false since Step 2.
+  → `feat(search-stats): normalize search text in one place`
+
+- [x] **2. The route: validation, the insert and the registration.**
+  - `inc/features/search-stats/Repository.php` holds
+    `dovira\SearchStats\Repository`:
+    - `insert( string $level, string $query_text, int $context_id, ?int $results ): bool`
+      makes one call,
+      `$wpdb->insert( Schema::table_name(), [ 'level' => …, 'query_text' => …, 'context_id' => …, 'results' => …, 'created_at' => current_time( 'mysql', true ) ], [ '%s', '%s', '%d', '%d', '%s' ] )`,
+      and returns `false !==` its result.
+    - A `null` in `results` is written as SQL `NULL`, whatever its format:
+      `wpdb::_insert_replace_helper()` turns a null value into `NULL`
+      (`wp-includes/class-wpdb.php:2601–2603`).
+  - `inc/features/search-stats/RecordController.php` holds
+    `dovira\SearchStats\RecordController extends \WP_REST_Controller`, built
+    like `QuestionaryController`:
+    - The constructor sets `namespace` to `dovira/v1` and `rest_base` to
+      `search-stats`.
+    - `register_routes()` calls
+      `register_rest_route( 'dovira/v1', '/search-stats/record', [ 'methods' => 'POST', 'callback' => [ $this, 'record' ], 'permission_callback' => '__return_true' ] )`.
+      There are no `args`, because WordPress validates `args` against every
+      parameter source (query string, form body, JSON), and this route reads
+      the JSON body only.
+    - `record( WP_REST_Request $request ): WP_REST_Response|WP_Error` reads
+      `$request->get_json_params()` and checks the rules below in this order.
+      The first rule that fails is returned as
+      `WP_Error( code, message, [ 'status' => 400 ] )`, before anything is
+      written:
+
+      | Rule | Refused when | Code |
+      |---|---|---|
+      | body | `get_json_params()` is not an array: the content type is not JSON, the body is empty, or it is a JSON scalar | `search_stats_not_json` |
+      | `level` | it is not one of the strings `site`, `services`, `service` (strict comparison) | `search_stats_invalid_level` |
+      | `query` | it is not a string, or its normalized form is shorter than 1 character (`site`) or 3 (`services`, `service`), or longer than 100, counted with `mb_strlen()` | `search_stats_invalid_query` |
+      | `context_id`, for `services` and `service` | it is not an integer > 0; or `get_post_status()` is not `publish`; or, for `service`, `get_post_type()` is not `service` | `search_stats_invalid_context` |
+      | `results` | for `site`: it is absent, not an integer, or negative. For `services` and `service`: the key is present at all, `null` included (the sprint's "refused when present") | `search_stats_invalid_results` |
+
+    - For `site`, `context_id` is ignored whatever it holds, and is stored as
+      `0`.
+    - `context_id` and `results` must be JSON integers, so `"101"` and `3.5`
+      are refused. Step 4's module sends numbers.
+    - `context_id` is checked for `> 0` before `get_post_status()` runs,
+      because `get_post( 0 )` falls back to the global post
+      (`wp-includes/post.php:1139–1140`).
+    - The levels and the limits are named constants: `MIN_LENGTH_SITE = 1`,
+      `MIN_LENGTH_FILTER = 3`, `MAX_LENGTH = 100`. They are rules fixed by
+      DECISIONS and by the column width, not settings.
+    - A valid request calls `Repository::insert()` once and gets
+      `new WP_REST_Response( null, 204 )`. WordPress sends no body with a 204
+      (`class-wp-rest-server.php:541–543`).
+    - If the insert fails (it returns `false`, e.g. because the table is
+      missing), the answer is
+      `WP_Error( 'search_stats_not_recorded', …, [ 'status' => 500 ] )`, not a
+      204 that would claim a row. `QuestionaryController` answers a failed
+      write with 500 too (`post_creation_failed`).
+    - Messages are English, through `__( …, 'dovira' )`, as in
+      `QuestionaryController`. Nothing reads them: the browser module ignores
+      the response.
+    - A malformed JSON body never reaches `record()`. `WP_REST_Server`
+      refuses it first, with `rest_invalid_json` and 400
+      (`class-wp-rest-request.php:735`, through `has_valid_params()` at
+      `:903`).
+  - `bootstrap.php` requires `Repository.php` and `RecordController.php`.
+  - `inc/rest-api.php` gains `use dovira\SearchStats\RecordController;`, and
+    at the end of the existing `rest_api_init` closure,
+    `$search_stats = new RecordController(); $search_stats->register_routes();`.
+    - It does not require the file itself. The feature's bootstrap does, so
+      shared code never reaches into a feature directory.
+    - `functions.php` requires `inc/rest-api.php` (`:46`) before the feature
+      (`:61`). The closure only runs on `rest_api_init`, after the whole
+      theme has loaded.
+    - `WP_REST_Controller` is loaded by `wp-settings.php:322`, before any
+      theme.
+  - Test harness:
+    - `tests/bootstrap.php` requires five of WordPress's own classes from the
+      committed core, as `dirname( __DIR__, 4 ) . '/wp-includes/…'`:
+      `WP_Error`, `WP_HTTP_Response`, `WP_REST_Response`, `WP_REST_Request`
+      and `WP_REST_Controller`.
+      - None of the five files runs code when it loads.
+      - A probe on 2026-09-23 in DDEV (PHP 8.3.32, `E_ALL`) loaded and used
+        all five outside WordPress with no notice or deprecation. It needed
+        only `absint()` and `do_action()`, which Brain\Monkey defines, and a
+        stub of `wp_is_json_media_type()`. A JSON body parsed; a form body and
+        an empty body gave `null`; a JSON string came back as a string.
+      - The tests therefore exercise WordPress's real request parsing, not a
+        rewrite of it.
+    - `tests/WpdbDouble.php` gains `insert()`. It records
+      `[ table, data, format ]` in `$inserts` and returns `$insert_result`,
+      which is `1` unless a test sets it to `false`.
+  - `tests/Unit/SearchStats/RecordControllerTest.php`.
+
+  Docs in the same commit:
+  - `docs/ARCHITECTURE.md`:
+    - The feature's Modules row gains the route, `RecordController`
+      (validation; 204, 400 or 500) and `Repository::insert()`. Its "must
+      never" gains "write the table from anywhere but the route".
+    - The diagram line becomes
+      `inc/rest-api.php → dovira/v1 (Telegram, Questionary, search-stats)`.
+  - `docs/DATA-MODEL.md`:
+    - Relations: `dovira_search_queries.context_id ──> wp_posts.ID`, not
+      enforced. It is `0` for `site`, and a post deleted later leaves its id
+      behind.
+    - The table section: rows are inserted only by the route, one per valid
+      request, with `created_at` = `current_time( 'mysql', true )`.
+  - `docs/TESTING.md` → Rules:
+    - WordPress's REST classes come from the committed core through
+      `tests/bootstrap.php` and are never rewritten in `tests/`;
+    - `wp_is_json_media_type()` is stubbed like any other WordPress
+      function;
+    - `WpdbDouble` records `insert()`.
+  - `docs/features/search-stats/FEATURE.md` → Interfaces: a refusal's body is
+    WordPress's error shape `{code, message, data: {status: 400}}`, and the
+    route answers `500` when the row could not be written.
+
+  **Touches shared code — may affect other features:**
+  - `inc/rest-api.php`. Its consumers are `core`'s Telegram and Questionary
+    routes, registered in the same closure. Their lines are unchanged, and
+    the new lines come after them.
+  - `tests/bootstrap.php` and `tests/WpdbDouble.php`, the theme's test
+    harness. Only `search-stats` uses it today.
+  → `feat(search-stats): record a search through POST dovira/v1/search-stats/record`
+
+### Files to create/change
+**New: `wp-content/themes/dovira/inc/features/search-stats/`**
+- `Normalizer.php` (task 1)
+- `Repository.php`, `RecordController.php` (task 2)
+
+**New: `wp-content/themes/dovira/tests/Unit/SearchStats/`**
+- `NormalizerTest.php` (task 1), `RecordControllerTest.php` (task 2)
+
+**Changed**
+- `wp-content/themes/dovira/inc/features/search-stats/bootstrap.php` (tasks 1 and 2)
+- `wp-content/themes/dovira/inc/rest-api.php` (task 2, shared)
+- `wp-content/themes/dovira/tests/bootstrap.php`, `tests/WpdbDouble.php` (task 2, shared test harness)
+- `docs/ARCHITECTURE.md` and `docs/TESTING.md` (tasks 1 and 2);
+  `docs/DATA-MODEL.md` and `docs/features/search-stats/FEATURE.md` (task 2)
+
+**Checked and not changed**
+- The gate picks up the new files by itself. `php -l` lints every `*.php`
+  outside `vendor/` and `node_modules/` (117 files now, 119 after task 1, 122
+  after task 2), and `tests/phpunit.xml.dist` scans `Unit/` recursively.
+- `tests/composer.json`: the classes under test are required by path, and so
+  are the core classes, from the bootstrap.
+- `functions.php`: the feature's line is already there.
+- The theme `CLAUDE.md`: every convention it states still holds. The
+  controller extends `WP_REST_Controller`, uses `dovira/v1`, is registered in
+  `inc/rest-api.php` and has an explicit `permission_callback`.
+- `docs/DOMAIN.md`: "search query" (at least 3 letters for the two filters,
+  and the normalization example) and "search level" already match.
+
+### Tests to write
+Every WordPress call a test cares about is recorded by
+`Functions\when()->alias()` and asserted (TESTING.md → How to run). `$wpdb` is
+a `WpdbDouble( 'wp_' )`.
+
+`NormalizerTest`: `normalize()` through a data provider:
+- uppercase Cyrillic: `ВАКЦИНАЦІЯ` → `вакцинація`;
+- Ukrainian letters: `ЇЖАК Ґудзик ЄНОТ` → `їжак ґудзик єнот`;
+- Latin: `Rabies Vaccine` → `rabies vaccine`;
+- mixed script and digits: `УЗД 3D Кота` → `узд 3d кота`;
+- spaces at the edges: `"  кіт  "` → `кіт`;
+- tabs and newlines at the edges: `"\t\nкіт\r\n"` → `кіт`;
+- inner runs of whitespace: `"стерилізація   \t\n кота"` → `стерилізація кота`;
+- a non-breaking space: `"стерилізація\u{00A0}кота"` → `стерилізація кота`;
+- whitespace only: `" \t\n "` → `''`.
+
+Plus one test: invalid UTF-8 (`"a\xffb"`) → `''`. That makes 10 tests.
+
+`RecordControllerTest`. Each request is a real `WP_REST_Request`: `POST`,
+`Content-Type: application/json`, and a `json_encode`d body. The stubs:
+- `get_post_status` and `get_post_type` answer from a map: 101 is a published
+  `page`, 202 a published `service`, 303 a `draft` `service`, and any other id
+  gives `false`;
+- `current_time` returns `2026-09-23 12:00:00` and records its arguments;
+- `wp_is_json_media_type` is true for `application/json` only;
+- the translation functions come from `Functions\stubTranslationFunctions()`.
+
+The tests:
+- `register_routes()` makes one call, asserted whole: `dovira/v1`,
+  `/search-stats/record`, `POST`, callback `[ $controller, 'record' ]`,
+  `permission_callback` `__return_true`.
+- Success, one test per level. The response is a `WP_REST_Response` with
+  status 204 and `null` data, and `$wpdb->inserts` holds exactly one row:
+  - `site`, `"  Вакцинація  "`, `results` 0, `context_id` 55 →
+    `[ 'wp_dovira_search_queries', [ level site, query_text вакцинація, context_id 0, results 0, created_at 2026-09-23 12:00:00 ], [ %s, %s, %d, %d, %s ] ]`,
+    and `current_time` was called with `( 'mysql', true )`;
+  - `services`, `Вакц`, `context_id` 101 → `results` `null`;
+  - `service`, `кіт`, `context_id` 202 → `results` `null`.
+- Accepted at the edges (a data provider, one row each):
+  - a 1-character `site` query;
+  - a 100-character Cyrillic query for `services`. It is 200 bytes; the
+    length is counted in characters;
+  - `кіт` padded with 150 spaces, accepted as `кіт`, because the length is
+    measured after normalization.
+- Refusals (a data provider). Each returns a `WP_Error` with the code from the
+  table and `status` 400, and `$wpdb->inserts` stays `[]`:
+  - `level`: missing; `x`; the integer `1`;
+  - `query`: missing; the integer `123`; `""`; `"  \t "` (empty after
+    normalization); `ва` for `services` (2 characters); `"  ві  "` for
+    `service` (2 characters after normalization); 101 Cyrillic characters for
+    `site`;
+  - `context_id`: missing (for `services`); `"101"` (a string); `0`; `999`
+    (unknown); `303` for `service` (a draft); `101` for `service` (a page, not
+    a service);
+  - `results`: missing for `site`; `-1`; `"3"`; `3.5`; `0` for `services`;
+    `null` for `service`.
+- Not a JSON body (a data provider; `search_stats_not_json`, no insert):
+  - a form body (`application/x-www-form-urlencoded`,
+    `level=site&query=кіт&results=0`);
+  - an empty body;
+  - the JSON string `"кіт"`.
+- A failed insert (`insert_result` set to `false`) returns
+  `search_stats_not_recorded` with `status` 500, after exactly one insert
+  attempt.
+
+That makes 1 + 3 + 3 + 22 + 3 + 1 = 33 tests.
+
+`bin/check.sh` must exit 0 after each task:
+- 297 plugin tests;
+- 119 files linted after task 1, then 122;
+- the theme suite goes from 15 tests to 25, then 58.
+
+### Docs to update
+- `docs/ARCHITECTURE.md`: the feature's Modules row (tasks 1 and 2) and the
+  diagram line (task 2). These are the step's own items.
+- `docs/DATA-MODEL.md`: Relations, which is the step's own item, and the
+  table section's line on who writes rows (rule 5: the table gains its
+  writer).
+- `docs/TESTING.md`: Levels in task 1, to fix the false line, and Rules in
+  task 2, because the harness gains the core classes and `insert()`. Rule 5.
+- `docs/features/search-stats/FEATURE.md` → Interfaces (task 2): the error
+  body and the 500. Rule 5.
+
+### Checks
+- **ANTI-PATTERNS:** none violated.
+  - No post type, taxonomy, ACF group or block is registered.
+  - Nothing goes in `mu-plugins/`, `temp-data/` or `assets/`, and there is no
+    city branching.
+  - No package is added. The core classes are the repo's own committed
+    WordPress.
+  - Nothing calls Telegram.
+- **Docs vs reality:** mismatches, each resolved:
+  1. DECISIONS "Every search is recorded from the browser through one public
+     REST route" → Consequences lists the shared files the feature touches,
+     but not `inc/rest-api.php`. The sprint (Step 3 and Fixed decisions) and
+     FEATURE.md → Fit into the host both name it, and nothing forbids it. So
+     the route is registered there, and the task is marked shared.
+  2. FEATURE.md → Interfaces says `400` with `{code, message}`. A `WP_Error`
+     is sent as `{code, message, data: {status: 400}}`. That is the shape
+     WordPress gives `rest_invalid_json`, and the shape the Questionary route
+     gives its refusals. It is kept, and task 2 says so in FEATURE.md along
+     with the `500`.
+  3. The sprint's test list includes a "non-JSON body".
+     - A malformed body sent with a JSON content type is refused by WordPress
+       before the callback runs (`rest_invalid_json`).
+     - Reproducing that in a unit test needs `WP_Http`, whose file exits when
+       `ABSPATH` is undefined and loads the Requests library
+       (`class-wp-http.php:11–19`).
+     - The unit tests cover every non-JSON body that can reach `record()`: a
+       form body, an empty body and a JSON scalar. The malformed body becomes
+       a check in the verification guide.
+  4. TESTING.md → Levels still says the theme suite "holds only the
+     bootstrap's smoke test", which has been false since Step 2. Task 1 fixes
+     it.
+  5. Carried, not part of this step: `search.php:78` echoes the search query
+     unescaped (WORKLOG, Step 1). It goes to `/adhoc`.
+- **Design:** n/a. No screen.
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command) was
+  green on `master` at `158d6380` after the Step 2 merge: 297 plugin tests,
+  117 files, 15 theme tests.
+- **Not locally verifiable:** that the route answers on both production
+  installs, through whatever sits in front of `/wp-json/` there, and writes
+  into that install's own table. It is verified at the sprint-boundary
+  deploy from `master` and `kyiv`: one search per install (Step 4's
+  production check), with the row read back over SSH.
+
+### Questions / ambiguities
+none
