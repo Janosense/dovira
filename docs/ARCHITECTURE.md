@@ -38,6 +38,7 @@ mu-plugins. Content is bilingual (uk source, ru translation) via Polylang.
 |---|---|---|
 | `core` | the theme as-is, `wp-content/themes/dovira/` | `docs/features/core/FEATURE.md` |
 | `ga-telegram-bridge` | plugin `wp-content/plugins/ga-telegram-bridge/` (own `CLAUDE.md`) | `docs/features/ga-telegram-bridge/FEATURE.md` |
+| `search-stats` | theme feature `wp-content/themes/dovira/inc/features/search-stats/` (+ `source/scripts/features/search-stats/`) | `docs/features/search-stats/FEATURE.md` |
 
 A new feature inside the theme goes into
 `wp-content/themes/dovira/inc/features/{name}/` with one registration line in
