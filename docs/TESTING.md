@@ -25,11 +25,15 @@ logic in a plugin or a theme feature.
 ## How to run
 - Everything that gates a commit: `bin/check.sh` from the repo root. The order is
   PHPCS → PHPStan → PHPUnit in the plugin → `php -l` over the theme → PHPUnit
-  in the theme's `tests/`.
-  - It needs PHP ≥ 8.3 and Composer on PATH. `ddev exec bash bin/check.sh`
-    works too, including with a `tests/vendor/` installed on the host.
-  - It installs the theme's test tooling by itself when `tests/vendor/` is
-    missing.
+  in the theme's `tests/` → Vitest in the theme.
+  - It needs PHP ≥ 8.3, Composer, Node and npm on PATH.
+  - It installs the theme's test tooling by itself when `tests/vendor/` or the
+    theme's `node_modules/` is missing.
+  - Run it on the host. `node_modules/` is shared with the DDEV container but
+    holds native packages for the host's OS only. So `ddev exec bash
+    bin/check.sh` stops before stage 1 with "Vite does not load here" (TECH-STACK
+    → Check command). Stages 1–5 alone would run there, including with a
+    `tests/vendor/` installed on the host.
 - Plugin only: `cd wp-content/plugins/ga-telegram-bridge && composer install`,
   then `composer test` (PHPUnit), `composer lint` / `composer lint:fix` (PHPCS /
   PHPCBF) and `composer analyse` (PHPStan).

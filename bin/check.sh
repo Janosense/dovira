@@ -9,9 +9,12 @@
 #   3. PHPUnit (unit tests)                  in wp-content/plugins/ga-telegram-bridge
 #   4. php -l  over the dovira theme's PHP files
 #   5. PHPUnit (unit tests)                  in wp-content/themes/dovira/tests
+#   6. Vitest  (unit tests)                  in wp-content/themes/dovira
 #
-# Needs PHP >= 8.3 and Composer on PATH (the DDEV web container also qualifies:
-# ddev exec bash bin/check.sh).
+# Needs PHP >= 8.3, Composer, Node and npm on PATH. Stage 6 runs where the
+# theme's node_modules/ was installed: Vite's native packages exist for one OS
+# only, so the DDEV web container cannot use a node_modules/ installed on the
+# host (docs/TECH-STACK.md → Check command).
 
 set -euo pipefail
 
@@ -27,6 +30,11 @@ if ! php -r 'exit( PHP_VERSION_ID >= 80300 ? 0 : 1 );'; then
 	exit 1
 fi
 
+if ! command -v node > /dev/null 2>&1 || ! command -v npm > /dev/null 2>&1; then
+	echo "check: node and npm are required (the theme's JS tests, stage 6) — install Node.js, which brings npm, and put both on PATH." >&2
+	exit 1
+fi
+
 if [ ! -d "${PLUGIN}/vendor" ]; then
 	echo "==> composer install (ga-telegram-bridge)"
 	( cd "${PLUGIN}" && composer install --no-interaction --no-progress )
@@ -35,6 +43,22 @@ fi
 if [ ! -d "${THEME_TESTS}/vendor" ]; then
 	echo "==> composer install (theme dovira tests)"
 	( cd "${THEME_TESTS}" && composer install --no-interaction --no-progress )
+fi
+
+if [ ! -d "${THEME}/node_modules" ]; then
+	echo "==> npm install (theme dovira)"
+	( cd "${THEME}" && npm install --no-audit --no-fund )
+fi
+
+# Vite (which Vitest runs on) loads a native Rollup package built for one OS.
+# A node_modules/ installed on another OS — the host's, seen from the DDEV
+# container — fails here, before any stage, instead of at stage 6 with Rollup's
+# advice to delete node_modules/, which would break the build on the host.
+if ! ( cd "${THEME}" && node --input-type=module -e "await import('vite')" ) > /dev/null 2>&1; then
+	echo "check: Vite does not load here ($(uname -sm)) — the theme's node_modules/ was installed on another OS, or is incomplete." >&2
+	echo "       Run the gate where node_modules/ was installed (the host), or run npm install in the theme on this system." >&2
+	echo "       Do not delete node_modules/ from the DDEV container: the host's npm start / npm run build need it." >&2
+	exit 1
 fi
 
 echo "==> PHPCS (ga-telegram-bridge)"
@@ -63,5 +87,8 @@ echo "    ${count} files checked"
 
 echo "==> PHPUnit (theme dovira)"
 ( cd "${THEME_TESTS}" && vendor/bin/phpunit )
+
+echo "==> Vitest (theme dovira)"
+( cd "${THEME}" && npm test )
 
 echo "==> check: all green"

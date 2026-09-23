@@ -28,7 +28,7 @@
 
 ## Check command
 `bin/check.sh` (repo root, committed and executable) is the gate every commit
-passes. It runs five stages in order and stops at the first failure:
+passes. It runs six stages in order and stops at the first failure:
 1. PHPCS (WordPress Coding Standards), inside
    `wp-content/plugins/ga-telegram-bridge/`.
 2. PHPStan (level 8, analysing against PHP 8.1), same place.
@@ -38,13 +38,26 @@ passes. It runs five stages in order and stops at the first failure:
    `tests/vendor/` is not).
 5. PHPUnit in the theme's `tests/` (DECISIONS "The theme gets PHPUnit +
    Brain\Monkey, run by the check command").
+6. Vitest in the theme (`npm test`, the tests in `tests/js/`) — DECISIONS "The
+   theme gets Vitest for the unit tests of its JavaScript, run by the check
+   command".
 
-It refuses to start below PHP 8.3. It runs `composer install` in the plugin
-when the plugin's `vendor/` is missing, and in `wp-content/themes/dovira/tests/`
-when `tests/vendor/` is missing. The theme's own committed `vendor/` is never
-installed or touched by the gate (DECISIONS "The theme's test tooling is its
-own Composer project in `tests/`"). Both suites set `failOnRisky`, so a test
+It refuses to start below PHP 8.3, and without `node` or `npm` on PATH. It
+runs `composer install` in the plugin when the plugin's `vendor/` is missing,
+in `wp-content/themes/dovira/tests/` when `tests/vendor/` is missing, and
+`npm install` in the theme when its `node_modules/` is missing. The theme's own
+committed `vendor/` is never installed or touched by the gate (DECISIONS "The
+theme's test tooling is its own Composer project in `tests/`"). Both PHPUnit
+suites set `failOnRisky` and Vitest sets `expect.requireAssertions`, so a test
 that asserts nothing fails the gate.
+
+Before stage 1 it checks that Vite loads, because Vitest runs on it and Vite
+loads a native Rollup package built for one OS only. A `node_modules/`
+installed on another OS, or an incomplete one, stops the gate there with a
+message that names the cause. Otherwise it would fail at stage 6 with Rollup's
+advice to delete `node_modules/`, which from the DDEV container would break the
+host's `npm start` / `npm run build`. The host and the container share the one
+`node_modules/`, so **stage 6 runs where it was installed: the host**.
 
 PHPStan needs two settings of its own, both learned from the gate
 crashing on code that has no errors: it is capped at **two parallel workers** in
@@ -55,7 +68,10 @@ stubs push the analysis to ~730M peak — measured, and the same with or without
 `tests/` in the paths, so the cost is the stubs and not the plugin's own files.
 The limit is a CLI flag in `bin/check.sh` and in the plugin's `composer analyse`
 script; PHPStan has no memory setting in its config file. The host PHP (8.5) and the DDEV web container (8.3) both qualify
-— `ddev exec bash bin/check.sh` works. The theme's `npm run build` is NOT part
+for stages 1–5, but `ddev exec bash bin/check.sh` stops at the Vite check
+while `node_modules/` holds the host's (darwin) packages. It passes only with
+a `node_modules/` installed inside the container, which the host's Vite can
+no longer use. The theme's `npm run build` is NOT part
 of the gate (`assets/` are committed; rebuild only when the front end
 changes) — DECISIONS "Testing tooling and the project check command".
 

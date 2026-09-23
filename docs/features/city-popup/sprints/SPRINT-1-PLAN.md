@@ -114,7 +114,7 @@ Written for the recommended answer to Question 1 (A).
 
   → `chore(theme): add Vitest for the theme's JS unit tests`
 
-- [ ] **3. The gate's sixth stage.** Changes to `bin/check.sh`:
+- [x] **3. The gate's sixth stage.** Changes to `bin/check.sh`:
   - The header comment gets `6. Vitest (unit tests) in the dovira theme`, and
     the line "Needs PHP >= 8.3, Composer, Node and npm on PATH".
   - Right after the PHP version check, before any install or stage:
