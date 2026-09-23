@@ -61,6 +61,11 @@ require_once TEMPLATE_DIR . '/inc/polylang.php';
 require_once TEMPLATE_DIR . '/inc/features/search-stats/bootstrap.php';
 
 /**
+ * Feature: city-popup
+ */
+require_once TEMPLATE_DIR . '/inc/features/city-popup/bootstrap.php';
+
+/**
  * WP-CLI commands
  */
 if ( defined( 'WP_CLI' ) && WP_CLI ) {

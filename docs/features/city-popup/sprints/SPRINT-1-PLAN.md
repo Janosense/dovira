@@ -408,7 +408,7 @@ changes as that question describes.
 
   → `feat(city-popup): the city question dialog and its strings`
 
-- [ ] **4. Wire the feature.**
+- [x] **4. Wire the feature.**
   - `inc/features/city-popup/bootstrap.php` requires `Sites.php`, `Pages.php`
     and `Dialog.php` and adds `add_action( 'wp_footer', [ Dialog::class,
     'print_on_blog' ] )`.
