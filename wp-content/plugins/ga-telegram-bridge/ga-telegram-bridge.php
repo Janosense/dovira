@@ -3,7 +3,7 @@
  * Plugin Name:       Google Analytics → Telegram bridge
  * Plugin URI:        https://dovira.vet
  * Description:       Sends a short daily Google Analytics 4 report to one Telegram chat.
- * Version:           0.2.0
+ * Version:           0.3.0
  * Requires at least: 7.1
  * Requires PHP:      8.1
  * Author:            Dovira

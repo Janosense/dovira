@@ -128,7 +128,7 @@ plugin still never references the theme.
 
   → `feat(gatb): drop extra blocks that would push the message past Telegram's limit`
 
-- [ ] **3. Release 0.3.0.**
+- [x] **3. Release 0.3.0.**
   - `ga-telegram-bridge.php`: `Version: 0.2.0` → `0.3.0`.
   - `readme.txt`: `Stable tag: 0.2.0` → `0.3.0`.
   - `readme.txt` gains a `= 0.3.0 =` changelog section, in ASCII only
