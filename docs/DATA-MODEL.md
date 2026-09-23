@@ -8,8 +8,14 @@
 - Standard WordPress tables (`wp_` prefix; `wp_posts`, `wp_postmeta`,
   `wp_terms`/`wp_term_taxonomy`/`wp_term_relationships`, `wp_options`,
   `wp_users`/`wp_usermeta`) plus plugin tables (Polylang, Yoast
-  `wp_yoast_indexable`, CF7). **No custom tables, no migrations mechanism**:
-  schema = registered post types, taxonomies and ACF field groups in PHP.
+  `wp_yoast_indexable`, CF7). Schema = registered post types, taxonomies and
+  ACF field groups in PHP.
+- **One custom table**, `{prefix}dovira_search_queries` of feature
+  `search-stats` (→ Feature `search-stats` below).
+  - It is created and upgraded with `dbDelta()` from a schema version stored
+    in an option. That is the project's only migrations mechanism, and it
+    serves this one table.
+  - Every other entity is still a post type.
 - Every domain entity is a post type; every attribute is an ACF field stored
   in `wp_postmeta` (ACF convention: `{name}` value row + `_{name}` field-key
   row). Field names below are ACF names; repeater rows are
@@ -224,6 +230,55 @@ retry goes with the day it carries). It runs with the plugin unloaded, so the
 names are literals in that file and a unit test holds each one to the constant it
 must equal. **Deactivating** the plugin is a different thing and takes only the
 schedule: the settings, the state and the log survive being switched off.
+
+## Feature `search-stats` (custom table + `wp_options`)
+Owned entirely by the theme feature `search-stats`
+(`docs/features/search-stats/FEATURE.md`, code in
+`inc/features/search-stats/`), on every install separately. No other feature
+writes here.
+
+### Table `{prefix}dovira_search_queries`: one row per recorded search
+Created by `Schema::install()` through `dbDelta()`. That runs on
+`after_switch_theme`, and on `init` whenever the stored schema version is
+behind `Schema::VERSION`. On an install where the theme is already active, as
+after a hand deploy, the first request after the code arrives creates the
+table. A `wp db …` command does not load WordPress, so it does not create it.
+
+| Column | Type | Null | Meaning |
+|---|---|---|---|
+| `id` | `bigint(20) unsigned` auto-increment | no | primary key |
+| `level` | `varchar(16)` | no | `site` (header search), `services` (the `services` block filter) or `service` (a service's price-list filter) |
+| `query_text` | `varchar(100)` | no | the query, normalized once on the server (lowercase, trimmed, whitespace collapsed); the raw text is never stored |
+| `context_id` | `bigint(20) unsigned`, default `0` | no | the post the search belongs to: the page hosting the block for `services`, the service for `service`; `0` for `site` |
+| `results` | `int(10) unsigned` | yes | how many results the results page showed, for `site` only; `NULL` for the other levels |
+| `created_at` | `datetime` | no | when the search was recorded, **UTC** |
+
+Keys:
+- `PRIMARY KEY (id)`;
+- `level_created_at (level, created_at)`, for the report's per-level period
+  queries;
+- `created_at (created_at)`, for the purge.
+
+The charset and collation are `$wpdb->get_charset_collate()` (`utf8mb4` /
+`utf8mb4_unicode_520_ci` locally).
+
+No personal data: no IP, user agent, cookie or user id.
+
+### Option `dovira_search_stats_db_version`: an int, autoloaded
+The schema version of the table: `Schema::VERSION`, `1` today.
+- It is written only after a `dbDelta()` run that leaves `$wpdb->last_error`
+  empty. A failed run is therefore retried on the next request.
+- It is autoloaded because `init` reads it on every request.
+- Raising `Schema::VERSION` together with the `CREATE TABLE` is how the table
+  changes. `dbDelta()` adds columns and keys but never drops them.
+
+### Removing the feature's data by hand
+A theme has no uninstall, so nothing removes the table. After the feature is
+removed from the code, on each install:
+```bash
+wp db query "DROP TABLE {prefix}dovira_search_queries"
+wp option delete dovira_search_stats_db_version
+```
 
 ## Relations
 ```

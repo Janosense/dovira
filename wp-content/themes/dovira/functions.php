@@ -56,6 +56,11 @@ require_once TEMPLATE_DIR . '/inc/custom-roles.php';
 require_once TEMPLATE_DIR . '/inc/polylang.php';
 
 /**
+ * Feature: search-stats
+ */
+require_once TEMPLATE_DIR . '/inc/features/search-stats/bootstrap.php';
+
+/**
  * WP-CLI commands
  */
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
