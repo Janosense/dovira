@@ -294,6 +294,20 @@ Entry format:
 - **Alternatives rejected:** an in-chat mockup or Claude Design — a title and two buttons in the site's own components leave nothing for a mockup to settle.
 - **Consequences:** no `design/` folder for this feature; the step that builds the dialog adds it to `docs/DESIGN.md` → Components and Screens; Verification (manual) reads the dialog against `FEATURE.md` → UI.
 
+## 2026-09-23 — [city-popup] The gate runs on the host; before stage 1 it checks that Vite loads on this OS
+- **Context:** The entry "The theme gets Vitest for the unit tests of its JavaScript, run by the check command" expected the gate to keep running in DDEV ("the DDEV web container has them"). `city-popup` Sprint 1 Step 1 found otherwise.
+  - The DDEV web container sees the host's theme `node_modules/`, which holds only the darwin builds of Rollup and esbuild.
+  - In the container (Linux aarch64), `import('vite')` fails with "Cannot find module @rollup/rollup-linux-arm64-gnu", and Vitest runs on Vite.
+  - One `node_modules/` serves one OS, and the host needs it for `npm start` / `npm run build`.
+- **Decision:** Stage 6 runs where the theme's `node_modules/` was installed, which is the host. Before stage 1, `bin/check.sh` checks that Vite loads. If it does not, the gate stops with a message naming the cause and warning not to delete `node_modules/` from the container.
+- **Alternatives rejected:**
+  - Reinstall `node_modules/` whenever Vite does not load: each switch between host and container would reinstall the shared directory for the other OS, breaking a running `npm start` and the next host build.
+  - Skip stage 6 in the container: a commit gated there would pass without the JS tests.
+  - Let stage 6 fail on its own: Rollup's message advises deleting `node_modules/`, which from the container breaks the host.
+- **Consequences:**
+  - `ddev exec bash bin/check.sh` stops before stage 1 unless `node_modules/` was installed inside the container. TECH-STACK → Check command, TESTING → How to run, the ARCHITECTURE gate row and root `CLAUDE.md` → Commands say to run the gate on the host.
+  - The entry above keeps its wording (append-only); this entry replaces its "(the DDEV web container has them)" as the rule for where the gate runs.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)

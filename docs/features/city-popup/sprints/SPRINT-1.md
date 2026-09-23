@@ -38,7 +38,7 @@ tests, and every decision the module makes is covered by one.
      subsections, even if a subsection is "—". The checkbox in the heading is
      ticked by /close-step. -->
 
-### [ ] Step 1 — Delta-audit and Vitest in the gate
+### [x] Step 1 — Delta-audit and Vitest in the gate
 - **Tasks:**
   - Delta-audit:
     - Read `docs/features/core/FEATURE.md`, and `docs/features/search-stats/FEATURE.md`, which also changes `app.js`.
