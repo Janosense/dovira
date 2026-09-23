@@ -19,6 +19,15 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] The plan said which index a query "reads through" without asking the database
+- **Incident:** Sprint 2 Step 2's plan said `Repository::top()` "reads through the key `level_created_at` (level, created_at)". It said the same about the DATA-MODEL update. During `/do-step`, an `EXPLAIN` of the real query on the local MariaDB listed both `level_created_at` and `created_at` as possible keys and chose `created_at`. The table was empty, so the choice meant little, but the plan had stated it as fact. DATA-MODEL was written from the `EXPLAIN` instead: MariaDB picks between the two keys from the table's statistics, and the code forces neither.
+- **Root cause:** The same family as the 2026-09-16 entries on numbers. A statement about what a system will do was written from the design, here the schema's comment that the key exists "for the report's per-level period queries", not from the system. The plan did run the database for the collation, which is how it found `ґ` = `г`. It did not run it for the query plan, although one `EXPLAIN` was the same cost.
+- **Fix applied here:**
+  - DATA-MODEL states what the optimizer may choose and what it chose locally.
+  - The step's report names the difference from the plan.
+  - Rule taken: **a plan that says which index a query uses runs `EXPLAIN` on it while planning and quotes the result, together with the row count it was measured on.** Otherwise it says only which index was built for it.
+- **Transferred to playbook:** pending
+
 ## 2026-09-23 — [search-stats] The settings-screen screenshot put the private key into the transcript a second time, by the same path as the first
 - **Incident:** Sprint 2 Step 1's plan required *Preview* to be opened in the browser before the step was marked implemented. On screen `Settings` of the plugin, the first click on *Попередній перегляд* (by element reference) did not submit. A second click, by coordinates, did; the page came back scrolled to the top, and a whole-viewport screenshot was taken to find the preview. The screen echoes the stored service-account JSON into its textarea, so part of the local install's private key was captured and is now in the session transcript. The bot token field was below the fold. Every step of that sequence is the one the 2026-09-10 entry below describes: a failed first click, then a scroll-to-top reflex, then a screenshot.
 - **Root cause:**
