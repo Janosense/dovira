@@ -262,6 +262,11 @@ Keys:
 The charset and collation are `$wpdb->get_charset_collate()` (`utf8mb4` /
 `utf8mb4_unicode_520_ci` locally).
 
+Rows are inserted only by the REST route `POST dovira/v1/search-stats/record`
+(`Repository::insert()`, called after the whole request has been validated):
+one row per valid request, `created_at` = `current_time( 'mysql', true )`. A
+refused request writes nothing.
+
 No personal data: no IP, user agent, cookie or user id.
 
 ### Option `dovira_search_stats_db_version`: an int, autoloaded
@@ -300,8 +305,12 @@ service-city ──< service            application >── vacancy (post_object
 service-city ──< employee           application >── attachment (file / CV)
 service-city ──< vacancy            service.prices[*].cities ──> service-city term ids
 uk post <── Polylang post_translations ──> ru post   (page, post, service, vacancy)
+dovira_search_queries.context_id ──> wp_posts.ID   (not enforced; 0 for level site)
 ```
 `conversation` and `questionary` have no relations to other posts.
+`dovira_search_queries.context_id` is checked only when the row is written (a
+published post; a `service` for level `service`). Nothing keeps it in step
+afterwards: a post deleted later leaves its id behind in the table.
 
 ## Invariants
 - A `service` price row is visible in a city tab only if `cities` contains

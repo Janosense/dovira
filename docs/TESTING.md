@@ -182,5 +182,20 @@ The rest of this section is the plugin's
       registers hooks when it loads.
   - `$wpdb` is `dovira\Tests\WpdbDouble` (`tests/WpdbDouble.php`), put in
     `$GLOBALS['wpdb']` in `setUp()` and removed in `tearDown()`. It records
-    `prepare()` and `query()` calls and carries `prefix` and `last_error`.
-    Extend it when a class needs another `$wpdb` method.
+    `prepare()`, `query()` and `insert()` calls and carries `prefix` and
+    `last_error`; `insert()` returns `$insert_result`, which a test sets to
+    `false` for a failed insert. Extend it when a class needs another `$wpdb`
+    method.
+  - **WordPress's own classes come from the committed core, never rewritten
+    in `tests/`.** `tests/bootstrap.php` requires `WP_Error`,
+    `WP_HTTP_Response`, `WP_REST_Response`, `WP_REST_Request` and
+    `WP_REST_Controller` from `wp-includes/`. None of those files runs code
+    when loaded, so a REST test builds a real `WP_REST_Request` (header plus
+    body) and WordPress parses the JSON body itself.
+    - The WordPress functions those classes call are stubbed like any other:
+      `absint()` and `do_action()` come from Brain\Monkey, and a test stubs
+      `wp_is_json_media_type()`.
+    - A class whose file needs `ABSPATH` or loads a library, such as
+      `WP_Http`, stays out. A malformed JSON body therefore has no unit test:
+      WordPress refuses it with `rest_invalid_json` before a route's callback
+      runs, and the step's verification guide checks it.
