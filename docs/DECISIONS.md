@@ -190,6 +190,32 @@ Entry format:
 - **Alternatives rejected:** no guard — a third party's block could silence the whole report; truncating the text mid-block — cuts HTML tags open and rows in half; splitting into two messages — a second Telegram feature and a second send to log, for a case the report should not reach.
 - **Consequences:** `TelegramClient` gains the constant; the theme's three blocks (≤ 39 lines) fit with the plugin's report as it is today, so the guard is a safety net, not the normal path; `MessageRendererTest` covers the count, the order and the untouched plugin blocks; `FEATURE.md` of the plugin → Invariants gains the line.
 
+## 2026-09-23 — [search-stats] The theme's test tooling is its own Composer project in `tests/`, because the theme's `vendor/` is committed
+- **Context:** DECISIONS "The theme gets PHPUnit + Brain\Monkey, run by the check command" (2026-09-22) put the two packages in `require-dev` of the theme's `composer.json`. Planning Sprint 1 Step 1 found that this `composer.json` feeds production:
+  - The theme's `vendor/` is committed (1 904 files) and is what the file-sync deploy ships. `functions.php` requires its autoloader on every request.
+  - It was built by a plain `composer install` (`vendor/composer/installed.json` → `"dev": true`).
+  - With PHPUnit and Brain\Monkey in `require-dev`, that same command installs 29 dev packages into `vendor/` and adds five dev-only `files` entries to the tracked autoloader (mockery `helpers.php` and `Mockery.php`, deep-copy, brain/monkey `inc/api.php`, phpunit `Assert/Functions.php`).
+  - Committed without the packages, those entries fatal every page. Committed with them, PHPUnit ships to every server.
+  - On a clean checkout, where there is no lock because it is not committed, the same install would also re-resolve and upgrade nine committed runtime packages (guzzle 7.11.0 → 7.15.5, phpdotenv 5.6.3 → 5.7.0, …; dry run 2026-09-23).
+  - The developer chose this answer when approving the step plan.
+- **Decision:** Put the theme's test tooling in `wp-content/themes/dovira/tests/composer.json`, a separate dev-only Composer project:
+  - `require-dev` `phpunit/phpunit ^12.5` and `brain/monkey ^2.7`;
+  - `config.platform.php` `8.3`;
+  - PSR-4 `dovira\Tests\` → `tests/`;
+  - `composer test`.
+
+  Its `vendor/` is gitignored and its lock is not committed. The theme's own `composer.json` and `vendor/` hold runtime packages only.
+- **Alternatives rejected:**
+  - `require-dev` of the theme's `composer.json`, as first decided: ships PHPUnit or breaks every page depending on what gets committed, and guarding it would need `--no-dev` on every theme install forever.
+  - Gitignoring the theme's `vendor/`: the deploy is a file sync with no Composer on the server.
+  - Running the theme's tests with the plugin's PHPUnit: it would tie one code area's gate to another's dev tooling.
+- **Consequences:**
+  - Supersedes only the "as `require-dev` of the theme's `composer.json`" clause of the 2026-09-22 entry. The rest stands: the packages and versions, `failOnRisky`, `tests/Unit/`, the fifth gate stage after `php -l`, no PHPCS/PHPStan for the theme, and the uncommitted lock.
+  - `bin/check.sh` runs `composer install` in `tests/` when `tests/vendor/` is missing.
+  - TECH-STACK → ANTI-PATTERNS forbids dev packages in the theme's `composer.json`.
+  - The hand deploy has to leave `tests/vendor/` behind, just as it leaves the plugin's dev `vendor/`. The committed `tests/*.php` reach the servers, as the plugin's `tests/` already do.
+  - `platform.php 8.3` lets a `tests/vendor/` installed on the host (PHP 8.5) run inside DDEV (PHP 8.3).
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
