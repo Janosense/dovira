@@ -17,6 +17,31 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] Sprint 1 Step 3 — The REST route that records a search
+- Changed:
+  - `POST dovira/v1/search-stats/record` is live: public, reads the JSON body only, and is the only writer of `{prefix}dovira_search_queries`.
+  - `RecordController` checks everything before its one write: `level`; the query after normalization (1–100 characters for `site`, 3–100 for the filters); for the two filters, a `context_id` that is a published post (a `service` post for `service`); `results` required for `site` and refused on the other levels.
+  - Answers: `204` with no body, `400` `WP_Error` with no row, `500` when the insert fails.
+  - `Normalizer` is the one place text is normalized. `Repository::insert()` stores `created_at` in UTC.
+  - Theme tests: 15 → 58. 122 files linted.
+- Shared code:
+  - `inc/rest-api.php` gains the controller at the end of the `rest_api_init` closure. `core`'s Telegram and Questionary routes are unchanged and still answer.
+  - The theme test harness: `tests/bootstrap.php` now loads five WordPress REST classes from the committed core, and `WpdbDouble` records `insert()`.
+- Decisions: none new in DECISIONS.md. Settled in the plan:
+  - a failed insert answers 500, as the Questionary route does;
+  - `context_id` and `results` must be JSON integers;
+  - a `results` key sent with a filter level is refused, even when it is `null`;
+  - `context_id` must be above 0 before `get_post_status()` is called, because `get_post( 0 )` falls back to the global post.
+  - FEATURE.md → Interfaces now names the error body and the 500.
+- Verified on the local install:
+  - one row per level, stored in UTC;
+  - nine refusals (bad level, short query, page as a service, draft, stray or missing results, form body, malformed JSON, GET), none of which wrote a row;
+  - a 500 with the table renamed away, which did not recreate it.
+- Open:
+  - Step 4 must send `context_id` and `results` as numbers, not strings.
+  - Whether production answers through whatever sits in front of `/wp-json/` is checked with Step 4's production search at the sprint-boundary deploy.
+  - `search.php:78` (the reflected XSS) is still waiting for an `/adhoc`.
+
 ## 2026-09-23 — [search-stats] Sprint 1 Step 2 — Feature bootstrap, the table and the purge
 - Changed:
   - The feature is registered: one line in `functions.php`, plus `inc/features/search-stats/bootstrap.php`.

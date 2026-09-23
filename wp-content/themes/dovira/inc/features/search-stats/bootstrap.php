@@ -9,6 +9,10 @@ use dovira\SearchStats\Schema;
 
 require_once __DIR__ . '/Schema.php';
 require_once __DIR__ . '/Purge.php';
+require_once __DIR__ . '/Normalizer.php';
+require_once __DIR__ . '/Repository.php';
+// Registered in inc/rest-api.php with the theme's other controllers.
+require_once __DIR__ . '/RecordController.php';
 
 add_action( 'after_switch_theme', [ Schema::class, 'install' ] );
 add_action( 'init', [ Schema::class, 'maybe_upgrade' ] );
