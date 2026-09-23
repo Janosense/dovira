@@ -16,7 +16,7 @@ logic in a plugin or a theme feature.
 | Level | What | Where | Runs WordPress? |
 |---|---|---|---|
 | Unit (plugin) | pure logic: JWT building, response parsing, report maths, message rendering, sanitizers, scheduling maths, state transitions | `wp-content/plugins/ga-telegram-bridge/tests/Unit/` | No — Brain\Monkey stubs `__()`, `esc_html()`, `get_option()`, `wp_remote_post()` etc. |
-| Unit (theme) | the theme features' pure code: query normalization, REST validation, the SQL a class builds and the shaping of its results, rendering. Today it holds only the bootstrap's smoke test | `wp-content/themes/dovira/tests/Unit/` (one directory per feature, e.g. `SearchStats/`) | No — the same Brain\Monkey approach; `$wpdb` is a test double |
+| Unit (theme) | the theme features' pure code: query normalization, REST validation, the SQL a class builds and the shaping of its results, rendering | `wp-content/themes/dovira/tests/Unit/` (one directory per feature, e.g. `SearchStats/`) | No — the same Brain\Monkey approach; `$wpdb` is a test double |
 | Integration | none automated in v1; the manual verification guides written by `/close-step` (`docs/features/{feature}/verification/`) are the regression suite | — | — |
 
 ## How to run
