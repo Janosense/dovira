@@ -108,6 +108,17 @@ changes) — DECISIONS "Testing tooling and the project check command".
   leaves no row, which a PHP recorder could only approximate with a user-agent
   list (DECISIONS "Every search is recorded from the browser through one
   public REST route").
+- Do not escape a value for a Telegram HTML message with `esc_html()`.
+  - WordPress keeps an entity it recognises (`&nbsp;`, `&laquo;`).
+  - Telegram refuses every named entity except `&lt;`, `&gt;`, `&amp;` and
+    `&quot;`, so one such value makes the whole message unsendable.
+  - Escape with double encoding,
+    `htmlspecialchars( $v, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', true )`,
+    and decode a stored WordPress title first (DECISIONS "Values in a
+    Telegram message are escaped with double encoding, never with
+    `esc_html()`").
+  - Brain\Monkey's `esc_html` stub double-encodes, so a unit test cannot see
+    the difference.
 
 ## Dependency policy
 New dependencies (runtime AND dev/tooling) only after explicit user approval —

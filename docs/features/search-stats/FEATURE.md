@@ -48,7 +48,7 @@ uninstall, so dropping it is a documented manual step.
 - **JS:** `recordSearch(level, query, contextId, results)` from `source/scripts/features/search-stats/record.js`; the two filters and `search.php` are its only callers — `search.php` through `recordSiteSearch()`, which `app.js` calls once on load and which reads the results section's `data-search-stats-query` / `data-search-stats-results`.
 
 ## UI
-- **Screens:** none of its own — the three blocks inside the plugin's message (no design export; DECISIONS "No UI design phase; the three sections are fixed as a template in FEATURE.md"):
+- **Screens:** none of its own — the three blocks inside the plugin's message (no design export; DECISIONS "No UI design phase; the three sections are fixed as a template in FEATURE.md"). Confirmed against the rendered message in Sprint 2 Step 3 (`Renderer::blocks()`, printed by the plugin between the devices block and the GA link):
   ```
   🔎 <b>Пошук по сайту</b>
   Вчора:
@@ -68,7 +68,7 @@ uninstall, so dropping it is a documented manual step.
   За 28 днів:
   1. {query} — {service title} — {count}
   ```
-  Up to five rows per list, ordered by count then by the most recent search; the marker when `MAX(results) = 0` over the period; `{page title}` / `{service title}` = the Ukrainian source post of `context_id` (`(видалено)` when gone); a query longer than 40 characters is cut with `…`; every value HTML-escaped; an empty list prints `—`; a block with two empty lists is not contributed; the blocks sit after the plugin's own blocks and before the GA link, one blank line between blocks (DECISIONS "Three blocks, each with a yesterday list and a 28-day list").
+  Up to five rows per list, ordered by count then by the most recent search; the marker when `MAX(results) = 0` over the period; `{page title}` / `{service title}` = the Ukrainian source post of `context_id` (`(видалено)` when gone); a query longer than 40 characters keeps its first 40 and gets `…` (cut before escaping, no space left before the `…`); `{count}` is plain digits (`number_format_i18n()` would write the Ukrainian thousands separator as `&nbsp;`, which Telegram refuses); every value HTML-escaped with double encoding (`htmlspecialchars`, `ENT_QUOTES | ENT_HTML401`) — not `esc_html()`, which keeps an entity it recognises, so a visitor who searched `&nbsp;` would make Telegram refuse the whole message; a title is the post's raw title with its entities decoded, then escaped once; an empty list prints `—`; a block with two empty lists is not contributed; the blocks sit after the plugin's own blocks and before the GA link, one blank line between blocks (DECISIONS "Three blocks, each with a yesterday list and a 28-day list").
 - **Reuses:** —
 - **Introduces:** —
 

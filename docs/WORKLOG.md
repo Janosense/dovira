@@ -17,6 +17,33 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] Sprint 2 Step 3 — The three blocks in the message
+- Changed: the morning report now carries the search blocks.
+  - `Renderer::blocks()` writes FEATURE.md → UI: up to three blocks, `—` for an empty list, no block for an empty level. Queries are cut at 40 characters plus `…`. Titles come from the Ukrainian post through `pll_get_post()`, or `(видалено)`. Counts are plain digits.
+  - `bootstrap.php` hooks `Renderer::add_to()` to the plugin's `gatb_extra_blocks`, only when `GaTelegramBridge\Plugin` is loaded.
+  - Theme tests 83 → 92. 134 files linted.
+- Shared code: none changed. The theme now consumes the plugin's public filter, and the plugin itself is untouched.
+- Decisions:
+  - DECISIONS "Values in a Telegram message are escaped with double encoding, never with `esc_html()`", plus a TECH-STACK ANTI-PATTERNS line and a LEARNINGS entry. The step text said `esc_html`, but WordPress keeps `&nbsp;`/`&copy;`, and Telegram refuses them. One public search could have made the report unsendable, and Brain\Monkey's stub would have hidden it.
+  - Settled in the plan: the 40-character cut; stored titles are decoded before escaping; `BootstrapFilterTest` tests the callback, since `bootstrap.php` is never loaded in tests.
+- Verified locally with seeded rows, then deleted:
+  - the real message, rendered from the shell, has the three blocks between the devices block and the link;
+  - the Russian page 1630 prints `Послуги`, and a missing post prints `(видалено)`;
+  - `&nbsp; <b> &copy;` prints as text, and the 40-character cut is exact;
+  - *Preview* was read element-only, with no screenshot;
+  - an empty table leaves the plugin's message alone;
+  - with the plugin skipped, the theme hooks and loads nothing.
+
+  *Send now* was not pressed.
+- Open (the sprint boundary is the developer's):
+  - Hand deploy `master` → Kharkiv, merge `master` → `kyiv` → Kyiv. That carries theme and plugin 0.3.0 and the Sprint 1 checks (the table is created, one real search per level). Then the first morning report on each install.
+  - Rotate the local service-account key.
+  - Decide whether to name the site zone "Київ".
+  - `/adhoc` candidates: the plugin still escapes GA labels and page titles with `esc_html()`; `search.php:78` reflected XSS; `wp is not defined`.
+  - 20 LEARNINGS entries are `pending` for the retro, four of them from this sprint.
+
+Sprint 2 complete — all steps closed, search-stats/sprint-2-report merged into main (`master`, simple git model)
+
 ## 2026-09-23 — [search-stats] Sprint 2 Step 2 — Aggregation: top-5 per level for yesterday and for 28 days
 - Changed: the reading side of the daily report, in `inc/features/search-stats/`. Nothing calls it yet; Step 3 hooks it into `gatb_extra_blocks`.
   - `Periods` turns a clock into yesterday and the 28 calendar days ending with it. The bounds are half-open UTC edges of whole days in `wp_timezone()`, so a clock-change night is 23 or 25 h.
