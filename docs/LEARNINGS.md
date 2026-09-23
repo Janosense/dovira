@@ -19,6 +19,22 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] The sprint copied the plugin's tooling layout into a code area where `vendor/` is production code
+- **Incident:** SPRINT-1 Step 1 and DECISIONS "The theme gets PHPUnit + Brain\Monkey" (both written by discovery) said three things that were false:
+  - the theme's `.gitignore` "keeps `vendor/` out";
+  - the gate should `composer install` in the theme "when `vendor/` is missing, exactly as it does for the plugin";
+  - adding PHPUnit and Brain\Monkey to the theme's `require-dev` has "consumers: none at runtime".
+
+  In fact the theme's `vendor/` is committed (1 904 files), shipped by the file-sync deploy, and loaded by `functions.php` on every request. Its `installed.json` shows it was built by a plain `composer install`. Followed literally, the step puts five dev-only `files` entries into that autoloader: every page fatals if the entries are committed without the packages, and PHPUnit ships to three servers if the packages are committed too. `/plan-step` caught it with `git ls-files` and dry runs, and the developer approved a separate Composer project in `tests/`.
+- **Root cause:** The theme's packaging facts were written in three docs already: ARCHITECTURE → Environments, `core` FEATURE.md → Invariants, and the TECH-STACK Stack row. The sprint was written from the plugin's precedent ("exactly as for the plugin") and from the theme `CLAUDE.md`'s never-commit list, which names `composer.lock` but not `vendor/`. That absence was read as "ignored". Nothing asks discovery or the planner to check that a pattern copied from one code area fits the packaging and deploy model of the area it is copied into.
+- **Fix applied here:**
+  - DECISIONS "The theme's test tooling is its own Composer project in `tests/`" (amends one clause).
+  - A TECH-STACK ANTI-PATTERNS line.
+  - The theme `CLAUDE.md` now says outright that `vendor/` **is** committed.
+
+  Rule taken: **when a step reuses tooling or a layout "as in" another code area, the plan checks the target area's own packaging facts first** (`git ls-files`, what the runtime autoloader loads, what the deploy ships) and quotes them. The absence of a path from a "never commit" list proves nothing about whether it is committed.
+- **Transferred to playbook:** pending
+
 ## 2026-09-16 — [ga-telegram-bridge] The plan named the tests a change would break by grepping for one shape of assertion
 
 - **Incident:** The analytics-link ad-hoc's plan said "three assertions pin where the message ends; nothing else does", from a grep for `assertStringEndsWith` and line counts. The first gate run failed five tests: the three named, and two that pin how many **links** the message holds — "the only link is the page's", "`(not set)` is not linked" — which a closing link makes false without touching what they guard. They were fixed in the same commit by narrowing each to links into the site, and the report says so; but "nothing else does" was stated as a finding when it was only the result of one search.

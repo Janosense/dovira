@@ -32,7 +32,7 @@ Telegram message yet.
      subsections, even if a subsection is "—". The checkbox in the heading is
      ticked by /close-step. -->
 
-### [ ] Step 1 — Delta-audit and the theme's test suite in the gate
+### [x] Step 1 — Delta-audit and the theme's test suite in the gate
 - **Tasks:**
   - Delta-audit: read `docs/features/core/FEATURE.md`, `docs/features/ga-telegram-bridge/FEATURE.md` and the shared code this feature will touch (`search.php`, the two JS filter modules, `app.js`, `inc/rest-api.php`, `functions.php`); confirm the plan conflicts with nothing, list the touchpoints in the step report (no code change from the audit itself).
   - Add `phpunit/phpunit ^12.5` and `brain/monkey ^2.7` to `require-dev` of the theme's `composer.json` (**touches shared code — may affect other features:** `composer.json` of the theme; consumers: none at runtime, dev tooling only); `tests/bootstrap.php` (Composer autoload, Brain\Monkey setup, no WordPress bootstrap), `tests/TestCase.php`, `phpunit.xml.dist` with `failOnRisky="true"` and the suite under `tests/Unit/`; one smoke test.

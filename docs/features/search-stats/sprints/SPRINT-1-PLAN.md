@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step. Approval of a section
      authorizes that step only. -->
 
-## Plan — Sprint 1, Step 1: Delta-audit and the theme's test suite in the gate   (status: implemented, awaiting close)
+## Plan — Sprint 1, Step 1: Delta-audit and the theme's test suite in the gate   (status: closed)
 
 ### Branch
 `search-stats/sprint-1-recording` ← `master`

@@ -17,6 +17,22 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] Sprint 1 Step 1 — Delta-audit and the theme's test suite in the gate
+- Changed:
+  - The theme has a unit suite in `wp-content/themes/dovira/tests/`, its own dev-only Composer project: PHPUnit 12.5.35, Brain\Monkey 2.7.0, platform PHP 8.3, `failOnRisky`, and one smoke test. Its `vendor/` is gitignored and its lock uncommitted.
+  - `bin/check.sh` gains stage 5, `PHPUnit (theme dovira)`, and installs that tooling when `tests/vendor/` is missing.
+  - Green on the host and in DDEV: 297 plugin tests, 111 theme files linted, 1 theme test. It fails when the smoke test's assertion is removed.
+  - The audit's list of touchpoints for Steps 2–4 is in `SPRINT-1-PLAN.md`.
+- Shared code: `bin/check.sh` (gates every commit of `core`, `ga-telegram-bridge`, `search-stats`), the theme `.gitignore`, and a new theme-wide `tests/` directory, where later theme features' tests go too. The theme's `composer.json` and its committed `vendor/` are untouched. Nothing the site loads changed.
+- Decisions:
+  - DECISIONS "The theme's test tooling is its own Composer project in `tests/`" amends one clause of the 2026-09-22 entry. The step text assumed the theme's `vendor/` was gitignored, but it is committed and loaded on every request, so dev packages in the theme's `composer.json` would ship or break every page.
+  - Chosen at `/plan-step` as recommended.
+  - TECH-STACK ANTI-PATTERNS gained the matching line, and LEARNINGS an entry.
+- Open:
+  - `search.php:78` echoes the search query unescaped (reflected XSS, confirmed locally). It goes to `/adhoc`, not this sprint.
+  - Step 4 must count only the results `search.php` actually shows.
+  - Whether the hand deploy leaves `tests/vendor/` behind is checked at the sprint-boundary deploy.
+
 ## 2026-09-16 — [adhoc] [ga-telegram-bridge] — The report ends with a link into the GA4 property
 - Changed: `MessageRenderer` closes every report, after its last block and one blank line, with `🔗 <a href="https://analytics.google.com/analytics/web/#/p{property_id}/reports/intelligenthome">Детальніше в Google Analytics</a>`; the failure notice has none. The property id is URL-encoded as `GaClient` encodes it, which is what makes the escaping real — the `esc_url` test stub escapes neither quotes nor brackets. One new string (`.pot` 130 → 131), a readme FAQ entry on who can open the link, and 294 → 297 tests.
 - Shared code: none of the theme, no gate config. `MessageRenderer` now reads one setting, the property id — its docblock said "no settings" and no longer does. The `gatb_report_data` payload is untouched: the id comes from `Settings`, not from the `Report`.
