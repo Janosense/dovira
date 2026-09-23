@@ -348,7 +348,7 @@ were measured while planning.
 separate dev-only Composer project in `wp-content/themes/dovira/tests/`. The
 theme's own `composer.json` and `vendor/` are not touched. (`/do-step`, 2026-09-23.)
 
-## Plan — Sprint 1, Step 2: Feature bootstrap, the table and the purge   (status: implemented, awaiting close)
+## Plan — Sprint 1, Step 2: Feature bootstrap, the table and the purge   (status: closed)
 
 ### Branch
 `search-stats/sprint-1-recording` ← `master`
