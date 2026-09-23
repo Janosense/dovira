@@ -47,6 +47,7 @@ to this data; `uninstall.php` removes all of it when the plugin is deleted, whil
   in the property's reporting time zone; the send time is site-local.
 - The schedule is re-anchored at the end of every scheduled run: the next `gatb_daily_report` is registered from the configured local time, never by adding a fixed interval, so the report keeps its time of day across a clock change without anyone re-saving the settings. Only the schedule does this — *Send now* and a retry never move it.
 - Never more than 2 `batchRunReports` calls per run; a disabled block issues no request.
+- A message never loses one of the plugin's own blocks to its length: while the report's text as Telegram counts it (tags stripped, entities decoded, UTF-16 units) is longer than `TelegramClient::MAX_TEXT_LENGTH` (4 096), the last block `gatb_extra_blocks` added is dropped, and the run-log detail line of that run — sent or refused — says how many (DECISIONS "The plugin drops extra blocks that would push the message past Telegram's limit").
 - Public pages never call Google or Telegram synchronously: all network work
   runs inside the cron callback or an admin-initiated request.
 - Zero runtime Composer dependencies; `openssl` is required and checked at activation.

@@ -57,7 +57,7 @@ plugin still never references the theme.
 
   → `feat(gatb): let other code add blocks to the report through gatb_extra_blocks`
 
-- [ ] **2. The length guard, and the count in the run log.**
+- [x] **2. The length guard, and the count in the run log.**
   *Touches shared code — may affect other features (`ga-telegram-bridge`, `search-stats`).*
   - `TelegramClient` gains `public const MAX_TEXT_LENGTH = 4096;` with a
     docblock. The step text names the constant as if it existed. It does

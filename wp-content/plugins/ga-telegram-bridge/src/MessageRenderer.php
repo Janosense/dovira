@@ -59,6 +59,27 @@ final class MessageRenderer {
 	 * @param Report $report The day's numbers, shares and changes included.
 	 */
 	public static function render( Report $report ): string {
+		return self::compose( $report )['html'];
+	}
+
+	/**
+	 * Writes the whole message for one report, and says how many of the blocks
+	 * other code added had to be left out of it.
+	 *
+	 * Telegram refuses a message whose text is longer than it accepts, and a
+	 * refused message is no report at all. So while the message is too long,
+	 * the last block other code added is dropped — theirs, never the plugin's
+	 * own: when the plugin's blocks alone are too long, every added block goes
+	 * and the message is sent as it would have been without them. The length is
+	 * that of the message this method writes; what a gatb_message_html filter
+	 * does to it afterwards is that filter's business, and dropping blocks
+	 * could not undo it anyway. The count travels back to the caller rather
+	 * than being kept here, because the run log is where it belongs.
+	 *
+	 * @param Report $report The day's numbers, shares and changes included.
+	 * @return array{html: string, dropped: int}
+	 */
+	public static function compose( Report $report ): array {
 		$report = self::filtered_report( $report );
 
 		$blocks = array(
@@ -95,10 +116,58 @@ final class MessageRenderer {
 			}
 		}
 
-		$printed   = array_merge( $printed, self::extra_blocks( $report ) );
-		$printed[] = self::analytics_link();
+		$extra   = self::extra_blocks( $report );
+		$link    = self::analytics_link();
+		$dropped = 0;
 
-		return self::filtered_html( implode( "\n\n", $printed ), $report );
+		while ( array() !== $extra && self::telegram_length( self::assemble( $printed, $extra, $link ) ) > TelegramClient::MAX_TEXT_LENGTH ) {
+			array_pop( $extra );
+			++$dropped;
+		}
+
+		return array(
+			'html'    => self::filtered_html( self::assemble( $printed, $extra, $link ), $report ),
+			'dropped' => $dropped,
+		);
+	}
+
+	/**
+	 * Puts the message together: the plugin's blocks, the added ones, the link.
+	 *
+	 * @param array<int, string> $own   The plugin's own blocks that are printed.
+	 * @param array<int, string> $extra The blocks other code added that are kept.
+	 * @param string             $link  The closing link into Google Analytics.
+	 */
+	private static function assemble( array $own, array $extra, string $link ): string {
+		return implode( "\n\n", array_merge( $own, $extra, array( $link ) ) );
+	}
+
+	/**
+	 * Counts a message the way Telegram does: as the text it shows.
+	 *
+	 * The tags go first and the entities are decoded after, so that an escaped
+	 * "&lt;b&gt;" counts as the three characters it is shown as. The text is then
+	 * counted in UTF-16 code units, the unit the Bot API measures text in: for
+	 * everything in the Basic Multilingual Plane that is one per character, and
+	 * a character beyond it — most emoji — counts twice. Never less than the
+	 * number of characters, so the guard can only err toward leaving a block
+	 * out, never toward a message Telegram refuses. Text that is not valid
+	 * UTF-8 is counted in bytes, which are never fewer than its UTF-16 units.
+	 *
+	 * @param string $html The message, in Telegram's HTML parse mode.
+	 */
+	private static function telegram_length( string $html ): int {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- Telegram removes the tags and shows what is between them; wp_strip_all_tags() also deletes content and trims.
+		$text = html_entity_decode( strip_tags( $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+		$characters = preg_match_all( '/./su', $text );
+		$beyond_bmp = preg_match_all( '/[\x{10000}-\x{10FFFF}]/u', $text );
+
+		if ( false === $characters || false === $beyond_bmp ) {
+			return strlen( $text );
+		}
+
+		return $characters + $beyond_bmp;
 	}
 
 	/**
