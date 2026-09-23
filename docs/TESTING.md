@@ -4,8 +4,10 @@
      "Testing tooling and the project check command". The theme gained its own
      unit suite in search-stats Sprint 1 Step 1 (DECISIONS "The theme gets
      PHPUnit + Brain\Monkey, run by the check command" and "The theme's test
-     tooling is its own Composer project in `tests/`"). This file governs both
-     suites and any future feature. -->
+     tooling is its own Composer project in `tests/`"). The theme's JS got a
+     Vitest suite in city-popup Sprint 1 Step 1 (DECISIONS "The theme gets
+     Vitest for the unit tests of its JavaScript, run by the check command").
+     This file governs every suite and any future feature. -->
 
 ## Profile
 Developer-reviewed (root `CLAUDE.md`): the user reads code and diffs; tests
@@ -17,6 +19,7 @@ logic in a plugin or a theme feature.
 |---|---|---|---|
 | Unit (plugin) | pure logic: JWT building, response parsing, report maths, message rendering, sanitizers, scheduling maths, state transitions | `wp-content/plugins/ga-telegram-bridge/tests/Unit/` | No — Brain\Monkey stubs `__()`, `esc_html()`, `get_option()`, `wp_remote_post()` etc. |
 | Unit (theme) | the theme features' pure code: query normalization, REST validation, the SQL a class builds and the shaping of its results, rendering | `wp-content/themes/dovira/tests/Unit/` (one directory per feature, e.g. `SearchStats/`) | No — the same Brain\Monkey approach; `$wpdb` is a test double |
+| Unit (theme JS) | the theme features' pure JS modules — no DOM access; the DOM glue that calls them is verified by hand (TECH-STACK → CONVENTIONS) | `wp-content/themes/dovira/tests/js/` (one directory per feature, e.g. `city-popup/`; `smoke.test.js` at the root checks the setup) | No — Vitest in the `node` environment, no DOM library; modules are imported through the `@scripts` alias (`vitest.config.js`) |
 | Integration | none automated in v1; the manual verification guides written by `/close-step` (`docs/features/{feature}/verification/`) are the regression suite | — | — |
 
 ## How to run
@@ -38,13 +41,22 @@ logic in a plugin or a theme feature.
   - The theme's own `composer.json` never gets a dev package. Its `vendor/`
     is committed and `functions.php` loads that autoloader on every request.
   - The theme has no PHPCS or PHPStan.
-- **A test that asserts nothing fails the run, in both suites.** Each `phpunit.xml.dist` sets
+- Theme JS only: `cd wp-content/themes/dovira && npm test` (`vitest run`).
+  - Vitest is a `devDependencies` entry of the theme's `package.json`;
+    `node_modules/` and `package-lock.json` are gitignored.
+  - A `node_modules/` installed before Vitest was added has no `vitest` and
+    the run fails with `vitest: command not found`: run `npm install` in the
+    theme once.
+- **A test that asserts nothing fails the run, in all three suites.** Each `phpunit.xml.dist` sets
   `failOnRisky="true"` beside `failOnWarning`, `failOnNotice` and
   `failOnDeprecation`, so PHPUnit's "This test did not perform any assertions"
   stops the gate instead of passing inside a green run. It was added in Sprint 3
   Step 1 with no failing test behind it; a test written as a Brain\Monkey
   expectation (`Functions\expect( … )->never()`) has to record what happened and
-  assert it, rather than relying on the expectation alone.
+  assert it, rather than relying on the expectation alone. The Vitest suite
+  gets the same through `expect.requireAssertions` in `vitest.config.js`: a
+  test without an `expect()` fails with "expected any number of assertion, but
+  got none".
 - **Suite order is fixed, not alphabetical (plugin).** `phpunit.xml.dist` declares two
   suites so that `SettingsSecretConstantsTest` — the one class that defines the
   real `GATB_GA_SERVICE_ACCOUNT_JSON` and `GATB_TELEGRAM_BOT_TOKEN` — runs last.
