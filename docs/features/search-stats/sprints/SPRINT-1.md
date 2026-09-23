@@ -53,7 +53,7 @@ Telegram message yet.
 - **Docs to update:** `docs/DATA-MODEL.md` → new section for the table, the option and the hook (with the manual `DROP TABLE` note); `docs/ARCHITECTURE.md` → Modules (one row for the feature) — the Feature map row already exists.
 - **Depends on:** Step 1
 
-### [ ] Step 3 — The REST route that records a search
+### [x] Step 3 — The REST route that records a search
 - **Tasks:**
   - `Normalizer` class (`mb_strtolower`, trim, collapse whitespace) — the one place text is normalized.
   - `RecordController extends WP_REST_Controller`, registered in `inc/rest-api.php` (**touches shared code:** `inc/rest-api.php`; consumers: `core`'s Telegram and Questionary routes) as `POST dovira/v1/search-stats/record`, `permission_callback` `__return_true`, JSON body only; validation per the fixed decision: `level` ∈ {`site`, `services`, `service`}; normalized `query` 1–100 characters for `site`, 3–100 otherwise; `context_id` a published post for `services` and `service` (any post type for `services`, `service` post for `service`), ignored and stored as 0 for `site`; `results` a non-negative integer, required for `site`, refused when present otherwise.

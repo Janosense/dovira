@@ -604,7 +604,7 @@ after task 2, and the theme suite at 1 + the new tests.
 ### Questions / ambiguities
 none
 
-## Plan — Sprint 1, Step 3: The REST route that records a search   (status: implemented, awaiting close)
+## Plan — Sprint 1, Step 3: The REST route that records a search   (status: closed)
 
 ### Branch
 `search-stats/sprint-1-recording` ← `master`
