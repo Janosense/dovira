@@ -308,7 +308,7 @@ changes as that question describes.
 
   → `feat(city-popup): derive the city, both origins and the cookie domain from the site URL`
 
-- [ ] **2. `Pages`: the blog and the target URLs.**
+- [x] **2. `Pages`: the blog and the target URLs.**
   - `inc/features/city-popup/Pages.php` defines `final class Pages` in
     namespace `dovira\CityPopup`.
     - Constants: `BLOG_SLUG = 'news'`, `SERVICES_SLUG = 'services'`,
