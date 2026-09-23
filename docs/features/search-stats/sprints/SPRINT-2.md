@@ -42,7 +42,7 @@ on the plugin's Settings screen show the same blocks the schedule sends.
 - **Docs to update:** `docs/features/ga-telegram-bridge/FEATURE.md` → Interfaces (the filter) and Invariants (the guard); `docs/ARCHITECTURE.md` → Modules row of the plugin (`MessageRenderer` applies three filters); `docs/DOMAIN.md` → "report block" gains the sentence that other parts of the site may add blocks.
 - **Depends on:** —
 
-### [ ] Step 2 — Aggregation: top-5 per level for yesterday and for 28 days
+### [x] Step 2 — Aggregation: top-5 per level for yesterday and for 28 days
 - **Tasks:**
   - `Periods` helper: yesterday and the last 28 days as `[from, to)` UTC bounds computed from a clock and `wp_timezone()` (the clock is a parameter, as in the plugin's classes).
   - `Repository::top()` — one query per (level, period): `SELECT query_text, context_id, COUNT(*) AS n, MAX(results) AS max_results, MAX(created_at) AS last_at … GROUP BY query_text, context_id ORDER BY n DESC, last_at DESC LIMIT 5`; rows returned as a small value object (query, context id, count, nothing-found flag).

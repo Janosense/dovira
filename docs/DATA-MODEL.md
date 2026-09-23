@@ -259,6 +259,31 @@ Keys:
   queries;
 - `created_at (created_at)`, for the purge.
 
+The report reads the table with one query per level and period, six in all
+(`Repository::top()`, called by `Stats::build()`):
+```sql
+SELECT query_text, context_id, COUNT(*) AS n, MAX(results) AS max_results, MAX(created_at) AS last_at
+FROM {prefix}dovira_search_queries
+WHERE level = %s AND created_at >= %s AND created_at < %s
+GROUP BY query_text, context_id
+ORDER BY n DESC, last_at DESC
+LIMIT 5
+```
+- The bounds are the UTC edges of whole calendar days in the site's zone
+  (`Periods`), half-open: yesterday, and the 28 days that end with it.
+- `level_created_at` is the key built for it: equality on `level`, then a range
+  on `created_at`. `created_at` alone can serve the range too, and MariaDB
+  picks between the two from the table's statistics — on the empty local table
+  it picked `created_at`. The code forces neither.
+- "Nothing found" is `MAX(results) = 0`; the two filter levels store `NULL`,
+  so their `max_results` is `NULL` and never flags.
+- `GROUP BY query_text` follows the column's collation
+  (`utf8mb4_unicode_520_ci`), not byte equality. Measured on the local
+  MariaDB: `ґ` = `г` and `ё` = `е`, while `й` ≠ `и`, `ї` ≠ `і` and `є` ≠ `е`.
+  So «ґудзик» and «гудзик» are one query in the report, printed in one of the
+  two spellings.
+- Nothing derived is stored: every report runs the six queries again.
+
 The charset and collation are `$wpdb->get_charset_collate()` (`utf8mb4` /
 `utf8mb4_unicode_520_ci` locally).
 

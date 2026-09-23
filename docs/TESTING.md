@@ -182,10 +182,13 @@ The rest of this section is the plugin's
       registers hooks when it loads.
   - `$wpdb` is `dovira\Tests\WpdbDouble` (`tests/WpdbDouble.php`), put in
     `$GLOBALS['wpdb']` in `setUp()` and removed in `tearDown()`. It records
-    `prepare()`, `query()` and `insert()` calls and carries `prefix` and
-    `last_error`; `insert()` returns `$insert_result`, which a test sets to
-    `false` for a failed insert. Extend it when a class needs another `$wpdb`
-    method.
+    `prepare()`, `query()`, `insert()` and `get_results()` calls and carries
+    `prefix` and `last_error`; `insert()` returns `$insert_result`, which a
+    test sets to `false` for a failed insert, and `get_results()` answers with
+    the next entry of `$results` (a list of `stdClass` rows whose values are
+    strings or `null`, as WordPress returns them, or `null`; `[]` once the
+    queue is empty), recording each query in `$selected`. Extend it when a
+    class needs another `$wpdb` method.
   - **WordPress's own classes come from the committed core, never rewritten
     in `tests/`.** `tests/bootstrap.php` requires `WP_Error`,
     `WP_HTTP_Response`, `WP_REST_Response`, `WP_REST_Request` and

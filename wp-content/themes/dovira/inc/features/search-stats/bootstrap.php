@@ -15,6 +15,11 @@ require_once __DIR__ . '/Repository.php';
 require_once __DIR__ . '/ResultsCount.php';
 // Registered in inc/rest-api.php with the theme's other controllers.
 require_once __DIR__ . '/RecordController.php';
+// The daily report's reading side (Sprint 2); nothing calls it until the report hooks in.
+require_once __DIR__ . '/Periods.php';
+require_once __DIR__ . '/TopQuery.php';
+require_once __DIR__ . '/SearchStats.php';
+require_once __DIR__ . '/Stats.php';
 
 add_action( 'after_switch_theme', [ Schema::class, 'install' ] );
 add_action( 'init', [ Schema::class, 'maybe_upgrade' ] );

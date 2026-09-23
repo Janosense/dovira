@@ -354,3 +354,317 @@ named the tests a change would break by grepping…"):
 
 ### Questions / ambiguities
 none
+
+## Plan — Sprint 2, Step 2: Aggregation: top-5 per level for yesterday and for 28 days   (status: closed)
+
+### Branch
+`search-stats/sprint-2-report` ← `master`
+(root `CLAUDE.md` → git model: simple, task branch → `master`. The name is the
+**Branch** line of `SPRINT-2.md`. It is created again from `master`, which now
+carries Step 1, and deleted at the close.)
+
+### What this step touches
+All the code is in the feature's own directory, `inc/features/search-stats/`
+of the theme, plus its tests. Nothing calls the new code yet: Step 3 wires it
+into `gatb_extra_blocks`. So nothing a visitor or the report sees changes.
+
+One piece of shared code is touched: the theme's test double
+`tests/WpdbDouble.php` gains `get_results()` (task 2). It is marked **touches
+shared code — may affect other features**. Its only users today are the
+`search-stats` tests; `core` has no tests. The change adds a method and two
+properties and changes nothing that exists.
+
+New classes, all in namespace `dovira\SearchStats`, one file each:
+- `Periods`
+- `TopQuery`
+- `SearchStats`
+- `Stats`
+
+They follow the feature's existing style: `final class`, short arrays, no
+`strict_types`, as in `Repository.php` and `Purge.php`. The value objects use
+promoted `readonly` properties, which need PHP 8.1. Both productions run
+plugin 0.2.0, which requires PHP 8.1, so production is on 8.1 or later.
+`readonly` classes (8.2) are not used.
+
+### Tasks (ordered)
+- [x] **1. `Periods`: yesterday and the last 28 days as UTC bounds.**
+  - `inc/features/search-stats/Periods.php`, `final class Periods`, with
+    `public const DAYS = 28;`.
+  - `yesterday( int $now ): array{from: string, to: string}` and
+    `last_28_days( int $now ): array{from: string, to: string}`.
+    - The clock is a parameter, as in the plugin and in `Purge::run()`.
+    - The zone is read with `wp_timezone()`.
+  - The shared start is the local midnight of `$now`:
+    `( new DateTimeImmutable( '@' . $now ) )->setTimezone( wp_timezone() )->setTime( 0, 0 )`.
+    - `to` is that midnight.
+    - `from` is that midnight `->modify( '-1 day' )` for yesterday, and
+      `->modify( '-28 days' )` for the 28-day period.
+    - Both are converted to UTC as `Y-m-d H:i:s`, the format of `created_at`.
+    - The bounds are half-open: `[from, to)`.
+  - So "28 days" is the 28 calendar days that end with yesterday. That is the
+    plugin's `28daysAgo`…`yesterday`, and the reason `Purge` keeps at least
+    29 days.
+  - Calendar arithmetic in the site's zone gives a 23-hour or a 25-hour
+    yesterday on a clock-change night by itself. It never adds a fixed number
+    of seconds.
+  - `bootstrap.php` gains `require_once __DIR__ . '/Periods.php';`.
+  - Docs in the same commit: `ARCHITECTURE.md` → Modules, the `search-stats`
+    row, gains "In as of Sprint 2 Step 2: `Periods` …".
+
+  → `feat(search-stats): compute yesterday and the last 28 days in the site's zone`
+
+- [x] **2. `Repository::top()` and `TopQuery`.**
+  *The `tests/WpdbDouble.php` part touches shared code — may affect other features (theme tests; users today: `search-stats` only).*
+  - `TopQuery.php`: `final class TopQuery`, with promoted readonly
+    `string $query`, `int $context_id`, `int $count` and
+    `bool $nothing_found`.
+  - `Repository::top( string $level, string $from, string $to ): array`
+    returns `list<TopQuery>`. `Repository` gains `public const TOP = 5;`,
+    which DECISIONS fixes as top-5 (a fixed rule, not a business setting).
+    It runs one `$wpdb->prepare()` + `get_results()`:
+    ```sql
+    SELECT query_text, context_id, COUNT(*) AS n, MAX(results) AS max_results, MAX(created_at) AS last_at
+    FROM {table}
+    WHERE level = %s AND created_at >= %s AND created_at < %s
+    GROUP BY query_text, context_id
+    ORDER BY n DESC, last_at DESC
+    LIMIT %d
+    ```
+    - `{table}` is `Schema::table_name()`, interpolated as in `Purge`.
+    - The arguments are `[ $level, $from, $to, self::TOP ]`.
+    - It reads through the key `level_created_at (level, created_at)`: one
+      equality, then a range.
+  - Mapping. `get_results()` returns `stdClass` rows whose values are strings
+    or `NULL`:
+    - `query` = `query_text`;
+    - `context_id` = `(int)`;
+    - `count` = `(int) n`;
+    - `nothing_found` = `null !== max_results && 0 === (int) max_results`.
+      So a `NULL` (the two filter levels) never flags, and results 3 then 0
+      (MAX 3) does not flag.
+    - A `null` or empty answer gives `[]`.
+  - `tests/WpdbDouble.php` gains:
+    - `public array $selected = [];`, every SQL string passed to
+      `get_results()`, in order;
+    - `public array $results = [];`, a queue of answers, each a list of
+      `stdClass` rows or `null`;
+    - `get_results( string $query, string $output = 'OBJECT' ): ?array`, which
+      records the query and shifts the next answer (`[]` when the queue is
+      empty).
+
+    The existing `prepare()` already substitutes `%d` (its `vsprintf`), so it
+    does not change.
+  - `bootstrap.php` gains `require_once __DIR__ . '/TopQuery.php';`.
+  - Docs in the same commit:
+    - `DATA-MODEL.md` → the table's section: the reading query, the key it
+      uses, and the collation note (Checks → Docs vs reality).
+    - `TESTING.md` → Rules, the `WpdbDouble` line: it records
+      `get_results()` too and answers from `$results`.
+    - `ARCHITECTURE.md`, the `search-stats` row: `Repository::top()` and
+      `TopQuery`.
+
+  → `feat(search-stats): read a level's top five queries for a period`
+
+- [x] **3. `Stats::build()` and `SearchStats`.**
+  - `SearchStats.php`: `final class SearchStats` with six promoted readonly
+    `list<TopQuery>` properties, in this order:
+    - `site_yesterday`, `site_28_days`;
+    - `services_yesterday`, `services_28_days`;
+    - `service_yesterday`, `service_28_days`.
+    - It has no methods. Step 3's renderer reads the properties.
+  - `Stats.php`: `final class Stats`, `build( ?int $now = null ): SearchStats`.
+    - `$now ??= time()`.
+    - Each period is computed once.
+    - It calls `Repository::top()` six times, in the order of the properties.
+    - The levels come from `RecordController::LEVEL_SITE` / `LEVEL_SERVICES` /
+      `LEVEL_SERVICE`: one source for the three names, not a second list.
+    - No caching, no option, no transient (FEATURE.md → Invariants "nothing
+      derived is stored").
+  - `bootstrap.php` gains the two `require_once` lines.
+    - `RecordController.php` is already required there.
+    - With all four new classes loaded, the manual verification's
+      `ddev wp eval` can call `Stats::build()`.
+  - Docs in the same commit:
+    - `DOMAIN.md` → "Нічого не знайдено" confirmed against the code: every
+      search of the query in the period found nothing (`MAX(results) = 0`),
+      site level only. "Пошуковий запит" gains the collation clause.
+    - `ARCHITECTURE.md`, the `search-stats` row: `Stats` and `SearchStats`,
+      not called by anything until Step 3.
+
+  → `feat(search-stats): build the report's six top-five lists`
+
+### Files to create/change
+In `wp-content/themes/dovira/`:
+- `inc/features/search-stats/Periods.php` (new, task 1)
+- `inc/features/search-stats/TopQuery.php` (new, task 2)
+- `inc/features/search-stats/Repository.php` (task 2)
+- `inc/features/search-stats/SearchStats.php` (new, task 3)
+- `inc/features/search-stats/Stats.php` (new, task 3)
+- `inc/features/search-stats/bootstrap.php` (tasks 1–3)
+- `tests/WpdbDouble.php` (task 2, shared test code)
+- `tests/Unit/SearchStats/PeriodsTest.php` (new, task 1)
+- `tests/Unit/SearchStats/RepositoryTopTest.php` (new, task 2)
+- `tests/Unit/SearchStats/StatsTest.php` (new, task 3)
+
+Docs:
+- `docs/ARCHITECTURE.md` (tasks 1–3)
+- `docs/DATA-MODEL.md` (task 2)
+- `docs/TESTING.md` (task 2)
+- `docs/DOMAIN.md` (task 3)
+- this plan file (the ticks)
+
+Checked and left unchanged:
+- **Gate configs.** `php -l` in `bin/check.sh` lints every theme PHP file
+  outside `vendor/` and `node_modules/`, so the new files are covered. The
+  theme suite scans `tests/Unit/`. Tests load the code by path
+  (`require_once dirname( __DIR__, 3 ) . '/inc/features/search-stats/…'`),
+  never through PSR-4 and never through `bootstrap.php` (TESTING.md → Rules).
+- **The theme's `CLAUDE.md`.** No convention changes: the feature's classes
+  stay in its directory, loaded by its `bootstrap.php`
+  (LEARNINGS "…missed the code area's own CLAUDE.md again").
+- **`functions.php`, templates, JS.** Untouched.
+
+### Tests to write
+All in `tests/Unit/SearchStats/`. `$wpdb` is `WpdbDouble`, and
+`wp_timezone()` is stubbed with Brain\Monkey. The code runs for real
+(TESTING.md → Never mocked).
+
+**`PeriodsTest`, task 1.** Every number below was computed while planning with
+PHP's own `DateTimeImmutable` over `Europe/Kyiv`. 2026's transitions are
+2026-03-29 01:00 UTC (to +3) and 2026-10-25 01:00 UTC (to +2).
+
+`test_the_two_periods_for_a_clock` is one data provider, zone `Europe/Kyiv`,
+with 7 cases. Each asserts both periods, `[from, to)` in UTC:
+
+| case | `$now` | yesterday | 28 days |
+|---|---|---|---|
+| an ordinary afternoon, 2026-09-23 12:00 UTC | 1790164800 | 09-21 21:00:00 → 09-22 21:00:00 | 08-25 21:00:00 → 09-22 21:00:00 |
+| the last second before local midnight, 20:59:59 UTC | 1790110799 | 09-20 21:00:00 → 09-21 21:00:00 | 08-24 21:00:00 → 09-21 21:00:00 |
+| local midnight, UTC still on the 22nd, 21:00:00 UTC | 1790110800 | 09-21 21:00:00 → 09-22 21:00:00 | 08-25 21:00:00 → 09-22 21:00:00 |
+| the morning after the spring night, 2026-03-30 07:00 UTC | 1774854000 | 03-28 22:00:00 → 03-29 21:00:00 (23 h) | 03-01 22:00:00 → 03-29 21:00:00 |
+| the morning after the autumn night, 2026-10-26 07:00 UTC | 1792998000 | 10-24 21:00:00 → 10-25 22:00:00 (25 h) | 09-27 21:00:00 → 10-25 22:00:00 |
+| 28 days across the spring change, 2026-04-10 07:00 UTC | 1775804400 | 04-08 21:00:00 → 04-09 21:00:00 | 03-12 22:00:00 → 04-09 21:00:00 |
+| 28 days across the autumn change, 2026-11-05 07:00 UTC | 1793862000 | 11-03 22:00:00 → 11-04 22:00:00 | 10-07 21:00:00 → 11-04 22:00:00 |
+
+(All dates are 2026; the test spells them out as `Y-m-d H:i:s`.)
+
+`test_a_fixed_offset_has_no_clock_change` covers what the local install and
+the committed snapshot actually carry: zone `+03:00`, `$now` 1792998000.
+- Yesterday is 10-24 21:00:00 → 10-25 21:00:00, 24 hours.
+- The 28 days are 09-27 21:00:00 → 10-25 21:00:00.
+
+This case is not in the step text. It is the zone the code will really meet
+(Checks → Docs vs reality).
+
+**`RepositoryTopTest`, task 2:**
+- `test_the_query_for_each_level_and_period`, a data provider with 3 levels ×
+  2 periods = 6 cases, each with fixed bounds:
+  - `$wpdb->prepared` holds exactly one entry, the SQL above with table
+    `wp_dovira_search_queries`, and `[ level, from, to, 5 ]`;
+  - `$wpdb->selected` holds the same SQL with the values in and `LIMIT 5`.
+- `test_rows_become_top_queries_in_the_order_given`:
+  - Two shaped site rows come back as two `TopQuery` objects in the same
+    order.
+  - For example, (`вакцинація`, `'0'`, `'7'`, `'3'`, `2026-09-22 10:00:00`)
+    becomes query `вакцинація`, context `0`, count `7`, not flagged.
+- `test_nothing_found_only_when_every_search_found_nothing`:
+  - `max_results` `'0'` → flagged;
+  - `'3'` → not flagged (the step's "3 then 0");
+  - `NULL` → not flagged (a `services` row with `context_id` `'12'`).
+- `test_no_rows_give_an_empty_list`: the answers `[]` and `null` both give
+  `[]`.
+
+**`StatsTest`, task 3.** The clock is 1790164800, zone `Europe/Kyiv`:
+- `test_six_queries_in_order_with_the_clocks_bounds`:
+  - The six `prepared` argument lists are:
+    - `site` / `services` / `service`, each with yesterday
+      `2026-09-21 21:00:00`, `2026-09-22 21:00:00`, `5`;
+    - then the same level with the 28 days
+      `2026-08-25 21:00:00`, `2026-09-22 21:00:00`, `5`.
+  - Each property holds the rows of its own answer in the queue, one
+    distinct row per answer.
+- `test_an_empty_table_gives_six_empty_lists`: six empty answers give six
+  `[]` properties.
+
+Counts, if the tests are written as listed: theme 63 → 83 (+8, +9, +3).
+Plugin 309, unchanged.
+
+Tests the change could break. This is the result of a search, not a complete
+list (LEARNINGS 2026-09-16):
+- None expected. `WpdbDouble` gains members and changes none, and no existing
+  test calls `get_results()`.
+- `bootstrap.php` is never loaded by a test.
+
+### Docs to update
+- `docs/DATA-MODEL.md` → Table `{prefix}dovira_search_queries` (task 2):
+  - the reading query `Repository::top()` runs, once per level and period;
+  - that it uses `level_created_at` (equality on `level`, range on
+    `created_at`), and that `created_at` alone stays the purge's key;
+  - that `GROUP BY query_text` follows the column's collation.
+- `docs/DOMAIN.md` → "Нічого не знайдено" confirmed, and "Пошуковий запит"
+  gains the collation clause (task 3).
+- `docs/TESTING.md` → Rules, the `WpdbDouble` line (task 2).
+- `docs/ARCHITECTURE.md` → Modules, the `search-stats` row (tasks 1–3). This
+  one is not in the step's list; it is added by core rule 5, because the row
+  lists the feature's classes.
+
+### Checks
+- **ANTI-PATTERNS: none violated.**
+  - The feature only reads its own table, and nothing records a search from
+    PHP.
+  - No field group, block or post type.
+  - `5` and `28` are the fixed rules of DECISIONS "Three blocks…", as named
+    constants.
+  - The manual verification's seeded rows are local only and deleted after.
+- **Docs vs reality: mismatches, each resolved here.**
+  - *The site's zone has no name.* The local install and the committed
+    `mysql.sql` snapshot have `timezone_string` empty and `gmt_offset` `3`,
+    so `wp_timezone()` is `+03:00`, a fixed offset with no clock changes.
+    - DECISIONS says the site's zone (`wp_timezone()`), and the code follows
+      it whatever it is.
+    - The `Europe/Kyiv` tests prove the DST handling for an install whose
+      setting names the city; one extra test pins `+03:00`.
+    - If production carries the snapshot's setting, "yesterday" in winter runs
+      23:00→23:00 Kyiv time.
+    - Naming the zone in Settings → General on both installs is a settings
+      change, not a step task. It would also move the plugin's send time by
+      the winter hour. It is for the developer to decide, outside this step.
+  - *Collation.* `query_text` is `utf8mb4_unicode_520_ci`. Measured on the
+    local MariaDB while planning:
+    - `ґ` = `г` and `ё` = `е`;
+    - `й` ≠ `и`, `ї` ≠ `і` and `є` ≠ `е`.
+
+    So `GROUP BY query_text` counts «ґудзик» and «гудзик» as one query and
+    prints one of the two spellings. The step fixes the SQL, and it is kept.
+    The behaviour is written into DATA-MODEL and DOMAIN rather than changed.
+  - *The table is empty locally* (0 rows). The verification seeds its own rows
+    and deletes them afterwards.
+  - *"The clock is a parameter, as in the plugin's classes".* That means
+    `?int $now` Unix time, as in `Purge::run()`. `Periods` takes `int $now`
+    because `Stats::build()` resolves the null once.
+- **Rule dependents: n/a.** No rule other code depends on is added or
+  narrowed. The new code is read only by Step 3.
+- **Design: n/a.** No screen. The report template is Step 3's.
+- **Check command:** `bin/check.sh` (`docs/TECH-STACK.md` → Check command).
+  It exited 0 on `master` after Step 1's merge: 309 plugin tests, 124 theme
+  files linted, 63 theme tests.
+- **Environment, checked while planning:**
+  - `wp_timezone()` is `+03:00`;
+  - `wp_dovira_search_queries` has 0 rows;
+  - the keys are `PRIMARY (id)`, `level_created_at (level, created_at)` and
+    `created_at (created_at)`.
+- **What the tasks make possible (manual verification).** Rows are seeded
+  with `ddev wp db query` at `created_at` UTC values inside yesterday's
+  local bounds and 30 days ago. Then
+  `ddev wp eval 'var_dump( dovira\SearchStats\Stats::build() );'` shows:
+  - the 30-day-old row in no list;
+  - ties ordered by the newer search;
+  - results 3 then 0 not flagged, and 0 then 0 flagged.
+
+  Nothing is sent and no screen is involved.
+- **Not locally verifiable: n/a.** Nothing on production changes until
+  Step 3 hooks the filter. The real query plan on the production MariaDB is
+  read with Step 3's report.
+
+### Questions / ambiguities
+none

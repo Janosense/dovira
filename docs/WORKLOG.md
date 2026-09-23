@@ -17,6 +17,27 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] Sprint 2 Step 2 — Aggregation: top-5 per level for yesterday and for 28 days
+- Changed: the reading side of the daily report, in `inc/features/search-stats/`. Nothing calls it yet; Step 3 hooks it into `gatb_extra_blocks`.
+  - `Periods` turns a clock into yesterday and the 28 calendar days ending with it. The bounds are half-open UTC edges of whole days in `wp_timezone()`, so a clock-change night is 23 or 25 h.
+  - `Repository::top()` runs one query per level and period: `GROUP BY query_text, context_id`, ordered by count, then latest search, `LIMIT 5`. It returns `TopQuery` objects; `nothing_found` = `MAX(results) = 0`.
+  - `Stats::build()` fills six lists in `SearchStats`, with no cache.
+  - Theme tests 63 → 83. 131 files linted.
+- Shared code: `tests/WpdbDouble.php` gains `get_results()`, answering from a `$results` queue and recording `$selected`. Only `search-stats` tests use it, and nothing existing changed. No template, JS or `core` file changed.
+- Decisions: none new in DECISIONS.md. Settled in the plan:
+  - the level names come from `RecordController`'s constants;
+  - "28 days" is the 28 calendar days ending yesterday, as the plugin counts them;
+  - readonly promoted properties, but not readonly classes, since production runs PHP ≥ 8.1 because of the plugin.
+- Verified locally with 13 seeded rows placed around the period edges (seeded, then deleted):
+  - a row at yesterday's local midnight is in, and one at today's local midnight is out;
+  - rows from 30 days back and from today are in no list;
+  - on a tie, the newer search comes first;
+  - results 3 then 0 is not flagged, and 0 then 0 is.
+- Open:
+  - The site's zone has no name: `gmt_offset` 3, no `timezone_string`, locally and in the committed `mysql.sql`. `wp_timezone()` is therefore `+03:00` with no DST, so in winter "yesterday" would run 23:00–23:00 Kyiv time. Naming the city in Settings → General on both installs is the developer's call; it also moves the plugin's send time.
+  - The collation `utf8mb4_unicode_520_ci` groups `ґ`/`г` and `ё`/`е` as one query; this is documented, not changed.
+  - The plan's claim about `level_created_at` was not checked with `EXPLAIN`. On the empty local table MariaDB chose `created_at` (LEARNINGS 2026-09-23). Read it with Step 3 on real data.
+
 ## 2026-09-23 — [search-stats] Sprint 2 Step 1 — Plugin 0.3.0: the `gatb_extra_blocks` filter and the length guard
 - Changed:
   - The plugin `ga-telegram-bridge` is **0.3.0**.
