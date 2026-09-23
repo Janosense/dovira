@@ -668,3 +668,299 @@ list (LEARNINGS 2026-09-16):
 
 ### Questions / ambiguities
 none
+
+## Plan — Sprint 2, Step 3: The three blocks in the message   (status: approved, in progress)
+
+### Branch
+`search-stats/sprint-2-report` ← `master`
+(root `CLAUDE.md` → git model: simple, task branch → `master`. It is created
+again from `master`, which carries Steps 1–2, and deleted at the close. This
+is the sprint's last step: its merge into `master` is the whole sprint on
+`master`. `master` → `kyiv` and the hand deploys are the developer's, at the
+sprint boundary.)
+
+### What this step touches
+Code in the feature's own directory (`inc/features/search-stats/`) and its
+tests. No file of the plugin, `core` or the theme's shared code changes.
+
+The step connects the theme to the plugin's public filter
+`gatb_extra_blocks`, added in Step 1. The plugin still never references the
+theme. The theme only hooks the filter, and only when the plugin is loaded.
+
+This is the first step whose output reaches the owner. After the hand
+deploy, the morning message on each install gains up to three blocks.
+
+### Tasks (ordered)
+- [x] **1. `Renderer::blocks()`: the three blocks of `FEATURE.md` → UI.**
+  - `inc/features/search-stats/Renderer.php`, `final class Renderer`,
+    `public static function blocks( SearchStats $stats ): array`, returning
+    a `list<string>` of 0–3 blocks in this order:
+    - `🔎 <b>Пошук по сайту</b>`
+    - `🗂 <b>Пошук у переліку послуг</b>`
+    - `💊 <b>Пошук у послугах</b>`
+  - **Block text.**
+    - Each block is the heading, `Вчора:`, the rows, `За 28 днів:`, the
+      rows, joined with `"\n"`.
+    - A list with no rows prints `—` on its own line under its label (the
+      template).
+    - A block whose two lists are both empty is not contributed.
+    - Six empty lists give `[]`.
+    - The labels and headings are Ukrainian literals, class constants, as the
+      theme's `CLAUDE.md` asks for template strings; DECISIONS "Three
+      blocks…" fixes their wording.
+  - **Rows.** Numbered from `1.` in the order the `SearchStats` lists hold
+    them; the renderer never sorts.
+    - Site level: `{n}. {query} — {count}`, plus ` · нічого не знайдено` when
+      `nothing_found`.
+    - The two context levels: `{n}. {query} — {title} — {count}`.
+    - `{count}` is plain digits, `(string) $count`. `number_format_i18n()`
+      is not used: its Ukrainian thousands separator is the named entity
+      `&nbsp;`, which the plugin had to decode because Telegram rejects it.
+  - **The 40-character cut.** A query longer than 40 characters
+    (`mb_strlen`) is cut to its first 40 (`mb_substr`), the trailing space
+    is trimmed, then `…` is added. The cut is made on the raw text **before**
+    escaping, so an entity is never cut in half. This is the one defensible
+    reading of "a query longer than 40 characters is cut with `…`".
+  - **Titles.**
+    - The stored `context_id` goes through
+      `pll_get_post( $id, pll_default_language() )` when both functions
+      exist. A `0`, `false` or `null` answer (no translation) falls back to
+      the stored id. Otherwise the stored id is used as is.
+    - `get_post( $id )` returning `null` prints `(видалено)`. Otherwise the
+      title is `get_post_field( 'post_title', $id, 'raw' )`, the source the
+      plugin names pages by, decoded with
+      `html_entity_decode( …, ENT_QUOTES | ENT_HTML5, 'UTF-8' )`. Decoding
+      matters because WordPress may store `&` as `&amp;` for an author
+      without `unfiltered_html`.
+    - A trashed post still exists and prints its title. Only a post that is
+      gone prints `(видалено)`.
+    - Measured locally: 1630, the Russian `Послуги`, maps to 12; 18 maps to
+      itself; 999999 gives `0`.
+  - **Escaping: every value, and in the one way Telegram accepts.**
+    - It is `htmlspecialchars( $text, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', true )`,
+      in one private helper, used on the query and on the title.
+    - `double_encode` is true, so an entity a visitor typed is shown, never
+      interpreted.
+    - `ENT_HTML401` writes `'` as `&#039;`, which Telegram accepts as a
+      numeric entity; `ENT_HTML5`'s `&apos;` it would reject.
+    - Why not `esc_html()`: Checks → Docs vs reality.
+  - Tests: `RendererTest` (Tests below).
+  - Docs in the same commit:
+    - `docs/features/search-stats/FEATURE.md` → UI, the notes under the
+      template: the cut keeps 40 characters, counts are plain digits,
+      escaping double-encodes.
+    - `ARCHITECTURE.md` → Modules, the `search-stats` row: `Renderer`.
+
+  → `feat(search-stats): write the three search blocks of the daily report`
+
+- [ ] **2. Hook the blocks into the plugin's report.**
+  - `Renderer::add_to( mixed $blocks ): mixed` is the filter callback.
+    - Given an array, it returns
+      `array_merge( $blocks, self::blocks( Stats::build() ) )`: the plugin's
+      list with the theme's blocks appended, and the same list when there is
+      nothing to add.
+    - Given anything else, it returns it untouched. The plugin ignores a
+      non-array return anyway (Step 1), and `array_merge()` on a non-array
+      would be fatal.
+    - The `Report` argument is not taken: the lists are the site's own, read
+      at the time of the run (`Stats::build()` with no clock). So *Preview*,
+      *Send now*, the schedule and a retry the same day all show the same
+      blocks.
+  - `bootstrap.php`:
+    ```php
+    // Only when the GA → Telegram plugin is loaded: without it, nothing more is loaded or hooked.
+    if ( class_exists( \GaTelegramBridge\Plugin::class ) ) {
+    	require_once __DIR__ . '/Renderer.php';
+    	add_filter( 'gatb_extra_blocks', [ Renderer::class, 'add_to' ] );
+    }
+    ```
+    - It adds `use dovira\SearchStats\Renderer;` beside the file's other
+      `use` lines.
+    - Plugins load before the theme's `functions.php`, and the plugin's main
+      file calls `Plugin::boot()` as it loads, so the class exists whenever
+      the plugin is active.
+  - Tests: `BootstrapFilterTest` (Tests below).
+  - Docs in the same commit:
+    - `ARCHITECTURE.md` → Data flows gains **"Daily report → search blocks"**:
+      the plugin's `MessageRenderer::compose()` applies `gatb_extra_blocks`
+      → `Renderer::add_to()` → `Stats::build()` (six queries) →
+      `Renderer::blocks()` → appended after the plugin's blocks, before the
+      GA link; dropped from the end by the plugin's guard if the message
+      would exceed 4 096. The Modules row gains the hook.
+    - `DOMAIN.md` → "Щоденний звіт (daily report)" names the three search
+      blocks.
+    - `FEATURE.md` → UI marked confirmed against the rendered message. The
+      render in the manual check is done before this commit.
+
+  → `feat(search-stats): add the search blocks to the daily Telegram report`
+
+### Files to create/change
+In `wp-content/themes/dovira/`:
+- `inc/features/search-stats/Renderer.php` (new, tasks 1–2)
+- `inc/features/search-stats/bootstrap.php` (task 2)
+- `tests/Unit/SearchStats/RendererTest.php` (new, task 1)
+- `tests/Unit/SearchStats/BootstrapFilterTest.php` (new, task 2)
+
+Docs:
+- `docs/features/search-stats/FEATURE.md` (tasks 1–2)
+- `docs/ARCHITECTURE.md` (tasks 1–2)
+- `docs/DOMAIN.md` (task 2)
+- this plan file
+
+Checked and left unchanged:
+- **The plugin.** Its filter and guard are Step 1's, with no plugin change
+  here.
+- **Gate configs.** `php -l` covers every theme file, and PHPUnit scans
+  `tests/Unit/`.
+- **The theme's `CLAUDE.md`.** The feature's hook is registered in its own
+  `bootstrap.php`, as the file already says. No convention changes.
+- **`functions.php`, templates, JS, `WpdbDouble`.** Unchanged.
+
+### Tests to write
+All in `tests/Unit/SearchStats/`. They stub `pll_get_post`,
+`pll_default_language`, `get_post` and `get_post_field` from a small map:
+- 12 → `Послуги`;
+- 1630 → 12;
+- 18 → `Приймальне відділення`;
+- 4242 → no post.
+
+Nothing else in the theme suite defines those functions today.
+
+**`RendererTest`, task 1:**
+- `test_three_blocks_as_the_template_writes_them`: a whole-array snapshot.
+  - The site level has 2 rows yesterday, the second flagged, and 3 rows over
+    28 days.
+  - The services level has 1 row yesterday (context 1630, printed as
+    `Послуги`) and an empty 28-day list, which prints `—`.
+  - The service level has 1 row in each list.
+  - The rows are deliberately not in count order, which proves the renderer
+    keeps the order it is given.
+- `test_a_block_with_two_empty_lists_is_not_contributed`: the services level
+  is empty, so there are two blocks, site then service.
+- `test_no_searches_give_no_blocks`: six empty lists give `[]`.
+- `test_queries_and_titles_are_escaped_for_telegram`:
+  - the query `<b>"a" & 'b'` prints `&lt;b&gt;&quot;a&quot; &amp; &#039;b&#039;`;
+  - the query `&nbsp; &copy;` prints `&amp;nbsp; &amp;copy;`, where
+    `esc_html()` would have kept them and Telegram would refuse the message;
+  - a title stored as `Кіт &amp; пес "Мур"` prints
+    `Кіт &amp; пес &quot;Мур&quot;`, with no `&amp;amp;`.
+- `test_a_long_query_is_cut_at_40_characters`, on multibyte text:
+  - 40 Cyrillic characters print whole;
+  - 41 print the first 40 plus `…`;
+  - a cut that lands after a space trims it before the `…`;
+  - 39 characters followed by `&&` are cut before escaping, giving
+    `…&amp;…` with no half entity.
+- `test_the_context_is_named_by_its_ukrainian_post`: context 1630 prints
+  `Послуги` (post 12).
+- `test_a_context_that_no_longer_exists_is_named_deleted`: 4242 prints
+  `(видалено)`.
+
+**`BootstrapFilterTest`, task 2.** It tests `Renderer::add_to()`, the
+callback `bootstrap.php` registers. `bootstrap.php` itself is never loaded
+in a test (TESTING.md → Rules), and the one registration line is proven by
+the manual check.
+- `test_the_plugins_list_comes_back_with_the_blocks_appended`:
+  - `WpdbDouble` answers one site row yesterday and nothing else, with the
+    clock at the real time and `wp_timezone()` stubbed.
+  - `[ '<b>plugin</b>' ]` comes back as `[ '<b>plugin</b>', {site block} ]`.
+- `test_the_list_is_untouched_when_there_is_nothing_to_add`:
+  - With an empty table, the same list comes back.
+  - Given `'not a list'`, the same value comes back.
+
+Counts, if the tests are written as listed: theme 83 → 92 (+7, +2). Plugin
+309, unchanged.
+
+Tests the change could break. This is the result of a search, not a complete
+list:
+- None expected. No existing test loads `bootstrap.php`, stubs these
+  functions, or renders a message with extra blocks.
+- The plugin's tests hook nothing into `gatb_extra_blocks`.
+
+### Docs to update
+- `docs/ARCHITECTURE.md`:
+  - Data flows: the new **"Daily report → search blocks"** (task 2);
+  - Modules, the `search-stats` row: `Renderer` and the hook (tasks 1–2).
+- `docs/features/search-stats/FEATURE.md` → UI: confirmed against the
+  rendered message, and the three notes (task 1: cut, digits, escaping;
+  task 2: confirmed).
+- `docs/DOMAIN.md` → "Щоденний звіт (daily report)" names the three search
+  blocks (task 2).
+
+### Checks
+- **ANTI-PATTERNS: none violated.**
+  - No search is recorded from PHP, and nothing writes the table.
+  - No per-city branching: each install reads its own database.
+  - No field group, block or post type.
+  - The headings and labels are the Ukrainian literals DECISIONS
+    "Three blocks…" fixes, kept as constants in the one class that prints
+    them. This follows the theme's template convention, not core rule 3's
+    configuration: the business wording is decided, and the theme has no
+    settings screen for the report.
+- **Docs vs reality: mismatches, each resolved here.**
+  - *`esc_html` (step text) versus "every dynamic value HTML-escaped"
+    (DECISIONS "Three blocks…", FEATURE.md).*
+    - Measured on the local install: `esc_html( '&nbsp; &copy; &laquo;' )`
+      returns them unchanged, because WordPress does not double-encode an
+      entity it recognises.
+    - Telegram's HTML accepts only `&lt;`, `&gt;`, `&amp;`, `&quot;` and
+      numeric entities (the plugin's `MessageRenderer` documents this). So a
+      visitor who searches `&nbsp;` once, through the public route, could
+      make the whole report unsendable: refused, retried, then the failure
+      notice.
+    - Brain\Monkey's `esc_html` stub **does** double-encode, so a test using
+      it would pass while production failed.
+    - Precedence: DECISIONS over the step text. The plan escapes with
+      `htmlspecialchars(…, double_encode: true)` and tests that exact case.
+  - *`BootstrapFilterTest`.* TESTING.md forbids loading a feature's
+    `bootstrap.php` in a test. The test therefore exercises the callback the
+    bootstrap registers, under the step's name. The registration is checked
+    in the manual check.
+  - *The 40-character cut is ambiguous in the sources.* It is taken as 40
+    characters, then `…` (task 1).
+  - *No test for the branch where Polylang is inactive.* Brain\Monkey cannot
+    undefine a function once a test defines it, so a "Polylang off" case
+    would depend on test order. Both installs run Polylang. The branch is
+    three lines: the stored id used as is.
+  - Carried from Step 2, changing no task:
+    - the site's zone is a bare `+03:00`;
+    - the collation groups `ґ`/`г` and `ё`/`е`.
+- **Rule dependents: n/a.** No permission or validation changes. The plugin's
+  length guard (Step 1) may drop these blocks from the end, which is its
+  documented behaviour. Three blocks of ≤ 39 lines fit beside the plugin's
+  ~756-unit message.
+- **Design: matches `FEATURE.md` → UI** (the message template). DECISIONS
+  "No UI design phase…" makes it the reference, so there is no DESIGN.md
+  change.
+- **Check command:** `bin/check.sh`. It exited 0 on `master` after Step 2's
+  merge: 309 plugin tests, 131 theme files linted, 83 theme tests.
+- **Environment, checked while planning:**
+  - Polylang is active, with default language `uk`;
+  - `pll_get_post( 1630, 'uk' )` is 12, and 999999 gives 0;
+  - titles: 12 `Послуги`, 18 `Приймальне відділення`;
+  - no page or service title contains `&` or quotes;
+  - `wp_dovira_search_queries` is empty;
+  - the plugin is active at 0.3.0, with every credential set.
+- **What the tasks make possible (manual verification):**
+  - Seed the rows of Step 2's guide §4, which uses contexts 12 and 18.
+  - *Preview* shows the three blocks between the devices block and the GA
+    link, exactly as `FEATURE.md` → UI.
+  - With the table emptied, *Preview* is the plugin's message alone.
+  - *Send now* delivers the same to the configured chat.
+  - **On screen `Settings` of the plugin, never screenshot or dump the whole
+    page:** its top fields print the stored key and token. Read only the
+    preview's `<pre>` (LEARNINGS 2026-09-10 and 2026-09-23). The shell
+    render through `ddev wp eval` and `MessageRenderer::compose()` is the
+    first check. Before the step is marked implemented, *Preview* is opened
+    once with element-scoped reads only (LEARNINGS "A screen was called
+    finished without anyone opening it").
+- **Not locally verifiable.** Both productions carrying theme and plugin
+  0.3.0 are verified by the sprint-boundary hand deploy of `master` to
+  Kharkiv and `kyiv` to Kyiv, after `master` is merged into `kyiv`, files
+  only. On each install:
+  - the Sprint 1 recording check is repeated, and its test rows deleted;
+  - the next morning's report carries that install's own search blocks, and
+    Kyiv's queries never appear in Kharkiv's message;
+  - on a morning with no searches, the message is the plugin's alone.
+
+### Questions / ambiguities
+none
