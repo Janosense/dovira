@@ -48,7 +48,7 @@ uninstall, so dropping it is a documented manual step.
 - **JS:** `recordSearch(level, query, contextId, results)` from `source/scripts/features/search-stats/record.js`; the two filters and `search.php` are its only callers — `search.php` through `recordSiteSearch()`, which `app.js` calls once on load and which reads the results section's `data-search-stats-query` / `data-search-stats-results`.
 
 ## UI
-- **Screens:** none of its own — the three blocks inside the plugin's message (no design export; DECISIONS "No UI design phase; the three sections are fixed as a template in FEATURE.md"):
+- **Screens:** none of its own — the three blocks inside the plugin's message (no design export; DECISIONS "No UI design phase; the three sections are fixed as a template in FEATURE.md"). Confirmed against the rendered message in Sprint 2 Step 3 (`Renderer::blocks()`, printed by the plugin between the devices block and the GA link):
   ```
   🔎 <b>Пошук по сайту</b>
   Вчора:

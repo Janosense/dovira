@@ -28,6 +28,26 @@ final class Renderer {
 	public const MAX_QUERY_LENGTH = 40;
 
 	/**
+	 * The gatb_extra_blocks callback: the plugin's list with the search blocks
+	 * appended, and the same list when there is nothing to add.
+	 *
+	 * The lists are this site's own, read when the plugin runs — the schedule,
+	 * a retry, Preview or Send now alike — so the plugin's Report argument is
+	 * not taken. Anything that is not a list is handed back untouched: the
+	 * plugin ignores it, and array_merge() on it would be fatal.
+	 *
+	 * @param mixed $blocks What the filter holds so far.
+	 * @return mixed
+	 */
+	public static function add_to( mixed $blocks ): mixed {
+		if ( ! is_array( $blocks ) ) {
+			return $blocks;
+		}
+
+		return array_merge( $blocks, self::blocks( Stats::build() ) );
+	}
+
+	/**
 	 * The blocks that have something in them, in the order site, services
 	 * list, service; a level whose two lists are both empty contributes none.
 	 *

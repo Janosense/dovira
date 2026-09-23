@@ -753,7 +753,7 @@ deploy, the morning message on each install gains up to three blocks.
 
   → `feat(search-stats): write the three search blocks of the daily report`
 
-- [ ] **2. Hook the blocks into the plugin's report.**
+- [x] **2. Hook the blocks into the plugin's report.**
   - `Renderer::add_to( mixed $blocks ): mixed` is the filter callback.
     - Given an array, it returns
       `array_merge( $blocks, self::blocks( Stats::build() ) )`: the plugin's
