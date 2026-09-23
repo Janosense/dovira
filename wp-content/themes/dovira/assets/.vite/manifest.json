@@ -9,7 +9,7 @@
     ]
   },
   "source/main.js": {
-    "file": "main.oFna-f2o.js",
+    "file": "main.wrGDPK_b.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -34,7 +34,7 @@
     ]
   },
   "source/scripts/features/search-stats/record.js": {
-    "file": "_chunk.DxWRa_0B.js",
+    "file": "_chunk.D905HoVL.js",
     "name": "record",
     "src": "source/scripts/features/search-stats/record.js",
     "isDynamicEntry": true
@@ -58,10 +58,13 @@
     "isDynamicEntry": true
   },
   "source/scripts/modules/init-service-price-lists.js": {
-    "file": "_chunk.Dt10a5No.js",
+    "file": "_chunk.DfKYQfX4.js",
     "name": "init-service-price-lists",
     "src": "source/scripts/modules/init-service-price-lists.js",
-    "isDynamicEntry": true
+    "isDynamicEntry": true,
+    "imports": [
+      "source/scripts/features/search-stats/record.js"
+    ]
   },
   "source/scripts/modules/init-swiper.js": {
     "file": "_chunk.BYkjdjix.js",
@@ -76,10 +79,13 @@
     "isDynamicEntry": true
   },
   "source/scripts/modules/services-search.js": {
-    "file": "_chunk.5MuT46-h.js",
+    "file": "_chunk.D-ARikd-.js",
     "name": "services-search",
     "src": "source/scripts/modules/services-search.js",
-    "isDynamicEntry": true
+    "isDynamicEntry": true,
+    "imports": [
+      "source/scripts/features/search-stats/record.js"
+    ]
   },
   "source/scripts/modules/toggle-accordion.js": {
     "file": "_chunk.d1cMw5Hx.js",

@@ -1,3 +1,5 @@
+import {debouncedRecorder} from '@scripts/features/search-stats/record';
+
 const STATE = {
   activeIndex: 0,
 };
@@ -6,6 +8,9 @@ const serviceSearch = (priceLists) => {
   if (input) {
     const resetButton = document.querySelector('#service-search-reset');
     const services = document.querySelectorAll('.service__price-item');
+
+    // Feature search-stats: records what is searched here (the service).
+    debouncedRecorder(input, 'service', Number(input.dataset.searchStatsContext));
 
       input.addEventListener('input', (evt) => {
 
