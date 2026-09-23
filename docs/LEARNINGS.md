@@ -19,6 +19,18 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] The settings-screen screenshot put the private key into the transcript a second time, by the same path as the first
+- **Incident:** Sprint 2 Step 1's plan required *Preview* to be opened in the browser before the step was marked implemented. On screen `Settings` of the plugin, the first click on *Попередній перегляд* (by element reference) did not submit. A second click, by coordinates, did; the page came back scrolled to the top, and a whole-viewport screenshot was taken to find the preview. The screen echoes the stored service-account JSON into its textarea, so part of the local install's private key was captured and is now in the session transcript. The bot token field was below the fold. Every step of that sequence is the one the 2026-09-10 entry below describes: a failed first click, then a scroll-to-top reflex, then a screenshot.
+- **Root cause:**
+  - The rule existed ("on a screen that can render a credential, never take a whole-page screenshot") and was not in front of the agent when it acted. The plan read LEARNINGS and quoted the neighbouring entry ("A screen was called finished without anyone opening it") in the very line that scheduled the browser check. The credential entry, about the same screen, was not quoted. The rule was read after the screenshot, when the key field was already in the image.
+  - A rule that is keyed to a screen, rather than to a kind of task, is missed unless the plan carries it to the line that sends the agent there. The screen still prints the stored secret back, which the 2026-09-10 entry already left for the retro.
+- **Fix applied here:**
+  - The user was told at once so the key can be rotated. The value was not repeated in text or files.
+  - The rest of the check used element-scoped reads only: `find` for the preview, a `javascript_exec` over the one `<pre>` returning booleans, and a navigation-timing read to prove the preview was fresh. No further screenshot was taken.
+  - The verification guide of this step says where on the screen not to look, and how to read the preview without the fields.
+  - Rule taken, sharper than the last one: **a plan line that sends the agent to screen `Settings` of `ga-telegram-bridge` quotes the credential rule in that same line**, and prefers `ddev wp eval` over the screen for anything the screen is not itself the subject of. Whether the screen should echo a stored secret at all is a candidate for `/adhoc`, and it is the second time the retro is asked.
+- **Transferred to playbook:** pending
+
 ## 2026-09-23 — [search-stats] The sprint copied the plugin's tooling layout into a code area where `vendor/` is production code
 - **Incident:** SPRINT-1 Step 1 and DECISIONS "The theme gets PHPUnit + Brain\Monkey" (both written by discovery) said three things that were false:
   - the theme's `.gitignore` "keeps `vendor/` out";

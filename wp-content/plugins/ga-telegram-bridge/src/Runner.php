@@ -71,10 +71,12 @@ final class Runner {
 			return null;
 		}
 
+		$message = MessageRenderer::compose( $report );
+
 		try {
-			TelegramClient::send_message( Settings::telegram_chat_id(), MessageRenderer::render( $report ) );
+			TelegramClient::send_message( Settings::telegram_chat_id(), $message['html'] );
 		} catch ( TelegramException $refused ) {
-			return self::failed( $trigger, $report->date, $refused->getMessage(), $now );
+			return self::failed( $trigger, $report->date, $refused->getMessage() . self::dropped_note( $message['dropped'] ), $now );
 		}
 
 		RunLog::mark_sent( $report->date );
@@ -89,7 +91,34 @@ final class Runner {
 				__( 'The report for %1$s was sent to chat %2$s.', 'ga-telegram-bridge' ),
 				$report->date,
 				Settings::telegram_chat_id()
-			)
+			) . self::dropped_note( $message['dropped'] )
+		);
+	}
+
+	/**
+	 * Says how many of the blocks other code added were left out of the
+	 * message, or nothing when none was.
+	 *
+	 * Whoever added them reads the run log to find out why a block is missing
+	 * from the chat, so a run whose message lost blocks says so whether it was
+	 * delivered or refused.
+	 *
+	 * @param int $dropped How many added blocks the message left out.
+	 */
+	private static function dropped_note( int $dropped ): string {
+		if ( 0 === $dropped ) {
+			return '';
+		}
+
+		return ' ' . sprintf(
+			/* translators: %d: how many blocks added by other code were left out of the message. */
+			_n(
+				'%d extra block was left out: with it, the message would have been longer than Telegram accepts.',
+				'%d extra blocks were left out: with them, the message would have been longer than Telegram accepts.',
+				$dropped,
+				'ga-telegram-bridge'
+			),
+			$dropped
 		);
 	}
 

@@ -4,7 +4,7 @@ Tags: analytics, google analytics, ga4, telegram, reports
 Requires at least: 7.1
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -183,6 +183,23 @@ needs access of their own. Without it, Google asks them to sign in or says they
 have no access; the report itself is not affected. The notice sent when a day
 could not be reported carries no link.
 
+= Where do the extra blocks come from? =
+
+From other code on the same site -- a theme or another plugin. The plugin offers
+it one place: the filter `gatb_extra_blocks`, which starts from an empty list and
+is given the day's report. Each string a callback adds is printed as one more
+block, after the plugin's own blocks and before the link into Google Analytics,
+one blank line apart and in the order given. A block is printed exactly as it is
+handed over, so it has to be Telegram HTML whose values the code that adds it
+has already escaped; an empty entry, or anything that is not a string, is left
+out. The settings screen does not switch these blocks on or off -- the code that
+adds them does.
+
+Telegram refuses a message longer than 4096 characters. When the added blocks
+would push the report past that, they are left out from the last one back until
+it fits, and the run log's line for that run says how many were left out. The
+plugin's own blocks are never left out.
+
 = Can it read two properties, or send to two chats? =
 
 No. One property, one chat, one message a day. Two sites mean two installs, each
@@ -210,6 +227,16 @@ to read the report, and to `api.telegram.org` to send it. There is no third-part
 service, no telemetry, and no request made from a visitor's page view.
 
 == Changelog ==
+
+= 0.3.0 =
+* Other code on the site -- a theme or another plugin -- can add blocks of its
+  own to the report through the `gatb_extra_blocks` filter. They are printed
+  after the plugin's blocks and before the closing link.
+* Telegram accepts at most 4096 characters. When added blocks would make the
+  report longer than that, they are left out from the last one back -- never
+  the plugin's own -- and the run log says how many were left out.
+* The report ends with a link into the property in Google Analytics. The
+  notice sent when a day could not be reported has none.
 
 = 0.2.0 =
 * The visitors block carries the 28-day trend: one character per day under the

@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace GaTelegramBridge\Tests\Unit;
 
+use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -302,6 +303,68 @@ final class RunnerTest extends TestCase {
 		$this->assertIsArray( $second );
 		$this->assertSame( 2, $second['attempt'] );
 		$this->assertSame( 2, RunLog::attempt() );
+	}
+
+	/**
+	 * A run whose message kept every block logs the sentence it always did.
+	 */
+	public function test_a_run_with_nothing_dropped_logs_the_sentence_it_always_did(): void {
+		$entry = Runner::run( 'manual', false, self::NOON );
+
+		$this->assertIsArray( $entry );
+		$this->assertSame( 'The report for 2026-09-15 was sent to chat -1001234567890.', $entry['message'] );
+	}
+
+	/**
+	 * A delivered run whose message left out an added block says so, and what
+	 * went to Telegram is the message without it.
+	 */
+	public function test_a_run_whose_extra_blocks_were_dropped_says_how_many(): void {
+		$sent = null;
+
+		Functions\when( 'wp_remote_post' )->alias(
+			function ( string $url, array $arguments ) use ( &$sent ): array {
+				if ( false !== strpos( $url, 'api.telegram.org' ) ) {
+					$sent = json_decode( (string) $arguments['body'], true );
+				}
+
+				return $this->answer( $url, $arguments );
+			}
+		);
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->once()
+			->andReturn( array( 'short', str_repeat( 'x', 5000 ) ) );
+
+		$entry = Runner::run( 'manual', false, self::NOON );
+
+		$this->assertIsArray( $entry );
+		$this->assertSame( 'sent', $entry['status'] );
+		$this->assertSame(
+			'The report for 2026-09-15 was sent to chat -1001234567890. 1 extra block was left out: with it, the message would have been longer than Telegram accepts.',
+			$entry['message']
+		);
+		$this->assertIsArray( $sent );
+		$this->assertStringContainsString( "\n\nshort\n\n", $sent['text'] );
+		$this->assertStringNotContainsString( 'xxxxx', $sent['text'] );
+	}
+
+	/**
+	 * A refused run whose message had lost added blocks says both why it was
+	 * refused and how many were left out.
+	 */
+	public function test_a_refused_run_still_says_how_many_blocks_were_dropped(): void {
+		$this->telegram_answer = 'error-chat-not-found.written.json';
+
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->once()
+			->andReturn( array( 'short', str_repeat( 'x', 5000 ), str_repeat( 'y', 5000 ) ) );
+
+		$entry = Runner::run( 'manual', false, self::NOON );
+
+		$this->assertIsArray( $entry );
+		$this->assertSame( 'failed', $entry['status'] );
+		$this->assertStringContainsString( 'cannot find that chat', $entry['message'] );
+		$this->assertStringEndsWith( ' 2 extra blocks were left out: with them, the message would have been longer than Telegram accepts.', $entry['message'] );
 	}
 
 	/**

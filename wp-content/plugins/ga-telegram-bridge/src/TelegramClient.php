@@ -45,6 +45,18 @@ final class TelegramClient {
 	private const MAX_WAIT = 30;
 
 	/**
+	 * The longest message text Telegram accepts, counted after its HTML is
+	 * parsed: tags gone, entities decoded.
+	 *
+	 * This client does not enforce it — a message that is too long is refused
+	 * by Telegram and mapped like any other refusal. MessageRenderer reads it
+	 * to leave out the blocks other code added before the message gets there
+	 * (DECISIONS "The plugin drops extra blocks that would push the message
+	 * past Telegram's limit").
+	 */
+	public const MAX_TEXT_LENGTH = 4096;
+
+	/**
 	 * Sends one HTML message to one chat.
 	 *
 	 * A flood limit is the one refusal answered inside the same run: Telegram
