@@ -465,7 +465,7 @@ plugin 0.2.0, which requires PHP 8.1, so production is on 8.1 or later.
 
   → `feat(search-stats): read a level's top five queries for a period`
 
-- [ ] **3. `Stats::build()` and `SearchStats`.**
+- [x] **3. `Stats::build()` and `SearchStats`.**
   - `SearchStats.php`: `final class SearchStats` with six promoted readonly
     `list<TopQuery>` properties, in this order:
     - `site_yesterday`, `site_28_days`;
