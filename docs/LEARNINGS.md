@@ -19,6 +19,60 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] The step prescribed `esc_html()`, and the test stub would have hidden what it does in production
+- **Incident:** SPRINT-2 Step 3, written by discovery, asked for "`esc_html` on every value" of the search blocks. Two things were true at once:
+  - Followed literally, with the theme suite's `Functions\stubEscapeFunctions()`-style stub, every planned test would have passed, because Brain\Monkey's `esc_html` is `htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' )`, which double-encodes.
+  - In production, WordPress's `esc_html()` keeps `&nbsp;`, `&copy;` and `&laquo;`. Telegram refuses a message with any of them, and the query is typed by any visitor on a public route.
+
+  `/plan-step` caught it by running the real `esc_html()` on the local install. The plan resolved it by precedence, with DECISIONS "every dynamic value is HTML-escaped" over the step's implementation detail.
+- **Root cause:** Two, and the second is the dangerous one.
+  - A sprint step named a specific WordPress function where the decision only named a property ("HTML-escaped"). The function looked like the obvious way to get the property.
+  - The test harness replaces WordPress's escaping functions with stubs that differ from them exactly where it matters. The plugin met the same family on 2026-09-16: its `esc_url` stub escapes neither quotes nor brackets. A test that passes against a stub proves the stub, and nothing reminds the planner of it.
+- **Fix applied here:**
+  - DECISIONS "Values in a Telegram message are escaped with double encoding, never with `esc_html()`".
+  - A TECH-STACK ANTI-PATTERNS line.
+  - `Renderer` escapes with the real `htmlspecialchars()`, and `RendererTest` asserts the `&nbsp;` case.
+
+  Rule taken: **when a test's outcome depends on a stubbed WordPress escaping or formatting function, the plan runs the real function on the local install for the input the test is about**, and quotes both outputs. A step text that names a function is read as a suggestion when a DECISIONS entry states the property it serves.
+- **Transferred to playbook:** pending
+
+## 2026-09-23 — [search-stats] The plan said which index a query "reads through" without asking the database
+- **Incident:** Sprint 2 Step 2's plan said `Repository::top()` "reads through the key `level_created_at` (level, created_at)". It said the same about the DATA-MODEL update. During `/do-step`, an `EXPLAIN` of the real query on the local MariaDB listed both `level_created_at` and `created_at` as possible keys and chose `created_at`. The table was empty, so the choice meant little, but the plan had stated it as fact. DATA-MODEL was written from the `EXPLAIN` instead: MariaDB picks between the two keys from the table's statistics, and the code forces neither.
+- **Root cause:** The same family as the 2026-09-16 entries on numbers. A statement about what a system will do was written from the design, here the schema's comment that the key exists "for the report's per-level period queries", not from the system. The plan did run the database for the collation, which is how it found `ґ` = `г`. It did not run it for the query plan, although one `EXPLAIN` was the same cost.
+- **Fix applied here:**
+  - DATA-MODEL states what the optimizer may choose and what it chose locally.
+  - The step's report names the difference from the plan.
+  - Rule taken: **a plan that says which index a query uses runs `EXPLAIN` on it while planning and quotes the result, together with the row count it was measured on.** Otherwise it says only which index was built for it.
+- **Transferred to playbook:** pending
+
+## 2026-09-23 — [search-stats] The settings-screen screenshot put the private key into the transcript a second time, by the same path as the first
+- **Incident:** Sprint 2 Step 1's plan required *Preview* to be opened in the browser before the step was marked implemented. On screen `Settings` of the plugin, the first click on *Попередній перегляд* (by element reference) did not submit. A second click, by coordinates, did; the page came back scrolled to the top, and a whole-viewport screenshot was taken to find the preview. The screen echoes the stored service-account JSON into its textarea, so part of the local install's private key was captured and is now in the session transcript. The bot token field was below the fold. Every step of that sequence is the one the 2026-09-10 entry below describes: a failed first click, then a scroll-to-top reflex, then a screenshot.
+- **Root cause:**
+  - The rule existed ("on a screen that can render a credential, never take a whole-page screenshot") and was not in front of the agent when it acted. The plan read LEARNINGS and quoted the neighbouring entry ("A screen was called finished without anyone opening it") in the very line that scheduled the browser check. The credential entry, about the same screen, was not quoted. The rule was read after the screenshot, when the key field was already in the image.
+  - A rule that is keyed to a screen, rather than to a kind of task, is missed unless the plan carries it to the line that sends the agent there. The screen still prints the stored secret back, which the 2026-09-10 entry already left for the retro.
+- **Fix applied here:**
+  - The user was told at once so the key can be rotated. The value was not repeated in text or files.
+  - The rest of the check used element-scoped reads only: `find` for the preview, a `javascript_exec` over the one `<pre>` returning booleans, and a navigation-timing read to prove the preview was fresh. No further screenshot was taken.
+  - The verification guide of this step says where on the screen not to look, and how to read the preview without the fields.
+  - Rule taken, sharper than the last one: **a plan line that sends the agent to screen `Settings` of `ga-telegram-bridge` quotes the credential rule in that same line**, and prefers `ddev wp eval` over the screen for anything the screen is not itself the subject of. Whether the screen should echo a stored secret at all is a candidate for `/adhoc`, and it is the second time the retro is asked.
+- **Transferred to playbook:** pending
+
+## 2026-09-23 — [search-stats] The sprint copied the plugin's tooling layout into a code area where `vendor/` is production code
+- **Incident:** SPRINT-1 Step 1 and DECISIONS "The theme gets PHPUnit + Brain\Monkey" (both written by discovery) said three things that were false:
+  - the theme's `.gitignore` "keeps `vendor/` out";
+  - the gate should `composer install` in the theme "when `vendor/` is missing, exactly as it does for the plugin";
+  - adding PHPUnit and Brain\Monkey to the theme's `require-dev` has "consumers: none at runtime".
+
+  In fact the theme's `vendor/` is committed (1 904 files), shipped by the file-sync deploy, and loaded by `functions.php` on every request. Its `installed.json` shows it was built by a plain `composer install`. Followed literally, the step puts five dev-only `files` entries into that autoloader: every page fatals if the entries are committed without the packages, and PHPUnit ships to three servers if the packages are committed too. `/plan-step` caught it with `git ls-files` and dry runs, and the developer approved a separate Composer project in `tests/`.
+- **Root cause:** The theme's packaging facts were written in three docs already: ARCHITECTURE → Environments, `core` FEATURE.md → Invariants, and the TECH-STACK Stack row. The sprint was written from the plugin's precedent ("exactly as for the plugin") and from the theme `CLAUDE.md`'s never-commit list, which names `composer.lock` but not `vendor/`. That absence was read as "ignored". Nothing asks discovery or the planner to check that a pattern copied from one code area fits the packaging and deploy model of the area it is copied into.
+- **Fix applied here:**
+  - DECISIONS "The theme's test tooling is its own Composer project in `tests/`" (amends one clause).
+  - A TECH-STACK ANTI-PATTERNS line.
+  - The theme `CLAUDE.md` now says outright that `vendor/` **is** committed.
+
+  Rule taken: **when a step reuses tooling or a layout "as in" another code area, the plan checks the target area's own packaging facts first** (`git ls-files`, what the runtime autoloader loads, what the deploy ships) and quotes them. The absence of a path from a "never commit" list proves nothing about whether it is committed.
+- **Transferred to playbook:** pending
+
 ## 2026-09-16 — [ga-telegram-bridge] The plan named the tests a change would break by grepping for one shape of assertion
 
 - **Incident:** The analytics-link ad-hoc's plan said "three assertions pin where the message ends; nothing else does", from a grep for `assertStringEndsWith` and line counts. The first gate run failed five tests: the three named, and two that pin how many **links** the message holds — "the only link is the page's", "`(not set)` is not linked" — which a closing link makes false without touching what they guard. They were fixed in the same commit by narrowing each to links into the site, and the report says so; but "nothing else does" was stated as a finding when it was only the result of one search.

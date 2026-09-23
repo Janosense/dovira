@@ -9,7 +9,7 @@
     ]
   },
   "source/main.js": {
-    "file": "main.CAxFb4Av.js",
+    "file": "main.wrGDPK_b.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -26,11 +26,18 @@
       "source/scripts/modules/toggle-cities.js",
       "source/scripts/modules/toggle-footer-calls.js",
       "source/scripts/modules/questionary-form-handler.js",
-      "source/scripts/modules/init-imask.js"
+      "source/scripts/modules/init-imask.js",
+      "source/scripts/features/search-stats/record.js"
     ],
     "css": [
       "main.KqwaYVMB.css"
     ]
+  },
+  "source/scripts/features/search-stats/record.js": {
+    "file": "_chunk.D905HoVL.js",
+    "name": "record",
+    "src": "source/scripts/features/search-stats/record.js",
+    "isDynamicEntry": true
   },
   "source/scripts/modules/init-animations.js": {
     "file": "_chunk.Delbh4B0.js",
@@ -51,10 +58,13 @@
     "isDynamicEntry": true
   },
   "source/scripts/modules/init-service-price-lists.js": {
-    "file": "_chunk.Dt10a5No.js",
+    "file": "_chunk.DfKYQfX4.js",
     "name": "init-service-price-lists",
     "src": "source/scripts/modules/init-service-price-lists.js",
-    "isDynamicEntry": true
+    "isDynamicEntry": true,
+    "imports": [
+      "source/scripts/features/search-stats/record.js"
+    ]
   },
   "source/scripts/modules/init-swiper.js": {
     "file": "_chunk.BYkjdjix.js",
@@ -69,10 +79,13 @@
     "isDynamicEntry": true
   },
   "source/scripts/modules/services-search.js": {
-    "file": "_chunk.5MuT46-h.js",
+    "file": "_chunk.D-ARikd-.js",
     "name": "services-search",
     "src": "source/scripts/modules/services-search.js",
-    "isDynamicEntry": true
+    "isDynamicEntry": true,
+    "imports": [
+      "source/scripts/features/search-stats/record.js"
+    ]
   },
   "source/scripts/modules/toggle-accordion.js": {
     "file": "_chunk.d1cMw5Hx.js",

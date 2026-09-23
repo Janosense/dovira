@@ -48,11 +48,13 @@ as-is) plus, from now on, feature modules under `inc/features/{name}/`.
 - REST: controllers extend `WP_REST_Controller`, namespace `dovira/v1`,
   registered in `inc/rest-api.php`; every route sets an explicit `permission_callback`.
 - CLI: classes in `inc/cli/`, registered in `inc/cli.php` under `wp dovira …`, guarded by `WP_CLI`.
-- Never commit `.env`, `node_modules/`, `composer.lock`/`package-lock.json` (theme `.gitignore`).
+- Never commit `.env`, `node_modules/`, `composer.lock`/`package-lock.json`, `tests/vendor/` (theme `.gitignore`).
+  `vendor/` IS committed (loaded on every request), so dev tools go in `tests/composer.json`, never the theme's.
 
 ## Local commands
 ```bash
 cd wp-content/themes/dovira && npm start      # Vite dev server (HMR, WP_ENVIRONMENT_TYPE=development)
 cd wp-content/themes/dovira && npm run build  # rebuild assets/ before committing front-end changes
+cd wp-content/themes/dovira/tests && composer install && composer test  # theme unit tests (PHPUnit + Brain\Monkey, no WP)
 ddev wp dovira translate --help               # CLI command reference
 ```

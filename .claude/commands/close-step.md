@@ -48,7 +48,7 @@ several: STOP and ask which step to close. Never pick a step yourself.
    verification — its section reads `implemented, awaiting close — reopened:
    …`): a NEW short entry titled `… — re-closed`, stating what failed and
    what was fixed (from the section's `### Reopen` subsection).
-   If this is the last step of the sprint (step 8), the entry ends with the
+   If this is the last step of the sprint, the entry ends with the
    line `Sprint {N} complete — all steps closed, {sprint branch} merged into
    main`.
 
@@ -80,7 +80,7 @@ several: STOP and ask which step to close. Never pick a step yourself.
    - Design: n/a | unchanged | changed — `docs/DESIGN.md` (Tokens / Components "In code" / Screens) and `FEATURE.md` → UI updated in this close
    - Open questions:
    - Next: /plan-step [feature] {N} {M+1}   (feature name required when several exist)
-     — or, if this was the last step of the sprint, the lines of step 8
+     — or, if this was the last step of the sprint, the lines of **Last step of the sprint** below
    ```
 
 8. **Last step of the sprint.** When every step of `SPRINT-{N}.md` is now

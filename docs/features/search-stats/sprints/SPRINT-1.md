@@ -32,7 +32,7 @@ Telegram message yet.
      subsections, even if a subsection is "—". The checkbox in the heading is
      ticked by /close-step. -->
 
-### [ ] Step 1 — Delta-audit and the theme's test suite in the gate
+### [x] Step 1 — Delta-audit and the theme's test suite in the gate
 - **Tasks:**
   - Delta-audit: read `docs/features/core/FEATURE.md`, `docs/features/ga-telegram-bridge/FEATURE.md` and the shared code this feature will touch (`search.php`, the two JS filter modules, `app.js`, `inc/rest-api.php`, `functions.php`); confirm the plan conflicts with nothing, list the touchpoints in the step report (no code change from the audit itself).
   - Add `phpunit/phpunit ^12.5` and `brain/monkey ^2.7` to `require-dev` of the theme's `composer.json` (**touches shared code — may affect other features:** `composer.json` of the theme; consumers: none at runtime, dev tooling only); `tests/bootstrap.php` (Composer autoload, Brain\Monkey setup, no WordPress bootstrap), `tests/TestCase.php`, `phpunit.xml.dist` with `failOnRisky="true"` and the suite under `tests/Unit/`; one smoke test.
@@ -43,7 +43,7 @@ Telegram message yet.
 - **Docs to update:** `docs/TECH-STACK.md` → Check command (five stages) and Approved dependencies log (two rows for the theme); `docs/TESTING.md` → How to run (the theme suite), Fixtures, Rules; the theme `CLAUDE.md` → Local commands (`composer test`).
 - **Depends on:** —
 
-### [ ] Step 2 — Feature bootstrap, the table and the purge
+### [x] Step 2 — Feature bootstrap, the table and the purge
 - **Tasks:**
   - `inc/features/search-stats/bootstrap.php` (requires the feature's classes, registers hooks) and one line in `functions.php` (**touches shared code:** `functions.php`; consumers: every theme feature).
   - `Schema` class: the `CREATE TABLE` for `{$wpdb->prefix}dovira_search_queries` (`id` BIGINT UNSIGNED AUTO_INCREMENT, `level` VARCHAR(16), `query_text` VARCHAR(100), `context_id` BIGINT UNSIGNED NOT NULL DEFAULT 0, `results` INT UNSIGNED NULL, `created_at` DATETIME NOT NULL; keys on (`level`, `created_at`) and (`created_at`)), applied through `dbDelta()` on `after_switch_theme` and on `init` when `dovira_search_stats_db_version` is behind the class constant — never on every request.
@@ -53,7 +53,7 @@ Telegram message yet.
 - **Docs to update:** `docs/DATA-MODEL.md` → new section for the table, the option and the hook (with the manual `DROP TABLE` note); `docs/ARCHITECTURE.md` → Modules (one row for the feature) — the Feature map row already exists.
 - **Depends on:** Step 1
 
-### [ ] Step 3 — The REST route that records a search
+### [x] Step 3 — The REST route that records a search
 - **Tasks:**
   - `Normalizer` class (`mb_strtolower`, trim, collapse whitespace) — the one place text is normalized.
   - `RecordController extends WP_REST_Controller`, registered in `inc/rest-api.php` (**touches shared code:** `inc/rest-api.php`; consumers: `core`'s Telegram and Questionary routes) as `POST dovira/v1/search-stats/record`, `permission_callback` `__return_true`, JSON body only; validation per the fixed decision: `level` ∈ {`site`, `services`, `service`}; normalized `query` 1–100 characters for `site`, 3–100 otherwise; `context_id` a published post for `services` and `service` (any post type for `services`, `service` post for `service`), ignored and stored as 0 for `site`; `results` a non-negative integer, required for `site`, refused when present otherwise.
@@ -63,7 +63,7 @@ Telegram message yet.
 - **Docs to update:** `docs/ARCHITECTURE.md` → Modules row of the feature (the route) and the diagram line `dovira/v1 (Telegram, Questionary, search-stats)`; `docs/DATA-MODEL.md` → Relations (`context_id` → `wp_posts.ID`, not enforced).
 - **Depends on:** Step 2
 
-### [ ] Step 4 — Recording from the browser on all three levels
+### [x] Step 4 — Recording from the browser on all three levels
 - **Tasks:**
   - `source/scripts/features/search-stats/record.js`: `recordSearch(level, query, contextId, results)` posting JSON with `navigator.sendBeacon` (a `Blob` of type `application/json`) and `fetch(…, {keepalive: true})` as fallback; a `debouncedRecorder(input, level, contextId)` helper with the 1500 ms pause (named constant), the ≥ 3-character rule and "never the same value twice from this input in this page view".
   - `source/scripts/modules/services-search.js` and `source/scripts/modules/init-service-price-lists.js` (**touches shared code:** the two filters; consumers: the `services` block and `single-service.php`) call the helper; the context id comes from a `data-search-stats-context` attribute printed next to each input (`get_the_ID()` of the hosting page / the service) — `search.php` (**touches shared code:** consumers: the header form) prints `data-search-stats-query` and `data-search-stats-results` on the results section, computed from the three result sets the template already builds; `app.js` (**touches shared code**) imports the module and calls `recordSearch` once when those attributes are present.

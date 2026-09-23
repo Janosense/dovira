@@ -1,35 +1,51 @@
 # Testing — Dovira
 
 <!-- Created by the ga-telegram-bridge discovery (2026-09-08) per DECISIONS
-     "Testing tooling and the project check command". The theme has no tests
-     (see TECH-STACK.md); this file governs the plugin and any future feature. -->
+     "Testing tooling and the project check command". The theme gained its own
+     unit suite in search-stats Sprint 1 Step 1 (DECISIONS "The theme gets
+     PHPUnit + Brain\Monkey, run by the check command" and "The theme's test
+     tooling is its own Composer project in `tests/`"). This file governs both
+     suites and any future feature. -->
 
 ## Profile
 Developer-reviewed (root `CLAUDE.md`): the user reads code and diffs; tests
 are still mandatory in the test-critical zones and for every piece of pure
-logic in a plugin.
+logic in a plugin or a theme feature.
 
 ## Levels
 | Level | What | Where | Runs WordPress? |
 |---|---|---|---|
-| Unit | pure logic: JWT building, response parsing, report maths, message rendering, sanitizers, scheduling maths, state transitions | `wp-content/plugins/ga-telegram-bridge/tests/Unit/` | No — Brain\Monkey stubs `__()`, `esc_html()`, `get_option()`, `wp_remote_post()` etc. |
+| Unit (plugin) | pure logic: JWT building, response parsing, report maths, message rendering, sanitizers, scheduling maths, state transitions | `wp-content/plugins/ga-telegram-bridge/tests/Unit/` | No — Brain\Monkey stubs `__()`, `esc_html()`, `get_option()`, `wp_remote_post()` etc. |
+| Unit (theme) | the theme features' pure code: query normalization, REST validation, the SQL a class builds and the shaping of its results, rendering | `wp-content/themes/dovira/tests/Unit/` (one directory per feature, e.g. `SearchStats/`) | No — the same Brain\Monkey approach; `$wpdb` is a test double |
 | Integration | none automated in v1; the manual verification guides written by `/close-step` (`docs/features/{feature}/verification/`) are the regression suite | — | — |
 
 ## How to run
-- Everything that gates a commit: `bin/check.sh` from the repo root (PHPCS →
-  PHPStan → PHPUnit in the plugin → `php -l` over the theme). Needs PHP ≥ 8.3
-  and Composer on PATH; `ddev exec bash bin/check.sh` works too.
+- Everything that gates a commit: `bin/check.sh` from the repo root. The order is
+  PHPCS → PHPStan → PHPUnit in the plugin → `php -l` over the theme → PHPUnit
+  in the theme's `tests/`.
+  - It needs PHP ≥ 8.3 and Composer on PATH. `ddev exec bash bin/check.sh`
+    works too, including with a `tests/vendor/` installed on the host.
+  - It installs the theme's test tooling by itself when `tests/vendor/` is
+    missing.
 - Plugin only: `cd wp-content/plugins/ga-telegram-bridge && composer install`,
   then `composer test` (PHPUnit), `composer lint` / `composer lint:fix` (PHPCS /
   PHPCBF) and `composer analyse` (PHPStan).
-- **A test that asserts nothing fails the run.** `phpunit.xml.dist` sets
+- Theme only: `cd wp-content/themes/dovira/tests && composer install`, then
+  `composer test`.
+  - `tests/` is a Composer project of its own, holding only the test tooling
+    (PHPUnit, Brain\Monkey). Its `vendor/` is gitignored and its lock is not
+    committed.
+  - The theme's own `composer.json` never gets a dev package. Its `vendor/`
+    is committed and `functions.php` loads that autoloader on every request.
+  - The theme has no PHPCS or PHPStan.
+- **A test that asserts nothing fails the run, in both suites.** Each `phpunit.xml.dist` sets
   `failOnRisky="true"` beside `failOnWarning`, `failOnNotice` and
   `failOnDeprecation`, so PHPUnit's "This test did not perform any assertions"
   stops the gate instead of passing inside a green run. It was added in Sprint 3
   Step 1 with no failing test behind it; a test written as a Brain\Monkey
   expectation (`Functions\expect( … )->never()`) has to record what happened and
   assert it, rather than relying on the expectation alone.
-- **Suite order is fixed, not alphabetical.** `phpunit.xml.dist` declares two
+- **Suite order is fixed, not alphabetical (plugin).** `phpunit.xml.dist` declares two
   suites so that `SettingsSecretConstantsTest` — the one class that defines the
   real `GATB_GA_SERVICE_ACCOUNT_JSON` and `GATB_TELEGRAM_BOT_TOKEN` — runs last.
   A PHP constant cannot be undefined, so once that class has run, every later
@@ -41,6 +57,14 @@ logic in a plugin.
   `WP_UNINSTALL_PLUGIN`, which nothing else reads, and stays in the first suite.
 
 ## Fixtures
+- **Theme:** fixtures go in `wp-content/themes/dovira/tests/fixtures/{feature}/`.
+  There are none yet. The same recorded-vs-written rule below applies.
+  - A `$wpdb` result that a SQL test shapes (the rows `get_results()` would
+    return) is written inside the test, next to the query it answers.
+  - A fixture file is only for data that was actually captured.
+
+The rest of this section is the plugin's
+(`wp-content/plugins/ga-telegram-bridge/tests/fixtures/`).
 - Google responses live in `tests/fixtures/ga/*.json` (Data API and the token
   endpoint, one directory), Telegram responses in `tests/fixtures/telegram/`.
 - Every file keeps the envelope the Sprint 1 spike recorded —
@@ -123,9 +147,58 @@ logic in a plugin.
   the test key.
 - Only the network boundary (`wp_remote_post`/`wp_remote_get`) and WordPress
   globals are stubbed.
+- **Theme suite: the same rule.**
+  - What is stubbed: WordPress globals, the network boundary, and `$wpdb` (a
+    test double that records the query it is given and returns fixed rows).
+  - What always runs for real: the feature's own code, meaning the normalizer,
+    the REST validation, the SQL a class builds, the shaping of its results
+    and the renderer.
 
 ## Rules
 - A new fixture is added in the same commit as the parser that reads it.
 - No test may contain a real token, key or chat id; the check command's
   PHPCS config may add a sniff for `private_key` literals if this is ever
   violated (see LEARNINGS.md).
+- **Theme: never a database.**
+  - SQL is tested by asserting the query the code builds and by shaping fixed
+    `$wpdb` results.
+  - No `WP_UnitTestCase`, no test database (DECISIONS "The theme gets
+    PHPUnit + Brain\Monkey, run by the check command").
+  - What a query really does against MariaDB is proven by the step's manual
+    verification.
+- **Theme: tooling lives in `tests/composer.json`** (DECISIONS "The theme's test
+  tooling is its own Composer project in `tests/`").
+  - A new test class needs nothing: PHPUnit scans `tests/Unit/`, and the PSR-4
+    `dovira\Tests\` → `tests/` autoloads its helpers.
+  - The code under test is loaded with `require_once` by its path in the
+    theme, as the theme itself loads its classes, e.g.
+    `require_once dirname( __DIR__, 3 ) . '/inc/features/search-stats/Schema.php';`
+    from `tests/Unit/SearchStats/`.
+    - Never add a PSR-4 entry for theme code to `tests/composer.json`: the
+      gate installs only when `tests/vendor/` is missing, so an existing
+      install would not see the new mapping until someone ran
+      `composer dump-autoload` by hand.
+    - Never require a feature's `bootstrap.php` in a test either: it
+      registers hooks when it loads.
+  - `$wpdb` is `dovira\Tests\WpdbDouble` (`tests/WpdbDouble.php`), put in
+    `$GLOBALS['wpdb']` in `setUp()` and removed in `tearDown()`. It records
+    `prepare()`, `query()`, `insert()` and `get_results()` calls and carries
+    `prefix` and `last_error`; `insert()` returns `$insert_result`, which a
+    test sets to `false` for a failed insert, and `get_results()` answers with
+    the next entry of `$results` (a list of `stdClass` rows whose values are
+    strings or `null`, as WordPress returns them, or `null`; `[]` once the
+    queue is empty), recording each query in `$selected`. Extend it when a
+    class needs another `$wpdb` method.
+  - **WordPress's own classes come from the committed core, never rewritten
+    in `tests/`.** `tests/bootstrap.php` requires `WP_Error`,
+    `WP_HTTP_Response`, `WP_REST_Response`, `WP_REST_Request` and
+    `WP_REST_Controller` from `wp-includes/`. None of those files runs code
+    when loaded, so a REST test builds a real `WP_REST_Request` (header plus
+    body) and WordPress parses the JSON body itself.
+    - The WordPress functions those classes call are stubbed like any other:
+      `absint()` and `do_action()` come from Brain\Monkey, and a test stubs
+      `wp_is_json_media_type()`.
+    - A class whose file needs `ABSPATH` or loads a library, such as
+      `WP_Http`, stays out. A malformed JSON body therefore has no unit test:
+      WordPress refuses it with `rest_invalid_json` before a route's callback
+      runs, and the step's verification guide checks it.

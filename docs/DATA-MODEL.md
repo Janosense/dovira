@@ -8,8 +8,14 @@
 - Standard WordPress tables (`wp_` prefix; `wp_posts`, `wp_postmeta`,
   `wp_terms`/`wp_term_taxonomy`/`wp_term_relationships`, `wp_options`,
   `wp_users`/`wp_usermeta`) plus plugin tables (Polylang, Yoast
-  `wp_yoast_indexable`, CF7). **No custom tables, no migrations mechanism**:
-  schema = registered post types, taxonomies and ACF field groups in PHP.
+  `wp_yoast_indexable`, CF7). Schema = registered post types, taxonomies and
+  ACF field groups in PHP.
+- **One custom table**, `{prefix}dovira_search_queries` of feature
+  `search-stats` (→ Feature `search-stats` below).
+  - It is created and upgraded with `dbDelta()` from a schema version stored
+    in an option. That is the project's only migrations mechanism, and it
+    serves this one table.
+  - Every other entity is still a post type.
 - Every domain entity is a post type; every attribute is an ACF field stored
   in `wp_postmeta` (ACF convention: `{name}` value row + `_{name}` field-key
   row). Field names below are ACF names; repeater rows are
@@ -225,14 +231,111 @@ names are literals in that file and a unit test holds each one to the constant i
 must equal. **Deactivating** the plugin is a different thing and takes only the
 schedule: the settings, the state and the log survive being switched off.
 
+## Feature `search-stats` (custom table + `wp_options`)
+Owned entirely by the theme feature `search-stats`
+(`docs/features/search-stats/FEATURE.md`, code in
+`inc/features/search-stats/`), on every install separately. No other feature
+writes here.
+
+### Table `{prefix}dovira_search_queries`: one row per recorded search
+Created by `Schema::install()` through `dbDelta()`. That runs on
+`after_switch_theme`, and on `init` whenever the stored schema version is
+behind `Schema::VERSION`. On an install where the theme is already active, as
+after a hand deploy, the first request after the code arrives creates the
+table. A `wp db …` command does not load WordPress, so it does not create it.
+
+| Column | Type | Null | Meaning |
+|---|---|---|---|
+| `id` | `bigint(20) unsigned` auto-increment | no | primary key |
+| `level` | `varchar(16)` | no | `site` (header search), `services` (the `services` block filter) or `service` (a service's price-list filter) |
+| `query_text` | `varchar(100)` | no | the query, normalized once on the server (lowercase, trimmed, whitespace collapsed); the raw text is never stored |
+| `context_id` | `bigint(20) unsigned`, default `0` | no | the post the search belongs to: the page hosting the block for `services`, the service for `service`; `0` for `site` |
+| `results` | `int(10) unsigned` | yes | how many results the results page showed, for `site` only; `NULL` for the other levels |
+| `created_at` | `datetime` | no | when the search was recorded, **UTC** |
+
+Keys:
+- `PRIMARY KEY (id)`;
+- `level_created_at (level, created_at)`, for the report's per-level period
+  queries;
+- `created_at (created_at)`, for the purge.
+
+The report reads the table with one query per level and period, six in all
+(`Repository::top()`, called by `Stats::build()`):
+```sql
+SELECT query_text, context_id, COUNT(*) AS n, MAX(results) AS max_results, MAX(created_at) AS last_at
+FROM {prefix}dovira_search_queries
+WHERE level = %s AND created_at >= %s AND created_at < %s
+GROUP BY query_text, context_id
+ORDER BY n DESC, last_at DESC
+LIMIT 5
+```
+- The bounds are the UTC edges of whole calendar days in the site's zone
+  (`Periods`), half-open: yesterday, and the 28 days that end with it.
+- `level_created_at` is the key built for it: equality on `level`, then a range
+  on `created_at`. `created_at` alone can serve the range too, and MariaDB
+  picks between the two from the table's statistics — on the empty local table
+  it picked `created_at`. The code forces neither.
+- "Nothing found" is `MAX(results) = 0`; the two filter levels store `NULL`,
+  so their `max_results` is `NULL` and never flags.
+- `GROUP BY query_text` follows the column's collation
+  (`utf8mb4_unicode_520_ci`), not byte equality. Measured on the local
+  MariaDB: `ґ` = `г` and `ё` = `е`, while `й` ≠ `и`, `ї` ≠ `і` and `є` ≠ `е`.
+  So «ґудзик» and «гудзик» are one query in the report, printed in one of the
+  two spellings.
+- Nothing derived is stored: every report runs the six queries again.
+
+The charset and collation are `$wpdb->get_charset_collate()` (`utf8mb4` /
+`utf8mb4_unicode_520_ci` locally).
+
+Rows are inserted only by the REST route `POST dovira/v1/search-stats/record`
+(`Repository::insert()`, called after the whole request has been validated):
+one row per valid request, `created_at` = `current_time( 'mysql', true )`. A
+refused request writes nothing.
+
+No personal data: no IP, user agent, cookie or user id.
+
+### Option `dovira_search_stats_db_version`: an int, autoloaded
+The schema version of the table: `Schema::VERSION`, `1` today.
+- It is written only after a `dbDelta()` run that leaves `$wpdb->last_error`
+  empty. A failed run is therefore retried on the next request.
+- It is autoloaded because `init` reads it on every request.
+- Raising `Schema::VERSION` together with the `CREATE TABLE` is how the table
+  changes. `dbDelta()` adds columns and keys but never drops them.
+
+### Retention: cron hook `dovira_search_stats_purge` and filter `dovira_search_stats_retention_days`
+Rows older than the retention period are deleted once a day by
+`Purge::run()` on the WP-Cron event `dovira_search_stats_purge`.
+- The event recurs `daily`. It is registered on `init` whenever it is not
+  scheduled, and it carries no arguments.
+- The retention is `apply_filters( 'dovira_search_stats_retention_days', 90 )`,
+  clamped to at least **29** days. The report reads the last 28 days, so a
+  filter can shorten the log but never cut into the period the report needs.
+- The cutoff is the current UTC time minus that many days, compared with
+  `created_at`.
+
+**The purge is the only delete**, and it never runs from a public request.
+
+### Removing the feature's data by hand
+A theme has no uninstall, so nothing removes the table, the option or the
+event. After the feature is removed from the code, on each install:
+```bash
+wp db query "DROP TABLE {prefix}dovira_search_queries"
+wp option delete dovira_search_stats_db_version
+wp cron event delete dovira_search_stats_purge
+```
+
 ## Relations
 ```
 service-city ──< service            application >── vacancy (post_object)
 service-city ──< employee           application >── attachment (file / CV)
 service-city ──< vacancy            service.prices[*].cities ──> service-city term ids
 uk post <── Polylang post_translations ──> ru post   (page, post, service, vacancy)
+dovira_search_queries.context_id ──> wp_posts.ID   (not enforced; 0 for level site)
 ```
 `conversation` and `questionary` have no relations to other posts.
+`dovira_search_queries.context_id` is checked only when the row is written (a
+published post; a `service` for level `service`). Nothing keeps it in step
+afterwards: a post deleted later leaves its id behind in the table.
 
 ## Invariants
 - A `service` price row is visible in a city tab only if `cities` contains

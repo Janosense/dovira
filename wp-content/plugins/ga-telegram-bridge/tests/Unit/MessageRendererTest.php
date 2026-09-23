@@ -538,6 +538,182 @@ final class MessageRendererTest extends TestCase {
 	}
 
 	/**
+	 * Blocks other code adds follow the plugin's own and come before the link,
+	 * one blank line apart, in the order they were handed over — and their
+	 * HTML is printed as it came: whoever adds a block escapes its values.
+	 */
+	public function test_extra_blocks_are_printed_after_the_plugins_own_and_before_the_link(): void {
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->once()
+			->andReturn( array( '<b>A &amp; "B"</b>', 'second' ) );
+
+		$this->assertStringEndsWith(
+			"tablet 1%\n\n" . '<b>A &amp; "B"</b>' . "\n\nsecond\n\n" . '🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>',
+			MessageRenderer::render( $this->recorded_report() )
+		);
+	}
+
+	/**
+	 * The filter starts from an empty list and is told which report it is
+	 * adding to — the one gatb_report_data handed back.
+	 */
+	public function test_the_filter_is_given_an_empty_list_and_the_report(): void {
+		$report = $this->report_with( array() );
+
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->once()
+			->with( array(), $report )
+			->andReturn( array() );
+
+		$this->assertStringContainsString( 'Yesterday: 66', MessageRenderer::render( $report ) );
+	}
+
+	/**
+	 * An entry that is not a string, or holds nothing but whitespace, leaves
+	 * no trace — not even a blank line.
+	 */
+	public function test_empty_and_non_string_entries_are_dropped(): void {
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->once()
+			->andReturn( array( '', "  \n", 42, null, array( 'x' ), 'kept' ) );
+
+		$message = MessageRenderer::render( $this->report_with( array() ) );
+
+		$this->assertStringEndsWith(
+			"to the previous 28)\n\nkept\n\n" . '🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>',
+			$message
+		);
+		$this->assertStringNotContainsString( "\n\n\n", $message );
+	}
+
+	/**
+	 * A filter that hands back something other than a list is ignored, and
+	 * the message is the one it would have been without it.
+	 */
+	public function test_a_filter_that_returns_something_other_than_a_list_is_ignored(): void {
+		$report  = $this->report_with( array() );
+		$without = MessageRenderer::render( $report );
+
+		Filters\expectApplied( 'gatb_extra_blocks' )->once()->andReturn( 'not a list' );
+
+		$this->assertSame( $without, MessageRenderer::render( $report ) );
+	}
+
+	/**
+	 * The failure notice is not a report, and nobody is asked to add to it.
+	 */
+	public function test_the_failure_notice_is_given_no_extra_blocks(): void {
+		Filters\expectApplied( 'gatb_extra_blocks' )->never();
+
+		$this->assertStringContainsString( 'was not built', MessageRenderer::render_failure( '2026-09-15' ) );
+	}
+
+	/**
+	 * An added block that brings the message to exactly Telegram's limit is
+	 * kept, and one character more is left out.
+	 *
+	 * The numbers are the recorded day's: its message, the snapshot above, is
+	 * 748 characters as Telegram shows it, and the eight emoji in it lie beyond
+	 * the Basic Multilingual Plane and count twice — 756 UTF-16 units. One added
+	 * block costs its own length plus the blank line before it, so it fits while
+	 * it is at most 4096 − 756 − 2 = 3338 units long.
+	 */
+	public function test_an_extra_block_that_fits_exactly_is_kept(): void {
+		$report = $this->recorded_report();
+		$plain  = MessageRenderer::render( $report );
+		$fits   = str_repeat( 'x', 3338 );
+
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->times( 3 )
+			->andReturn( array( $fits ), array( $fits ), array( $fits . 'x' ) );
+
+		$kept = MessageRenderer::compose( $report );
+
+		$this->assertSame( 0, $kept['dropped'] );
+		$this->assertStringContainsString( "tablet 1%\n\n" . $fits . "\n\n🔗", $kept['html'] );
+		$this->assertSame( $kept['html'], MessageRenderer::render( $report ), 'render() is the HTML compose() writes' );
+
+		$over = MessageRenderer::compose( $report );
+
+		$this->assertSame( 1, $over['dropped'] );
+		$this->assertSame( $plain, $over['html'], 'the message is the one it would have been without the block' );
+	}
+
+	/**
+	 * The length is that of the text Telegram shows — tags gone, entities
+	 * decoded — counted in UTF-16 units, so an emoji counts twice.
+	 */
+	public function test_the_length_is_counted_as_telegram_counts_it(): void {
+		$report = $this->recorded_report();
+
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->times( 3 )
+			->andReturn(
+				array( '<b>' . str_repeat( 'x', 3337 ) . '&amp;</b>' ),
+				array( str_repeat( '🔎', 1669 ) ),
+				array( str_repeat( '🔎', 1670 ) )
+			);
+
+		$this->assertSame( 0, MessageRenderer::compose( $report )['dropped'], '3338 characters of text in 3349 of HTML fit' );
+		$this->assertSame( 0, MessageRenderer::compose( $report )['dropped'], '1669 emoji are 3338 units and fit' );
+		$this->assertSame( 1, MessageRenderer::compose( $report )['dropped'], '1670 emoji are 3340 units, though only 1670 characters' );
+	}
+
+	/**
+	 * While the message is too long, the last added block goes — whichever
+	 * block it is that made it too long.
+	 */
+	public function test_extra_blocks_are_dropped_from_the_end(): void {
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->once()
+			->andReturn( array( 'first', str_repeat( 'x', 5000 ), 'last' ) );
+
+		$message = MessageRenderer::compose( $this->recorded_report() );
+
+		$this->assertSame( 2, $message['dropped'] );
+		$this->assertStringEndsWith(
+			"tablet 1%\n\nfirst\n\n" . '🔗 <a href="https://analytics.google.com/analytics/web/#/p533779496/reports/intelligenthome">More in Google Analytics</a>',
+			$message['html']
+		);
+	}
+
+	/**
+	 * The plugin's own blocks are never left out: when they alone are too
+	 * long, every added block goes and the message is sent as it would have
+	 * been without them — for Telegram to accept or refuse, as before.
+	 */
+	public function test_the_plugins_own_blocks_are_never_dropped(): void {
+		$label  = str_repeat( 'y', 5000 );
+		$report = $this->report_with(
+			array(
+				'channels' => array(
+					array(
+						'label' => $label,
+						'value' => 1,
+						'share' => 100,
+					),
+				),
+			)
+		);
+
+		Filters\expectApplied( 'gatb_extra_blocks' )
+			->twice()
+			->andReturn( array( 'extra' ), array() );
+
+		$with = MessageRenderer::compose( $report );
+
+		$this->assertSame( 1, $with['dropped'] );
+		$this->assertStringContainsString( $label . ' 100%', $with['html'] );
+		$this->assertStringContainsString( 'Yesterday: 66', $with['html'] );
+		$this->assertStringContainsString( 'More in Google Analytics', $with['html'] );
+
+		$without = MessageRenderer::compose( $report );
+
+		$this->assertSame( 0, $without['dropped'], 'nothing added, nothing dropped, however long the message' );
+		$this->assertSame( $without['html'], $with['html'] );
+	}
+
+	/**
 	 * Returns the recorded report with the two blocks switched off.
 	 *
 	 * @param Report $report The report to take the numbers from.

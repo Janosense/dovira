@@ -77,7 +77,8 @@ endif;
 				<div class="services__search">
 					<label class="services__search-field">
 						<input type="text" id="services-search-input"
-						       placeholder="Швидкий пошук по послугах:">
+						       placeholder="Швидкий пошук по послугах:"
+						       data-search-stats-context="<?= (int) get_the_ID(); ?>">
 						<button type="reset" id="services-search-reset"><?= pll__( 'Reset' ); ?>
 							<svg width="27px" height="27px" viewBox="0 -0.5 25 25" fill="none"
 							     xmlns="http://www.w3.org/2000/svg">

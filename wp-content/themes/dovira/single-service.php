@@ -58,7 +58,8 @@
 						<div class="service__search">
 							<label class="service__search-field">
 								<input type="text" id="service-search-input"
-									   placeholder="Пошук по послугах:">
+									   placeholder="Пошук по послугах:"
+									   data-search-stats-context="<?= (int) get_the_ID(); ?>">
 								<button type="reset" id="service-search-reset">Скинути
 									<svg width="27px" height="27px" viewBox="0 -0.5 25 25" fill="none"
 										 xmlns="http://www.w3.org/2000/svg">

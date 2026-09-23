@@ -8,6 +8,7 @@
 #   2. PHPStan (level 8)                     in wp-content/plugins/ga-telegram-bridge
 #   3. PHPUnit (unit tests)                  in wp-content/plugins/ga-telegram-bridge
 #   4. php -l  over the dovira theme's PHP files
+#   5. PHPUnit (unit tests)                  in wp-content/themes/dovira/tests
 #
 # Needs PHP >= 8.3 and Composer on PATH (the DDEV web container also qualifies:
 # ddev exec bash bin/check.sh).
@@ -17,6 +18,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLUGIN="${ROOT}/wp-content/plugins/ga-telegram-bridge"
 THEME="${ROOT}/wp-content/themes/dovira"
+# The theme's test tooling is its own Composer project: the theme's vendor/ is
+# committed runtime code and never gets dev packages (docs/DECISIONS.md, 2026-09-23).
+THEME_TESTS="${THEME}/tests"
 
 if ! php -r 'exit( PHP_VERSION_ID >= 80300 ? 0 : 1 );'; then
 	echo "check: PHP $(php -r 'echo PHP_VERSION;') is too old — the dev tooling needs PHP 8.3 or newer." >&2
@@ -26,6 +30,11 @@ fi
 if [ ! -d "${PLUGIN}/vendor" ]; then
 	echo "==> composer install (ga-telegram-bridge)"
 	( cd "${PLUGIN}" && composer install --no-interaction --no-progress )
+fi
+
+if [ ! -d "${THEME_TESTS}/vendor" ]; then
+	echo "==> composer install (theme dovira tests)"
+	( cd "${THEME_TESTS}" && composer install --no-interaction --no-progress )
 fi
 
 echo "==> PHPCS (ga-telegram-bridge)"
@@ -51,5 +60,8 @@ while IFS= read -r -d '' file; do
 	count=$(( count + 1 ))
 done < <(find "${THEME}" -name '*.php' -not -path '*/vendor/*' -not -path '*/node_modules/*' -print0)
 echo "    ${count} files checked"
+
+echo "==> PHPUnit (theme dovira)"
+( cd "${THEME_TESTS}" && vendor/bin/phpunit )
 
 echo "==> check: all green"

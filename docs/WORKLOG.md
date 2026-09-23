@@ -17,6 +17,174 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] Sprint 2 Step 3 — The three blocks in the message
+- Changed: the morning report now carries the search blocks.
+  - `Renderer::blocks()` writes FEATURE.md → UI: up to three blocks, `—` for an empty list, no block for an empty level. Queries are cut at 40 characters plus `…`. Titles come from the Ukrainian post through `pll_get_post()`, or `(видалено)`. Counts are plain digits.
+  - `bootstrap.php` hooks `Renderer::add_to()` to the plugin's `gatb_extra_blocks`, only when `GaTelegramBridge\Plugin` is loaded.
+  - Theme tests 83 → 92. 134 files linted.
+- Shared code: none changed. The theme now consumes the plugin's public filter, and the plugin itself is untouched.
+- Decisions:
+  - DECISIONS "Values in a Telegram message are escaped with double encoding, never with `esc_html()`", plus a TECH-STACK ANTI-PATTERNS line and a LEARNINGS entry. The step text said `esc_html`, but WordPress keeps `&nbsp;`/`&copy;`, and Telegram refuses them. One public search could have made the report unsendable, and Brain\Monkey's stub would have hidden it.
+  - Settled in the plan: the 40-character cut; stored titles are decoded before escaping; `BootstrapFilterTest` tests the callback, since `bootstrap.php` is never loaded in tests.
+- Verified locally with seeded rows, then deleted:
+  - the real message, rendered from the shell, has the three blocks between the devices block and the link;
+  - the Russian page 1630 prints `Послуги`, and a missing post prints `(видалено)`;
+  - `&nbsp; <b> &copy;` prints as text, and the 40-character cut is exact;
+  - *Preview* was read element-only, with no screenshot;
+  - an empty table leaves the plugin's message alone;
+  - with the plugin skipped, the theme hooks and loads nothing.
+
+  *Send now* was not pressed.
+- Open (the sprint boundary is the developer's):
+  - Hand deploy `master` → Kharkiv, merge `master` → `kyiv` → Kyiv. That carries theme and plugin 0.3.0 and the Sprint 1 checks (the table is created, one real search per level). Then the first morning report on each install.
+  - Rotate the local service-account key.
+  - Decide whether to name the site zone "Київ".
+  - `/adhoc` candidates: the plugin still escapes GA labels and page titles with `esc_html()`; `search.php:78` reflected XSS; `wp is not defined`.
+  - 20 LEARNINGS entries are `pending` for the retro, four of them from this sprint.
+
+Sprint 2 complete — all steps closed, search-stats/sprint-2-report merged into main (`master`, simple git model)
+
+## 2026-09-23 — [search-stats] Sprint 2 Step 2 — Aggregation: top-5 per level for yesterday and for 28 days
+- Changed: the reading side of the daily report, in `inc/features/search-stats/`. Nothing calls it yet; Step 3 hooks it into `gatb_extra_blocks`.
+  - `Periods` turns a clock into yesterday and the 28 calendar days ending with it. The bounds are half-open UTC edges of whole days in `wp_timezone()`, so a clock-change night is 23 or 25 h.
+  - `Repository::top()` runs one query per level and period: `GROUP BY query_text, context_id`, ordered by count, then latest search, `LIMIT 5`. It returns `TopQuery` objects; `nothing_found` = `MAX(results) = 0`.
+  - `Stats::build()` fills six lists in `SearchStats`, with no cache.
+  - Theme tests 63 → 83. 131 files linted.
+- Shared code: `tests/WpdbDouble.php` gains `get_results()`, answering from a `$results` queue and recording `$selected`. Only `search-stats` tests use it, and nothing existing changed. No template, JS or `core` file changed.
+- Decisions: none new in DECISIONS.md. Settled in the plan:
+  - the level names come from `RecordController`'s constants;
+  - "28 days" is the 28 calendar days ending yesterday, as the plugin counts them;
+  - readonly promoted properties, but not readonly classes, since production runs PHP ≥ 8.1 because of the plugin.
+- Verified locally with 13 seeded rows placed around the period edges (seeded, then deleted):
+  - a row at yesterday's local midnight is in, and one at today's local midnight is out;
+  - rows from 30 days back and from today are in no list;
+  - on a tie, the newer search comes first;
+  - results 3 then 0 is not flagged, and 0 then 0 is.
+- Open:
+  - The site's zone has no name: `gmt_offset` 3, no `timezone_string`, locally and in the committed `mysql.sql`. `wp_timezone()` is therefore `+03:00` with no DST, so in winter "yesterday" would run 23:00–23:00 Kyiv time. Naming the city in Settings → General on both installs is the developer's call; it also moves the plugin's send time.
+  - The collation `utf8mb4_unicode_520_ci` groups `ґ`/`г` and `ё`/`е` as one query; this is documented, not changed.
+  - The plan's claim about `level_created_at` was not checked with `EXPLAIN`. On the empty local table MariaDB chose `created_at` (LEARNINGS 2026-09-23). Read it with Step 3 on real data.
+
+## 2026-09-23 — [search-stats] Sprint 2 Step 1 — Plugin 0.3.0: the `gatb_extra_blocks` filter and the length guard
+- Changed:
+  - The plugin `ga-telegram-bridge` is **0.3.0**.
+  - `MessageRenderer` applies `gatb_extra_blocks` (`array()`, `Report`). Added HTML blocks are printed after the plugin's own and before the GA link, untouched. A non-array return is ignored, and non-string or blank entries are dropped.
+  - `compose()` drops the last added block while the text as Telegram counts it is over `TelegramClient::MAX_TEXT_LENGTH` (4096), and returns how many it dropped; `render()` is its HTML. The count is UTF-16 units, with tags stripped and entities decoded, measured before `gatb_message_html`.
+  - `Runner` adds one plural sentence to the log line of a sent or refused run that lost blocks. `.pot` 131 → 132 entries, uk `.po`/`.mo` rebuilt.
+  - Readme: 0.3.0 changelog and FAQ, ASCII only. Tests 297 → 309.
+- Shared code:
+  - Only the plugin, whose public surface gains its third filter. Consumers: `ga-telegram-bridge` itself, and `search-stats` from Step 3.
+  - With nothing hooked, the message is byte-for-byte 0.2.0's. No theme file changed.
+- Decisions: none new in DECISIONS.md. Settled in the plan:
+  - UTF-16 units, which never undercount what Telegram shows;
+  - measure before `gatb_message_html`;
+  - the count travels out through `compose()`, not through state;
+  - the note goes on refused runs too;
+  - the unreleased GA link from the 2026-09-16 adhoc goes into the 0.3.0 changelog.
+
+  Settled in the tasks, from the gate: a filter's return goes through a helper typed `mixed` (`as_blocks()`, like `as_report()`), because phpstan-wordpress takes the hook docblock as the return type.
+- Verified locally:
+  - live render and *Preview*: the probe blocks sit between the devices block and the link, and a 5 000-character block is dropped (`dropped=1`);
+  - the three uk plural forms;
+  - the settings screen shows 0.3.0.
+
+  *Send now* was not pressed: it posts to the configured chat, so it is §7 of the guide.
+- Open:
+  - **Rotate the local install's service-account key.** A whole-page screenshot of Settings captured part of it (LEARNINGS 2026-09-23, a repeat of 2026-09-10).
+  - Preview shows `&amp;` as `&`, because `esc_html()` does not double-encode. This predates the step; candidate for `/adhoc`.
+  - The `.pot` header still says 0.2.0.
+  - Both productions get 0.3.0 at the sprint-boundary deploy.
+
+## 2026-09-23 — [search-stats] Sprint 1 Step 4 — Recording from the browser on all three levels
+- Changed:
+  - All three searches are now recorded from the browser by `source/scripts/features/search-stats/record.js`, through Step 3's route.
+  - Header search: `search.php` prints the query and `ResultsCount::shown()`, which counts what the page lists: price rows, top-level services, posts, pages, employees. `recordSiteSearch()`, called by `app.js`, sends it once per results page, and nothing for an empty query.
+  - The two filters: `debouncedRecorder()` sends after 1500 ms of rest or on blur, at least 3 characters, never the value that input sent last. The context comes from `data-search-stats-context` on the input.
+  - Chrome sends through `sendBeacon`; `fetch(keepalive)` is the fallback.
+  - `assets/` was rebuilt twice, and a fresh build reproduces it byte for byte.
+  - Theme tests: 58 → 63. 124 files linted.
+- Shared code, all `core`, each change additive, with the existing lines unchanged:
+  - `search.php` gains two attributes on its results section;
+  - `app.js` gains one import and one call;
+  - the `services` block template and `single-service.php` gain one attribute each;
+  - `services-search.js` and `init-service-price-lists.js` gain one import and one call each.
+- Decisions:
+  - DECISIONS "Each filter's input carries the id of the post it searches in" amends the old "templates need nothing" clause. That was plan Question 1, approved as recommended.
+  - Resolved in the plan by precedence: repeats are compared with the **last** value sent (DECISIONS), not with every value; FEATURE.md was reworded to match.
+  - TECH-STACK ANTI-PATTERNS: no PHP-side recording.
+- Verified locally in Chrome:
+  - one row per search on each level, with contexts 12 (page) and 18 (service), and the Russian page printing 1630;
+  - blur sends at once and cancels the running pause;
+  - a retyped value, the reset button and an empty `?s=` send nothing;
+  - `curl` of results pages leaves no row;
+  - the filters still filter.
+- Open:
+  - The production check is repeated on each install after the sprint-boundary hand deploy, with the test rows deleted afterwards.
+  - Seen, not caused here: every page logs `wp is not defined`. `starter_theme_defer_scripts()` defers `wp-i18n`, whose inline `-after` script then runs first. Candidate for `/adhoc`, as is `search.php:78`.
+
+## 2026-09-23 — [search-stats] Sprint 1 Step 3 — The REST route that records a search
+- Changed:
+  - `POST dovira/v1/search-stats/record` is live: public, reads the JSON body only, and is the only writer of `{prefix}dovira_search_queries`.
+  - `RecordController` checks everything before its one write: `level`; the query after normalization (1–100 characters for `site`, 3–100 for the filters); for the two filters, a `context_id` that is a published post (a `service` post for `service`); `results` required for `site` and refused on the other levels.
+  - Answers: `204` with no body, `400` `WP_Error` with no row, `500` when the insert fails.
+  - `Normalizer` is the one place text is normalized. `Repository::insert()` stores `created_at` in UTC.
+  - Theme tests: 15 → 58. 122 files linted.
+- Shared code:
+  - `inc/rest-api.php` gains the controller at the end of the `rest_api_init` closure. `core`'s Telegram and Questionary routes are unchanged and still answer.
+  - The theme test harness: `tests/bootstrap.php` now loads five WordPress REST classes from the committed core, and `WpdbDouble` records `insert()`.
+- Decisions: none new in DECISIONS.md. Settled in the plan:
+  - a failed insert answers 500, as the Questionary route does;
+  - `context_id` and `results` must be JSON integers;
+  - a `results` key sent with a filter level is refused, even when it is `null`;
+  - `context_id` must be above 0 before `get_post_status()` is called, because `get_post( 0 )` falls back to the global post.
+  - FEATURE.md → Interfaces now names the error body and the 500.
+- Verified on the local install:
+  - one row per level, stored in UTC;
+  - nine refusals (bad level, short query, page as a service, draft, stray or missing results, form body, malformed JSON, GET), none of which wrote a row;
+  - a 500 with the table renamed away, which did not recreate it.
+- Open:
+  - Step 4 must send `context_id` and `results` as numbers, not strings.
+  - Whether production answers through whatever sits in front of `/wp-json/` is checked with Step 4's production search at the sprint-boundary deploy.
+  - `search.php:78` (the reflected XSS) is still waiting for an `/adhoc`.
+
+## 2026-09-23 — [search-stats] Sprint 1 Step 2 — Feature bootstrap, the table and the purge
+- Changed:
+  - The feature is registered: one line in `functions.php`, plus `inc/features/search-stats/bootstrap.php`.
+  - `Schema` creates `{prefix}dovira_search_queries` (six columns, keys `level_created_at` and `created_at`) with `dbDelta()`. It runs on `after_switch_theme`, and on `init` only while the autoloaded option `dovira_search_stats_db_version` is behind `VERSION = 1`. The version is written only when dbDelta leaves no error.
+  - `Purge` registers the daily `dovira_search_stats_purge` event on `init` when it is absent, and deletes rows whose `created_at` (UTC) is older than `apply_filters( 'dovira_search_stats_retention_days', 90 )` days, never fewer than 29.
+  - Theme tests: 1 → 15. 117 files linted.
+- Shared code:
+  - `functions.php` (one feature line, loaded by `core` and `search-stats` on every request).
+  - `tests/bootstrap.php` (defines `DAY_IN_SECONDS`).
+  - A new shared test double, `tests/WpdbDouble.php`.
+  - No `core` template, route or data changed.
+- Decisions: none new in DECISIONS.md. Settled in the plan:
+  - The purge hook takes 0 arguments, because `do_action()` without arguments passes `''` to `?int $now`.
+  - Tests load the code under test by path, never through a new PSR-4 entry, because the gate would not refresh an existing `tests/vendor/` autoloader (TESTING.md → Rules).
+  - `level` and `query_text` are `NOT NULL`.
+- Verified on the local install from a dropped table:
+  - one page load created the table, the version (autoload `on`) and the event;
+  - a second dbDelta is a no-op;
+  - the purge removed a 100-day row and kept an 89-day one;
+  - the retention reads `90 29 120` for no filter, a filter of 5 and a filter of 120.
+- Open: whether both productions create the table on the first request after the hand deploy (the database user needs CREATE), checked at the sprint-boundary deploy. Nothing writes rows until Step 3's route.
+
+## 2026-09-23 — [search-stats] Sprint 1 Step 1 — Delta-audit and the theme's test suite in the gate
+- Changed:
+  - The theme has a unit suite in `wp-content/themes/dovira/tests/`, its own dev-only Composer project: PHPUnit 12.5.35, Brain\Monkey 2.7.0, platform PHP 8.3, `failOnRisky`, and one smoke test. Its `vendor/` is gitignored and its lock uncommitted.
+  - `bin/check.sh` gains stage 5, `PHPUnit (theme dovira)`, and installs that tooling when `tests/vendor/` is missing.
+  - Green on the host and in DDEV: 297 plugin tests, 111 theme files linted, 1 theme test. It fails when the smoke test's assertion is removed.
+  - The audit's list of touchpoints for Steps 2–4 is in `SPRINT-1-PLAN.md`.
+- Shared code: `bin/check.sh` (gates every commit of `core`, `ga-telegram-bridge`, `search-stats`), the theme `.gitignore`, and a new theme-wide `tests/` directory, where later theme features' tests go too. The theme's `composer.json` and its committed `vendor/` are untouched. Nothing the site loads changed.
+- Decisions:
+  - DECISIONS "The theme's test tooling is its own Composer project in `tests/`" amends one clause of the 2026-09-22 entry. The step text assumed the theme's `vendor/` was gitignored, but it is committed and loaded on every request, so dev packages in the theme's `composer.json` would ship or break every page.
+  - Chosen at `/plan-step` as recommended.
+  - TECH-STACK ANTI-PATTERNS gained the matching line, and LEARNINGS an entry.
+- Open:
+  - `search.php:78` echoes the search query unescaped (reflected XSS, confirmed locally). It goes to `/adhoc`, not this sprint.
+  - Step 4 must count only the results `search.php` actually shows.
+  - Whether the hand deploy leaves `tests/vendor/` behind is checked at the sprint-boundary deploy.
+
 ## 2026-09-16 — [adhoc] [ga-telegram-bridge] — The report ends with a link into the GA4 property
 - Changed: `MessageRenderer` closes every report, after its last block and one blank line, with `🔗 <a href="https://analytics.google.com/analytics/web/#/p{property_id}/reports/intelligenthome">Детальніше в Google Analytics</a>`; the failure notice has none. The property id is URL-encoded as `GaClient` encodes it, which is what makes the escaping real — the `esc_url` test stub escapes neither quotes nor brackets. One new string (`.pot` 130 → 131), a readme FAQ entry on who can open the link, and 294 → 297 tests.
 - Shared code: none of the theme, no gate config. `MessageRenderer` now reads one setting, the property id — its docblock said "no settings" and no longer does. The `gatb_report_data` payload is untouched: the id comes from `Settings`, not from the `Report`.
