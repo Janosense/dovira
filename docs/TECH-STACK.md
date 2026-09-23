@@ -57,7 +57,8 @@ installed on another OS, or an incomplete one, stops the gate there with a
 message that names the cause. Otherwise it would fail at stage 6 with Rollup's
 advice to delete `node_modules/`, which from the DDEV container would break the
 host's `npm start` / `npm run build`. The host and the container share the one
-`node_modules/`, so **stage 6 runs where it was installed: the host**.
+`node_modules/`, so **stage 6 runs where it was installed: the host** (DECISIONS
+"The gate runs on the host; before stage 1 it checks that Vite loads on this OS").
 
 PHPStan needs two settings of its own, both learned from the gate
 crashing on code that has no errors: it is capped at **two parallel workers** in
