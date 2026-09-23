@@ -17,6 +17,12 @@ $strings = [
 	'kyiv', //Згорнути
 	'kharkiv', //Згорнути
 	'DOVIRA', //Згорнути
+	// Feature city-popup, the city question: keyed in Ukrainian, so an install
+	// that has not translated them yet still shows Ukrainian.
+	'Яке місто вас цікавить?',
+	'Закрити',
+	'Харків',
+	'Київ',
 ];
 
 if ( ! empty( $strings ) && function_exists( 'pll_register_string' ) ) {

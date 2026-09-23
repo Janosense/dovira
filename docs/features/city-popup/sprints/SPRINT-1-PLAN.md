@@ -343,7 +343,7 @@ changes as that question describes.
 
   → `feat(city-popup): find the blog page and the target URLs in the current language`
 
-- [ ] **3. The dialog's strings and `Dialog`.**
+- [x] **3. The dialog's strings and `Dialog`.**
   - `inc/utils/polylang-string-translations.php` gets four entries appended to
     `$strings`, each with its Ukrainian text as the key:
     - `'Яке місто вас цікавить?'` and `'Закрити'`, as the step says;
