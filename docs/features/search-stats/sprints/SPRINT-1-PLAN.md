@@ -921,7 +921,7 @@ That makes 1 + 3 + 3 + 22 + 3 + 1 = 33 tests.
 ### Questions / ambiguities
 none
 
-## Plan — Sprint 1, Step 4: Recording from the browser on all three levels   (status: implemented, awaiting close)
+## Plan — Sprint 1, Step 4: Recording from the browser on all three levels   (status: closed)
 
 ### Branch
 `search-stats/sprint-1-recording` ← `master`

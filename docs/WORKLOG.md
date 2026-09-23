@@ -17,6 +17,33 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] Sprint 1 Step 4 — Recording from the browser on all three levels
+- Changed:
+  - All three searches are now recorded from the browser by `source/scripts/features/search-stats/record.js`, through Step 3's route.
+  - Header search: `search.php` prints the query and `ResultsCount::shown()`, which counts what the page lists: price rows, top-level services, posts, pages, employees. `recordSiteSearch()`, called by `app.js`, sends it once per results page, and nothing for an empty query.
+  - The two filters: `debouncedRecorder()` sends after 1500 ms of rest or on blur, at least 3 characters, never the value that input sent last. The context comes from `data-search-stats-context` on the input.
+  - Chrome sends through `sendBeacon`; `fetch(keepalive)` is the fallback.
+  - `assets/` was rebuilt twice, and a fresh build reproduces it byte for byte.
+  - Theme tests: 58 → 63. 124 files linted.
+- Shared code, all `core`, each change additive, with the existing lines unchanged:
+  - `search.php` gains two attributes on its results section;
+  - `app.js` gains one import and one call;
+  - the `services` block template and `single-service.php` gain one attribute each;
+  - `services-search.js` and `init-service-price-lists.js` gain one import and one call each.
+- Decisions:
+  - DECISIONS "Each filter's input carries the id of the post it searches in" amends the old "templates need nothing" clause. That was plan Question 1, approved as recommended.
+  - Resolved in the plan by precedence: repeats are compared with the **last** value sent (DECISIONS), not with every value; FEATURE.md was reworded to match.
+  - TECH-STACK ANTI-PATTERNS: no PHP-side recording.
+- Verified locally in Chrome:
+  - one row per search on each level, with contexts 12 (page) and 18 (service), and the Russian page printing 1630;
+  - blur sends at once and cancels the running pause;
+  - a retyped value, the reset button and an empty `?s=` send nothing;
+  - `curl` of results pages leaves no row;
+  - the filters still filter.
+- Open:
+  - The production check is repeated on each install after the sprint-boundary hand deploy, with the test rows deleted afterwards.
+  - Seen, not caused here: every page logs `wp is not defined`. `starter_theme_defer_scripts()` defers `wp-i18n`, whose inline `-after` script then runs first. Candidate for `/adhoc`, as is `search.php:78`.
+
 ## 2026-09-23 — [search-stats] Sprint 1 Step 3 — The REST route that records a search
 - Changed:
   - `POST dovira/v1/search-stats/record` is live: public, reads the JSON body only, and is the only writer of `{prefix}dovira_search_queries`.
