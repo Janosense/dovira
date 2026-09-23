@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step. Approval of a section
      authorizes that step only. -->
 
-## Plan — Sprint 1, Step 1: Delta-audit and Vitest in the gate   (status: approved, in progress)
+## Plan — Sprint 1, Step 1: Delta-audit and Vitest in the gate   (status: implemented, awaiting verification)
 
 ### Branch
 `city-popup/sprint-1-city-question` ← `master`
