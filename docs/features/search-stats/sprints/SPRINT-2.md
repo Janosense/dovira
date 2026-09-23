@@ -52,7 +52,7 @@ on the plugin's Settings screen show the same blocks the schedule sends.
 - **Docs to update:** `docs/DATA-MODEL.md` → the table's section names the two reading queries and the keys they use; `docs/DOMAIN.md` → "nothing found" confirmed against the code.
 - **Depends on:** — (Sprint 1 closed)
 
-### [ ] Step 3 — The three blocks in the message
+### [x] Step 3 — The three blocks in the message
 - **Tasks:**
   - `Renderer::blocks( SearchStats $stats ): array` — the template of `FEATURE.md` → UI: three blocks, `Вчора:` / `За 28 днів:` lists, row formats per level, the marker, the 40-character cut with `…`, `esc_html` on every value, `—` for an empty list, no block when both lists are empty; context titles through `pll_get_post( $id, pll_default_language() )` when Polylang is active, the post itself otherwise, `(видалено)` for a missing post.
   - `bootstrap.php` adds `add_filter( 'gatb_extra_blocks', … )` that appends the renderer's blocks to the list it receives, guarded by `function_exists`/class checks so an install without the plugin loads nothing extra.

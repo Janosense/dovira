@@ -19,6 +19,23 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] The step prescribed `esc_html()`, and the test stub would have hidden what it does in production
+- **Incident:** SPRINT-2 Step 3, written by discovery, asked for "`esc_html` on every value" of the search blocks. Two things were true at once:
+  - Followed literally, with the theme suite's `Functions\stubEscapeFunctions()`-style stub, every planned test would have passed, because Brain\Monkey's `esc_html` is `htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' )`, which double-encodes.
+  - In production, WordPress's `esc_html()` keeps `&nbsp;`, `&copy;` and `&laquo;`. Telegram refuses a message with any of them, and the query is typed by any visitor on a public route.
+
+  `/plan-step` caught it by running the real `esc_html()` on the local install. The plan resolved it by precedence, with DECISIONS "every dynamic value is HTML-escaped" over the step's implementation detail.
+- **Root cause:** Two, and the second is the dangerous one.
+  - A sprint step named a specific WordPress function where the decision only named a property ("HTML-escaped"). The function looked like the obvious way to get the property.
+  - The test harness replaces WordPress's escaping functions with stubs that differ from them exactly where it matters. The plugin met the same family on 2026-09-16: its `esc_url` stub escapes neither quotes nor brackets. A test that passes against a stub proves the stub, and nothing reminds the planner of it.
+- **Fix applied here:**
+  - DECISIONS "Values in a Telegram message are escaped with double encoding, never with `esc_html()`".
+  - A TECH-STACK ANTI-PATTERNS line.
+  - `Renderer` escapes with the real `htmlspecialchars()`, and `RendererTest` asserts the `&nbsp;` case.
+
+  Rule taken: **when a test's outcome depends on a stubbed WordPress escaping or formatting function, the plan runs the real function on the local install for the input the test is about**, and quotes both outputs. A step text that names a function is read as a suggestion when a DECISIONS entry states the property it serves.
+- **Transferred to playbook:** pending
+
 ## 2026-09-23 — [search-stats] The plan said which index a query "reads through" without asking the database
 - **Incident:** Sprint 2 Step 2's plan said `Repository::top()` "reads through the key `level_created_at` (level, created_at)". It said the same about the DATA-MODEL update. During `/do-step`, an `EXPLAIN` of the real query on the local MariaDB listed both `level_created_at` and `created_at` as possible keys and chose `created_at`. The table was empty, so the choice meant little, but the plan had stated it as fact. DATA-MODEL was written from the `EXPLAIN` instead: MariaDB picks between the two keys from the table's statistics, and the code forces neither.
 - **Root cause:** The same family as the 2026-09-16 entries on numbers. A statement about what a system will do was written from the design, here the schema's comment that the key exists "for the report's per-level period queries", not from the system. The plan did run the database for the collation, which is how it found `ґ` = `г`. It did not run it for the query plan, although one `EXPLAIN` was the same cost.

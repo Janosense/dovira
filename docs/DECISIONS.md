@@ -225,6 +225,18 @@ Entry format:
   - The two templates are shared code of `core`. Each change is one attribute, and the input ids stay what the filter modules hook.
   - FEATURE.md → Fit into the host lists both templates.
 
+## 2026-09-23 — [search-stats] Values in a Telegram message are escaped with double encoding, never with `esc_html()`
+- **Context:** SPRINT-2 Step 3 asked for "`esc_html` on every value" of the three search blocks. Telegram's HTML parse mode accepts only four named entities (`&lt;`, `&gt;`, `&amp;`, `&quot;`) plus numeric ones and refuses a message containing any other. WordPress's `esc_html()` does not double-encode an entity it recognises: measured on the local install, `esc_html( '&nbsp; &copy; &laquo;' )` returns them unchanged. The search query comes from a public route, so one search for `&nbsp;` in the top five would have made the whole morning report unsendable, retried and then announced as missing. Brain\Monkey's `esc_html` stub **does** double-encode, so a unit test written against it would have passed. Planning Step 3 caught it; the plan resolved it by DECISIONS "Three blocks…" ("every dynamic value is HTML-escaped") over the step text.
+- **Decision:** Every value the theme puts into a Telegram message is escaped with `htmlspecialchars( $value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', true )`. `ENT_HTML401` writes the apostrophe as the numeric `&#039;`. A stored WordPress title is decoded with `html_entity_decode( …, ENT_QUOTES | ENT_HTML5, 'UTF-8' )` first, so a stored `&amp;` is not encoded twice.
+- **Alternatives rejected:**
+  - `esc_html()`, for the reason above.
+  - `esc_html()` followed by stripping or decoding the named entities it left: string surgery on escaped output, to undo what the wrong function did.
+  - `ENT_HTML5`: it writes `&apos;`, a named entity Telegram refuses.
+- **Consequences:**
+  - `Renderer` has one private `escape()` helper. Its tests assert the entity case against the real function, not a stub.
+  - TECH-STACK → ANTI-PATTERNS gains the line.
+  - The plugin's `MessageRenderer` still escapes GA labels and page titles with `esc_html()`. A page title stored with a named entity would make its report unsendable in the same way. Whether to change it is a plugin question for `/adhoc`, not this feature's.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
