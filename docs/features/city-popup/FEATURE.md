@@ -15,7 +15,7 @@ The blog lives only on the Kharkiv site and draws readers from all of Ukraine. W
 - **Shared code it depends on:**
   - `template-parts/header/site-header.php`: the switcher's links carry `data-city`.
   - `source/scripts/app.js` and `source/styles/app.css`: they import the module and its styles.
-  - `inc/utils/polylang-string-translations.php`: the dialog's four strings, each keyed in Ukrainian (`Яке місто вас цікавить?`, `Закрити`, `Харків`, `Київ`). The two city names share their ru values with the `Dovira: Cities` strings of the same text; the registered `kharkiv` / `kyiv` hold no names and are not used.
+  - `inc/utils/polylang-string-translations.php`: the dialog's four strings, each keyed in Ukrainian (`Яке місто вас цікавить?`, `Закрити`, `Харків`, `Київ`). Polylang keeps one translation per source text, so the city names use the ru value their text already has (the one set for the `Dovira: Cities` term names); the registered `kharkiv` / `kyiv` hold no names and are not used.
   - `.button` and the `colors.css` tokens.
   - Polylang: `pll_get_post()`, `pll_current_language()`, `pll__()`.
   - The pages at the Ukrainian slugs `news`, `services` and `contacts`, and the rewrite base of the `service` post type.
