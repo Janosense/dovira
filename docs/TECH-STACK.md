@@ -20,7 +20,8 @@
 | Front-end build | Vite + PostCSS (preset-env stage 1, assets, prefix-selector, replace) + LightningCSS | 5.4.19 / 8.4.49 / 1.28.2 | `source/` → hashed `assets/` with manifest; `assets/` is committed |
 | Front-end libs | Swiper 11.2.1, Fancybox (`@fancyapps/ui`) 5.0.36, iMask 7.6.1; vanilla ES modules, no framework | — | dynamic `import()` per module in `scripts/app.js` |
 | Fonts | Google Fonts (Inter, Oswald, Raleway) + self-hosted Open Sans | — | — |
-| Testing & QA | **Plugin:** PHPUnit + Brain\Monkey (unit tests, no WP bootstrap), PHPCS + WPCS, PHPStan + phpstan-wordpress, all dev-only in the plugin's `composer.json`, whose `vendor/` is gitignored. **Theme:** PHPUnit + Brain\Monkey only, in the separate dev-only Composer project `wp-content/themes/dovira/tests/`, whose `vendor/` is gitignored and whose lock is uncommitted, never in the theme's own `composer.json` | plugin 12.5.34 + 2.7.0 / 3.13.6 + 3.4.1 / 2.2.13 + 2.0.4; theme 12.5.35 + 2.7.0 | DECISIONS "Testing tooling and the project check command", "The theme gets PHPUnit + Brain\Monkey, run by the check command", "The theme's test tooling is its own Composer project in `tests/`"; no PHPCS/PHPStan for the theme and no JS tests exist |
+| Testing & QA | **Plugin:** PHPUnit + Brain\Monkey (unit tests, no WP bootstrap), PHPCS + WPCS, PHPStan + phpstan-wordpress, all dev-only in the plugin's `composer.json`, whose `vendor/` is gitignored. **Theme:** PHPUnit + Brain\Monkey only, in the separate dev-only Composer project `wp-content/themes/dovira/tests/`, whose `vendor/` is gitignored and whose lock is uncommitted, never in the theme's own `composer.json` | plugin 12.5.34 + 2.7.0 / 3.13.6 + 3.4.1 / 2.2.13 + 2.0.4; theme 12.5.35 + 2.7.0 | DECISIONS "Testing tooling and the project check command", "The theme gets PHPUnit + Brain\Monkey, run by the check command", "The theme's test tooling is its own Composer project in `tests/`"; no PHPCS/PHPStan for the theme; the theme's JS tests are the next row |
+| JS unit tests (theme) | Vitest, `node` environment (no DOM library), tests in `wp-content/themes/dovira/tests/js/`, config `vitest.config.js`, `npm test`; run by the check command | 3.2 (unverified — pinned at bootstrap) | DECISIONS "The theme gets Vitest for the unit tests of its JavaScript, run by the check command" (feature `city-popup`, installed by its Sprint 1 Step 1) |
 | Local env | DDEV | — | `.ddev/config.yaml`; `wp-config.php` DDEV-generated |
 | CI/CD | GitHub Actions → FTP (dev only) | FTP-Deploy-Action 4.3.5 | production deploys are manual (ARCHITECTURE.md → Environments) |
 | CLI | WP-CLI (`wp dovira …` commands in `inc/cli/`) | — | translation and bundle transfer |
@@ -122,6 +123,21 @@ changes) — DECISIONS "Testing tooling and the project check command".
     `esc_html()`").
   - Brain\Monkey's `esc_html` stub double-encodes, so a unit test cannot see
     the difference.
+- Do not keep the visitor's chosen city anywhere but the cookies
+  `dovira_city` / `dovira_city_dismissed` on the Kharkiv host's domain, and do
+  not read them in PHP or vary a page, a redirect or a cache key by them.
+  - `localStorage` is per origin, so `kyiv.dovira.vet` would never see a choice
+    made on `dovira.vet`.
+  - A server that reads the choice serves one URL differently to different
+    visitors and to crawlers (DECISIONS "The visitor's city choice is a cookie
+    written by JavaScript on the domain both installs share; PHP never reads
+    it").
+- Do not write `https://dovira.vet` or `https://kyiv.dovira.vet` into new code.
+  Derive the other install's host from the site URL: the Kharkiv host is the
+  own host without `kyiv.`, and the Kyiv host is `kyiv.` + the Kharkiv host.
+  Literals send dev and DDEV visitors to production. The header switcher's two
+  literals are legacy (DECISIONS "The other install's host and the cookie
+  domain are derived from the site URL").
 
 ## CONVENTIONS (mandatory reading before writing code)
 <!-- Project-wide rules for code that later steps must follow and would
@@ -136,7 +152,7 @@ changes) — DECISIONS "Testing tooling and the project check command".
      data-model or domain rule, scope — they live in their own docs; a rule
      of one code area → that area's CLAUDE.md → Area conventions.
      `none yet` while there are none. -->
-none yet
+- A theme feature's JavaScript logic lives in pure modules with no DOM access, unit-tested with Vitest in `tests/js/{feature}/`; the DOM glue that calls them stays thin and is verified by hand — Vitest runs without a DOM library (DECISIONS 2026-09-23 — The theme gets Vitest for the unit tests of its JavaScript, run by the check command).
 
 ## Dependency policy
 New dependencies (runtime AND dev/tooling) only after explicit user approval —
@@ -156,6 +172,7 @@ justification.
 | 2026-09-08 | szepeviktor/phpstan-wordpress `^2.0` (2.0.4) | WordPress stubs for PHPStan (pulls php-stubs/wordpress-stubs 7.1.0, matching the installed core) |
 | 2026-09-22 | phpunit/phpunit `^12.5` (12.5.35) — **theme** | test runner for the theme's unit suite; same pin and reason as the plugin's row above |
 | 2026-09-22 | brain/monkey `^2.7` (2.7.0) — **theme** | stubs WordPress functions for the theme's suite (pulls mockery 1.6.15, antecedent/patchwork 2.2.3, hamcrest v3.0.0) |
+| 2026-09-23 | vitest `^3.2` — **theme**, `devDependencies` of `package.json` | unit tests of the theme features' pure JS modules, reusing the theme's Vite toolchain; approved in DECISIONS "The theme gets Vitest for the unit tests of its JavaScript, run by the check command" — the installed version is recorded by `city-popup` Sprint 1 Step 1 |
 
 The first seven are **dev-only**, live in `wp-content/plugins/ga-telegram-bridge/composer.json`,
 and never reach a server: the plugin's `vendor/` is gitignored and it has zero runtime

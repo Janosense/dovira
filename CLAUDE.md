@@ -109,6 +109,7 @@ the file hierarchy.
 | core | `docs/features/core/` | `wp-content/themes/dovira/` (the theme as-is; new features: `inc/features/{name}/`) |
 | ga-telegram-bridge | `docs/features/ga-telegram-bridge/` | `wp-content/plugins/ga-telegram-bridge/` (standalone plugin, own `CLAUDE.md`) |
 | search-stats | `docs/features/search-stats/` | `wp-content/themes/dovira/inc/features/search-stats/` (theme feature; JS in `source/scripts/features/search-stats/`, tests in `tests/Unit/SearchStats/`) |
+| city-popup | `docs/features/city-popup/` | `wp-content/themes/dovira/inc/features/city-popup/` (theme feature; JS in `source/scripts/features/city-popup/`, styles in `source/styles/features/city-popup/`, tests in `tests/Unit/CityPopup/` and `tests/js/city-popup/`) |
 
 ## Commands
 ```bash

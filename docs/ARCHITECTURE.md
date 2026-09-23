@@ -39,6 +39,7 @@ mu-plugins. Content is bilingual (uk source, ru translation) via Polylang.
 | `core` | the theme as-is, `wp-content/themes/dovira/` | `docs/features/core/FEATURE.md` |
 | `ga-telegram-bridge` | plugin `wp-content/plugins/ga-telegram-bridge/` (own `CLAUDE.md`) | `docs/features/ga-telegram-bridge/FEATURE.md` |
 | `search-stats` | theme feature `wp-content/themes/dovira/inc/features/search-stats/` (+ `source/scripts/features/search-stats/`) | `docs/features/search-stats/FEATURE.md` |
+| `city-popup` | theme feature `wp-content/themes/dovira/inc/features/city-popup/` (+ `source/scripts/features/city-popup/`, `source/styles/features/city-popup/`) | `docs/features/city-popup/FEATURE.md` |
 
 A new feature inside the theme goes into
 `wp-content/themes/dovira/inc/features/{name}/` with one registration line in
@@ -111,6 +112,33 @@ sends through `recordSearch()` once the value has rested for 1500 ms or the
 field loses focus, only when it has at least 3 characters once trimmed, and
 never the value that input sent last. Its listeners are its own; the
 filtering code is unchanged.
+
+**Blog click → city question (feature `city-popup`; invariant 4 — FIXED, do
+not deviate).** On a blog page — the page `news` or its Polylang translation,
+or a single `post` — `Dialog` prints one `<dialog>` in `wp_footer`. Its data
+attributes carry the current city, both installs' origins, the cookie domain,
+the days (`dovira_city_popup_days`, default 90) and the target URLs: the
+`services` and `contacts` pages and the `service` base, in the current
+language. All of these come from `home_url()` and Polylang, never from a URL
+literal: Kharkiv host = own host without `kyiv.`, Kyiv host = `kyiv.` + the
+Kharkiv host, cookie domain = the Kharkiv host.
+`source/scripts/features/city-popup/` listens to clicks there. The browser
+keeps a click with a modifier or a non-main button, a click on a link that
+opens another window, and any link that is not a target on the current host.
+For a target:
+- cookie `dovira_city` set → go to that city's version of the link (on the
+  other install: same path, query and fragment + `city-popup=1`);
+- only `dovira_city_dismissed` set → follow the link as it is;
+- neither → `showModal()`.
+
+A city button writes `dovira_city` and goes. ×, Esc and a backdrop click write
+the session cookie `dovira_city_dismissed` and follow the link. On every page,
+a click on a link with `data-city` (the header switcher) writes `dovira_city`
+before the browser follows it. On the receiving install, `Fallback`
+(`template_redirect`) answers a 404 under the service base that carries
+`city-popup=1` with a 302 to its services page in the request's language; a
+404 without the marker stays a 404. No PHP reads either cookie, so every URL
+returns the same HTML to every visitor and crawler.
 
 **Telegram join.** Bot webhook → `handle-updates` appends the raw update to option
 `telegram_webhook_data`; `/start|/join` asks for a password; the password message

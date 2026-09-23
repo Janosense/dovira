@@ -36,6 +36,9 @@
 | Пошуковий запит (search query) | What a visitor actually looked for: the text once they stopped typing (or left the field), at least three letters for the two filters, normalized so that «Вакцинація», «вакцинація » and «вакцинація» are one query. For the two filters a query is the pair (text, where it was typed). The report also counts as one query the spellings the database treats as the same letter — «ґ» and «г», «ё» and «е» — and prints one of them |
 | Рівень пошуку (search level) | Which of the three searches a query came from — `site`, `services` (the list) or `service` (inside a service); the daily report shows each level in its own block |
 | Нічого не знайдено (nothing found) | A site-search query whose results page showed no results every time it was searched in the period (the largest results count of the period is 0; one search that found something clears it) — the sign that people look for something the site does not offer or does not name that way. Only the header search has it: the two filters record no results count |
+| Блог (blog) | The clinic's articles, published only on the Kharkiv site: the page «Блог» (`/news/`, ru `/ru/blog/`) and every article (`/news/{slug}/`, ru `/ru/news/{slug}/`). Search brings readers to it from all of Ukraine, not only from Kharkiv |
+| Питання міста (city question) | The small window «Яке місто вас цікавить?» with the buttons «Харків» and «Київ» that a blog reader sees when they tap a link to the services list, to a service or to the contacts page while no city is remembered for them. Russian: «Какой город вас интересует?», «Харьков», «Киев» |
+| Обране місто (chosen city) | The city a visitor picked in the city question or in the header city switcher. It is remembered on their device for 90 days and is known on both city sites |
 
 ## Rules & invariants
 - Every service, employee and vacancy belongs to exactly one or more cities; a
@@ -74,6 +77,18 @@
   retention period; the report shows the five most frequent queries of
   yesterday and of the last 28 days per level, and a day with no searches adds
   nothing to the message.
+- A blog reader is asked their city only when they tap a link to the services
+  list, to a service or to the contacts page on a blog page — never when a page
+  opens, never on another page — and at most once every 90 days per device.
+  Closing the question without choosing means "stay on this site" until the
+  browser is closed.
+- The chosen city decides where those taps lead: the same page, in the same
+  language, on the chosen city's site; a service the chosen city's site does not
+  have leads to that site's services list. The header city switcher changes the
+  chosen city.
+- Every address shows its own city to everyone, search engines included: the
+  chosen city never changes what a page shows, only where a tap on the blog
+  leads.
 
 ## Roles
 | Role | Can do |
