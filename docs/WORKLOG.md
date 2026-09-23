@@ -1,21 +1,32 @@
 # Worklog — Dovira
 
 <!-- Add-only project memory for the agent: entries are never edited or
-     removed. Written ONLY by /close-step (and /adhoc for off-cycle tasks),
-     newest entry at the TOP, directly under the entry format. A fresh Claude
-     Code session reads the latest 5 entries at start (CLAUDE.md core rule 6).
+     removed. Written ONLY by /close-step, /fix-step (a fix after a step's
+     close) and /adhoc (off-cycle tasks), newest entry at the TOP, directly
+     under the entry format. A fresh Claude Code session reads the latest 5
+     entries at start (CLAUDE.md core rule 6).
      Keep entries 3–6 lines; this is a memory index, not a diary — details live
      in commits and verification guides. -->
 
 Entry format:
 
 ## {{YYYY-MM-DD}} — [{{feature}}] Sprint {{N}} Step {{M}} — {{title}}
-(ad-hoc tasks: `## {{YYYY-MM-DD}} — [adhoc] [{{feature}}] — {{title}}`)
+(ad-hoc tasks: `## {{YYYY-MM-DD}} — [adhoc] [{{feature}}] — {{title}}`;
+a fix after a step's close:
+`## {{YYYY-MM-DD}} — [{{feature}}] Sprint {{N}} Step {{M}} — fix: {{what failed}}`;
+the last step of a sprint ends its entry with `Sprint {{N}} complete — all
+steps closed, {{sprint branch}} merged into main`)
 - Changed: {{what, at module/feature level}}
 - Decisions: {{key ones made or DECISIONS.md entries added, or "—"}}
 - Open: {{unresolved questions carried forward, or "—"}}
 
 ---
+
+## 2026-09-23 — [adhoc] — Playbook v1.17 → v1.25
+- Changed: `.claude/commands/` (`plan-step`, `do-step`, `close-step`, `fix-step`, `adhoc`) and `templates/*.md` copied from the playbook at v1.25. A step is now verified on its task branch before `/close-step`, and its state reads `awaiting verification`. In root `CLAUDE.md`, Core rules and Step protocol are word for word from the template and the header says v1.25. The Documentation table names CONVENTIONS and drops the `SPRINT-N-CLOSE.md` and `LEARNINGS.md` rows, and the Git model ends with the template's deploy sentence. `docs/TECH-STACK.md` gets the new ANTI-PATTERNS comment and a CONVENTIONS section (`none yet`). The header comments and entry formats of WORKLOG, LEARNINGS and DECISIONS, and `docs/features/README.md`, now come from the playbook. No application code changed.
+- Unchanged on purpose: `DATA-MODEL.md`, whose playbook comment already matched; its extra Adoption note is project text. No `SPRINT-*-PLAN.md` said "implemented, awaiting close", and `close-sprint.md` was already gone.
+- Decisions: —
+- Open: the existing LEARNINGS entries keep the old format (Incident / Root cause / Transferred to playbook) under the new playbook-only header, and the retro decides their fate. Root `CLAUDE.md` says `main` in the template sentence and `master` in the Deploy and Git-model slots, since local `master` tracks `origin/main`. search-stats `FEATURE.md` and `SPRINT-1/2.md` still carry `playbook: v1.21` markers.
 
 ## 2026-09-23 — [search-stats] Sprint 2 Step 3 — The three blocks in the message
 - Changed: the morning report now carries the search blocks.

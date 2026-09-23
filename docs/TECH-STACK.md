@@ -59,7 +59,10 @@ of the gate (`assets/` are committed; rebuild only when the front end
 changes) — DECISIONS "Testing tooling and the project check command".
 
 ## ANTI-PATTERNS (mandatory reading before writing code)
-<!-- Derived from what the code actually does and avoids (Adoption). Grows via LEARNINGS.md. -->
+<!-- Only code that steps keep writing (queries, migrations, tests,
+     components, UI strings, calls to integrations) where the default on
+     this stack is one way and this project requires another. One line
+     each: "Do not X — Y", plus the DECISIONS entry behind it. -->
 - Do not create or edit ACF field groups in the admin UI — every group is a
   PHP `FieldsBuilder` in `inc/acf/`; the UI would create a DB copy that the
   code cannot see and that a deploy cannot carry.
@@ -119,6 +122,21 @@ changes) — DECISIONS "Testing tooling and the project check command".
     `esc_html()`").
   - Brain\Monkey's `esc_html` stub double-encodes, so a unit test cannot see
     the difference.
+
+## CONVENTIONS (mandatory reading before writing code)
+<!-- Project-wide rules for code that later steps must follow and would
+     otherwise write differently, where the stack has no default or leaves
+     the choice open (a stack default that leads the other way → ANTI-PATTERNS).
+     One line each, present tense: the rule — why, in a few words — and
+     where it was set (`DECISIONS {date} — {title}`, or
+     `{feature} Sprint {N} Step {M}`). The line is the record: a rule no
+     alternatives were weighed for needs no DECISIONS entry. Current state,
+     not a log: a line that stops being true is edited or removed.
+     Not here: a one-time choice, a detail of one step or screen, a
+     data-model or domain rule, scope — they live in their own docs; a rule
+     of one code area → that area's CLAUDE.md → Area conventions.
+     `none yet` while there are none. -->
+none yet
 
 ## Dependency policy
 New dependencies (runtime AND dev/tooling) only after explicit user approval —
