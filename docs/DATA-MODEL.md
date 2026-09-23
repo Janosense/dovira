@@ -272,12 +272,26 @@ The schema version of the table: `Schema::VERSION`, `1` today.
 - Raising `Schema::VERSION` together with the `CREATE TABLE` is how the table
   changes. `dbDelta()` adds columns and keys but never drops them.
 
+### Retention: cron hook `dovira_search_stats_purge` and filter `dovira_search_stats_retention_days`
+Rows older than the retention period are deleted once a day by
+`Purge::run()` on the WP-Cron event `dovira_search_stats_purge`.
+- The event recurs `daily`. It is registered on `init` whenever it is not
+  scheduled, and it carries no arguments.
+- The retention is `apply_filters( 'dovira_search_stats_retention_days', 90 )`,
+  clamped to at least **29** days. The report reads the last 28 days, so a
+  filter can shorten the log but never cut into the period the report needs.
+- The cutoff is the current UTC time minus that many days, compared with
+  `created_at`.
+
+**The purge is the only delete**, and it never runs from a public request.
+
 ### Removing the feature's data by hand
-A theme has no uninstall, so nothing removes the table. After the feature is
-removed from the code, on each install:
+A theme has no uninstall, so nothing removes the table, the option or the
+event. After the feature is removed from the code, on each install:
 ```bash
 wp db query "DROP TABLE {prefix}dovira_search_queries"
 wp option delete dovira_search_stats_db_version
+wp cron event delete dovira_search_stats_purge
 ```
 
 ## Relations
