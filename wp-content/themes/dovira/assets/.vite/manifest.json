@@ -9,7 +9,7 @@
     ]
   },
   "source/main.js": {
-    "file": "main.CAxFb4Av.js",
+    "file": "main.oFna-f2o.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -26,11 +26,18 @@
       "source/scripts/modules/toggle-cities.js",
       "source/scripts/modules/toggle-footer-calls.js",
       "source/scripts/modules/questionary-form-handler.js",
-      "source/scripts/modules/init-imask.js"
+      "source/scripts/modules/init-imask.js",
+      "source/scripts/features/search-stats/record.js"
     ],
     "css": [
       "main.KqwaYVMB.css"
     ]
+  },
+  "source/scripts/features/search-stats/record.js": {
+    "file": "_chunk.DxWRa_0B.js",
+    "name": "record",
+    "src": "source/scripts/features/search-stats/record.js",
+    "isDynamicEntry": true
   },
   "source/scripts/modules/init-animations.js": {
     "file": "_chunk.Delbh4B0.js",

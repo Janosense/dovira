@@ -45,7 +45,7 @@ uninstall, so dropping it is a documented manual step.
 - **REST:** `POST dovira/v1/search-stats/record` — public; JSON `{level, query, context_id, results}`; `204` on success, `400` on refusal (WordPress's error body `{code, message, data: {status}}`), `500` when the row could not be written (DECISIONS "Every search is recorded from the browser through one public REST route").
 - **Hook consumed:** `gatb_extra_blocks` (plugin `ga-telegram-bridge`) — the theme returns the plugin's list plus its three blocks (DECISIONS "A theme feature that records site search, plugged into the daily report through a new plugin filter").
 - **Filter exposed:** `dovira_search_stats_retention_days` (int).
-- **JS:** `recordSearch(level, query, contextId, results)` from `source/scripts/features/search-stats/record.js`; the two filters and `search.php` are its only callers.
+- **JS:** `recordSearch(level, query, contextId, results)` from `source/scripts/features/search-stats/record.js`; the two filters and `search.php` are its only callers — `search.php` through `recordSiteSearch()`, which `app.js` calls once on load and which reads the results section's `data-search-stats-query` / `data-search-stats-results`.
 
 ## UI
 - **Screens:** none of its own — the three blocks inside the plugin's message (no design export; DECISIONS "No UI design phase; the three sections are fixed as a template in FEATURE.md"):

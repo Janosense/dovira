@@ -69,9 +69,14 @@
 						$search_posts[ $post_item->post_type ][ $post_item->ID ] = $post_item;
 					}
 				endforeach;
-			endif; ?>
+			endif;
 
-			<div class="section section--mb-standard">
+			// Feature search-stats: the browser module records the query with how many results are listed below.
+			$search_stats_results = \dovira\SearchStats\ResultsCount::shown( $sub_services, $search_posts ); ?>
+
+			<div class="section section--mb-standard"
+			     data-search-stats-query="<?= esc_attr( $search_query_var ); ?>"
+			     data-search-stats-results="<?= (int) $search_stats_results; ?>">
 				<div class="wrapper">
 					<div class="section__header">
 						<h2 class="heading heading--h3 search-results__heading">Результати пошуку для запиту:
