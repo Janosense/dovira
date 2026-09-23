@@ -17,6 +17,36 @@ Entry format:
 
 ---
 
+## 2026-09-23 — [search-stats] Sprint 2 Step 1 — Plugin 0.3.0: the `gatb_extra_blocks` filter and the length guard
+- Changed:
+  - The plugin `ga-telegram-bridge` is **0.3.0**.
+  - `MessageRenderer` applies `gatb_extra_blocks` (`array()`, `Report`). Added HTML blocks are printed after the plugin's own and before the GA link, untouched. A non-array return is ignored, and non-string or blank entries are dropped.
+  - `compose()` drops the last added block while the text as Telegram counts it is over `TelegramClient::MAX_TEXT_LENGTH` (4096), and returns how many it dropped; `render()` is its HTML. The count is UTF-16 units, with tags stripped and entities decoded, measured before `gatb_message_html`.
+  - `Runner` adds one plural sentence to the log line of a sent or refused run that lost blocks. `.pot` 131 → 132 entries, uk `.po`/`.mo` rebuilt.
+  - Readme: 0.3.0 changelog and FAQ, ASCII only. Tests 297 → 309.
+- Shared code:
+  - Only the plugin, whose public surface gains its third filter. Consumers: `ga-telegram-bridge` itself, and `search-stats` from Step 3.
+  - With nothing hooked, the message is byte-for-byte 0.2.0's. No theme file changed.
+- Decisions: none new in DECISIONS.md. Settled in the plan:
+  - UTF-16 units, which never undercount what Telegram shows;
+  - measure before `gatb_message_html`;
+  - the count travels out through `compose()`, not through state;
+  - the note goes on refused runs too;
+  - the unreleased GA link from the 2026-09-16 adhoc goes into the 0.3.0 changelog.
+
+  Settled in the tasks, from the gate: a filter's return goes through a helper typed `mixed` (`as_blocks()`, like `as_report()`), because phpstan-wordpress takes the hook docblock as the return type.
+- Verified locally:
+  - live render and *Preview*: the probe blocks sit between the devices block and the link, and a 5 000-character block is dropped (`dropped=1`);
+  - the three uk plural forms;
+  - the settings screen shows 0.3.0.
+
+  *Send now* was not pressed: it posts to the configured chat, so it is §7 of the guide.
+- Open:
+  - **Rotate the local install's service-account key.** A whole-page screenshot of Settings captured part of it (LEARNINGS 2026-09-23, a repeat of 2026-09-10).
+  - Preview shows `&amp;` as `&`, because `esc_html()` does not double-encode. This predates the step; candidate for `/adhoc`.
+  - The `.pot` header still says 0.2.0.
+  - Both productions get 0.3.0 at the sprint-boundary deploy.
+
 ## 2026-09-23 — [search-stats] Sprint 1 Step 4 — Recording from the browser on all three levels
 - Changed:
   - All three searches are now recorded from the browser by `source/scripts/features/search-stats/record.js`, through Step 3's route.

@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step. Approval of a section
      authorizes that step only. -->
 
-## Plan — Sprint 2, Step 1: Plugin 0.3.0: the `gatb_extra_blocks` filter and the length guard   (status: implemented, awaiting close)
+## Plan — Sprint 2, Step 1: Plugin 0.3.0: the `gatb_extra_blocks` filter and the length guard   (status: closed)
 
 ### Branch
 `search-stats/sprint-2-report` ← `master`

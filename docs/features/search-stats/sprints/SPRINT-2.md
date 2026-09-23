@@ -32,7 +32,7 @@ on the plugin's Settings screen show the same blocks the schedule sends.
      subsections, even if a subsection is "—". The checkbox in the heading is
      ticked by /close-step. -->
 
-### [ ] Step 1 — Plugin 0.3.0: the `gatb_extra_blocks` filter and the length guard
+### [x] Step 1 — Plugin 0.3.0: the `gatb_extra_blocks` filter and the length guard
 - **Tasks:**
   - `MessageRenderer::render()` applies `apply_filters( 'gatb_extra_blocks', array(), Report $report )` after the plugin's own blocks (**touches shared surface:** the plugin's public filters; consumers: this feature); a non-array return is ignored, non-string and empty entries are dropped, each remaining block is printed as one more block — one blank line before it — and the GA link stays last.
   - Length guard: while the message's text as Telegram counts it (tags stripped, entities decoded) exceeds `TelegramClient::MAX_TEXT_LENGTH` (4096), the last extra block is dropped; when any was dropped, the run-log detail line says how many. The plugin's own blocks are never dropped.
