@@ -355,7 +355,7 @@ named the tests a change would break by grepping…"):
 ### Questions / ambiguities
 none
 
-## Plan — Sprint 2, Step 2: Aggregation: top-5 per level for yesterday and for 28 days   (status: approved, in progress)
+## Plan — Sprint 2, Step 2: Aggregation: top-5 per level for yesterday and for 28 days   (status: implemented, awaiting close)
 
 ### Branch
 `search-stats/sprint-2-report` ← `master`
