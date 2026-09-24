@@ -656,7 +656,7 @@ drops out and task 3 changes as that question describes.
 
   → `feat(city-popup): print the cookie settings on every page`
 
-- [ ] **3. The DOM glue `source/scripts/features/city-popup/city-popup.js` and its import.**
+- [x] **3. The DOM glue `source/scripts/features/city-popup/city-popup.js` and its import.**
   - `initCityPopup()` does nothing without `[data-city-popup-config]`.
     Otherwise it reads:
     - the domain and the days from that element;

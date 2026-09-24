@@ -28,4 +28,13 @@
   questionaryFormHandler();
   initImask()
   recordSiteSearch();
+
+  // Feature city-popup, last and on its own: a failure here stops nothing else.
+  try {
+    const {initCityPopup} = await import('@scripts/features/city-popup/city-popup');
+
+    initCityPopup();
+  } catch (error) {
+    console.error(error);
+  }
 })();
