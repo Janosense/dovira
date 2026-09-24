@@ -6,7 +6,8 @@ const DISMISS_COOKIE = 'dovira_city_dismissed';
 const CITIES = ['kharkiv', 'kyiv'];
 // Added to every move to the other install; its 404 under the service base then
 // falls back to the services list (DECISIONS "A service missing on the chosen
-// install falls back to its services list through a marker in the URL").
+// install falls back to its services list through a marker in the URL"). The
+// PHP half is Fallback::MARKER in inc/features/city-popup/Fallback.php.
 const MARKER = 'city-popup';
 const DAY_SECONDS = 86400;
 
@@ -77,6 +78,14 @@ const cookieTail = (domain, secure) => `; Domain=${domain}; Path=/; SameSite=Lax
 
 const cityCookie = (city, days, domain, secure) => `${CITY_COOKIE}=${city}; Max-Age=${days * DAY_SECONDS}${cookieTail(domain, secure)}`;
 
+// What a click on a link with data-city writes (the header switcher): the city
+// cookie for a known city, nothing for any other value.
+const namedCityCookie = (value, days, domain, secure) => {
+  const city = cityFromAttr(value);
+
+  return city ? cityCookie(city, days, domain, secure) : null;
+};
+
 // A session cookie: no Max-Age, so it ends when the browser is closed.
 const dismissCookie = (domain, secure) => `${DISMISS_COOKIE}=1${cookieTail(domain, secure)}`;
 
@@ -102,6 +111,7 @@ export {
   crossUrl,
   decide,
   cityCookie,
+  namedCityCookie,
   dismissCookie,
   readCookies,
   cityFromAttr,

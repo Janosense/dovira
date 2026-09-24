@@ -22,6 +22,18 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-09-24 — [city-popup] Sprint 1 Step 4 — The switcher saves the choice; a missing service falls back to the list
+- Changed:
+  - `logic.js` `namedCityCookie()`: the `data-city` rule (only `kharkiv` / `kyiv` write a cookie) moved out of the glue into Vitest's reach; behaviour unchanged. `assets/` rebuilt.
+  - `Fallback` on `template_redirect`: a 404 under the service base of the request's language with `city-popup=1` → 302 to `/services/` or `/ru/uslugi/`, without the marker. Any other 404 stays a 404. Theme PHPUnit 145, Vitest 59.
+- Shared code: `template-parts/header/site-header.php`. The switcher's link to the other city (desktop and mobile) carries `data-city`; hrefs, classes and texts are unchanged. `core` and `search-stats`' header search form are otherwise untouched; `core` FEATURE.md → Interfaces records it.
+- Decisions: DECISIONS "The fallback answers only what stays a 404 after WordPress's own redirects" (plan Question 1, A). `wp_old_slug_redirect` and `redirect_canonical`'s longer-slug guess run first.
+- Open:
+  - **After the next hand deploy from `master` and the merge into `kyiv`:** check the Kyiv side (from a `dovira.vet` article «Київ» → `kyiv.dovira.vet/services/`; the Kyiv switcher's «Харків» saves `kharkiv`; `kyiv.dovira.vet/services/no-such-service/?city-popup=1` → the Kyiv list) and type the Step 2 ru strings on each production.
+  - Carried from Step 3: the Claude-in-Chrome tool's plain-link clicks do not navigate.
+
+Sprint 1 complete — all steps closed, city-popup/sprint-1-city-question merged into main (`master`, simple git model)
+
 ## 2026-09-24 — [city-popup] Sprint 1 Step 3 — The city question in the browser
 - Changed: the question works on blog pages. This is screen «City question» from FEATURE.md → UI.
   - `logic.js` (pure, 51 Vitest cases): target match, plain click, the move with `city-popup=1`, the cookie decision and strings, backdrop vs padding.

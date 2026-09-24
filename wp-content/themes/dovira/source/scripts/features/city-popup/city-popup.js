@@ -9,6 +9,7 @@ import {
   crossUrl,
   decide,
   cityCookie,
+  namedCityCookie,
   dismissCookie,
   readCookies,
   cityFromAttr,
@@ -49,10 +50,10 @@ const initCityPopup = () => {
 
     // A link that names a city (the header switcher) saves it, on every page;
     // the browser then follows the link.
-    const named = cityFromAttr(link.dataset.city);
+    const named = namedCityCookie(link.dataset.city, days, domain, secure);
 
     if (named) {
-      document.cookie = cityCookie(named, days, domain, secure);
+      document.cookie = named;
 
       return;
     }

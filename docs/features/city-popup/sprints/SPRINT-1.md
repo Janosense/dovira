@@ -159,7 +159,7 @@ tests, and every decision the module makes is covered by one.
   - `docs/DESIGN.md` → Components (City question dialog) and Screens («City question», feature `city-popup`).
 - **Depends on:** Step 1, Step 2
 
-### [ ] Step 4 — The switcher saves the choice; a missing service falls back to the list
+### [x] Step 4 — The switcher saves the choice; a missing service falls back to the list
 - **Tasks:**
   - `template-parts/header/site-header.php`: the switcher's links, desktop and mobile, get `data-city="kharkiv"` / `data-city="kyiv"`, and nothing else in the markup changes. **Touches shared code — may affect other features:** the header of every page on both installs; consumers: every page.
   - `Fallback` (`dovira\CityPopup\Fallback`) on `template_redirect`:
