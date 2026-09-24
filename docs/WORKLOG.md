@@ -22,6 +22,26 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-09-24 — [city-popup] Sprint 1 Step 2 — Feature bootstrap and the dialog on blog pages
+- Changed: the feature is loaded, and a closed `<dialog>` is printed on blog pages. Nothing opens it yet (Step 3).
+  - `inc/features/city-popup/`:
+    - `Sites` (pure): the city, both origins (scheme + host + port) and the cookie domain, from `home_url()`;
+    - `Pages`: `is_blog()` and `targets()` `{services, contacts, service}` in the current language, via slug + `pll_get_post()`; the service base is the rewrite slug under `pll_home_url()`;
+    - `Dialog`: the markup of FEATURE.md → UI plus the escaped `data-*` the JS will read; `DEFAULT_DAYS` 90 behind `dovira_city_popup_days`;
+    - `bootstrap.php` hooks it on `wp_footer`.
+  - Local check: one dialog on `/news/`, an article, `/ru/blog/` and a ru article, none elsewhere. Theme tests 92 → 123, 141 files linted.
+- Shared code:
+  - `functions.php`: one `require_once` after search-stats.
+  - `inc/utils/polylang-string-translations.php`: four strings appended, keyed in Ukrainian; `core`'s registrations are unchanged.
+- Decisions:
+  - Settled in the plan (Question 1, B): the buttons use `Харків` / `Київ`, not the unused and untranslated `kharkiv` / `kyiv`. Polylang keeps one translation per text, so their ru values already exist.
+  - `Pages` takes `?bool $polylang` for testing. It is now a TECH-STACK ANTI-PATTERNS line about Brain\Monkey and `function_exists()`.
+  - The theme `CLAUDE.md` now says new strings are keyed in Ukrainian.
+  - The markup's attribute names are the Step 3 contract: `data-city-popup-choice`, `data-city-popup-close`, `data-targets` JSON.
+- Open:
+  - **After the next hand deploy, on each production:** type the ru values `Какой город вас интересует?` / `Закрыть` in Languages → Translations. They are local DB only.
+  - Locally `Київ` is not a `service-city` term; its ru value `Киев` is stored anyway.
+
 ## 2026-09-23 — [city-popup] Sprint 1 Step 1 — Delta-audit and Vitest in the gate
 - Changed:
   - The theme has a Vitest suite. vitest `^3.2` (3.2.7, on the theme's Vite 5.4.19) is in `package.json` `devDependencies` with `npm test`.

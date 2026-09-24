@@ -275,7 +275,7 @@ was installed, in practice the host; the gate checks that Vite loads before
 stage 1 and stops with a message naming the cause; TECH-STACK and TESTING
 record the limit).
 
-## Plan — Sprint 1, Step 2: Feature bootstrap and the dialog on blog pages   (status: implemented, awaiting verification)
+## Plan — Sprint 1, Step 2: Feature bootstrap and the dialog on blog pages   (status: closed)
 
 ### Branch
 `city-popup/sprint-1-city-question` ← `master`

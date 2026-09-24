@@ -36,7 +36,7 @@ as-is) plus, from now on, feature modules under `inc/features/{name}/`.
   a block = directory under `inc/acf/blocks/` (or the feature's `blocks/`)
   registered by scanning — then add its name to `dovira_allowed_block_types()`.
   Read fields through `dovira_get_acf_field()` (null-safe if ACF is off).
-- Templates: classic PHP; escape on output; strings uk literal or `pll__()` for anything registered in `inc/utils/polylang-string-translations.php`.
+- Templates: classic PHP; escape on output; strings uk literal or `pll__()` for anything registered in `inc/utils/polylang-string-translations.php` — a new string keyed by its Ukrainian text, so an untranslated install shows Ukrainian (Polylang keeps one translation per text).
 - Front-end: `source/` is the source, `assets/` the committed build. Modules
   are ES modules imported dynamically from `source/scripts/app.js`; styles are
   one CSS file per component/block imported by `source/styles/app.css`,

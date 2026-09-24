@@ -155,6 +155,14 @@ changes) — DECISIONS "Testing tooling and the project check command".
   Literals send dev and DDEV visitors to production. The header switcher's two
   literals are legacy (DECISIONS "The other install's host and the cookie
   domain are derived from the site URL").
+- Do not test the branch of a `function_exists()` check (Polylang, another
+  plugin) by leaving the function unstubbed.
+  - Brain\Monkey declares every function a test stubs for the rest of the
+    PHPUnit run, so `function_exists()` stays true in every later test.
+  - Calling that function unstubbed throws `MissingFunctionExpectations`.
+  - Inject the check instead, e.g. `new Pages( ?bool $polylang = null )` with
+    `null` meaning `function_exists( 'pll_get_post' )`, and pass `false` in
+    the test (city-popup Sprint 1 Step 2).
 
 ## CONVENTIONS (mandatory reading before writing code)
 <!-- Project-wide rules for code that later steps must follow and would
