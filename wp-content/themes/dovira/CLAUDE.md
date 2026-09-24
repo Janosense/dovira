@@ -36,10 +36,9 @@ as-is) plus, from now on, feature modules under `inc/features/{name}/`.
   a block = directory under `inc/acf/blocks/` (or the feature's `blocks/`)
   registered by scanning — then add its name to `dovira_allowed_block_types()`.
   Read fields through `dovira_get_acf_field()` (null-safe if ACF is off).
-- Templates: classic PHP; escape on output; strings uk literal or
-  `pll__()` for anything registered in `inc/utils/polylang-string-translations.php`.
+- Templates: classic PHP; escape on output; strings uk literal or `pll__()` for anything registered in `inc/utils/polylang-string-translations.php` — a new string keyed by its Ukrainian text, so an untranslated install shows Ukrainian (Polylang keeps one translation per text).
 - Front-end: `source/` is the source, `assets/` the committed build. Modules
-  are ES modules imported dynamically from `source/scripts/app.js`; styles are
+  are ES modules imported dynamically from `source/scripts/app.js` (a feature's last, in its own `try`/`catch`); styles are
   one CSS file per component/block imported by `source/styles/app.css`,
   PostCSS preset-env (nesting allowed), tokens from `colors.css`. Admin/editor
   CSS goes to `admin.css` (auto-prefixed `.acf-block-preview`).
@@ -55,6 +54,7 @@ as-is) plus, from now on, feature modules under `inc/features/{name}/`.
 ```bash
 cd wp-content/themes/dovira && npm start      # Vite dev server (HMR, WP_ENVIRONMENT_TYPE=development)
 cd wp-content/themes/dovira && npm run build  # rebuild assets/ before committing front-end changes
+cd wp-content/themes/dovira && npm test       # theme JS unit tests (Vitest, node env, tests/js/)
 cd wp-content/themes/dovira/tests && composer install && composer test  # theme unit tests (PHPUnit + Brain\Monkey, no WP)
 ddev wp dovira translate --help               # CLI command reference
 ```

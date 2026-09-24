@@ -44,12 +44,12 @@ $current_site_id       = ( str_contains( get_site_url(), 'kyiv' ) ) ? 'kyiv' : '
 					</div>
 				</li>
 				<li class="location-switcher__item">
-					<a href="https://dovira.vet"
+					<a href="https://dovira.vet" data-city="kharkiv"
 					   class="location-switcher__link"><?= $current_language_slug === 'uk' ? 'Харків' : 'Харьков'; ?></a>
 				</li>
 			<?php elseif ( $current_site_id === 'kharkiv' ) : ?>
 				<li class="location-switcher__item">
-					<a href="https://kyiv.dovira.vet"
+					<a href="https://kyiv.dovira.vet" data-city="kyiv"
 					   class="location-switcher__link"><?= $current_language_slug === 'uk' ? 'Київ' : 'Киев'; ?></a>
 				</li>
 				<li class="location-switcher__item">
@@ -158,12 +158,12 @@ $current_site_id       = ( str_contains( get_site_url(), 'kyiv' ) ) ? 'kyiv' : '
 					</div>
 				</li>
 				<li class="location-switcher__item">
-					<a href="https://dovira.vet"
+					<a href="https://dovira.vet" data-city="kharkiv"
 					   class="location-switcher__link"><?= $current_language_slug === 'uk' ? 'Харків' : 'Харьков'; ?></a>
 				</li>
 			<?php elseif ( $current_site_id === 'kharkiv' ) : ?>
 				<li class="location-switcher__item">
-					<a href="https://kyiv.dovira.vet"
+					<a href="https://kyiv.dovira.vet" data-city="kyiv"
 					   class="location-switcher__link"><?= $current_language_slug === 'uk' ? 'Київ' : 'Киев'; ?></a>
 				</li>
 				<li class="location-switcher__item">

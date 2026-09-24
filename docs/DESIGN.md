@@ -33,6 +33,7 @@ Breakpoints (mobile-first `min-width`): 768, 1024, 1280, 1440, 1920; `@media (ho
 | Questionnaire form | multi-field with iMask phone, REST submit, success/error states | `questionary-form.css`, `questionary.css`, `questionary-form-handler.js` |
 | Entity status badge (admin) | `--new`, `--processed`, `--in_processing`, `--interview_scheduled`, `--rejected` | `admin.css` (excluded from `.acf-block-preview` prefixing) |
 | Swiper carousel, Fancybox gallery, animations | — | `init-swiper.js`, `init-fancybox.js`, `init-animations.js` |
+| City question dialog `.city-popup` (feature `city-popup`) | closed (hidden, native `<dialog>`) / open (modal, dimmed `::backdrop` = `--color-black` at 60 %, focus on the first city); buttons stacked below 768 px, side by side from 768 px; × top-right (`.city-popup__close`, hover `--color-black`); title 23.6 px Inter (overrides the global `h2`) | `features/city-popup/city-popup.css`, `inc/features/city-popup/Dialog.php`, `source/scripts/features/city-popup/city-popup.js` |
 | ACF blocks (21) | `about`, `accordion`, `contacts`, `contacts-simple`, `custom-html`, `employees`, `entities-grid`, `entity-links`, `files`, `gallery`, `hero`, `links-group`, `news`, `numbers`, `questionary`, `rich-text`, `seo-text`, `services`, `text-form`, `text-image`, `vacancies` | `inc/acf/blocks/{name}/template.php` + `styles/blocks/{name}.css` |
 
 ## Screens
@@ -49,6 +50,7 @@ Breakpoints (mobile-first `min-width`): 768, 1024, 1280, 1440, 1920; `@media (ho
 | Questionnaire (admin view) | core | `/{slug}/` (questionary) | `single-questionary.php` | — |
 | Post / search / 404 | core | `/{slug}/`, `?s=`, 404 | `single.php`, `search.php`, `404.php` | no results |
 | Admin lists: Conversations, Applications, Questionaries | core | `wp-admin/edit.php?post_type=…` | `inc/utils/*.php` | filters, status badges |
+| City question | city-popup | a plain click on a link to the services list, a service or the contacts page on a blog page (`/news/`, an article, ru `/ru/blog/`, `/ru/news/…`) with no city saved and no dismissal | `docs/features/city-popup/FEATURE.md` → UI (no design export) | open with focus on «Харків»; uk / ru; 375 px (stacked) / desktop (side by side) |
 
 ## Flows
 - **Find a price:** Home → Services block → Service → city tab → search.

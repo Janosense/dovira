@@ -109,10 +109,11 @@ the file hierarchy.
 | core | `docs/features/core/` | `wp-content/themes/dovira/` (the theme as-is; new features: `inc/features/{name}/`) |
 | ga-telegram-bridge | `docs/features/ga-telegram-bridge/` | `wp-content/plugins/ga-telegram-bridge/` (standalone plugin, own `CLAUDE.md`) |
 | search-stats | `docs/features/search-stats/` | `wp-content/themes/dovira/inc/features/search-stats/` (theme feature; JS in `source/scripts/features/search-stats/`, tests in `tests/Unit/SearchStats/`) |
+| city-popup | `docs/features/city-popup/` | `wp-content/themes/dovira/inc/features/city-popup/` (theme feature; JS in `source/scripts/features/city-popup/`, styles in `source/styles/features/city-popup/`, tests in `tests/Unit/CityPopup/` and `tests/js/city-popup/`) |
 
 ## Commands
 ```bash
-bin/check.sh                                          # check command: PHPCS + PHPStan + PHPUnit (plugin) + php -l + PHPUnit (theme tests/)
+bin/check.sh                                          # check command: PHPCS + PHPStan + PHPUnit (plugin) + php -l + PHPUnit (theme tests/) + Vitest (theme); run on the host
 ddev start                                            # local WP at https://dovira.ddev.site (PHP 8.3, MariaDB 10.11, nginx)
 ddev import-db --file=mysql.sql                       # load the DB snapshot from the repo root
 cd wp-content/themes/dovira && npm install && composer install

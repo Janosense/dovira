@@ -22,6 +22,76 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-09-24 — [city-popup] Sprint 1 Step 4 — The switcher saves the choice; a missing service falls back to the list
+- Changed:
+  - `logic.js` `namedCityCookie()`: the `data-city` rule (only `kharkiv` / `kyiv` write a cookie) moved out of the glue into Vitest's reach; behaviour unchanged. `assets/` rebuilt.
+  - `Fallback` on `template_redirect`: a 404 under the service base of the request's language with `city-popup=1` → 302 to `/services/` or `/ru/uslugi/`, without the marker. Any other 404 stays a 404. Theme PHPUnit 145, Vitest 59.
+- Shared code: `template-parts/header/site-header.php`. The switcher's link to the other city (desktop and mobile) carries `data-city`; hrefs, classes and texts are unchanged. `core` and `search-stats`' header search form are otherwise untouched; `core` FEATURE.md → Interfaces records it.
+- Decisions: DECISIONS "The fallback answers only what stays a 404 after WordPress's own redirects" (plan Question 1, A). `wp_old_slug_redirect` and `redirect_canonical`'s longer-slug guess run first.
+- Open:
+  - **After the next hand deploy from `master` and the merge into `kyiv`:** check the Kyiv side (from a `dovira.vet` article «Київ» → `kyiv.dovira.vet/services/`; the Kyiv switcher's «Харків» saves `kharkiv`; `kyiv.dovira.vet/services/no-such-service/?city-popup=1` → the Kyiv list) and type the Step 2 ru strings on each production.
+  - Carried from Step 3: the Claude-in-Chrome tool's plain-link clicks do not navigate.
+
+Sprint 1 complete — all steps closed, city-popup/sprint-1-city-question merged into main (`master`, simple git model)
+
+## 2026-09-24 — [city-popup] Sprint 1 Step 3 — The city question in the browser
+- Changed: the question works on blog pages. This is screen «City question» from FEATURE.md → UI.
+  - `logic.js` (pure, 51 Vitest cases): target match, plain click, the move with `city-popup=1`, the cookie decision and strings, backdrop vs padding.
+  - `city-popup.js`: one delegated listener on every page that has the config element. It asks, goes to the saved city, or follows the link; ×, Esc and the backdrop dismiss. `data-city` saves on every page.
+  - `city-popup.css`: mobile first, from the tokens and `.button`.
+  - `Dialog` prints a hidden `data-city-popup-config` (cookie domain, days) on every page.
+  - `assets/` is rebuilt and committed. Theme PHPUnit 127, Vitest 52.
+- Shared code:
+  - `source/scripts/app.js` imports the module last, in its own `try`/`catch`.
+  - `source/styles/app.css` imports the stylesheet under `/* Features */`.
+  - `core` and `search-stats` imports are unchanged.
+- Decisions:
+  - DECISIONS "The cookie settings are printed on every page; off the blog the only listener saves `data-city`" (plan Question 1, A).
+  - TECH-STACK ANTI-PATTERNS: a `<dialog>` backdrop click is tested by point, and `::backdrop` takes values, not `:root` variables.
+  - Theme `CLAUDE.md`: a feature's module goes last in `app.js`, in its own `try`/`catch`.
+  - LEARNINGS: plan-step's UI-state test rule vs a project without a DOM test runner.
+- Open:
+  - The Claude-in-Chrome tool's clicks on plain links do not navigate, even on `master`'s bundle. Plain-link paths were checked by trace plus the manual guide.
+  - The Kyiv hop (`kyiv.dovira.vet/…?city-popup=1`) waits for the next hand deploy. The fallback and the switcher's `data-city` are Step 4.
+
+## 2026-09-24 — [city-popup] Sprint 1 Step 2 — Feature bootstrap and the dialog on blog pages
+- Changed: the feature is loaded, and a closed `<dialog>` is printed on blog pages. Nothing opens it yet (Step 3).
+  - `inc/features/city-popup/`:
+    - `Sites` (pure): the city, both origins (scheme + host + port) and the cookie domain, from `home_url()`;
+    - `Pages`: `is_blog()` and `targets()` `{services, contacts, service}` in the current language, via slug + `pll_get_post()`; the service base is the rewrite slug under `pll_home_url()`;
+    - `Dialog`: the markup of FEATURE.md → UI plus the escaped `data-*` the JS will read; `DEFAULT_DAYS` 90 behind `dovira_city_popup_days`;
+    - `bootstrap.php` hooks it on `wp_footer`.
+  - Local check: one dialog on `/news/`, an article, `/ru/blog/` and a ru article, none elsewhere. Theme tests 92 → 123, 141 files linted.
+- Shared code:
+  - `functions.php`: one `require_once` after search-stats.
+  - `inc/utils/polylang-string-translations.php`: four strings appended, keyed in Ukrainian; `core`'s registrations are unchanged.
+- Decisions:
+  - Settled in the plan (Question 1, B): the buttons use `Харків` / `Київ`, not the unused and untranslated `kharkiv` / `kyiv`. Polylang keeps one translation per text, so their ru values already exist.
+  - `Pages` takes `?bool $polylang` for testing. It is now a TECH-STACK ANTI-PATTERNS line about Brain\Monkey and `function_exists()`.
+  - The theme `CLAUDE.md` now says new strings are keyed in Ukrainian.
+  - The markup's attribute names are the Step 3 contract: `data-city-popup-choice`, `data-city-popup-close`, `data-targets` JSON.
+- Open:
+  - **After the next hand deploy, on each production:** type the ru values `Какой город вас интересует?` / `Закрыть` in Languages → Translations. They are local DB only.
+  - Locally `Київ` is not a `service-city` term; its ru value `Киев` is stored anyway.
+
+## 2026-09-23 — [city-popup] Sprint 1 Step 1 — Delta-audit and Vitest in the gate
+- Changed:
+  - The theme has a Vitest suite. vitest `^3.2` (3.2.7, on the theme's Vite 5.4.19) is in `package.json` `devDependencies` with `npm test`.
+  - `vitest.config.js`: `node` environment, `tests/js/**/*.test.js`, the `@scripts` alias, and `expect.requireAssertions`, so a test that asserts nothing fails.
+  - `tests/js/smoke.test.js` imports `core`'s `toggle-cities.js` through the alias.
+  - `bin/check.sh` has six stages: Vitest runs after the theme's PHPUnit. Before any stage it stops without `node`/`npm`, runs `npm install` when `node_modules/` is missing, and checks that Vite loads on this OS.
+  - `npm run build` rebuilds `assets/` byte-identical. No site code changed.
+- Shared code:
+  - The theme's `package.json`: the Vite build of `core` and `search-stats` still builds.
+  - `bin/check.sh`: it gates every feature's commits and must now run on the host. `ddev exec bash bin/check.sh` stops before stage 1 while `node_modules/` is the host's darwin install.
+- Decisions:
+  - New DECISIONS entry "The gate runs on the host; before stage 1 it checks that Vite loads on this OS". It is plan Question 1, resolved A. It supersedes the Vitest entry's "(the DDEV web container has them)".
+  - Settled in the plan: `requireAssertions` for TESTING's asserts-nothing rule, and the smoke test at the `tests/js/` root.
+- Open:
+  - **For Step 2's plan:** the Polylang strings `kharkiv` / `kyiv` are untranslated (uk and ru return the key). The city names live in the `Dovira: Cities` strings (`Харків` → `Харьков`, `Київ` → `Киев`), while Step 2 says its buttons reuse `kharkiv` / `kyiv`.
+  - **For Step 3:** `app.js` awaits its 14 imports in one IIFE with no `try`/`catch`, so one throw stops every module after it. The existing `data-city` sits on `city-toggle` buttons and `li`s (employees, vacancies blocks), so the switcher's selector must be `a[data-city]`.
+  - TECH-STACK → Check command still says "111 files today" for `php -l`; the gate counts 134.
+
 ## 2026-09-23 — [adhoc] — Playbook v1.17 → v1.25
 - Changed: `.claude/commands/` (`plan-step`, `do-step`, `close-step`, `fix-step`, `adhoc`) and `templates/*.md` copied from the playbook at v1.25. A step is now verified on its task branch before `/close-step`, and its state reads `awaiting verification`. In root `CLAUDE.md`, Core rules and Step protocol are word for word from the template and the header says v1.25. The Documentation table names CONVENTIONS and drops the `SPRINT-N-CLOSE.md` and `LEARNINGS.md` rows, and the Git model ends with the template's deploy sentence. `docs/TECH-STACK.md` gets the new ANTI-PATTERNS comment and a CONVENTIONS section (`none yet`). The header comments and entry formats of WORKLOG, LEARNINGS and DECISIONS, and `docs/features/README.md`, now come from the playbook. No application code changed.
 - Unchanged on purpose: `DATA-MODEL.md`, whose playbook comment already matched; its extra Adoption note is project text. No `SPRINT-*-PLAN.md` said "implemented, awaiting close", and `close-sprint.md` was already gone.
