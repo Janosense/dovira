@@ -58,6 +58,11 @@ Surface other features may rely on (changing it = "touches shared surface"):
 - **Templates & parts:** `header.php` (`mode => simple` variant),
   `footer.php`, `template-parts/{header,footer}/*`, `option-status.php`,
   `seo-description.php`; page template "Sub-Service".
+- **Header city switcher** (`template-parts/header/site-header.php`, desktop
+  and mobile): the link to the other install carries `data-city="kharkiv|kyiv"`,
+  and `city-popup` saves that city on its click (DECISIONS "The header switcher
+  saves the city it switches to"). Its hrefs stay the two production URLs; the
+  current city is a `div` and carries none.
 - **Nav menus:** `primary`, `footer_col_1`, `footer_col_2`.
 - **Front-end:** `source/scripts/app.js` module list; CSS tokens in
   `source/styles/colors.css`; component classes in `docs/DESIGN.md`.

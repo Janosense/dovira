@@ -137,9 +137,13 @@ The browser keeps these clicks, and the listener does nothing with them:
 - a click with a modifier, or with a button other than the main one;
 - a click on a link that opens another window.
 
-On every page, a plain click on a link with a valid `data-city` (the header
-switcher, from Step 4) writes `dovira_city` for the configured days, and the
-browser follows the link. On a blog page, a plain click on a target on the
+On every page, a plain click on a link with a valid `data-city` writes
+`dovira_city` for the configured days, and the browser follows the link. The
+header switcher (`template-parts/header/site-header.php`, desktop and mobile)
+is that link: `data-city="kyiv"` on Kharkiv's link to Kyiv and
+`data-city="kharkiv"` on Kyiv's link to Kharkiv, with the hrefs unchanged. It
+still leads to the other install's home page and now changes the remembered
+city. On a blog page, a plain click on a target on the
 current host is decided from the cookies:
 - `dovira_city` set to this install's city → the browser follows the link;
 - `dovira_city` set to the other city → go to that install's version of the

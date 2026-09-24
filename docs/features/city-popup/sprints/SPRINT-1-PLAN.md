@@ -920,7 +920,7 @@ hook's priority in task 3 and one guide item change.
   - Vitest cases in `tests/js/city-popup/logic.test.js`.
   - `npm run build`; `assets/` rebuilt and committed in the same commit.
   → `refactor(city-popup): decide the data-city cookie in logic.js`
-- [ ] **2. The header switcher names its city.**
+- [x] **2. The header switcher names its city.**
   **Touches shared code — may affect other features:**
   `template-parts/header/site-header.php` is the header of every page on both
   installs. Consumers: `core` (every template), and `search-stats`, whose
