@@ -70,7 +70,7 @@ tests, and every decision the module makes is covered by one.
   - Root `CLAUDE.md` → Commands (the gate's stage list).
 - **Depends on:** —
 
-### [ ] Step 2 — Feature bootstrap and the dialog on blog pages
+### [x] Step 2 — Feature bootstrap and the dialog on blog pages
 - **Tasks:**
   - `inc/features/city-popup/bootstrap.php` requires the feature's classes and registers their hooks. Add one line in `functions.php`. **Touches shared code:** `functions.php`; consumers: every theme feature.
   - `Sites` (`dovira\CityPopup\Sites`), pure, working from the site URL it is given (`home_url()` at the call site). It returns:

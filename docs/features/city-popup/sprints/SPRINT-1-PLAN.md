@@ -274,3 +274,302 @@ Resolved: approved as recommended — A (stage 6 runs where `node_modules/`
 was installed, in practice the host; the gate checks that Vite loads before
 stage 1 and stops with a message naming the cause; TECH-STACK and TESTING
 record the limit).
+
+## Plan — Sprint 1, Step 2: Feature bootstrap and the dialog on blog pages   (status: closed)
+
+### Branch
+`city-popup/sprint-1-city-question` ← `master`
+(root `CLAUDE.md` → git model: simple. The branch is created again from
+`master`, which carries Step 1 (`e006de92`), and deleted at the close.)
+
+### Tasks (ordered)
+Written for the recommended answer to Question 1 (B). Under answer A, task 3
+changes as that question describes.
+
+- [x] **1. `Sites`: the city, both origins and the cookie domain from the site URL.**
+  - `inc/features/city-popup/Sites.php` defines `final class Sites` in namespace
+    `dovira\CityPopup`.
+    - It is pure: PHP's `parse_url()`, no WordPress function.
+    - It is built from the URL it is given: `new Sites( home_url() )` at the
+      call site.
+    - Constants: `KHARKIV = 'kharkiv'`, `KYIV = 'kyiv'`.
+  - Methods:
+    - `city()`: `KYIV` when the URL contains `kyiv`, otherwise `KHARKIV`. This
+      is the switcher's own test (DECISIONS "The other install's host and the
+      cookie domain are derived from the site URL").
+    - `kharkiv_origin()`: scheme + the host without a leading `kyiv.` + the
+      port, if any.
+    - `kyiv_origin()`: scheme + `kyiv.` + the Kharkiv host + the port.
+    - `cookie_domain()`: the Kharkiv host, with no scheme and no port.
+    - The host is lowercased, and the URL's path never reaches an origin.
+  - Test: `tests/Unit/CityPopup/SitesTest.php` (see Tests).
+  - The class is not loaded by WordPress yet (task 4), so this commit changes
+    nothing on the site.
+
+  → `feat(city-popup): derive the city, both origins and the cookie domain from the site URL`
+
+- [x] **2. `Pages`: the blog and the target URLs.**
+  - `inc/features/city-popup/Pages.php` defines `final class Pages` in
+    namespace `dovira\CityPopup`.
+    - Constants: `BLOG_SLUG = 'news'`, `SERVICES_SLUG = 'services'`,
+      `CONTACTS_SLUG = 'contacts'`.
+    - The constructor is `__construct( ?bool $polylang = null )`, with `null`
+      meaning `function_exists( 'pll_get_post' )`.
+    - Tests pass `false` for "without Polylang". Brain\Monkey declares a stubbed
+      function for the rest of the PHPUnit run (`FunctionStub::__construct`
+      `eval`s it), so `function_exists()` cannot be false in a later test. This
+      is the one way to test that case in-process.
+  - A page "in the current language" is `get_page_by_path( $slug )` and then:
+    - with Polylang, `pll_get_post( $id )` (current language), where `0` or
+      `false` means none;
+    - without Polylang, the page itself.
+  - `is_blog()`:
+    - `is_singular( 'post' )`; or
+    - `is_page( $id )` for the blog page in the current language.
+    - A missing page or translation is not blog. The code never calls
+      `is_page()` with an empty id, which WordPress treats as "any page".
+  - `targets()` returns `array<string, string>`:
+    - `services` and `contacts`: `get_permalink()` of the page in the current
+      language;
+    - `service`: the base URL of the `service` type in the current language.
+      That is the slug `get_post_type_object( 'service' )->rewrite['slug']`
+      appended to `pll_home_url()` (or `home_url( '/' )` without Polylang),
+      with a trailing slash. Locally that gives `https://dovira.ddev.site/services/`
+      and `https://dovira.ddev.site/ru/services/`.
+    - A missing page, translation, type or rewrite slug leaves its key out.
+    - Keys rather than a list, so the printed JSON says what each URL is. The
+      JS in Step 3 reads the values.
+  - Test: `tests/Unit/CityPopup/PagesTest.php`.
+
+  → `feat(city-popup): find the blog page and the target URLs in the current language`
+
+- [x] **3. The dialog's strings and `Dialog`.**
+  - `inc/utils/polylang-string-translations.php` gets four entries appended to
+    `$strings`, each with its Ukrainian text as the key:
+    - `'Яке місто вас цікавить?'` and `'Закрити'`, as the step says;
+    - `'Харків'` and `'Київ'` (Question 1, B).
+
+    An install that has not translated them yet shows Ukrainian.
+  - `inc/features/city-popup/Dialog.php` defines `final class Dialog` in
+    namespace `dovira\CityPopup`:
+    - `public const DEFAULT_DAYS = 90;` is the only `90` in the feature.
+    - `__construct( Sites $sites, Pages $pages )`.
+    - `days(): int` is `(int) apply_filters( 'dovira_city_popup_days',
+      self::DEFAULT_DAYS )`. A value below 1 gives `DEFAULT_DAYS`.
+    - `render(): void` prints nothing unless `$pages->is_blog()`. Otherwise it
+      prints one `<dialog>`, described below.
+    - `static print_on_blog(): void` is the `wp_footer` callback:
+      `( new self( new Sites( home_url() ), new Pages() ) )->render()`.
+  - The `<dialog>` (the markup is internal to the feature, FEATURE.md →
+    Interfaces). Strings go through `dovira_translate_string()` (core's
+    null-safe `pll__()`), text through `esc_html()`, and every attribute
+    through `esc_attr()`.
+    ```html
+    <dialog class="city-popup" aria-labelledby="city-popup-title" data-city-popup
+            data-current-city="kharkiv"
+            data-kharkiv-origin="https://dovira.ddev.site" data-kyiv-origin="https://kyiv.dovira.ddev.site"
+            data-cookie-domain="dovira.ddev.site" data-days="90"
+            data-targets="{…wp_json_encode( targets, JSON_UNESCAPED_SLASHES )…}">
+      <h2 class="city-popup__title" id="city-popup-title">Яке місто вас цікавить?</h2>
+      <div class="city-popup__cities">
+        <button type="button" class="button button--black city-popup__city" data-city-popup-choice="kharkiv" autofocus>Харків</button>
+        <button type="button" class="button button--black city-popup__city" data-city-popup-choice="kyiv">Київ</button>
+      </div>
+      <button type="button" class="city-popup__close" data-city-popup-close aria-label="Закрити"><span aria-hidden="true">×</span></button>
+    </dialog>
+    ```
+    - It has no `open` attribute and no styles. The browser's own `dialog`
+      rule keeps it hidden, and no theme CSS targets `dialog` (checked).
+    - The city buttons use `data-city-popup-choice`, not `data-city`, which
+      Step 3 gives to links (`a[data-city]`). The `city-toggle` buttons of the
+      employees and vacancies blocks already carry `data-city`.
+    - `autofocus` on «Харків» is FEATURE.md → UI's state "open, with focus on
+      the first city button". The × comes after the buttons in the DOM, and
+      Step 3 places it top-right.
+    - `.button` / `--black` are FEATURE.md → UI's reused component; Step 3
+      styles the rest.
+  - Local ru values, for Languages → Translations, go in with `ddev wp eval`
+    through Polylang's `PLL_MO` (`import_from_db()` / `add_entry()` /
+    `export_to_db()`), as `inc/cli/TranslateOptionsCommand.php` writes string
+    translations:
+    - `Яке місто вас цікавить?` → `Какой город вас интересует?`;
+    - `Закрити` → `Закрыть`.
+
+    `Харків` → `Харьков` and `Київ` → `Киев` already exist, shared with the
+    `Dovira: Cities` strings. This is local DB content, not a file, so it is
+    not committed.
+  - Test: `tests/Unit/CityPopup/DialogTest.php`.
+  - Docs in the same commit: `docs/features/city-popup/FEATURE.md` → Fit into
+    the host, the strings line (Question 1, B).
+  - **Touches shared code — may affect other features:**
+    `inc/utils/polylang-string-translations.php`. Consumers: every template
+    that prints a registered string (`core`). Entries are only appended, so the
+    existing registrations stay as they are.
+
+  → `feat(city-popup): the city question dialog and its strings`
+
+- [x] **4. Wire the feature.**
+  - `inc/features/city-popup/bootstrap.php` requires `Sites.php`, `Pages.php`
+    and `Dialog.php` and adds `add_action( 'wp_footer', [ Dialog::class,
+    'print_on_blog' ] )`.
+  - `functions.php` gets one block after the `search-stats` one (`:58–61`) and
+    before the `WP_CLI` block, in the same comment style:
+    `/** Feature: city-popup */` and
+    `require_once TEMPLATE_DIR . '/inc/features/city-popup/bootstrap.php';`.
+  - Check locally with curl against `dovira.ddev.site`:
+    - `/news/` and one article carry one `<dialog`, whose origins, cookie
+      domain and targets are the Step's values;
+    - `/ru/blog/` and one ru article carry the ru strings and `/ru/uslugi/`,
+      `/ru/kontakty/`, `/ru/services/`;
+    - `/`, `/services/` and one service carry none.
+  - Docs in the same commit: `docs/ARCHITECTURE.md` → Modules, a new row
+    "City popup (theme feature)" (`Sites`, `Pages`, `Dialog`, the hook, "must
+    never": read `dovira_city*` cookies in PHP, print a URL literal, print the
+    dialog off the blog). The Bootstrap row becomes "(today `search-stats`,
+    `city-popup`)".
+  - **Touches shared code — may affect other features:** `functions.php`.
+    Consumers: every theme feature (`core`, `search-stats`). One
+    `require_once` is added, and it hooks only `wp_footer`.
+
+  → `feat(city-popup): load the feature and print the dialog on blog pages`
+
+### Files to create/change
+- create `wp-content/themes/dovira/inc/features/city-popup/{bootstrap,Sites,Pages,Dialog}.php`
+- create `wp-content/themes/dovira/tests/Unit/CityPopup/{Sites,Pages,Dialog}Test.php`
+- change `wp-content/themes/dovira/functions.php` (shared)
+- change `wp-content/themes/dovira/inc/utils/polylang-string-translations.php` (shared)
+- docs: `docs/ARCHITECTURE.md`, `docs/features/city-popup/FEATURE.md`
+- local DB only: the ru values of the two new strings
+
+### Tests to write
+Every test requires the class under test by its path
+(`dirname( __DIR__, 3 ) . '/inc/features/city-popup/…'`) and never
+`bootstrap.php` (docs/TESTING.md → Rules).
+- **`SitesTest`** has one data provider row per URL, and each row asserts the
+  city, both origins and the cookie domain:
+  - `https://dovira.vet` → kharkiv, `https://dovira.vet`,
+    `https://kyiv.dovira.vet`, `dovira.vet`;
+  - `https://kyiv.dovira.vet` → kyiv, with the same two origins and domain;
+  - `https://dev.dovira.vet` → kharkiv, `https://kyiv.dev.dovira.vet`,
+    `dev.dovira.vet`;
+  - `https://dovira.ddev.site` → kharkiv, `https://kyiv.dovira.ddev.site`,
+    `dovira.ddev.site`;
+  - `https://kyiv.dovira.ddev.site/some/path/` → kyiv, with no path in either
+    origin;
+  - `https://dovira.ddev.site:8443` → the port stays in both origins and is not
+    in the cookie domain;
+  - `http://Dovira.DDEV.site` → the scheme is kept and the host lowercased.
+- **`PagesTest`** uses Brain\Monkey stubs: `get_page_by_path`, `pll_get_post`
+  (uk → ru map), `is_page`, `is_singular`, `get_permalink`,
+  `get_post_type_object`, `pll_home_url`, `home_url`.
+  - `is_blog()`:
+    - the `news` page on a uk request and its ru translation on a ru request →
+      true;
+    - a single `post` → true;
+    - the front page and a `service` → false;
+    - the `news` page missing → false, and `is_page()` is never called with an
+      empty id;
+    - without Polylang (`new Pages( false )`), the `news` page itself → true.
+  - `targets()`:
+    - uk → `/services/`, `/contacts/`, `/services/`;
+    - ru → `/ru/uslugi/`, `/ru/kontakty/`, `/ru/services/`;
+    - the contacts page missing → no `contacts` key;
+    - a page with no translation in the current language → its key left out;
+    - no `service` type → no `service` key;
+    - without Polylang → the pages themselves and `home_url( '/' )` +
+      `services/`.
+- **`DialogTest`** covers `render()` through `Sites` built from a URL and a
+  `Pages` stub state:
+  - off the blog → empty output;
+  - on the blog, exactly one `<dialog`, with no `open` attribute (hidden until
+    Step 3 opens it);
+  - the title, «Харків» before «Київ», `autofocus` on «Харків» only, and the ×
+    button with `aria-label`;
+  - strings pass through `dovira_translate_string()`, and a ru map gives the ru
+    strings;
+  - attributes are escaped. A permalink stub with `&` and `"` comes back intact
+    after the attribute is HTML-decoded, and `data-targets` `json_decode`s to
+    the `targets()` array;
+  - the days filter: `expectApplied( 'dovira_city_popup_days' )` with `90`.
+    Returned `30` → `data-days="30"`; `0`, `-5` and `'abc'` → `90`; `'45'` →
+    `45`;
+  - `print_on_blog()` with `home_url()` stubbed to `https://kyiv.dovira.vet` →
+    `data-current-city="kyiv"`.
+- Test-critical zones of root `CLAUDE.md`: none touched.
+- Gate after the step: `php -l` 134 → 141 files, and the theme suite gains the
+  three classes. Vitest is unchanged (Step 3 brings the JS).
+
+### Docs to update
+- `docs/ARCHITECTURE.md` → Modules: the feature's row and the Bootstrap row (task 4)
+- `docs/features/city-popup/FEATURE.md` → Fit into the host, strings line (task 3, Question 1 B)
+
+### Checks
+- ANTI-PATTERNS / CONVENTIONS: none violated.
+  - "Decide which city site this is only from the site URL": `Sites` decides
+    from `home_url()`, as DECISIONS "The other install's host and the cookie
+    domain are derived from the site URL" sets ("one PHP class computes
+    them"), and no template branches on it.
+  - There is no URL literal: the origins are derived.
+  - No PHP reads `dovira_city*`: nothing reads cookies at all.
+  - No block, no field group, no JS.
+  - The theme `CLAUDE.md` rules hold: `dovira\` namespace; one registration
+    line in `functions.php`; strings through the registered list.
+- Docs vs reality: mismatch.
+  - **The Polylang strings `kharkiv` / `kyiv` hold no city names**
+    (`pll_translate_string()` returns the key in uk and ru; Step 1 audit), but
+    the step and FEATURE.md reuse them → Question 1.
+  - Root invariant 4 names `get_site_url()`, while DECISIONS and the step name
+    `home_url()`. DECISIONS takes precedence, and both give
+    `https://dovira.ddev.site` locally.
+  - The step says "`targets()` … the `service` base URL"; FEATURE.md says
+    "the rewrite base of the `service` post type". Reality:
+    `rewrite.slug = services`, `has_archive = false`, and
+    `get_post_type_archive_link( 'service' )` is `false`. The base is
+    therefore built from the slug and `pll_home_url()` (task 2), which
+    matches the step's `/ru/services/`.
+  - `pll_home_url()` gives `https://dovira.ddev.site/` (uk, default language
+    hidden) and `…/ru/`. There are 11 uk and 11 ru posts, and ru articles are
+    at `/ru/news/{slug}/`. Everything else matches the Step 1 audit.
+- Design: matches «City question» in FEATURE.md → UI for its markup. There is
+  no design export (DECISIONS "No UI design phase"). The strings are
+  FEATURE.md's word for word, and the layout, backdrop and visibility are
+  Step 3.
+- Check command: `bin/check.sh` (docs/TECH-STACK.md → Check command). Six
+  stages, green on `master` after Step 1.
+- Not locally verifiable: the ru values of the two new strings on each
+  production. They are typed in Languages → Translations after the
+  developer's next hand deploy from `master` (Kharkiv) and the merge into
+  `kyiv` (Kyiv), and verified by that deploy.
+
+### Questions / ambiguities
+**1. The city buttons: reuse `kharkiv` / `kyiv`, or register `Харків` / `Київ`?**
+The step (and FEATURE.md → Fit into the host) says the buttons "reuse the
+registered `kharkiv` / `kyiv`" strings. That assumed they hold the city names,
+which Step 1 was to confirm. They do not: both return `kharkiv` / `kyiv` in uk
+and ru, and nothing prints them. The names exist only as the `Dovira: Cities`
+strings, keyed by the Ukrainian term names (`Харків` → ru `Харьков`, `Київ` →
+ru `Киев`).
+- **A.** Keep `pll__( 'kharkiv' )` / `pll__( 'kyiv' )`.
+  - Task 3 also writes their uk values (`Харків`, `Київ`) and ru values
+    (`Харьков`, `Киев`) locally.
+  - Each production needs four more values typed by hand after its deploy.
+  - Until then, the buttons read "kharkiv" / "kyiv" in Latin letters. That is
+    the failure the step itself avoids for the title and the × by keying them
+    in Ukrainian.
+  - FEATURE.md stays as it is.
+- **B (recommended).** Register `'Харків'` and `'Київ'` in the theme's
+  `$strings` list, keyed in Ukrainian like the title and the ×.
+  - They are already translated on every install whose city names are, since
+    Polylang keeps one translation per source text and they share it with the
+    `Dovira: Cities` strings.
+  - An untranslated install shows Ukrainian.
+  - Registering them in the theme's list keeps them in Languages →
+    Translations even if an editor renames a `service-city` term.
+  - `kharkiv` / `kyiv` stay registered and unused. Removing them is not this
+    step's.
+  - FEATURE.md → Fit into the host changes its strings line (task 3).
+
+Resolved: approved as recommended — B (register `'Харків'` / `'Київ'` in the
+theme's `$strings` list, keyed in Ukrainian; their ru values are shared with
+the `Dovira: Cities` strings; FEATURE.md → Fit into the host changes its
+strings line).
