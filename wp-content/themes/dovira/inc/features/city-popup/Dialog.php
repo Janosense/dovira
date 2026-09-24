@@ -5,11 +5,15 @@ namespace dovira\CityPopup;
 /**
  * The screen «City question» (docs/features/city-popup/FEATURE.md → UI): one
  * native <dialog>, printed in the footer of a blog page only, closed. The
- * browser module opens it on a click and reads everything it needs from its
- * data attributes — the current city, both origins, the cookie domain, the
- * days and the target URLs — so the JS knows no URL and no slug (DECISIONS
- * "The question is a native `<dialog>` printed only on blog pages; the click
- * handler reads everything from its data attributes").
+ * browser module opens it on a click and reads what the question needs from
+ * its data attributes — the current city, both origins and the target URLs —
+ * so the JS knows no URL and no slug (DECISIONS "The question is a native
+ * `<dialog>` printed only on blog pages; the click handler reads everything
+ * from its data attributes").
+ *
+ * The cookie domain and the days are printed on every page instead, in a
+ * hidden config element: the header switcher saves the chosen city on every
+ * page (DECISIONS "The header switcher saves the city it switches to").
  *
  * The markup and its attributes are internal to the feature. Every visible
  * string is a Polylang string registered in inc/utils/polylang-string-translations.php.
@@ -32,10 +36,17 @@ final class Dialog {
 	}
 
 	/**
-	 * The wp_footer callback.
+	 * The wp_footer callback for the question.
 	 */
 	public static function print_on_blog(): void {
 		( new self( new Sites( home_url() ), new Pages() ) )->render();
+	}
+
+	/**
+	 * The wp_footer callback for the cookie settings, on every page.
+	 */
+	public static function print_config(): void {
+		( new self( new Sites( home_url() ), new Pages() ) )->render_config();
 	}
 
 	/**
@@ -62,8 +73,6 @@ final class Dialog {
 	data-current-city="<?= esc_attr( $this->sites->city() ); ?>"
 	data-kharkiv-origin="<?= esc_attr( $this->sites->kharkiv_origin() ); ?>"
 	data-kyiv-origin="<?= esc_attr( $this->sites->kyiv_origin() ); ?>"
-	data-cookie-domain="<?= esc_attr( $this->sites->cookie_domain() ); ?>"
-	data-days="<?= esc_attr( (string) $this->days() ); ?>"
 	data-targets="<?= esc_attr( $targets ); ?>">
 	<h2 class="city-popup__title" id="city-popup-title"><?= esc_html( dovira_translate_string( self::TITLE ) ); ?></h2>
 	<div class="city-popup__cities">
@@ -74,6 +83,15 @@ final class Dialog {
 	</div>
 	<button type="button" class="city-popup__close" data-city-popup-close aria-label="<?= esc_attr( dovira_translate_string( self::CLOSE ) ); ?>"><span aria-hidden="true">×</span></button>
 </dialog>
+		<?php
+	}
+
+	/**
+	 * Prints, on any page, what saving a city needs: the cookie domain and the days.
+	 */
+	public function render_config(): void {
+		?>
+<div hidden data-city-popup-config data-cookie-domain="<?= esc_attr( $this->sites->cookie_domain() ); ?>" data-days="<?= esc_attr( (string) $this->days() ); ?>"></div>
 		<?php
 	}
 }

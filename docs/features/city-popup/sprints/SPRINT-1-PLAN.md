@@ -635,7 +635,7 @@ drops out and task 3 changes as that question describes.
 
   → `feat(city-popup): the pure decisions of the city question`
 
-- [ ] **2. (Question 1, A) The cookie settings on every page.**
+- [x] **2. (Question 1, A) The cookie settings on every page.**
   - `Dialog` (`inc/features/city-popup/Dialog.php`) gets `render_config()`.
     On any page it prints
     `<div hidden data-city-popup-config data-cookie-domain="…" data-days="…"></div>`

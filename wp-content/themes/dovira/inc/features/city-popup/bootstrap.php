@@ -12,3 +12,5 @@ require_once __DIR__ . '/Dialog.php';
 
 // The closed <dialog>, on blog pages only; the browser module opens it.
 add_action( 'wp_footer', [ Dialog::class, 'print_on_blog' ] );
+// The cookie domain and the days, on every page: the header switcher saves the city everywhere.
+add_action( 'wp_footer', [ Dialog::class, 'print_config' ] );
