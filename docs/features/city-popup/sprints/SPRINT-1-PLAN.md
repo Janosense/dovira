@@ -897,7 +897,7 @@ element with the cookie domain and the days on every page, printed by
 DECISIONS entry prevails over the dialog entry's "no click listener", recorded
 at the close).
 
-## Plan — Sprint 1, Step 4: The switcher saves the choice; a missing service falls back to the list   (status: approved, in progress)
+## Plan — Sprint 1, Step 4: The switcher saves the choice; a missing service falls back to the list   (status: implemented, awaiting verification)
 
 ### Branch
 `city-popup/sprint-1-city-question` ← `master`
