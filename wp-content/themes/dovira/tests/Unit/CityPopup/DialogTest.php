@@ -23,8 +23,8 @@ require_once dirname( __DIR__, 3 ) . '/inc/features/city-popup/Pages.php';
 require_once dirname( __DIR__, 3 ) . '/inc/features/city-popup/Dialog.php';
 
 /**
- * One closed <dialog> on a blog page, nothing elsewhere; every value it
- * carries is escaped, and every string is a Polylang string.
+ * One closed <dialog> on a blog page, nothing elsewhere; the cookie settings
+ * on every page. Every value is escaped, and every string is a Polylang string.
  */
 final class DialogTest extends TestCase {
 
@@ -77,7 +77,14 @@ final class DialogTest extends TestCase {
 		return (string) ob_get_clean();
 	}
 
-	private static function dialog( string $html ): DOMElement {
+	private function render_config( string $site_url = 'https://dovira.ddev.site' ): string {
+		ob_start();
+		( new Dialog( new Sites( $site_url ), new Pages( true ) ) )->render_config();
+
+		return (string) ob_get_clean();
+	}
+
+	private static function element( string $html, string $tag ): DOMElement {
 		$document = new DOMDocument();
 		$errors = libxml_use_internal_errors( true );
 		// libxml's HTML parser predates <dialog>: it keeps the element and reports it as unknown.
@@ -85,10 +92,18 @@ final class DialogTest extends TestCase {
 		libxml_clear_errors();
 		libxml_use_internal_errors( $errors );
 
-		$dialog = $document->getElementsByTagName( 'dialog' )->item( 0 );
-		self::assertInstanceOf( DOMElement::class, $dialog );
+		$element = $document->getElementsByTagName( $tag )->item( 0 );
+		self::assertInstanceOf( DOMElement::class, $element );
 
-		return $dialog;
+		return $element;
+	}
+
+	private static function dialog( string $html ): DOMElement {
+		return self::element( $html, 'dialog' );
+	}
+
+	private static function config( string $html ): DOMElement {
+		return self::element( $html, 'div' );
 	}
 
 	/**
@@ -117,8 +132,8 @@ final class DialogTest extends TestCase {
 		$this->assertSame( 'kharkiv', $dialog->getAttribute( 'data-current-city' ) );
 		$this->assertSame( 'https://dovira.ddev.site', $dialog->getAttribute( 'data-kharkiv-origin' ) );
 		$this->assertSame( 'https://kyiv.dovira.ddev.site', $dialog->getAttribute( 'data-kyiv-origin' ) );
-		$this->assertSame( 'dovira.ddev.site', $dialog->getAttribute( 'data-cookie-domain' ) );
-		$this->assertSame( '90', $dialog->getAttribute( 'data-days' ) );
+		$this->assertFalse( $dialog->hasAttribute( 'data-cookie-domain' ), 'On the config element, printed on every page.' );
+		$this->assertFalse( $dialog->hasAttribute( 'data-days' ), 'On the config element, printed on every page.' );
 		$this->assertSame(
 			[
 				'services' => 'https://dovira.ddev.site/services/',
@@ -190,7 +205,39 @@ final class DialogTest extends TestCase {
 	public function test_the_days_come_from_the_filter( mixed $filtered, string $printed ): void {
 		Filters\expectApplied( 'dovira_city_popup_days' )->once()->with( Dialog::DEFAULT_DAYS )->andReturn( $filtered );
 
-		$this->assertSame( $printed, self::dialog( $this->render() )->getAttribute( 'data-days' ) );
+		$this->assertSame( $printed, self::config( $this->render_config() )->getAttribute( 'data-days' ) );
+	}
+
+	/**
+	 * @return array<string, array{bool}>
+	 */
+	public static function any_page(): array {
+		return [
+			'a blog page'  => [ true ],
+			'another page' => [ false ],
+		];
+	}
+
+	#[DataProvider( 'any_page' )]
+	public function test_the_cookie_settings_are_printed_on_every_page( bool $on_blog ): void {
+		$this->on_blog = $on_blog;
+		$html = $this->render_config();
+		$config = self::config( $html );
+
+		$this->assertSame( 1, substr_count( $html, '<div' ) );
+		$this->assertStringNotContainsString( '<dialog', $html );
+		$this->assertTrue( $config->hasAttribute( 'hidden' ) );
+		$this->assertTrue( $config->hasAttribute( 'data-city-popup-config' ) );
+		$this->assertSame( 'dovira.ddev.site', $config->getAttribute( 'data-cookie-domain' ) );
+		$this->assertSame( '90', $config->getAttribute( 'data-days' ) );
+		$this->assertSame( '', trim( $config->textContent ) );
+	}
+
+	public function test_the_cookie_settings_are_escaped(): void {
+		$html = $this->render_config( 'https://do&vira.ddev.site' );
+
+		$this->assertStringContainsString( 'data-cookie-domain="do&amp;vira.ddev.site"', $html );
+		$this->assertSame( 'do&vira.ddev.site', self::config( $html )->getAttribute( 'data-cookie-domain' ) );
 	}
 
 	public function test_the_footer_callback_reads_the_site_url(): void {
@@ -203,6 +250,17 @@ final class DialogTest extends TestCase {
 		$this->assertSame( 'kyiv', $dialog->getAttribute( 'data-current-city' ) );
 		$this->assertSame( 'https://dovira.vet', $dialog->getAttribute( 'data-kharkiv-origin' ) );
 		$this->assertSame( 'https://kyiv.dovira.vet', $dialog->getAttribute( 'data-kyiv-origin' ) );
-		$this->assertSame( 'dovira.vet', $dialog->getAttribute( 'data-cookie-domain' ) );
+	}
+
+	public function test_the_config_callback_reads_the_site_url(): void {
+		$this->home_url = 'https://kyiv.dovira.vet';
+		$this->on_blog = false;
+
+		ob_start();
+		Dialog::print_config();
+		$config = self::config( (string) ob_get_clean() );
+
+		$this->assertSame( 'dovira.vet', $config->getAttribute( 'data-cookie-domain' ) );
+		$this->assertSame( '90', $config->getAttribute( 'data-days' ) );
 	}
 }

@@ -22,6 +22,26 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-09-24 — [city-popup] Sprint 1 Step 3 — The city question in the browser
+- Changed: the question works on blog pages. This is screen «City question» from FEATURE.md → UI.
+  - `logic.js` (pure, 51 Vitest cases): target match, plain click, the move with `city-popup=1`, the cookie decision and strings, backdrop vs padding.
+  - `city-popup.js`: one delegated listener on every page that has the config element. It asks, goes to the saved city, or follows the link; ×, Esc and the backdrop dismiss. `data-city` saves on every page.
+  - `city-popup.css`: mobile first, from the tokens and `.button`.
+  - `Dialog` prints a hidden `data-city-popup-config` (cookie domain, days) on every page.
+  - `assets/` is rebuilt and committed. Theme PHPUnit 127, Vitest 52.
+- Shared code:
+  - `source/scripts/app.js` imports the module last, in its own `try`/`catch`.
+  - `source/styles/app.css` imports the stylesheet under `/* Features */`.
+  - `core` and `search-stats` imports are unchanged.
+- Decisions:
+  - DECISIONS "The cookie settings are printed on every page; off the blog the only listener saves `data-city`" (plan Question 1, A).
+  - TECH-STACK ANTI-PATTERNS: a `<dialog>` backdrop click is tested by point, and `::backdrop` takes values, not `:root` variables.
+  - Theme `CLAUDE.md`: a feature's module goes last in `app.js`, in its own `try`/`catch`.
+  - LEARNINGS: plan-step's UI-state test rule vs a project without a DOM test runner.
+- Open:
+  - The Claude-in-Chrome tool's clicks on plain links do not navigate, even on `master`'s bundle. Plain-link paths were checked by trace plus the manual guide.
+  - The Kyiv hop (`kyiv.dovira.vet/…?city-popup=1`) waits for the next hand deploy. The fallback and the switcher's `data-city` are Step 4.
+
 ## 2026-09-24 — [city-popup] Sprint 1 Step 2 — Feature bootstrap and the dialog on blog pages
 - Changed: the feature is loaded, and a closed `<dialog>` is printed on blog pages. Nothing opens it yet (Step 3).
   - `inc/features/city-popup/`:

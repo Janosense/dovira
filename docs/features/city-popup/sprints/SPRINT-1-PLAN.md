@@ -573,3 +573,326 @@ Resolved: approved as recommended — B (register `'Харків'` / `'Київ'
 theme's `$strings` list, keyed in Ukrainian; their ru values are shared with
 the `Dovira: Cities` strings; FEATURE.md → Fit into the host changes its
 strings line).
+
+## Plan — Sprint 1, Step 3: The city question in the browser   (status: closed)
+
+### Branch
+`city-popup/sprint-1-city-question` ← `master`
+(root `CLAUDE.md` → git model: simple. The branch is created again from
+`master`, which carries Steps 1–2 (`f8543bce`), and deleted at the close.)
+
+### Tasks (ordered)
+Written for the recommended answer to Question 1 (A). Under answer B, task 2
+drops out and task 3 changes as that question describes.
+
+- [x] **1. The pure module `source/scripts/features/city-popup/logic.js`.** It
+  has no DOM access, and its named exports are in the style of the theme's
+  modules (arrow functions, one `export {…}`). Constants: `CITY_COOKIE =
+  'dovira_city'`, `DISMISS_COOKIE = 'dovira_city_dismissed'`, `MARKER =
+  'city-popup'`, and `DAY_SECONDS = 86400`.
+  - `isTarget( href, currentOrigin, targets )` (`targets` is the list of
+    target URLs):
+    - `href` resolves against `currentOrigin` (`new URL`); an invalid URL →
+      `false`;
+    - the origin must equal `currentOrigin`. `tel:`, `mailto:` and another
+      host → `false`;
+    - its path, with a trailing slash added when missing, starts with the
+      slash-ended path of a target on the same origin.
+
+    The added slash makes `/contacts` count like `/contacts/`, the address
+    WordPress redirects it to, so an author's link without the slash is asked
+    about too.
+  - `isPlainClick( click, linkTarget )`: `button === 0`, none of
+    `ctrlKey` / `metaKey` / `shiftKey` / `altKey`, and `linkTarget` empty or
+    `_self`.
+  - `crossUrl( href, origin )`:
+    - it is `origin` + the path + the query + the fragment of `href`;
+    - `city-popup=1` is appended as `?…` or `&…`, with the existing query
+      kept byte for byte. It is not rebuilt through `URLSearchParams`, which
+      would re-encode it;
+    - a query that already has `city-popup=1` is left as it is.
+  - `decide( cookies, currentCity )`:
+    - a valid saved city → `go-current` when it is `currentCity`, else
+      `go-city`;
+    - otherwise `dismissed === '1'` → `go-current`;
+    - otherwise → `ask`. An unknown saved value counts as none.
+  - Cookies:
+    - `cityCookie( city, days, domain, secure )` →
+      `dovira_city={city}; Max-Age={days×86400}; Domain={domain}; Path=/;
+      SameSite=Lax`, plus `; Secure` when `secure`;
+    - `dismissCookie( domain, secure )` → the same with `dovira_city_dismissed=1`
+      and no `Max-Age`;
+    - `readCookies( string )` → `{name: value}`, splitting on `;`, trimming,
+      keeping any `=` inside a value; `''` → `{}`;
+    - `cityFromAttr( value )` → `'kharkiv'` | `'kyiv'` | `null`.
+  - `isOutside( rect, x, y )`: whether a click point lies outside the dialog's
+    box. A click on the backdrop and a click on the dialog's own padding both
+    have the `<dialog>` as their target, so "a click on the backdrop" needs
+    the point. This is the step's backdrop task, kept pure so Vitest covers
+    it.
+  - Test: `tests/js/city-popup/logic.test.js` (see Tests).
+  - Nothing imports the module yet, so this changes nothing on the site.
+
+  → `feat(city-popup): the pure decisions of the city question`
+
+- [x] **2. (Question 1, A) The cookie settings on every page.**
+  - `Dialog` (`inc/features/city-popup/Dialog.php`) gets `render_config()`.
+    On any page it prints
+    `<div hidden data-city-popup-config data-cookie-domain="…" data-days="…"></div>`
+    (escaped; `days()` as today).
+  - The static `print_config()` is hooked on `wp_footer` in `bootstrap.php`
+    next to `print_on_blog()`.
+  - The blog `<dialog>` drops `data-cookie-domain` and `data-days`, so each
+    value is printed once. It keeps the city, both origins and the targets.
+  - `DialogTest` changes with it:
+    - the "one closed dialog with its data" test no longer expects those two
+      attributes;
+    - the days data provider asserts `data-days` on the config element;
+    - new tests: the config is printed off the blog too, with escaped values
+      and nothing else; and `print_config()` reads `home_url()`.
+  - Docs in the same commit: `docs/ARCHITECTURE.md` → Modules, the City popup
+    row (the config element).
+  - Not shared code: only the feature's files change.
+
+  → `feat(city-popup): print the cookie settings on every page`
+
+- [x] **3. The DOM glue `source/scripts/features/city-popup/city-popup.js` and its import.**
+  - `initCityPopup()` does nothing without `[data-city-popup-config]`.
+    Otherwise it reads:
+    - the domain and the days from that element;
+    - `secure` from `location.protocol === 'https:'`;
+    - when `dialog[data-city-popup]` exists: the current city, both origins
+      and `Object.values( JSON.parse( targets ) )`.
+  - One delegated `click` listener on `document`:
+    - The link is `event.target.closest( 'a[href]' )`. The listener returns
+      when there is none, when `event.defaultPrevented` (another handler
+      owns the click), or when `!isPlainClick( event, link.target )`. That is
+      FEATURE.md's invariant: the feature does not touch a modified click,
+      and that includes the switcher.
+    - `a[data-city]` with `cityFromAttr()` valid → write `cityCookie()` and
+      return. The browser follows the link, on every page.
+    - With no dialog, or when `!isTarget( link.href, the current city's
+      origin, targets )` → return.
+    - `decide( readCookies( document.cookie ), currentCity )`:
+      - `go-current` → return, and the browser follows the link as it is;
+      - `go-city` → `preventDefault()` and
+        `location.assign( crossUrl( link.href, origin of the saved city ) )`;
+      - `ask` → `preventDefault()`, remember the link's `href`, and
+        `dialog.showModal()`. Focus lands on «Харків» through `autofocus`.
+  - Dialog handlers:
+    - a `[data-city-popup-choice]` button writes `cityCookie( choice )`, then
+      goes to the remembered `href` as it is (chosen = current) or to its
+      `crossUrl()` (other city);
+    - the `[data-city-popup-close]` × → dismiss;
+    - `cancel` (Esc) → dismiss;
+    - a `click` whose target is the `<dialog>` and whose point is outside
+      its box → dismiss.
+    - Dismiss writes `dismissCookie()` and follows the remembered `href` as
+      it is.
+    - Every path calls `dialog.close()` before `location.assign()`, so Back
+      (bfcache) does not bring the page back with the question open.
+  - `source/scripts/app.js`, after `recordSiteSearch();`, gets the feature's
+    own block inside the IIFE:
+    `try { const {initCityPopup} = await import('@scripts/features/city-popup/city-popup'); initCityPopup(); } catch (error) { console.error(error); }`.
+    - Step 1's audit found that one throw in `app.js` stops everything after
+      it, so a failure here is caught and stops nothing.
+    - It sits last, so it never delays the modules above.
+  - Docs in the same commit, `docs/ARCHITECTURE.md`:
+    - Modules: the City popup row gets its JS part;
+    - Data flows: "Blog click → city question" as built. That covers the
+      config element, the modifier rule for `a[data-city]`, the
+      `defaultPrevented` guard, the backdrop point, and closing before
+      navigating.
+  - **Touches shared code — may affect other features:**
+    `source/scripts/app.js`. Consumers: every front-end module (`core`, and
+    `search-stats`' `recordSiteSearch`). The block is appended, and the
+    existing imports and calls are unchanged.
+
+  → `feat(city-popup): open the city question on a blog click and save the choice`
+
+- [x] **4. Screen «City question» in `source/styles/features/city-popup/city-popup.css`.**
+  - Mobile first, from the `colors.css` tokens and `.button`:
+    - `.city-popup`:
+      - `width: calc(100% - 32px)` (the 16 px gutter), `max-width: 400px`;
+      - white (`--color-white`), text `--color-black`, `border: none`, radius
+        5 px like `.button`;
+      - padding with room for the ×, `position: relative` for it.
+
+      The UA's modal `dialog` rules keep it centred.
+    - `.city-popup::backdrop`: `rgba(27, 27, 27, 0.6)`, which is
+      `--color-black` at 60 %. It is written as a value with a comment because
+      `::backdrop` does not see `:root` custom properties in browsers before
+      2024.
+    - `.city-popup__title`: Inter, 400, centred, at the heading scale's h4
+      size (23.6 px). The theme's global `h2` rule would otherwise make it
+      39.1 px.
+    - `.city-popup__cities`: a column with a 12 px gap; a row from
+      `@media (min-width: 768px)`, the theme's first breakpoint. Two
+      `.button` (min-width 152 px) plus the gap do not fit a 375 px dialog.
+    - `.city-popup__city`: full width in the column, `flex: 1` in the row.
+    - `.city-popup__close`: absolute top-right, a 32 px hit area, no border
+      or background, `--color-gray-dark`; `--color-black` on hover within
+      `@media (hover: hover)`, as the theme does.
+  - `source/styles/app.css` gets `/* Features */` and
+    `@import "@styles/features/city-popup/city-popup.css";` after the blocks.
+  - Docs in the same commit, `docs/DESIGN.md`:
+    - Components: a row "City question dialog (`.city-popup`)", with states
+      closed / open (modal, backdrop), stacked / side by side, in
+      `features/city-popup/city-popup.css` and `Dialog.php`;
+    - Screens: «City question», feature `city-popup`, entry "a click on a
+      target link on a blog page", design ref FEATURE.md → UI, states uk / ru
+      and 375 px / desktop.
+  - **Touches shared code — may affect other features:**
+    `source/styles/app.css`. Consumers: every page's CSS (`core`). One import
+    is appended; the selectors are all `.city-popup*`.
+
+  → `feat(city-popup): style the city question dialog`
+
+- [x] **5. Build.**
+  - `npm run build` in the theme. `.env` is already `production`.
+  - Commit `assets/`, with the new hashed `main` JS/CSS, the new chunk(s) and
+    `.vite/manifest.json`.
+  - Before the commit, check locally: on a local article (with the built
+    assets), «Послуги» opens the dialog.
+
+  → `chore(theme): rebuild assets with the city question`
+
+### Files to create/change
+- create `wp-content/themes/dovira/source/scripts/features/city-popup/{logic,city-popup}.js`
+- create `wp-content/themes/dovira/source/styles/features/city-popup/city-popup.css`
+- create `wp-content/themes/dovira/tests/js/city-popup/logic.test.js`
+- change `wp-content/themes/dovira/inc/features/city-popup/{Dialog,bootstrap}.php`, `tests/Unit/CityPopup/DialogTest.php` (task 2)
+- change `wp-content/themes/dovira/source/scripts/app.js`, `source/styles/app.css` (shared)
+- rebuild `wp-content/themes/dovira/assets/**` (committed)
+- docs: `docs/ARCHITECTURE.md`, `docs/DESIGN.md`
+
+### Tests to write
+- **`tests/js/city-popup/logic.test.js`** (Vitest, `node`, imports
+  `@scripts/features/city-popup/logic.js`):
+  - `isTarget`:
+    - the uk list (`/services/`, `/contacts/`, the service base `/services/`)
+      and the ru list (`/ru/uslugi/`, `/ru/kontakty/`, `/ru/services/`);
+    - targets: the services list, a service (`/services/diagnostics/`), a
+      sub-service (`/services/surgery/sterilization/`), contacts, and
+      `/contacts` without a slash;
+    - not targets: `/news/`, `/about/`, `/services-old/`, the same path on
+      another host, `tel:+380…`, `mailto:…`, a bare `#hash`, an invalid href;
+    - a relative `/contacts/` is resolved against the current origin.
+  - `isPlainClick`:
+    - a plain primary click → true;
+    - each of ctrl / meta / shift / alt → false;
+    - `button: 1` (middle) → false;
+    - `target="_blank"` → false; `_self` and `''` → true.
+  - `crossUrl`:
+    - path, query and fragment kept (`/services/x/?a=1#prices`);
+    - the marker added once;
+    - an existing query kept exactly (`?a=1&b=%20x`);
+    - no query → `?city-popup=1`.
+  - `decide`:
+    - a saved `kyiv` on Kharkiv → `go-city`;
+    - a saved `kharkiv` on Kharkiv → `go-current`;
+    - a dismissal only → `go-current`;
+    - saved and dismissed → the saved city wins;
+    - nothing → `ask`;
+    - an unknown value (`dovira_city=odesa`) → `ask`.
+  - Cookie strings:
+    - `Max-Age` = days × 86400 (90 → 7776000, 30 → 2592000); `Domain`,
+      `Path=/` and `SameSite=Lax` are present;
+    - `Secure` only when `secure`;
+    - the session cookie has no `Max-Age`;
+    - `readCookies`: several cookies, spaces, a value holding `=`, `''`;
+    - `cityFromAttr` accepts only `kharkiv` / `kyiv`: `Kyiv`, `''`,
+      `undefined` and `kharkiv,kyiv` → `null`.
+  - `isOutside`: a point inside the box, on its edge, and outside on each side.
+- **`DialogTest`** (task 2):
+  - the config element on and off the blog, with escaped values, and hidden;
+  - `data-days` from the filter moves onto it (same provider: 30, 0, −5,
+    'abc', '45');
+  - the dialog no longer carries the two attributes;
+  - `print_config()` on a Kyiv URL → `data-cookie-domain="dovira.vet"`.
+- **The state the user sees after the interaction:** `decide()` tests pin what
+  a click does (asks, goes to the city, or follows the link). The DOM result,
+  the dialog open with focus on «Харків», is checked by hand. TECH-STACK →
+  CONVENTIONS: no DOM library in Vitest, and the glue stays thin.
+- Test-critical zones of root `CLAUDE.md`: none touched.
+
+### Docs to update
+- `docs/ARCHITECTURE.md` → Modules (the City popup row: config element in task 2, JS part in task 3) and Data flows ("Blog click → city question", as built, task 3)
+- `docs/DESIGN.md` → Components (City question dialog) and Screens («City question», feature `city-popup`) (task 4)
+
+### Checks
+- ANTI-PATTERNS / CONVENTIONS: none violated.
+  - The choice lives only in the two cookies, which JS writes and PHP never
+    reads.
+  - There is no URL literal: the origins and targets come from the markup
+    and `location.protocol` gives `secure`.
+  - `assets/` comes from `npm run build`, and the entry goes through
+    `app.js`, which is already enqueued by `starter_theme_vite_asset()`.
+  - CONVENTIONS: the pure logic is in `logic.js`, tested in
+    `tests/js/city-popup/`, and the DOM glue is thin and checked by hand.
+  - The theme `CLAUDE.md` rules hold: an ES module imported from `app.js`,
+    one CSS file imported by `app.css` under `source/styles/features/{name}/`,
+    tokens from `colors.css`, and no new visible string.
+- Docs vs reality: mismatch, each resolved or routed:
+  - **The cookie domain and days exist only on blog pages**, but `a[data-city]`
+    must save "on every page". DECISIONS "The question is a native
+    `<dialog>` printed only on blog pages…" says "pages other than the blog
+    carry no dialog and no click listener", while DECISIONS "The header
+    switcher saves the city it switches to" says the JS writes the cookie
+    "on every page" → Question 1.
+  - A click on the dialog's padding targets the `<dialog>` like a backdrop
+    click does → `isOutside()` in `logic.js` (task 1).
+  - The theme styles every `h2` at 39.1 px (`heading.css`) → the title sets
+    its own size (task 4).
+  - `::backdrop` does not inherit `:root` custom properties in pre-2024
+    browsers → the backdrop colour is `--color-black`'s value at 60 %, with a
+    comment (task 4).
+  - `app.js` isolates no module (Step 1 audit) → the feature's block has its
+    own `try` / `catch` (task 3).
+  - Checked on `/news/`: the header's «Послуги» / «Контакти» are absolute
+    links to the current host (`https://dovira.ddev.site/services/`,
+    `/contacts/`). They match the printed targets.
+  - `toggle-submenu.js` prevents default only on its toggle button, not on
+    menu links. The `defaultPrevented` guard covers any handler that does.
+- Design: this builds screen «City question» from FEATURE.md → UI. There is
+  no design export (DECISIONS "No UI design phase"). No new token: the
+  backdrop is `--color-black` at 60 % as a value. No new strings.
+- Check command: `bin/check.sh` (docs/TECH-STACK.md → Check command). Six
+  stages, green on `master` after Step 2.
+- Not locally verifiable:
+  - the move to the other install (`kyiv.dovira.ddev.site` does not resolve
+    locally) → verified by the next hand deploy from `master` and the merge
+    into `kyiv`, as the step says;
+  - the ru strings on production depend on the Step 2 values typed after
+    that deploy.
+
+### Questions / ambiguities
+**1. How do pages outside the blog learn the cookie domain and the days?**
+The step wants `a[data-city]` to write `dovira_city` "on every page" (Step 4
+puts `data-city` on the header switcher, which is on every page). The only
+place those two values are printed is the blog `<dialog>` (Step 2). A PHP
+source is needed: DECISIONS derives the domain in PHP from `home_url()` and
+the days from the filter, and the JS knows no URL. Two DECISIONS entries also
+disagree about a listener off the blog.
+- **A (recommended).** Task 2 prints a hidden
+  `<div data-city-popup-config data-cookie-domain data-days>` on every page
+  from `Dialog`, hooked on `wp_footer`, and moves those two attributes off
+  the dialog.
+  - The glue attaches its one listener wherever the config element is. The
+    question part runs only where the dialog is.
+  - The "no click listener" wording in the dialog DECISIONS entry gives way to
+    the switcher entry. `/close-step` records that in DECISIONS.
+  - Cost: one PHP task and changes to a closed step's class and test
+    (`Dialog`, `DialogTest`), inside the feature.
+- **B.** Step 3 keeps to its file list: `a[data-city]` saves only where the
+  dialog is (blog pages).
+  - Step 4, whose Verification needs "on any page", then adds the config
+    element in its own plan.
+  - The step text's "on every page" is not met in Step 3.
+  - Task 2 drops out, and task 3 reads the domain and days from the dialog.
+
+Resolved: approved as recommended — A (a hidden `data-city-popup-config`
+element with the cookie domain and the days on every page, printed by
+`Dialog` on `wp_footer`; the two attributes move off the dialog; the switcher
+DECISIONS entry prevails over the dialog entry's "no click listener", recorded
+at the close).

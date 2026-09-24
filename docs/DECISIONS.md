@@ -308,6 +308,25 @@ Entry format:
   - `ddev exec bash bin/check.sh` stops before stage 1 unless `node_modules/` was installed inside the container. TECH-STACK → Check command, TESTING → How to run, the ARCHITECTURE gate row and root `CLAUDE.md` → Commands say to run the gate on the host.
   - The entry above keeps its wording (append-only); this entry replaces its "(the DDEV web container has them)" as the rule for where the gate runs.
 
+
+## 2026-09-24 — [city-popup] The cookie settings are printed on every page; off the blog the only listener saves `data-city`
+- **Context:** Two entries of 2026-09-23 disagreed.
+  - "The question is a native `<dialog>` printed only on blog pages…" said pages other than the blog carry "no dialog and no click listener".
+  - "The header switcher saves the city it switches to" has the JS write `dovira_city` "for the configured days … on every page".
+  - The cookie domain and the days come from PHP (`home_url()`, the filter `dovira_city_popup_days`), and Step 2 printed them only on the blog `<dialog>`.
+- **Decision:**
+  - `Dialog` prints on every page, in `wp_footer`, one `<div hidden data-city-popup-config>` with the cookie domain and the days, and the dialog no longer carries them.
+  - The JS adds its one delegated click listener wherever that element is.
+  - Off the blog it does nothing but save a plain click on a link with a valid `data-city`.
+  - The question still exists only where the `<dialog>` is.
+- **Alternatives rejected:**
+  - Deferring the every-page save to Step 4: the step asked for it in Step 3, and the gap would only move.
+  - Deriving the domain in JS from `location.hostname` and hard-coding 90 days: that duplicates `Sites`, ignores the filter, and puts a second 90 in the code.
+- **Consequences:**
+  - Every page carries one hidden, visitor-independent element, so it does not vary by visitor or cache key.
+  - The dialog entry's "no click listener" now means no *question* listener.
+  - `city-popup` Sprint 1 Step 3, plan Question 1, answer A.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)

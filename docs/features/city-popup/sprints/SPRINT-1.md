@@ -107,7 +107,7 @@ tests, and every decision the module makes is covered by one.
 - **Docs to update:** `docs/ARCHITECTURE.md` → Modules (the feature's row) and the Bootstrap row (the features `functions.php` requires).
 - **Depends on:** Step 1
 
-### [ ] Step 3 — The city question in the browser
+### [x] Step 3 — The city question in the browser
 - **Tasks:**
   - Pure module `source/scripts/features/city-popup/logic.js`, with no DOM access:
     - `isTarget( href, currentOrigin, targets )`;
