@@ -6,7 +6,8 @@ const DISMISS_COOKIE = 'dovira_city_dismissed';
 const CITIES = ['kharkiv', 'kyiv'];
 // Added to every move to the other install; its 404 under the service base then
 // falls back to the services list (DECISIONS "A service missing on the chosen
-// install falls back to its services list through a marker in the URL").
+// install falls back to its services list through a marker in the URL"). The
+// PHP half is Fallback::MARKER in inc/features/city-popup/Fallback.php.
 const MARKER = 'city-popup';
 const DAY_SECONDS = 86400;
 

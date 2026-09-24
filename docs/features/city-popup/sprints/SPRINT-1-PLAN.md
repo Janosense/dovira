@@ -941,7 +941,7 @@ hook's priority in task 3 and one guide item change.
     - `docs/ARCHITECTURE.md` → Data flows: "(the header switcher, from Step
       4)" becomes the switcher as built.
   → `feat(theme): the header city switcher names its city`
-- [ ] **3. `Fallback` (`dovira\CityPopup\Fallback`) on `template_redirect`.**
+- [x] **3. `Fallback` (`dovira\CityPopup\Fallback`) on `template_redirect`.**
   - `inc/features/city-popup/Fallback.php`, final:
     - `public const MARKER = 'city-popup'`: the marker's PHP half. The JS half
       is `MARKER` in `logic.js`, and each file names the other in a comment.
