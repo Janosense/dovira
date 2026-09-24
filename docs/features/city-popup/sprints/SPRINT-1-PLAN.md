@@ -748,7 +748,7 @@ drops out and task 3 changes as that question describes.
 
   → `feat(city-popup): style the city question dialog`
 
-- [ ] **5. Build.**
+- [x] **5. Build.**
   - `npm run build` in the theme. `.env` is already `production`.
   - Commit `assets/`, with the new hashed `main` JS/CSS, the new chunk(s) and
     `.vite/manifest.json`.
