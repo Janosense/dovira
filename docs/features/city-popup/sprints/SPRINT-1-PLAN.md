@@ -574,7 +574,7 @@ theme's `$strings` list, keyed in Ukrainian; their ru values are shared with
 the `Dovira: Cities` strings; FEATURE.md → Fit into the host changes its
 strings line).
 
-## Plan — Sprint 1, Step 3: The city question in the browser   (status: implemented, awaiting verification)
+## Plan — Sprint 1, Step 3: The city question in the browser   (status: closed)
 
 ### Branch
 `city-popup/sprint-1-city-question` ← `master`

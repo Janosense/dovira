@@ -163,6 +163,13 @@ changes) — DECISIONS "Testing tooling and the project check command".
   - Inject the check instead, e.g. `new Pages( ?bool $polylang = null )` with
     `null` meaning `function_exists( 'pll_get_post' )`, and pass `false` in
     the test (city-popup Sprint 1 Step 2).
+- Do not treat `event.target === dialog` as a click on a `<dialog>`'s backdrop.
+  - A click on the dialog's own padding has the same target.
+  - Also test that the point lies outside `dialog.getBoundingClientRect()`
+    (`isOutside()` in `source/scripts/features/city-popup/logic.js`).
+  - Do not colour `::backdrop` with a `:root` custom property either: browsers
+    before 2024 do not pass custom properties into `::backdrop`, so write the
+    value (city-popup Sprint 1 Step 3).
 
 ## CONVENTIONS (mandatory reading before writing code)
 <!-- Project-wide rules for code that later steps must follow and would

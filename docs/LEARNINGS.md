@@ -24,6 +24,11 @@ Entry format:
 
 ---
 
+## [new] 2026-09-24 — The plan-step UI rule asks for a test of the state after the interaction, which a project without a DOM test runner cannot write
+- **Playbook rule:** `.claude/commands/plan-step.md` → §5, "The step builds or changes UI → … at least one test asserts the state the user sees after the interaction".
+- **What happened:** city-popup Sprint 1 Step 3 built an interactive dialog. The project's own CONVENTIONS keep Vitest without a DOM library and verify the DOM glue by hand (a dev dependency decided in DECISIONS). The plan met the rule with tests of the pure `decide()` function, which pins what a click does, and left "dialog open, focus on the first button" to the manual guide. The rule does not say whether that is enough.
+- **Suggested change:** Let the rule accept a pure decision test plus a verification-guide item when the project's TECH-STACK declares no DOM test runner, or have discovery decide the DOM runner question explicitly for any feature with interactive UI.
+
 ## 2026-09-23 — [search-stats] The step prescribed `esc_html()`, and the test stub would have hidden what it does in production
 - **Incident:** SPRINT-2 Step 3, written by discovery, asked for "`esc_html` on every value" of the search blocks. Two things were true at once:
   - Followed literally, with the theme suite's `Functions\stubEscapeFunctions()`-style stub, every planned test would have passed, because Brain\Monkey's `esc_html` is `htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' )`, which double-encodes.

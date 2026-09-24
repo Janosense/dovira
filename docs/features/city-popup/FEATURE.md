@@ -41,7 +41,7 @@ Both cookies use the Kharkiv host as their domain, `Path=/`, `SameSite=Lax`, and
 - Filter `dovira_city_popup_days` (int days, default 90).
 - The query marker `city-popup=1`: every install understands it on a 404 under the service base.
 - `data-city="kharkiv|kyiv"` on a link: the module saves that city on click, on every page. The header switcher uses it, and any link may carry it.
-- The `<dialog>` markup and its data attributes are internal. No other feature reads them.
+- The `<dialog>` markup, the hidden config element printed on every page (`data-city-popup-config`: cookie domain, days), and their data attributes are internal. No other feature reads them.
 
 ## UI
 - **Screens:** «City question». There is no design export (DECISIONS "No UI design phase; the dialog is fixed as a template in FEATURE.md"). The template:
