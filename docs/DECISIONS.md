@@ -327,6 +327,17 @@ Entry format:
   - The dialog entry's "no click listener" now means no *question* listener.
   - `city-popup` Sprint 1 Step 3, plan Question 1, answer A.
 
+## 2026-09-24 — [city-popup] The fallback answers only what stays a 404 after WordPress's own redirects
+- **Context:** The entry "A service missing on the chosen install falls back to its services list through a marker in the URL" did not say where `Fallback` stands among the other `template_redirect` callbacks. WordPress itself redirects some 404s under the service base before a theme hook at the same priority:
+  - `wp_old_slug_redirect` sends a renamed service's old slug to its new one;
+  - `redirect_canonical` guesses a service whose slug starts with the requested one. Locally, `/services/diagnost/?city-popup=1` → 301 `/services/diagnostics/?city-popup=1`.
+- **Decision:** `Fallback::redirect()` is hooked on `template_redirect` at the default priority 10, after both core callbacks. It sends to the services list only what would otherwise be shown as a 404 page.
+- **Alternatives rejected:** priority 9, before core: every marked 404 would go to the list, even when WordPress finds the renamed service (the same service) or a longer slug, which it already does for every visitor, marker or not.
+- **Consequences:**
+  - A guessed longer slug can be a different service whose slug merely begins alike, as it is today without the feature.
+  - The DOMAIN rule "a service the chosen city's site does not have leads to that site's services list" means a service WordPress does not find.
+  - `city-popup` Sprint 1 Step 4, plan Question 1, answer A.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
