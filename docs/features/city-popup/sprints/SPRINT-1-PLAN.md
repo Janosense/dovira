@@ -710,7 +710,7 @@ drops out and task 3 changes as that question describes.
 
   → `feat(city-popup): open the city question on a blog click and save the choice`
 
-- [ ] **4. Screen «City question» in `source/styles/features/city-popup/city-popup.css`.**
+- [x] **4. Screen «City question» in `source/styles/features/city-popup/city-popup.css`.**
   - Mobile first, from the `colors.css` tokens and `.button`:
     - `.city-popup`:
       - `width: calc(100% - 32px)` (the 16 px gutter), `max-width: 400px`;

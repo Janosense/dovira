@@ -1,0 +1,75 @@
+/* Feature city-popup: screen «City question» (docs/features/city-popup/FEATURE.md → UI).
+   The browser's own modal <dialog> rules centre it and keep it hidden while closed. */
+.city-popup {
+  position: relative;
+  width: calc(100% - 32px);
+  max-width: 400px;
+  padding: 48px 24px 24px;
+  box-sizing: border-box;
+  color: var(--color-black);
+  background-color: var(--color-white);
+  border: none;
+  border-radius: 5px;
+
+  /* --color-black at 60 %: ::backdrop does not see :root custom properties in browsers before 2024. */
+  &::backdrop {
+    background-color: rgba(27, 27, 27, 0.6);
+  }
+}
+
+/* An h2, which the theme would otherwise set at 39.1 px: the heading scale's h4. */
+.city-popup__title {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  font-size: 23.6px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Two .button (min-width 152 px) and the gap do not fit a narrow screen: stacked there. */
+.city-popup__cities {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+  }
+}
+
+.city-popup__city {
+  width: 100%;
+
+  @media (min-width: 768px) {
+    flex: 1;
+    width: auto;
+  }
+}
+
+.city-popup__close {
+  -webkit-appearance: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--color-gray-dark);
+  background-color: var(--color-transparent);
+  border: none;
+  cursor: pointer;
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--color-black);
+    }
+  }
+}
