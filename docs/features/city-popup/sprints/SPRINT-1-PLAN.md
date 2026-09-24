@@ -896,3 +896,221 @@ element with the cookie domain and the days on every page, printed by
 `Dialog` on `wp_footer`; the two attributes move off the dialog; the switcher
 DECISIONS entry prevails over the dialog entry's "no click listener", recorded
 at the close).
+
+## Plan — Sprint 1, Step 4: The switcher saves the choice; a missing service falls back to the list   (status: approved, in progress)
+
+### Branch
+`city-popup/sprint-1-city-question` ← `master`
+(root `CLAUDE.md` → git model: simple. The branch is created again from
+`master`, which carries Steps 1–3 (`96738cdb`), and deleted at the close.)
+
+### Tasks (ordered)
+Written for the recommended answer to Question 1 (A). Under answer B only the
+hook's priority in task 3 and one guide item change.
+
+- [x] **1. The `data-city` decision moves into `logic.js`.** The Step 3 glue
+  asks `cityFromAttr()` and then builds `cityCookie()` itself, so the rule
+  "an unknown value writes nothing" lives in the glue, where Vitest cannot see
+  it (TECH-STACK → CONVENTIONS: logic in pure modules, the glue stays thin).
+  This is the one way to give the step's Vitest test something real to test.
+  - `logic.js` gains `namedCityCookie( value, days, domain, secure )`: the
+    `cityCookie()` string for `kharkiv` / `kyiv`, `null` for anything else.
+  - `city-popup.js` calls it in the `data-city` branch, writes the cookie
+    when it gets a string, and returns. The behaviour does not change.
+  - Vitest cases in `tests/js/city-popup/logic.test.js`.
+  - `npm run build`; `assets/` rebuilt and committed in the same commit.
+  → `refactor(city-popup): decide the data-city cookie in logic.js`
+- [ ] **2. The header switcher names its city.**
+  **Touches shared code — may affect other features:**
+  `template-parts/header/site-header.php` is the header of every page on both
+  installs. Consumers: `core` (every template), and `search-stats`, whose
+  header search form is in the same file and stays unchanged.
+  - The four `<a class="location-switcher__link">` get `data-city`: the two
+    links to `https://dovira.vet` (desktop and mobile, printed on Kyiv) get
+    `data-city="kharkiv"`, and the two links to `https://kyiv.dovira.vet`
+    (printed on Kharkiv) get `data-city="kyiv"`. Each install prints two of
+    them.
+  - Nothing else changes: the hrefs (legacy literals, kept by DECISIONS "The
+    other install's host and the cookie domain are derived from the site
+    URL"), the classes, the texts, and the active city's `div`, which saves
+    nothing.
+  - Docs in the same commit:
+    - `docs/features/core/FEATURE.md` → Interfaces: the switcher's links carry
+      `data-city="kharkiv|kyiv"`, and a click saves the city through
+      `city-popup`.
+    - `docs/ARCHITECTURE.md` → Data flows: "(the header switcher, from Step
+      4)" becomes the switcher as built.
+  → `feat(theme): the header city switcher names its city`
+- [ ] **3. `Fallback` (`dovira\CityPopup\Fallback`) on `template_redirect`.**
+  - `inc/features/city-popup/Fallback.php`, final:
+    - `public const MARKER = 'city-popup'`: the marker's PHP half. The JS half
+      is `MARKER` in `logic.js`, and each file names the other in a comment.
+    - `__construct( private Pages $pages )`. The service base and the services
+      page come from `Pages::targets()` in the request's language, so there is
+      no second slug lookup. Polylang sets the language of a 404 from its
+      `/ru/` prefix (checked: the local `/ru/services/no-such-service/` 404
+      prints `lang="ru"`).
+    - `target( array $query, string $request_uri ): ?string` returns the
+      services page URL only when all hold:
+      - `is_404()`;
+      - `$query['city-popup']` is exactly `'1'`;
+      - the path of `$request_uri`, with a trailing slash added, starts with
+        the path of `targets()['service']` (the slash-ended base of the
+        request's language), the way `isTarget()` compares paths;
+      - `targets()` has `services` (and `service`).
+
+      Otherwise it returns `null`.
+    - `static redirect()` is the hook callback. It calls
+      `target( $_GET, $_SERVER['REQUEST_URI'] )` and, on a URL, calls
+      `wp_safe_redirect( $url, 302 )` and `exit`. The redirect carries no
+      marker. The callback is not unit-tested (it ends in `exit`); the guide
+      covers it.
+  - `bootstrap.php` requires `Fallback.php` and adds
+    `add_action( 'template_redirect', [ Fallback::class, 'redirect' ] )` at
+    the default priority 10. Core's `wp_old_slug_redirect` and
+    `redirect_canonical` are registered earlier at the same priority, so they
+    run first (Question 1, A).
+  - `tests/Unit/CityPopup/FallbackTest.php`.
+  - Docs in the same commit, `docs/ARCHITECTURE.md`:
+    - Modules → the City popup row gains `Fallback` and `namedCityCookie()`.
+    - Data flows → the existing `Fallback` sentence is made exact: the hook,
+      the order after core's own 404 redirects, no marker on the target.
+  → `feat(city-popup): a missing service with the marker falls back to the services list`
+
+### Files to create/change
+- create:
+  - `wp-content/themes/dovira/inc/features/city-popup/Fallback.php`
+  - `wp-content/themes/dovira/tests/Unit/CityPopup/FallbackTest.php`
+- change:
+  - `wp-content/themes/dovira/inc/features/city-popup/bootstrap.php`
+  - `wp-content/themes/dovira/source/scripts/features/city-popup/logic.js`
+  - `wp-content/themes/dovira/source/scripts/features/city-popup/city-popup.js`
+  - `wp-content/themes/dovira/tests/js/city-popup/logic.test.js`
+  - `wp-content/themes/dovira/assets/**` (rebuilt by `npm run build`)
+  - `wp-content/themes/dovira/template-parts/header/site-header.php`
+    (**touches shared code**)
+  - `docs/ARCHITECTURE.md`
+  - `docs/features/core/FEATURE.md`
+
+### Tests to write
+- **Vitest, `logic.test.js` → `namedCityCookie`** (task 1):
+  - `'kyiv'` → exactly `dovira_city=kyiv; Max-Age=7776000; Domain=dovira.ddev.site; Path=/; SameSite=Lax; Secure`;
+  - `'kharkiv'` on http → the `dovira_city=kharkiv` string without `Secure`;
+  - unknown values write nothing (`null`): `'Kyiv'`, `'odesa'`, `''`,
+    `undefined`, and `'kharkiv, kyiv'`. The last is the employees block's
+    `li[data-city]` format, which never reaches the function because the
+    glue reads only the link's own attribute, but it is still not a city.
+- **PHPUnit, `FallbackTest`** (task 3). It uses the real `Pages( true )` with
+  the Polylang and WordPress stubs of `PagesTest`, plus `is_404`:
+  - a 404 with the marker and a uk service path
+    `/services/no-such-service/?city-popup=1` → `https://dovira.ddev.site/services/`;
+  - the same for a sub-service path `/services/surgery/no-such/`;
+  - the same with a ru path `/ru/services/no-such-service/` in ru →
+    `https://dovira.ddev.site/ru/uslugi/`;
+  - no marker → `null`; the marker with another value (`0`, `true`, an
+    array) → `null`;
+  - not a 404 → `null`;
+  - a 404 with the marker outside the service base (`/no-such-page/`,
+    `/news/no-such/`, `/services-old/x/`) → `null`;
+  - a uk path while the request is ru (`/services/x/` under the `/ru/services/`
+    base) → `null`;
+  - the services page missing → `null`; the `service` type without a rewrite
+    slug → `null`.
+- UI-state rule: the switcher's links are rendered by `site-header.php`, and
+  the only state after the click is the cookie and the navigation. Vitest
+  asserts the cookie string the click writes. The DOM glue is checked by
+  hand (TECH-STACK → CONVENTIONS; LEARNINGS entry of Step 3).
+
+### Docs to update
+- `docs/ARCHITECTURE.md`:
+  - Data flows: the switcher as built (task 2) and the fallback as built
+    (task 3);
+  - Modules: the City popup row gains `Fallback` and `namedCityCookie()`
+    (task 3).
+- `docs/features/core/FEATURE.md` → Interfaces: the switcher's `data-city`
+  (task 2).
+
+### Checks
+- ANTI-PATTERNS / CONVENTIONS: none violated.
+  - The city is still decided only by the switcher's existing
+    `$current_site_id` from the site URL. `data-city` goes inside those
+    branches and adds no new decision.
+  - There is no new literal of either production URL; the switcher's two
+    hrefs are legacy and stay.
+  - `Fallback` reads neither cookie. Its redirect depends only on the URL
+    (the path, the marker) and the 404, the same for every visitor and
+    crawler.
+  - `assets/` comes from `npm run build`.
+  - Brain\Monkey `function_exists`: `FallbackTest` passes `Pages( true )`.
+  - CONVENTIONS: the `data-city` decision moves into the pure module (task 1).
+  - Theme `CLAUDE.md`: the class is in `inc/features/city-popup/`, its hook
+    is in the feature's `bootstrap.php`, and `functions.php` is unchanged.
+- Docs vs reality: match, with these findings, all checked locally:
+  - `/services/no-such-service/?city-popup=1`,
+    `/services/surgery/no-such/?city-popup=1` and
+    `/ru/services/no-such-service/?city-popup=1` are 404s today, and the ru
+    one prints `lang="ru"`, so Polylang knows the request's language.
+    `/no-such-page/?city-popup=1` is a 404 too.
+  - WordPress answers some 404s itself before a theme hook at the same
+    priority: `/services/diagnost/?city-popup=1` → 301 to
+    `/services/diagnostics/?city-popup=1` (`redirect_canonical` guesses a
+    service whose slug starts with the requested one; `wp_old_slug_redirect`
+    follows a renamed one) → Question 1.
+  - The switcher has four links in the file and two per install, because
+    the current city is a `div`. No script handles `.location-switcher`
+    clicks. `toggle-submenu.js` prevents default only on
+    `.menu-item__toggle`.
+  - The other `data-city` attributes (the employees and vacancies blocks)
+    sit on `button`s and `li`s, not on links. The glue reads only the
+    clicked `a[href]`'s own attribute, so nothing changes for them.
+  - `docs/ARCHITECTURE.md` → Data flows already describes `Fallback` from
+    discovery; task 3 makes it true.
+  - `site-header.php` is identical on `master` and `kyiv` (only `header.php`
+    differs), so the merge into `kyiv` carries task 2 without a conflict.
+- Design: n/a. No screen or token changes; the switcher looks the same.
+- Check command: `bin/check.sh` (docs/TECH-STACK.md → Check command). Six
+  stages, green on `master` after Step 3 (plugin 309, theme PHP 127,
+  Vitest 52). It runs on the host.
+- Not locally verifiable: the Kyiv side is verified by the next hand deploy
+  from `master` and the merge of `master` into `kyiv`, as the step says:
+  - on a `dovira.vet` article, «Київ» leads to `kyiv.dovira.vet/services/`;
+  - the Kyiv switcher's «Харків» saves `kharkiv` on the shared domain;
+  - `kyiv.dovira.vet/services/no-such-service/?city-popup=1` lands on the
+    Kyiv services list.
+
+  Locally, `kyiv.dovira.ddev.site` does not resolve, so the guide checks the
+  address the browser tries.
+
+### Questions / ambiguities
+**1. Should the fallback run before or after WordPress's own 404 redirects?**
+WordPress answers some 404s under the service base itself on
+`template_redirect`, before a theme hook at the same priority:
+- `wp_old_slug_redirect` sends a renamed service's old slug to its new one;
+- `redirect_canonical` guesses a service whose slug starts with the requested
+  one (checked: `/services/diagnost/?city-popup=1` → 301
+  `/services/diagnostics/?city-popup=1`).
+
+The step says what `Fallback` does on a 404, but not whether those come
+first. DECISIONS "A service missing on the chosen install falls back to its
+services list…" speaks of "a service the other install does not have".
+
+- **A — after them (default priority 10).** `Fallback` answers only what would
+  otherwise be shown as a 404 page. A renamed service, or one whose slug is
+  longer, is reached the way WordPress already reaches it for every visitor,
+  marker or not. Tasks as written; the guide checks that
+  `/services/diagnost/?city-popup=1` still goes to `/services/diagnostics/`.
+- **B — before them (priority 9).** Every marked 404 under the base goes to
+  the list, even when WordPress would have found the renamed service or a
+  longer slug. Task 3 registers at 9, and the guide checks
+  `/services/diagnost/?city-popup=1` → `/services/`.
+
+**Recommendation: A.** The old-slug match is exactly the same service. The
+prefix guess is WordPress's behaviour for that URL for every visitor, and a
+redirect by the feature should not override it. What is still a 404 after
+both is the service the other install does not have. The trade-off: a guess
+can land on a different service whose slug merely begins alike, as it does
+today without the feature.
+
+Resolved: approved as recommended — A (`Fallback` on `template_redirect` at
+the default priority 10, after core's `wp_old_slug_redirect` and
+`redirect_canonical`; it answers only what would otherwise be a 404 page).

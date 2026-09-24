@@ -5,6 +5,7 @@ import {
   crossUrl,
   decide,
   cityCookie,
+  namedCityCookie,
   dismissCookie,
   readCookies,
   cityFromAttr,
@@ -154,6 +155,28 @@ describe('cookie strings', () => {
     ['kharkiv,kyiv', null],
   ])('cityFromAttr(%j) is %j', (value, city) => {
     expect(cityFromAttr(value)).toBe(city)
+  })
+})
+
+describe('namedCityCookie', () => {
+  it('the switcher\'s kyiv writes the city cookie', () => {
+    expect(namedCityCookie('kyiv', 90, 'dovira.ddev.site', true))
+      .toBe('dovira_city=kyiv; Max-Age=7776000; Domain=dovira.ddev.site; Path=/; SameSite=Lax; Secure')
+  })
+
+  it('the switcher\'s kharkiv on http writes it without Secure', () => {
+    expect(namedCityCookie('kharkiv', 90, 'dovira.ddev.site', false))
+      .toBe('dovira_city=kharkiv; Max-Age=7776000; Domain=dovira.ddev.site; Path=/; SameSite=Lax')
+  })
+
+  it.each([
+    ['Kyiv'],
+    ['odesa'],
+    [''],
+    [undefined],
+    ['kharkiv, kyiv'],
+  ])('%j writes nothing', (value) => {
+    expect(namedCityCookie(value, 90, 'dovira.ddev.site', true)).toBeNull()
   })
 })
 
