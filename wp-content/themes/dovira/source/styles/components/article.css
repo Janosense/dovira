@@ -77,4 +77,17 @@
       }
     }
   }
+
+  h2 {
+    margin-top: 40px!important;
+    font-size: 28px!important;
+
+    @media (min-width: 1024px) {
+      font-size: 36px!important;
+    }
+
+    @media (min-width: 1280px) {
+      font-size: 40px!important;
+    }
+  }
 }
