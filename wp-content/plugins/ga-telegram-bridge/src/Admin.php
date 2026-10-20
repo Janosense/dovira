@@ -140,6 +140,21 @@ final class Admin {
 			)
 		);
 
+		add_settings_field(
+			'gatb_telegram_thread_id',
+			__( 'Thread id', 'ga-telegram-bridge' ),
+			array( self::class, 'render_field' ),
+			self::PAGE,
+			'gatb_telegram',
+			array(
+				'label_for'   => 'gatb_telegram_thread_id',
+				'key'         => 'telegram_thread_id',
+				'type'        => 'text',
+				'class_name'  => 'small-text',
+				'description' => __( 'Optional. The thread (topic) of the chat to post into: the number after the chat in a link to any message of that thread, as in t.me/c/1234567890/172/180. Leave empty to post into the chat itself.', 'ga-telegram-bridge' ),
+			)
+		);
+
 		add_settings_section(
 			'gatb_schedule',
 			__( 'Schedule', 'ga-telegram-bridge' ),

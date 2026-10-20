@@ -22,6 +22,11 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-10-20 — [adhoc] [ga-telegram-bridge] — Report into a Telegram thread
+- Changed: plugin 0.4.0. New optional setting `telegram_thread_id` (Settings → GA → Telegram, «Thread id»; empty or a positive whole number). `TelegramClient` reads it the way it reads the token and sends it as `message_thread_id`, so the report, the failure notice and the test message all go to that thread. Empty = the chat itself, as before. Tests in `SettingsTest` and `TelegramClientTest`; uk strings; DATA-MODEL, FEATURE, ARCHITECTURE, readme.
+- Decisions: —
+- Open: **After the next hand deploy:** type `172` into «Thread id» on the install whose chat has the thread, then press *Check Telegram* to confirm the message lands there.
+
 ## 2026-09-24 — [city-popup] Sprint 1 Step 4 — The switcher saves the choice; a missing service falls back to the list
 - Changed:
   - `logic.js` `namedCityCookie()`: the `data-city` rule (only `kharkiv` / `kyiv` write a cookie) moved out of the glue into Vitest's reach; behaviour unchanged. `assets/` rebuilt.

@@ -108,22 +108,30 @@ final class TelegramClient {
 	 * @return array<string, mixed>|\WP_Error What wp_remote_post() answered.
 	 */
 	private static function post( string $token, string $chat_id, string $html ) {
+		$payload = array(
+			'chat_id'              => $chat_id,
+			'text'                 => $html,
+			'parse_mode'           => 'HTML',
+			// The field the sprint named, disable_web_page_preview, was
+			// dropped from the Bot API documentation; this is its
+			// replacement and the API is versioned on Telegram's side.
+			'link_preview_options' => array( 'is_disabled' => true ),
+		);
+
+		// Read here, like the token, so that the report, the failure notice and
+		// the test message all go to the same thread of the chat.
+		$thread_id = Settings::telegram_thread_id();
+
+		if ( '' !== $thread_id ) {
+			$payload['message_thread_id'] = (int) $thread_id;
+		}
+
 		return wp_remote_post(
 			self::ENDPOINT . '/bot' . $token . '/sendMessage',
 			array(
 				'timeout' => self::TIMEOUT,
 				'headers' => array( 'Content-Type' => 'application/json; charset=utf-8' ),
-				'body'    => (string) wp_json_encode(
-					array(
-						'chat_id'              => $chat_id,
-						'text'                 => $html,
-						'parse_mode'           => 'HTML',
-						// The field the sprint named, disable_web_page_preview, was
-						// dropped from the Bot API documentation; this is its
-						// replacement and the API is versioned on Telegram's side.
-						'link_preview_options' => array( 'is_disabled' => true ),
-					)
-				),
+				'body'    => (string) wp_json_encode( $payload ),
 			)
 		);
 	}

@@ -67,6 +67,7 @@ final class Settings {
 			'service_account_json' => '',
 			'telegram_bot_token'   => '',
 			'telegram_chat_id'     => '',
+			'telegram_thread_id'   => '',
 			'send_time'            => '09:00',
 			'max_attempts'         => 3,
 			'blocks'               => array_fill_keys( self::BLOCKS, true ),
@@ -116,6 +117,7 @@ final class Settings {
 			'service_account_json' => self::string_value( $stored, 'service_account_json', $defaults ),
 			'telegram_bot_token'   => self::string_value( $stored, 'telegram_bot_token', $defaults ),
 			'telegram_chat_id'     => self::string_value( $stored, 'telegram_chat_id', $defaults ),
+			'telegram_thread_id'   => self::string_value( $stored, 'telegram_thread_id', $defaults ),
 			'send_time'            => self::string_value( $stored, 'send_time', $defaults ),
 			'max_attempts'         => self::int_value( $stored, 'max_attempts', $defaults ),
 			'blocks'               => self::merge_blocks( $stored['blocks'] ?? array() ),
@@ -262,6 +264,19 @@ final class Settings {
 			}
 		}
 
+		$thread_id = self::submitted( $raw, 'telegram_thread_id' );
+
+		if ( null !== $thread_id ) {
+			if ( '' === $thread_id || 1 === preg_match( '/^[1-9]\d*$/', $thread_id ) ) {
+				$values['telegram_thread_id'] = $thread_id;
+			} else {
+				$errors['telegram_thread_id'] = __(
+					'The thread id must be a positive whole number (for example 172), or empty to post into the chat itself. The previous value was kept.',
+					'ga-telegram-bridge'
+				);
+			}
+		}
+
 		$send_time = self::submitted( $raw, 'send_time' );
 
 		if ( null !== $send_time && '' !== $send_time ) {
@@ -330,6 +345,14 @@ final class Settings {
 	 */
 	public static function telegram_chat_id(): string {
 		return (string) self::all()['telegram_chat_id'];
+	}
+
+	/**
+	 * Returns the thread (forum topic) of the chat the report is sent to, or an
+	 * empty string to post into the chat itself.
+	 */
+	public static function telegram_thread_id(): string {
+		return (string) self::all()['telegram_thread_id'];
 	}
 
 	/**
