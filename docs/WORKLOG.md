@@ -22,6 +22,11 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-10-20 — [adhoc] [core] — Contact/franchise notification names the city and links to its own site
+- Changed: `dovira_conversation_telegram_message()` (in `inc/utils/telegram.php`, which tests can load; `conversation.php` registers hooks) builds the text `dovira_wpcf7_submit_action()` sends. The sentence ends with «із сайту в Харкові» / «із сайту в Києві» (site URL contains `kyiv`), and «Всі звернення тут» links to the install's own `admin_url( 'edit.php?post_type=conversation' )`, no longer always `dovira.vet`. Test `ConversationMessageTest`; theme PHPUnit 166.
+- Decisions: —
+- Open: the vacancy notification still links to `dev.dovira.vet` and the blood-donor one to `dovira.vet`; the same fix applies if wanted.
+
 ## 2026-10-20 — [adhoc] [core] — Form notifications also go to a fixed chat thread from wp-config
 - Changed: `dovira_telegram_notify()` (`inc/utils/telegram.php`) sends to every chat in `telegram_bot_chats` as before, then once to `DOVIRA_TELEGRAM_CHAT_ID` with `message_thread_id` = `DOVIRA_TELEGRAM_THREAD_ID` (optional). A subscriber that is that chat gets it only in the thread. Reverted the previous ad-hoc's topic subscription (`29cb127f`, option `telegram_bot_chat_threads`): the bot has no webhook, so it could never run. Theme PHPUnit 160.
 - Decisions: DECISIONS "Form notifications also go to one fixed thread named in `wp-config.php`". The join flow is documented as dormant (no webhook).
