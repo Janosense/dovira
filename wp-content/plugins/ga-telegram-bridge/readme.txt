@@ -4,7 +4,7 @@ Tags: analytics, google analytics, ga4, telegram, reports
 Requires at least: 7.1
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.4.0
+Stable tag: 0.4.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -231,6 +231,11 @@ to read the report, and to `api.telegram.org` to send it. There is no third-part
 service, no telemetry, and no request made from a visitor's page view.
 
 == Changelog ==
+
+= 0.4.1 =
+* Saving the settings no longer ends in a fatal error. Since 0.2.0 every save
+  that changed a value stopped with a TypeError after the values were stored,
+  so the schedule did not follow a changed send time.
 
 = 0.4.0 =
 * The report can go into one thread (topic) of a chat: the optional *Thread id*

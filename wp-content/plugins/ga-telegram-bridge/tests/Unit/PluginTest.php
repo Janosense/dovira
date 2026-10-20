@@ -144,6 +144,12 @@ final class PluginTest extends TestCase {
 	 * time is only worth changing if the schedule follows it.
 	 */
 	public function test_boot_reschedules_when_the_settings_are_saved(): void {
+		// No accepted argument: the hook's own first argument (the old value,
+		// or the option name) would otherwise land in reschedule()'s $now.
+		Actions\expectAdded( 'update_option_gatb_settings' )
+			->once()
+			->with( array( Scheduler::class, 'reschedule' ), 10, 0 );
+
 		Plugin::boot();
 
 		$this->assertNotFalse(
@@ -160,6 +166,12 @@ final class PluginTest extends TestCase {
 	 * schedule nothing.
 	 */
 	public function test_boot_reschedules_when_the_settings_are_first_written(): void {
+		// No accepted argument: the hook's own first argument (the old value,
+		// or the option name) would otherwise land in reschedule()'s $now.
+		Actions\expectAdded( 'add_option_gatb_settings' )
+			->once()
+			->with( array( Scheduler::class, 'reschedule' ), 10, 0 );
+
 		Plugin::boot();
 
 		$this->assertNotFalse(
