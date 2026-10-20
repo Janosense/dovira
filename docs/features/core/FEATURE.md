@@ -26,7 +26,7 @@ Owns every table row described in `docs/DATA-MODEL.md`: post types
 `service`, `employee`, `vacancy`, `conversation`, `application`,
 `questionary`; taxonomy `service-city`; options page `acf-options-settings`
 (`options_*`, `options_ru_*`); options `telegram_bot_chats`,
-`telegram_bot_chat_threads`, `telegram_webhook_data`; role `customer_support_specialist`; postmeta
+`telegram_webhook_data`; role `customer_support_specialist`; postmeta
 `processing_date`, `responsible_persons`, `key_words_services`.
 Ownership rule: another feature reads this data through WordPress/ACF
 functions but never writes to it except through the hooks and functions

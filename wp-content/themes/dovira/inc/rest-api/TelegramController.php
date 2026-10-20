@@ -65,7 +65,10 @@ class TelegramController extends WP_REST_Controller {
 					$args = [
 						'timeout'     => 45,
 						'redirection' => 5,
-						'body'        => \dovira_telegram_reply_body( $params['message'], $message ),
+						'body'        => [
+							'chat_id' => $params['message']['chat']['id'],
+							'text'    => $message
+						],
 					];
 
 					$response = wp_remote_get( $url, $args );
@@ -73,13 +76,17 @@ class TelegramController extends WP_REST_Controller {
 				case '/reset':
 					$connected_chats = get_option( 'telegram_bot_chats', [] );
 					if ( isset( $connected_chats[ $params['message']['chat']['id'] ] ) ) {
-						\dovira_telegram_unsubscribe( $params['message']['chat']['id'] );
+						unset( $connected_chats[ $params['message']['chat']['id'] ] );
+						update_option( 'telegram_bot_chats', $connected_chats );
 
 						$url  = \dovira_telegram_api_url( 'sendMessage' );
 						$args = [
 							'timeout'     => 45,
 							'redirection' => 5,
-							'body'        => \dovira_telegram_reply_body( $params['message'], 'Дані успішно скинуто.' ),
+							'body'        => [
+								'chat_id' => $params['message']['chat']['id'],
+								'text'    => 'Дані успішно скинуто.'
+							],
 						];
 
 						$response = wp_remote_get( $url, $args );
@@ -87,13 +94,20 @@ class TelegramController extends WP_REST_Controller {
 					break;
 				default:
 					if ( \dovira_telegram_is_join_password( (string) $params['message']['text'] ) ) {
-						\dovira_telegram_subscribe( $params['message']['chat']['id'], \dovira_telegram_thread_of( $params['message'] ) );
+						$connected_chats = get_option( 'telegram_bot_chats', [] );
+						$connected_chats[$params['message']['chat']['id']] = $params['message']['chat']['id'];
+
+						update_option( 'telegram_bot_chats', $connected_chats );
+
 
 						$url  = \dovira_telegram_api_url( 'sendMessage' );
 						$args = [
 							'timeout'     => 45,
 							'redirection' => 5,
-							'body'        => \dovira_telegram_reply_body( $params['message'], 'Вас успішно підключено. Ви отримаєте повідомлення як тільки хтось відправить форму зворотнього звʼязку.' ),
+							'body'        => [
+								'chat_id' => $params['message']['chat']['id'],
+								'text'    => 'Вас успішно підключено. Ви отримаєте повідомлення як тільки хтось відправить форму зворотнього звʼязку.'
+							],
 						];
 
 						$response = wp_remote_get( $url, $args );

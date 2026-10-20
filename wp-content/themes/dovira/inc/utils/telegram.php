@@ -4,7 +4,9 @@
  *
  * The bot token and the join password are constants defined in the install's
  * wp-config.php (DOVIRA_TELEGRAM_BOT_TOKEN, DOVIRA_TELEGRAM_JOIN_PASSWORD);
- * they are never written into the code or the database.
+ * they are never written into the code or the database. So is the one chat
+ * thread every notification also goes to (DOVIRA_TELEGRAM_CHAT_ID,
+ * DOVIRA_TELEGRAM_THREAD_ID).
  */
 
 /**
@@ -50,87 +52,45 @@ function dovira_telegram_api_url( string $method ): string {
 }
 
 /**
- * The forum topic (thread) an incoming message was written in, or null for a
- * chat's main area. Only a topic counts: in an ordinary group a reply also
- * carries message_thread_id, without is_topic_message.
+ * The chat, and its thread (forum topic), that every notification also goes to:
+ * DOVIRA_TELEGRAM_CHAT_ID and the optional DOVIRA_TELEGRAM_THREAD_ID. Null when
+ * no chat is set, or when a value is malformed (logged by name, never by value).
  *
- * @param array $message The update's `message`.
- *
- * @return int|null
+ * @return array{chat_id: string, message_thread_id?: int}|null
  */
-function dovira_telegram_thread_of( array $message ): ?int {
-	if ( empty( $message['is_topic_message'] ) || empty( $message['message_thread_id'] ) ) {
+function dovira_telegram_target(): ?array {
+	$chat_id = defined( 'DOVIRA_TELEGRAM_CHAT_ID' ) ? trim( (string) constant( 'DOVIRA_TELEGRAM_CHAT_ID' ) ) : '';
+	if ( '' === $chat_id ) {
 		return null;
 	}
 
-	return (int) $message['message_thread_id'];
-}
+	if ( 1 !== preg_match( '/^-?\d+$/', $chat_id ) ) {
+		error_log( 'Dovira: DOVIRA_TELEGRAM_CHAT_ID in wp-config.php is not a Telegram chat id, the notification to the thread was not sent.' );
 
-/**
- * The sendMessage body of a reply to an incoming message: the same chat, and the same topic if it came from one.
- *
- * @param array  $message The update's `message`.
- * @param string $text
- *
- * @return array
- */
-function dovira_telegram_reply_body( array $message, string $text ): array {
-	$body = [
-		'chat_id' => $message['chat']['id'],
-		'text'    => $text,
-	];
-
-	$thread_id = dovira_telegram_thread_of( $message );
-	if ( null !== $thread_id ) {
-		$body['message_thread_id'] = $thread_id;
+		return null;
 	}
 
-	return $body;
-}
-
-/**
- * Subscribes a chat to the notifications: into its topic when a thread is given,
- * otherwise into the chat itself (a thread stored earlier is forgotten).
- *
- * @param int|string $chat_id
- * @param int|null   $thread_id
- *
- * @return void
- */
-function dovira_telegram_subscribe( $chat_id, ?int $thread_id ): void {
-	$connected_chats             = get_option( 'telegram_bot_chats', [] );
-	$connected_chats[ $chat_id ] = $chat_id;
-	update_option( 'telegram_bot_chats', $connected_chats );
-
-	$threads = get_option( 'telegram_bot_chat_threads', [] );
-	if ( null !== $thread_id ) {
-		$threads[ $chat_id ] = $thread_id;
-	} else {
-		unset( $threads[ $chat_id ] );
+	$target    = [ 'chat_id' => $chat_id ];
+	$thread_id = defined( 'DOVIRA_TELEGRAM_THREAD_ID' ) ? trim( (string) constant( 'DOVIRA_TELEGRAM_THREAD_ID' ) ) : '';
+	if ( '' === $thread_id ) {
+		return $target;
 	}
-	update_option( 'telegram_bot_chat_threads', $threads );
+
+	if ( 1 !== preg_match( '/^[1-9]\d*$/', $thread_id ) ) {
+		error_log( 'Dovira: DOVIRA_TELEGRAM_THREAD_ID in wp-config.php is not a thread id, the notification to the thread was not sent.' );
+
+		return null;
+	}
+
+	$target['message_thread_id'] = (int) $thread_id;
+
+	return $target;
 }
 
 /**
- * Removes a chat, and its thread, from the notifications.
- *
- * @param int|string $chat_id
- *
- * @return void
- */
-function dovira_telegram_unsubscribe( $chat_id ): void {
-	$connected_chats = get_option( 'telegram_bot_chats', [] );
-	unset( $connected_chats[ $chat_id ] );
-	update_option( 'telegram_bot_chats', $connected_chats );
-
-	$threads = get_option( 'telegram_bot_chat_threads', [] );
-	unset( $threads[ $chat_id ] );
-	update_option( 'telegram_bot_chat_threads', $threads );
-}
-
-/**
- * Sends an HTML message to every subscribed chat, into the chat's topic when it
- * subscribed from one. Called only after the form's record is saved; a failed
+ * Sends an HTML message to every subscribed chat and to the thread of
+ * dovira_telegram_target(); a subscribed chat that is the target gets it only
+ * in the thread. Called only after the form's record is saved; a failed
  * request is ignored, the record stays.
  *
  * @param string $message
@@ -139,7 +99,8 @@ function dovira_telegram_unsubscribe( $chat_id ): void {
  */
 function dovira_telegram_notify( string $message ): void {
 	$connected_chats = get_option( 'telegram_bot_chats', [] );
-	if ( empty( $connected_chats ) ) {
+	$target          = dovira_telegram_target();
+	if ( empty( $connected_chats ) && null === $target ) {
 		return;
 	}
 
@@ -162,15 +123,34 @@ function dovira_telegram_notify( string $message ): void {
 		],
 	];
 
-	$threads = get_option( 'telegram_bot_chat_threads', [] );
-
-	foreach ( $connected_chats as $chat_id ) {
-		$args['body']['chat_id'] = $chat_id;
-		if ( ! empty( $threads[ $chat_id ] ) ) {
-			$args['body']['message_thread_id'] = (int) $threads[ $chat_id ];
-		} else {
-			unset( $args['body']['message_thread_id'] );
+	foreach ( (array) $connected_chats as $chat_id ) {
+		if ( null !== $target && (string) $chat_id === $target['chat_id'] ) {
+			continue;
 		}
+
+		$args['body']['chat_id'] = $chat_id;
 		wp_remote_get( $url, $args );
 	}
+
+	if ( null !== $target ) {
+		$args['body'] = array_merge( $args['body'], $target );
+		wp_remote_get( $url, $args );
+	}
+}
+
+/**
+ * The Telegram text for a new conversation: which form, which city's site
+ * (from the site URL, as the header switcher decides it), and a link to this
+ * install's own list of conversations.
+ *
+ * @param int $form_id The CF7 form id: 1430 is the franchise form, anything else the contact form.
+ *
+ * @return string
+ */
+function dovira_conversation_telegram_message( int $form_id ): string {
+	$form = $form_id === 1430 ? 'з форми заявки на Франшизу' : 'з контактної форми';
+	$city = str_contains( get_site_url(), 'kyiv' ) ? 'Києві' : 'Харкові';
+	$link = htmlspecialchars( admin_url( 'edit.php?post_type=conversation' ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', true );
+
+	return 'Надійшло нове звернення ' . $form . ' із сайту в ' . $city . '. <a href="' . $link . '">Всі звернення тут</a>';
 }
