@@ -1,5 +1,6 @@
 <?php
 
+require_once TEMPLATE_DIR . '/inc/utils/telegram.php';
 require_once TEMPLATE_DIR . '/inc/utils/conversation.php';
 require_once TEMPLATE_DIR . '/inc/utils/application.php';
 require_once TEMPLATE_DIR . '/inc/utils/questionary.php';

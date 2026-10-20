@@ -44,6 +44,9 @@ as-is) plus, from now on, feature modules under `inc/features/{name}/`.
   CSS goes to `admin.css` (auto-prefixed `.acf-block-preview`).
 - Env: theme `.env` (phpdotenv) — `WP_ENVIRONMENT_TYPE`, `VITE_SERVER_PORT`,
   `VITE_ENTRY_POINT`, `ANTHROPIC_API_KEY`; never read secrets any other way.
+  The one exception: the Telegram bot's `DOVIRA_TELEGRAM_BOT_TOKEN` and
+  `DOVIRA_TELEGRAM_JOIN_PASSWORD` are `wp-config.php` constants, read only by
+  `dovira_telegram_token()` / `dovira_telegram_join_password()` (`inc/utils/telegram.php`).
 - REST: controllers extend `WP_REST_Controller`, namespace `dovira/v1`,
   registered in `inc/rest-api.php`; every route sets an explicit `permission_callback`.
 - CLI: classes in `inc/cli/`, registered in `inc/cli.php` under `wp dovira …`, guarded by `WP_CLI`.

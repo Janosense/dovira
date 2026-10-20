@@ -9,8 +9,6 @@ use WP_REST_Response;
 
 class TelegramController extends WP_REST_Controller {
 
-	private string $access_token = '7768117564:AAFS45iz5R_-VKnFGj5WzaIAHUtiXfdbiTs';
-
 	public function __construct() {
 		$this->namespace = 'dovira/v1';
 		$this->rest_base = 'telegram';
@@ -62,15 +60,12 @@ class TelegramController extends WP_REST_Controller {
 						$message = 'Для підключення до бота, будь ласка, введіть пароль:';
 					}
 
-					$url = 'https://api.telegram.org/bot' . $this->access_token . '/sendMessage';
+					$url = \dovira_telegram_api_url( 'sendMessage' );
 
 					$args = [
 						'timeout'     => 45,
 						'redirection' => 5,
-						'body'        => [
-							'chat_id' => $params['message']['chat']['id'],
-							'text'    => $message
-						],
+						'body'        => \dovira_telegram_reply_body( $params['message'], $message ),
 					];
 
 					$response = wp_remote_get( $url, $args );
@@ -78,38 +73,27 @@ class TelegramController extends WP_REST_Controller {
 				case '/reset':
 					$connected_chats = get_option( 'telegram_bot_chats', [] );
 					if ( isset( $connected_chats[ $params['message']['chat']['id'] ] ) ) {
-						unset( $connected_chats[ $params['message']['chat']['id'] ] );
-						update_option( 'telegram_bot_chats', $connected_chats );
+						\dovira_telegram_unsubscribe( $params['message']['chat']['id'] );
 
-						$url  = 'https://api.telegram.org/bot' . $this->access_token . '/sendMessage';
+						$url  = \dovira_telegram_api_url( 'sendMessage' );
 						$args = [
 							'timeout'     => 45,
 							'redirection' => 5,
-							'body'        => [
-								'chat_id' => $params['message']['chat']['id'],
-								'text'    => 'Дані успішно скинуто.'
-							],
+							'body'        => \dovira_telegram_reply_body( $params['message'], 'Дані успішно скинуто.' ),
 						];
 
 						$response = wp_remote_get( $url, $args );
 					}
 					break;
 				default:
-					if ($params['message']['text'] === '12340987') {
-						$connected_chats = get_option( 'telegram_bot_chats', [] );
-						$connected_chats[$params['message']['chat']['id']] = $params['message']['chat']['id'];
+					if ( \dovira_telegram_is_join_password( (string) $params['message']['text'] ) ) {
+						\dovira_telegram_subscribe( $params['message']['chat']['id'], \dovira_telegram_thread_of( $params['message'] ) );
 
-						update_option( 'telegram_bot_chats', $connected_chats );
-
-
-						$url  = 'https://api.telegram.org/bot' . $this->access_token . '/sendMessage';
+						$url  = \dovira_telegram_api_url( 'sendMessage' );
 						$args = [
 							'timeout'     => 45,
 							'redirection' => 5,
-							'body'        => [
-								'chat_id' => $params['message']['chat']['id'],
-								'text'    => 'Вас успішно підключено. Ви отримаєте повідомлення як тільки хтось відправить форму зворотнього звʼязку.'
-							],
+							'body'        => \dovira_telegram_reply_body( $params['message'], 'Вас успішно підключено. Ви отримаєте повідомлення як тільки хтось відправить форму зворотнього звʼязку.' ),
 						];
 
 						$response = wp_remote_get( $url, $args );
@@ -133,7 +117,7 @@ class TelegramController extends WP_REST_Controller {
 		$message .= 'Загальний залік <a href="https://irpin.run/events/struggle-2025/results/">тут</a>.';
 		$message .= '<strong>Тимофій</strong>, треба бігти!)';
 
-		$url  = 'https://api.telegram.org/bot' . $this->access_token . '/sendMessage';
+		$url  = \dovira_telegram_api_url( 'sendMessage' );
 		$args = [
 			'timeout'     => 45,
 			'redirection' => 5,

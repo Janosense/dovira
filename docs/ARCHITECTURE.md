@@ -56,7 +56,7 @@ WordPress site goes into its own plugin, as `ga-telegram-bridge` does.
 | Templates | `header.php`, `footer.php`, `index.php`, `single*.php`, `search.php`, `404.php`, `templates/*.php`, `template-parts/**` | Classic PHP templates; `single-service.php` builds per-city price tabs; `templates/sub-service.php` ("Sub-Service") is a service page template without the price group | — |
 | Forms → records | `inc/utils/conversation.php`, `inc/utils/application.php`, `inc/rest-api/QuestionaryController.php` | CF7 form 6 (contact) & 1430 (franchise) → `conversation`; CF7 form 1399 (vacancy) → `application` + CV sideload; REST `POST dovira/v1/questionary/save` → `questionary`. Each then notifies Telegram | send Telegram before the post is saved |
 | Admin lists | `inc/utils/{conversation,application,questionary}.php` | Custom columns and filter dropdowns for the three record CPTs; `processing_date` set on status change | — |
-| Telegram bot | `inc/rest-api/TelegramController.php` | Webhook `POST dovira/v1/telegram/handle-updates` (join by password → chat id stored in option `telegram_bot_chats`; `/reset`), `GET …/send-test-message`, `GET …/reset-telegram-log` — all `permission_callback: __return_true` | — |
+| Telegram bot | `inc/rest-api/TelegramController.php` + `inc/utils/telegram.php` | Webhook `POST dovira/v1/telegram/handle-updates` (join by password → chat id stored in option `telegram_bot_chats`, and the forum topic it was typed in, if any, in `telegram_bot_chat_threads`; `/reset`), `GET …/send-test-message`, `GET …/reset-telegram-log` — all `permission_callback: __return_true` | — |
 | Role | `inc/custom-roles/customer-support-specialist.php` | Role `customer_support_specialist` with `*_conversation(s)` caps (shared by `conversation`, `application`, `questionary`), trimmed admin menu/bar, login redirect to Conversations | — |
 | Polylang glue | `inc/polylang.php`, `inc/utils/polylang-string-translations.php` | `service`/`vacancy` translatable; ACF options per language via `acf/settings/current_language`; `service-city` term names + UI strings registered as Polylang strings; `dovira_translate_string()` | make `service-city` translatable |
 | CLI translation | `inc/cli/*.php` | `wp dovira translate`, `translate-options`, `translations-export`, `translations-import`: extract strings (title, ACF block data, core block HTML, Yoast meta) → Anthropic Messages API (default `claude-haiku-4-5`, JSON schema, chunked 100 items / 8000 chars) → copy post + Polylang link; bundles keyed by source post id + fingerprint | run outside WP-CLI |
@@ -81,7 +81,9 @@ the city renders the city's first phone from options `contacts_cities`.
 **Contact / franchise form (FIXED; invariant 1).** CF7 `wpcf7_submit` with
 `status === mail_sent` (or any status in DDEV) → `wp_insert_post('conversation')`
 → `update_field()` for name, pet_name (form 6 only), phone, email, message →
-`wp_remote_get` Telegram `sendMessage` to every chat id in option `telegram_bot_chats`.
+`dovira_telegram_notify()`: `wp_remote_get` Telegram `sendMessage` to every chat id in option
+`telegram_bot_chats` — into the chat's topic (`message_thread_id`) when
+`telegram_bot_chat_threads` holds one for it, otherwise into the chat itself.
 
 **Vacancy application (FIXED; invariant 1).** CF7 form 1399 on `wpcf7_before_send_mail`
 → `application` post (`status = new`, `vacancy` = post id from the shortcode attr)
@@ -172,7 +174,12 @@ cookie, so every URL returns the same HTML to every visitor and crawler.
 
 **Telegram join.** Bot webhook → `handle-updates` appends the raw update to option
 `telegram_webhook_data`; `/start|/join` asks for a password; the password message
-stores the chat id in `telegram_bot_chats`; `/reset` removes it.
+(compared with `DOVIRA_TELEGRAM_JOIN_PASSWORD`) stores the chat id in
+`telegram_bot_chats` — typed inside a forum topic (`is_topic_message`), it also
+stores that topic in `telegram_bot_chat_threads`, so the chat's notifications go
+only there; typed in the chat's main area, it removes a stored topic. `/reset`
+removes the chat and its topic. Every reply goes back into the topic it answers.
+The bot sees a plain password in a group only with privacy mode off or as an admin.
 
 **Daily GA report (plugin `ga-telegram-bridge`).** One path, one class:
 `Runner::run( $trigger, $bypass_date_guard )`, with two callers. The recurring
@@ -230,7 +237,7 @@ cross-site switcher; content differs per install (separate DBs), code is shared.
 ## Integrations
 | Service | Used for | Auth / credentials | Failure behaviour |
 |---|---|---|---|
-| Telegram Bot API (theme, feature `core`) | notifications after every form record; bot webhook | Bot token is a **string literal in code** (`TelegramController::$access_token` and three `inc/utils/*` call sites); join password is a literal in `handle_updates` | `wp_remote_get` result ignored — the record is already saved; no retry |
+| Telegram Bot API (theme, feature `core`) | notifications after every form record (`dovira_telegram_notify()` in `inc/utils/telegram.php`, the one send loop of all three pipelines; with `message_thread_id` for a chat that subscribed from a forum topic); bot webhook | Bot token and join password are the constants `DOVIRA_TELEGRAM_BOT_TOKEN` and `DOVIRA_TELEGRAM_JOIN_PASSWORD` in the install's `wp-config.php` (DECISIONS "Theme Telegram secrets are `wp-config.php` constants"), read only by `dovira_telegram_token()` / `dovira_telegram_join_password()`; an unset password never matches | `wp_remote_get` result ignored — the record is already saved; no retry. Token constant unset → no request at all and one `error_log` line naming the constant |
 | Telegram Bot API (plugin `ga-telegram-bridge`) | the daily GA report to one configured chat (`TelegramClient::send_message()` → `POST api.telegram.org/bot{token}/sendMessage`, HTML parse mode, link previews off, 15 s timeout; with `message_thread_id` when a thread id is configured, so the report, the failure notice and the test message all land in that thread (forum topic) of the chat); one fixed test message behind the *Check Telegram* button on screen `Settings` (admin-post action `gatb_check_telegram`, nonce, `manage_options`) | Its **own** bot token, chat id and optional thread id in `gatb_settings`, overridable by `GATB_TELEGRAM_BOT_TOKEN`; shares nothing with the theme's bot (separate token, separate chat registry) | one mapped `TelegramException` per case (401 the token was revoked, 404 the token is malformed, 400 `chat not found`, 400 unreadable HTML, 403 the bot may not post there, 429 flood control naming `retry_after`, 5xx, and a host that cannot reach Telegram at all). A flood limit is the one refusal answered inside the same run: a `retry_after` of at most 30 seconds is waited out once and the message posted again — longer than that is left to the hourly retry, because every send happens inside a WP-Cron or an admin request. The bot token travels in the request URL, so every value entering a message is scrubbed of it first — Telegram never echoes it, but a transport error can quote the URL back. Every run is recorded in `gatb_log` with its mapped reason. A scheduled run that is refused is repeated an hour later while the day has attempts left; after the last one the same chat receives the short failure notice, whose own refusal is caught and written into that run's log row |
 | Google Analytics 4 Data API (plugin `ga-telegram-bridge`) | reads one GA4 property (`GaClient::batch_run_reports()`; `check_connection()` behind the *Check GA* button) | Service-account JSON in `gatb_settings` (or `GATB_GA_SERVICE_ACCOUNT_JSON`) → RS256 JWT signed with `openssl_sign` (`GoogleAuth`, scope `analytics.readonly`) → token exchanged at `oauth2.googleapis.com/token` (15 s) and cached in the transient `gatb_google_access_token` for `expires_in - 60`; reports posted to `analyticsdata.googleapis.com/v1beta` (20 s). The **Admin API is deliberately not used** — it is a second API each install would have to enable, so the check names the property id with the reporting time zone from the report's own `metadata`, not the property's display name | one mapped `GoogleAuthException` / `GaClientException` per case (bad property id, no Viewer access — the message names the service account —, refused token → the cached token is dropped, quota, 5xx, host cannot reach Google); no message or log line ever carries the key, the JWT or the token. `ReportBuilder` composes the day's reports into **at most two** `batchRunReports` calls (the API takes five requests per call and a full report is seven), asks only for the blocks that are switched on, and keys the visitors rows by the `dateRange` dimension because GA returns them ordered by metric. A day Google could not be read for is retried and finally reported to the chat exactly like one Telegram refused; a retry that wakes up after the property's own midnight can no longer read the day it was booked for — every range is relative — so it reports that day as failed and books nothing more |
 | Anthropic Messages API | `wp dovira translate*` (CLI only) | `ANTHROPIC_API_KEY` in the theme `.env` (phpdotenv), read by `anthropic-ai/sdk` | command errors out via `WP_CLI::error`; chunk retry for strings whose markup changed |
@@ -252,6 +259,14 @@ file sync, no build step on the server. The deployment branches are published
 on GitHub as their deploy remotes: local `master` as `origin/main` — the remote
 has no `master` — and local `kyiv` as `origin/kyiv` (DECISIONS "`origin/main` is
 the deploy remote").
+
+**Theme Telegram bot per install.** `DOVIRA_TELEGRAM_BOT_TOKEN` and
+`DOVIRA_TELEGRAM_JOIN_PASSWORD` are `define()`d in each install's own
+`wp-config.php` (gitignored, never committed) — local DDEV, `dev.dovira.vet`,
+`dovira.vet` and `kyiv.dovira.vet`. They must be there **before** code that reads
+them is deployed: without the token the forms still save their records, but no
+notification is sent. Rotating the token changes only the constant; the
+subscribed chats live in the option `telegram_bot_chats` and stay.
 
 **Plugin `ga-telegram-bridge` per install.** The code is the same everywhere and
 holds nothing about a city; each install carries its own configuration. The

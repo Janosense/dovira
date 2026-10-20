@@ -96,7 +96,7 @@
 | Visitor (pet owner) | browse services and prices per city, team, vacancies; submit contact, franchise, vacancy and blood-donor forms; switch language and city |
 | Editor / administrator (clinic staff) | build pages from blocks, edit services and prices, team, vacancies, contacts/settings, translations |
 | Customer support specialist | see and process conversations, applications and questionnaires; nothing else in the admin |
-| Staff in the Telegram bot | receive a message for every new record after joining the bot with the password |
+| Staff in the Telegram bot | receive a message for every new record after joining the bot with the password — in the chat, or only in the group's topic (thread) the password was typed in |
 | Developer (Syndicode) | code, deploys, translation CLI |
 | Owner in Telegram (report recipient) | receives the daily report of each city site; reads, does not configure |
 
