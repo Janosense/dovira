@@ -63,6 +63,9 @@ references the `dovira` theme, its functions, options or data.
   attempt; `manual` never does. `gatb_retry_report` carries its day as an argument, so it is
   registered with one accepted argument and removed with `wp_unschedule_hook()`
   — `wp_clear_scheduled_hook()` matches only events registered with none.
+  A callback whose parameters are not the hook's arguments is registered with
+  `accepted_args` 0 (`reschedule( ?int $now )` on the settings-save actions),
+  and its test pins that with `Actions\expectAdded()->with( …, 10, 0 )`.
 - Tests: `tests/Unit/` with PHPUnit + Brain\Monkey, fixtures in
   `tests/fixtures/`, rules in `docs/TESTING.md`.
 
