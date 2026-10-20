@@ -22,6 +22,11 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-10-20 — [adhoc] [ga-telegram-bridge] — Hotfix: fatal error on saving the settings
+- Changed: plugin 0.4.1. `Plugin::boot()` registers `Scheduler::reschedule` on `update_option_gatb_settings` / `add_option_gatb_settings` with 0 accepted args. Core had been passing the old value / option name into its `?int $now` (added in 0.2.0, `f95143ab`), so every save that changed a value was fatal **after** the option was written. Seen on dovira.vet when the thread id was saved. `PluginTest` now pins `10, 0`; plugin `CLAUDE.md` → Cron records the rule.
+- Decisions: —
+- Open: **After the hand deploy:** open the settings screen on dovira.vet (thread id `172` is already stored), press Save once, then *Check Telegram*.
+
 ## 2026-10-20 — [adhoc] [ga-telegram-bridge] — Report into a Telegram thread
 - Changed: plugin 0.4.0. New optional setting `telegram_thread_id` (Settings → GA → Telegram, «Thread id»; empty or a positive whole number). `TelegramClient` reads it the way it reads the token and sends it as `message_thread_id`, so the report, the failure notice and the test message all go to that thread. Empty = the chat itself, as before. Tests in `SettingsTest` and `TelegramClientTest`; uk strings; DATA-MODEL, FEATURE, ARCHITECTURE, readme.
 - Decisions: —
