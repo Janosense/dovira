@@ -84,6 +84,80 @@ final class NotifyTest extends TestCase {
 		}
 	}
 
+	/**
+	 * The chat ids and thread ids of the requests sent, in order; null for a request without a thread.
+	 *
+	 * @return list<array{0: mixed, 1: mixed}>
+	 */
+	private function sent(): array {
+		return array_map( static fn ( array $request ) => [ $request[1]['body']['chat_id'], $request[1]['body']['message_thread_id'] ?? null ], $this->requests );
+	}
+
+	public function test_the_thread_named_in_wp_config_gets_the_message_after_the_subscribers(): void {
+		define( 'DOVIRA_TELEGRAM_CHAT_ID', '-100333' );
+		define( 'DOVIRA_TELEGRAM_THREAD_ID', '172' );
+		$this->options['telegram_bot_chats'] = [ 111 => 111, 222 => 222 ];
+
+		dovira_telegram_notify( 'Нове звернення' );
+
+		self::assertSame( [ [ 111, null ], [ 222, null ], [ '-100333', 172 ] ], $this->sent() );
+		self::assertSame( 'Нове звернення', $this->requests[2][1]['body']['text'] );
+		self::assertSame( 'html', $this->requests[2][1]['body']['parse_mode'] );
+		self::assertSame( 'https://api.telegram.org/bot' . self::TOKEN . '/sendMessage', $this->requests[2][0] );
+	}
+
+	public function test_without_a_thread_the_chat_itself_gets_the_message(): void {
+		define( 'DOVIRA_TELEGRAM_CHAT_ID', '-100333' );
+		$this->options['telegram_bot_chats'] = [ 111 => 111 ];
+
+		dovira_telegram_notify( 'Нове звернення' );
+
+		self::assertSame( [ [ 111, null ], [ '-100333', null ] ], $this->sent() );
+		self::assertArrayNotHasKey( 'message_thread_id', $this->requests[1][1]['body'] );
+	}
+
+	public function test_a_subscribed_chat_that_is_the_target_gets_the_message_only_in_the_thread(): void {
+		define( 'DOVIRA_TELEGRAM_CHAT_ID', '-100333' );
+		define( 'DOVIRA_TELEGRAM_THREAD_ID', '172' );
+		$this->options['telegram_bot_chats'] = [ 111 => 111, -100333 => -100333 ];
+
+		dovira_telegram_notify( 'Нове звернення' );
+
+		self::assertSame( [ [ 111, null ], [ '-100333', 172 ] ], $this->sent() );
+	}
+
+	public function test_the_thread_gets_the_message_with_no_subscribers(): void {
+		define( 'DOVIRA_TELEGRAM_CHAT_ID', '-100333' );
+		define( 'DOVIRA_TELEGRAM_THREAD_ID', '172' );
+
+		dovira_telegram_notify( 'Нове звернення' );
+
+		self::assertSame( [ [ '-100333', 172 ] ], $this->sent() );
+	}
+
+	public function test_a_malformed_thread_id_sends_nothing_to_the_chat_and_is_logged(): void {
+		$this->expectErrorLog();
+		define( 'DOVIRA_TELEGRAM_CHAT_ID', '-100333' );
+		define( 'DOVIRA_TELEGRAM_THREAD_ID', 'abc' );
+		$this->options['telegram_bot_chats'] = [ 111 => 111 ];
+
+		dovira_telegram_notify( 'Нове звернення' );
+
+		self::assertNull( dovira_telegram_target() );
+		self::assertSame( [ [ 111, null ] ], $this->sent() );
+	}
+
+	public function test_a_malformed_chat_id_sends_nothing_to_it_and_is_logged(): void {
+		$this->expectErrorLog();
+		define( 'DOVIRA_TELEGRAM_CHAT_ID', '@dovira_group' );
+		define( 'DOVIRA_TELEGRAM_THREAD_ID', '172' );
+		$this->options['telegram_bot_chats'] = [ 111 => 111 ];
+
+		dovira_telegram_notify( 'Нове звернення' );
+
+		self::assertSame( [ [ 111, null ] ], $this->sent() );
+	}
+
 	public function test_no_subscribers_means_no_request(): void {
 		dovira_telegram_notify( 'Нове звернення' );
 

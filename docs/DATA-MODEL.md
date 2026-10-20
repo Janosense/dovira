@@ -125,7 +125,9 @@ Cities the clinic operates in. **Not Polylang-translatable** (invariant 2); term
 
 The theme bot's secrets are not stored here: the bot token and the join password
 are the `wp-config.php` constants `DOVIRA_TELEGRAM_BOT_TOKEN` and
-`DOVIRA_TELEGRAM_JOIN_PASSWORD` (docs/ARCHITECTURE.md → Integrations).
+`DOVIRA_TELEGRAM_JOIN_PASSWORD`, and the one chat thread every notification also
+goes to is `DOVIRA_TELEGRAM_CHAT_ID` + `DOVIRA_TELEGRAM_THREAD_ID`
+(docs/ARCHITECTURE.md → Environments & deploy).
 
 ### Users
 Roles: WordPress defaults + `customer_support_specialist` (caps `edit_conversations` … `read_conversation`, see `inc/custom-roles/`). Legacy: a `student` role (cap `take_course`) is added on theme activation and `user_study_state` usermeta is written by `dovira_update_user_study_state()` — remnants of a removed LMS, not used by any live page.

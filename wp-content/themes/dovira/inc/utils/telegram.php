@@ -4,7 +4,9 @@
  *
  * The bot token and the join password are constants defined in the install's
  * wp-config.php (DOVIRA_TELEGRAM_BOT_TOKEN, DOVIRA_TELEGRAM_JOIN_PASSWORD);
- * they are never written into the code or the database.
+ * they are never written into the code or the database. So is the one chat
+ * thread every notification also goes to (DOVIRA_TELEGRAM_CHAT_ID,
+ * DOVIRA_TELEGRAM_THREAD_ID).
  */
 
 /**
@@ -50,8 +52,46 @@ function dovira_telegram_api_url( string $method ): string {
 }
 
 /**
- * Sends an HTML message to every subscribed chat. Called only after the form's
- * record is saved; a failed request is ignored, the record stays.
+ * The chat, and its thread (forum topic), that every notification also goes to:
+ * DOVIRA_TELEGRAM_CHAT_ID and the optional DOVIRA_TELEGRAM_THREAD_ID. Null when
+ * no chat is set, or when a value is malformed (logged by name, never by value).
+ *
+ * @return array{chat_id: string, message_thread_id?: int}|null
+ */
+function dovira_telegram_target(): ?array {
+	$chat_id = defined( 'DOVIRA_TELEGRAM_CHAT_ID' ) ? trim( (string) constant( 'DOVIRA_TELEGRAM_CHAT_ID' ) ) : '';
+	if ( '' === $chat_id ) {
+		return null;
+	}
+
+	if ( 1 !== preg_match( '/^-?\d+$/', $chat_id ) ) {
+		error_log( 'Dovira: DOVIRA_TELEGRAM_CHAT_ID in wp-config.php is not a Telegram chat id, the notification to the thread was not sent.' );
+
+		return null;
+	}
+
+	$target    = [ 'chat_id' => $chat_id ];
+	$thread_id = defined( 'DOVIRA_TELEGRAM_THREAD_ID' ) ? trim( (string) constant( 'DOVIRA_TELEGRAM_THREAD_ID' ) ) : '';
+	if ( '' === $thread_id ) {
+		return $target;
+	}
+
+	if ( 1 !== preg_match( '/^[1-9]\d*$/', $thread_id ) ) {
+		error_log( 'Dovira: DOVIRA_TELEGRAM_THREAD_ID in wp-config.php is not a thread id, the notification to the thread was not sent.' );
+
+		return null;
+	}
+
+	$target['message_thread_id'] = (int) $thread_id;
+
+	return $target;
+}
+
+/**
+ * Sends an HTML message to every subscribed chat and to the thread of
+ * dovira_telegram_target(); a subscribed chat that is the target gets it only
+ * in the thread. Called only after the form's record is saved; a failed
+ * request is ignored, the record stays.
  *
  * @param string $message
  *
@@ -59,7 +99,8 @@ function dovira_telegram_api_url( string $method ): string {
  */
 function dovira_telegram_notify( string $message ): void {
 	$connected_chats = get_option( 'telegram_bot_chats', [] );
-	if ( empty( $connected_chats ) ) {
+	$target          = dovira_telegram_target();
+	if ( empty( $connected_chats ) && null === $target ) {
 		return;
 	}
 
@@ -82,8 +123,17 @@ function dovira_telegram_notify( string $message ): void {
 		],
 	];
 
-	foreach ( $connected_chats as $chat_id ) {
+	foreach ( (array) $connected_chats as $chat_id ) {
+		if ( null !== $target && (string) $chat_id === $target['chat_id'] ) {
+			continue;
+		}
+
 		$args['body']['chat_id'] = $chat_id;
+		wp_remote_get( $url, $args );
+	}
+
+	if ( null !== $target ) {
+		$args['body'] = array_merge( $args['body'], $target );
 		wp_remote_get( $url, $args );
 	}
 }

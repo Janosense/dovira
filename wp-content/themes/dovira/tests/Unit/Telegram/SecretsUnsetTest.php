@@ -25,6 +25,12 @@ final class SecretsUnsetTest extends TestCase {
 		self::assertSame( '', dovira_telegram_join_password() );
 	}
 
+	public function test_without_a_chat_constant_there_is_no_thread_to_send_to(): void {
+		self::assertFalse( defined( 'DOVIRA_TELEGRAM_CHAT_ID' ) );
+		self::assertFalse( defined( 'DOVIRA_TELEGRAM_THREAD_ID' ) );
+		self::assertNull( dovira_telegram_target() );
+	}
+
 	public function test_no_text_is_the_join_password_while_it_is_unset(): void {
 		self::assertFalse( dovira_telegram_is_join_password( '' ) );
 		self::assertFalse( dovira_telegram_is_join_password( '12340987' ) );
