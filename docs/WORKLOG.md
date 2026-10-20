@@ -22,6 +22,13 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-10-20 — [adhoc] [core] — Form notifications also go to a fixed chat thread from wp-config
+- Changed: `dovira_telegram_notify()` (`inc/utils/telegram.php`) sends to every chat in `telegram_bot_chats` as before, then once to `DOVIRA_TELEGRAM_CHAT_ID` with `message_thread_id` = `DOVIRA_TELEGRAM_THREAD_ID` (optional). A subscriber that is that chat gets it only in the thread. Reverted the previous ad-hoc's topic subscription (`29cb127f`, option `telegram_bot_chat_threads`): the bot has no webhook, so it could never run. Theme PHPUnit 160.
+- Decisions: DECISIONS "Form notifications also go to one fixed thread named in `wp-config.php`". The join flow is documented as dormant (no webhook).
+- Open:
+  - **Before each hand deploy:** `wp-config.php` needs `DOVIRA_TELEGRAM_BOT_TOKEN`, `DOVIRA_TELEGRAM_JOIN_PASSWORD`, and for the thread `DOVIRA_TELEGRAM_CHAT_ID` + `DOVIRA_TELEGRAM_THREAD_ID`. The bot must be a member of that group.
+  - Token rotation and a new password, from the previous entry, still apply.
+
 ## 2026-10-20 — [adhoc] [core] — Form notifications into a Telegram thread; bot secrets out of the code
 - Changed: shared code `inc/utils/telegram.php` (new) holds the one send loop of all three form pipelines and the bot's subscriptions. The token and join password are now the `wp-config.php` constants `DOVIRA_TELEGRAM_BOT_TOKEN` / `DOVIRA_TELEGRAM_JOIN_PASSWORD`; without the token nothing is sent (records still saved) and `error_log` names the constant. If the password is typed inside a forum topic, the topic is stored in the new option `telegram_bot_chat_threads` and that chat's notifications go only there. `telegram_bot_chats` is unchanged, so every existing subscriber is untouched. Tests in `tests/Unit/Telegram/` (theme PHPUnit 170).
 - Decisions: DECISIONS "Theme Telegram secrets are `wp-config.php` constants" (settles adoption open question 1); TESTING "Secret constants run in separate processes (theme)".

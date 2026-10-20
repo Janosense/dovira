@@ -344,6 +344,12 @@ Entry format:
 - **Alternatives rejected:** the theme `.env` (the candidate of open question 1) — the plugin `ga-telegram-bridge` already keeps its secrets as `wp-config.php` constants (DECISIONS "Plugin structure, storage and secrets"), and one place per install for every Telegram secret is simpler to operate; a fallback to the old literal while the constant is missing — it would keep the secret in the code.
 - **Consequences:** settles open question 1; theme `CLAUDE.md` → Env names the exception; each install defines both constants before this code is deployed there, or notifications stop (records are still saved); unit tests that define the constants run in separate processes.
 
+## 2026-10-20 — [core] Form notifications also go to one fixed thread named in `wp-config.php`
+- **Context:** Form notifications must also reach one topic (thread) of a staff group. The first ad-hoc subscribed a topic when the join password was typed in it, which needs Telegram to deliver that message to the site; `getWebhookInfo` showed the bot has no webhook, and the developer confirmed it never had one — the bot only sends.
+- **Decision:** `dovira_telegram_notify()` sends to every chat in `telegram_bot_chats` and then once to `DOVIRA_TELEGRAM_CHAT_ID` with `message_thread_id` = `DOVIRA_TELEGRAM_THREAD_ID` (optional); a subscribed chat equal to that chat is skipped, so it gets the message only in the thread. The topic-subscription code (option `telegram_bot_chat_threads`) is reverted.
+- **Alternatives rejected:** keep topic subscription and set a webhook — a public endpoint that takes Telegram traffic (and already receives scanner probes) for a choice made once per install; an option or ACF field for the target — the developer asked for `wp-config.php`, beside the token.
+- **Consequences:** one thread per install; each install's `wp-config.php` names its own (or none); the join flow stays dormant code until a webhook is set.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
