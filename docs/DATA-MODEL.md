@@ -141,6 +141,7 @@ completes a partially written row, so a missing key never reaches a getter.
 | `service_account_json` | string | `''` | must `json_decode` to an object holding non-empty `client_email`, `private_key`, `token_uri` |
 | `telegram_bot_token` | string | `''` | stored as typed; the token is only proven by "Check Telegram" |
 | `telegram_chat_id` | string | `''` | `/^-?\d+$/` — a person is positive, a group or channel negative |
+| `telegram_thread_id` | string | `''` | empty, or a positive whole number (`/^[1-9]\d*$/`) — the thread (forum topic) of the chat, sent as `message_thread_id` with every message (report, failure notice, test message); empty posts into the chat itself, which is also what a row saved before the key existed means |
 | `send_time` | string | `'09:00'` | `HH:MM`, 24-hour (`/^([01]\d\|2[0-3]):[0-5]\d$/`); site-local. Read by the scheduler in Sprint 2 |
 | `max_attempts` | int | `3` | whole number 1–10. Read by the retry logic in Sprint 2 |
 | `blocks` | array<string,bool> | all six `true` | exactly `visitors`, `pages`, `channels`, `cities`, `devices`, `trend`; unknown keys dropped; `visitors` is forced `true` (the visitors block is always sent). A key a **stored** row does not carry takes its default — a row written before a block existed must not switch that block off when the plugin is updated — while a key missing from a **submitted** form is an unticked box and is off (every checkbox posts a hidden `0` of its own name) |

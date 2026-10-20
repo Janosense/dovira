@@ -128,6 +128,38 @@ final class TelegramClientTest extends TestCase {
 						$this->assertSame( '<b>Dovira</b>', $body['text'] );
 						$this->assertSame( 'HTML', $body['parse_mode'] );
 						$this->assertTrue( $body['link_preview_options']['is_disabled'] );
+						$this->assertArrayNotHasKey( 'message_thread_id', $body, 'no thread configured: the chat itself' );
+
+						return true;
+					}
+				)
+			)
+			->andReturn( $this->fixture( 'send-message-success.written.json' ) );
+
+		TelegramClient::send_message( self::CHAT_ID, '<b>Dovira</b>' );
+	}
+
+	/**
+	 * A configured thread id goes along as message_thread_id, as a number.
+	 */
+	public function test_a_configured_thread_id_addresses_that_thread(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'telegram_bot_token' => self::TOKEN,
+				'telegram_thread_id' => '172',
+			)
+		);
+
+		Functions\expect( 'wp_remote_post' )
+			->once()
+			->with(
+				'https://api.telegram.org/bot' . self::TOKEN . '/sendMessage',
+				\Mockery::on(
+					function ( array $arguments ): bool {
+						$body = json_decode( $arguments['body'], true );
+
+						$this->assertSame( self::CHAT_ID, $body['chat_id'] );
+						$this->assertSame( 172, $body['message_thread_id'] );
 
 						return true;
 					}
