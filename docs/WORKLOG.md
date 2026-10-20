@@ -22,6 +22,14 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-10-20 — [adhoc] [core] — Form notifications into a Telegram thread; bot secrets out of the code
+- Changed: shared code `inc/utils/telegram.php` (new) holds the one send loop of all three form pipelines and the bot's subscriptions. The token and join password are now the `wp-config.php` constants `DOVIRA_TELEGRAM_BOT_TOKEN` / `DOVIRA_TELEGRAM_JOIN_PASSWORD`; without the token nothing is sent (records still saved) and `error_log` names the constant. If the password is typed inside a forum topic, the topic is stored in the new option `telegram_bot_chat_threads` and that chat's notifications go only there. `telegram_bot_chats` is unchanged, so every existing subscriber is untouched. Tests in `tests/Unit/Telegram/` (theme PHPUnit 170).
+- Decisions: DECISIONS "Theme Telegram secrets are `wp-config.php` constants" (settles adoption open question 1); TESTING "Secret constants run in separate processes (theme)".
+- Open:
+  - **Before each hand deploy** (`dovira.vet`, then `kyiv` after merging `master`, `dev.dovira.vet` before any push to `dev`, local DDEV): define both constants in that install's `wp-config.php`. Then rotate the token in BotFather, put the new value in the constants, and check the webhook with `getWebhookInfo`.
+  - The old password is in the git history: pick a new value.
+  - Vacancy message link to `dev.dovira.vet` and the public `send-test-message` / `reset-telegram-log` routes are unchanged.
+
 ## 2026-10-20 — [adhoc] [ga-telegram-bridge] — Hotfix: fatal error on saving the settings
 - Changed: plugin 0.4.1. `Plugin::boot()` registers `Scheduler::reschedule` on `update_option_gatb_settings` / `add_option_gatb_settings` with 0 accepted args. Core had been passing the old value / option name into its `?int $now` (added in 0.2.0, `f95143ab`), so every save that changed a value was fatal **after** the option was written. Seen on dovira.vet when the thread id was saved. `PluginTest` now pins `10, 0`; plugin `CLAUDE.md` → Cron records the rule.
 - Decisions: —

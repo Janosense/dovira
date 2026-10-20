@@ -24,6 +24,11 @@ Entry format:
 
 ---
 
+## [new] 2026-10-20 — /adhoc's "touches schema" does not say whether a new wp_options row counts
+- **Playbook rule:** `.claude/commands/adhoc.md` → step 1, "too large for an ad-hoc (touches schema, …): STOP".
+- **What happened:** The Telegram thread ad-hoc needed one new `wp_options` row (`telegram_bot_chat_threads`): no table, no migration, but a `docs/DATA-MODEL.md` entry. The agent treated it as not "schema", following the 2026-10-20 plugin ad-hoc that added a settings key, said so in the mini-plan, and the user approved it. The rule leaves that call to the agent.
+- **Suggested change:** Name what "schema" means for a WordPress project (a table, column, index or migration — or also a new option / meta key / post type).
+
 ## [new] 2026-09-24 — The plan-step UI rule asks for a test of the state after the interaction, which a project without a DOM test runner cannot write
 - **Playbook rule:** `.claude/commands/plan-step.md` → §5, "The step builds or changes UI → … at least one test asserts the state the user sees after the interaction".
 - **What happened:** city-popup Sprint 1 Step 3 built an interactive dialog. The project's own CONVENTIONS keep Vitest without a DOM library and verify the DOM glue by hand (a dev dependency decided in DECISIONS). The plan met the rule with tests of the pure `decide()` function, which pins what a click does, and left "dialog open, focus on the first button" to the manual guide. The rule does not say whether that is enough.
