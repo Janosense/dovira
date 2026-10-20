@@ -137,3 +137,20 @@ function dovira_telegram_notify( string $message ): void {
 		wp_remote_get( $url, $args );
 	}
 }
+
+/**
+ * The Telegram text for a new conversation: which form, which city's site
+ * (from the site URL, as the header switcher decides it), and a link to this
+ * install's own list of conversations.
+ *
+ * @param int $form_id The CF7 form id: 1430 is the franchise form, anything else the contact form.
+ *
+ * @return string
+ */
+function dovira_conversation_telegram_message( int $form_id ): string {
+	$form = $form_id === 1430 ? 'з форми заявки на Франшизу' : 'з контактної форми';
+	$city = str_contains( get_site_url(), 'kyiv' ) ? 'Києві' : 'Харкові';
+	$link = htmlspecialchars( admin_url( 'edit.php?post_type=conversation' ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', true );
+
+	return 'Надійшло нове звернення ' . $form . ' із сайту в ' . $city . '. <a href="' . $link . '">Всі звернення тут</a>';
+}

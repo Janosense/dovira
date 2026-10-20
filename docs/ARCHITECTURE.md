@@ -81,7 +81,9 @@ the city renders the city's first phone from options `contacts_cities`.
 **Contact / franchise form (FIXED; invariant 1).** CF7 `wpcf7_submit` with
 `status === mail_sent` (or any status in DDEV) → `wp_insert_post('conversation')`
 → `update_field()` for name, pet_name (form 6 only), phone, email, message →
-`dovira_telegram_notify()`: `wp_remote_get` Telegram `sendMessage` to every chat id in option
+`dovira_conversation_telegram_message()` (which form, «із сайту в Харкові» or
+«із сайту в Києві» from the site URL, a link to this install's own
+`admin_url( 'edit.php?post_type=conversation' )`) → `dovira_telegram_notify()`: `wp_remote_get` Telegram `sendMessage` to every chat id in option
 `telegram_bot_chats`, then once to the thread named by `DOVIRA_TELEGRAM_CHAT_ID` /
 `DOVIRA_TELEGRAM_THREAD_ID` when set (a subscribed chat that is that chat gets it
 only in the thread). The vacancy and questionnaire flows below send the same way.
