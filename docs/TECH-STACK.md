@@ -95,7 +95,8 @@ changes) — DECISIONS "Testing tooling and the project check command".
   do not let a Telegram failure change the HTTP/mail result — the record is
   the source of truth, the notification is best-effort.
 - Do not decide "which city site is this" anywhere except from the site URL
-  (`site-header.php`) — there is no option, constant or env flag for it.
+  (`site-header.php`, `dovira_conversation_telegram_message()`) — there is no
+  option, constant or env flag for it.
 - Do not hand-edit `assets/` or `assets/.vite/manifest.json` — run
   `npm run build`; the manifest resolver `starter_theme_vite_asset()` maps
   `source/*` entries to hashed files.

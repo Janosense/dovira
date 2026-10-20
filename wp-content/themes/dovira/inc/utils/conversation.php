@@ -36,13 +36,7 @@ function dovira_wpcf7_submit_action( $that, $result ) {
 					update_field( 'email', sanitize_text_field( $_POST['your-email'] ), $post_id );
 					update_field( 'message', sanitize_text_field( $_POST['your-message'] ), $post_id );
 
-					if ( $result['contact_form_id'] === 1430 ) {
-						$message = 'Надійшло нове звернення з форми заявки на Франшизу. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
-					} else {
-						$message = 'Надійшло нове звернення з контактної форми. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
-					}
-
-					dovira_telegram_notify( $message );
+					dovira_telegram_notify( dovira_conversation_telegram_message( (int) $result['contact_form_id'] ) );
 				}
 				break;
 		}
