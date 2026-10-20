@@ -34,9 +34,11 @@ final class Plugin {
 		// Both, because core routes a save through add_option() while the stored
 		// settings still equal the registered defaults: update_option() hands
 		// over to it when the old value is the default, and only the matching
-		// action fires. A fresh install is in exactly that state.
-		add_action( 'update_option_' . Settings::OPTION, array( Scheduler::class, 'reschedule' ) );
-		add_action( 'add_option_' . Settings::OPTION, array( Scheduler::class, 'reschedule' ) );
+		// action fires. A fresh install is in exactly that state. No accepted
+		// argument: the actions' first one is the old value or the option name,
+		// and reschedule() would take it for its $now — a fatal TypeError.
+		add_action( 'update_option_' . Settings::OPTION, array( Scheduler::class, 'reschedule' ), 10, 0 );
+		add_action( 'add_option_' . Settings::OPTION, array( Scheduler::class, 'reschedule' ), 10, 0 );
 		add_action( 'wp_loaded', array( Scheduler::class, 'note_cron_hit' ) );
 	}
 
