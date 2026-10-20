@@ -123,6 +123,10 @@ Cities the clinic operates in. **Not Polylang-translatable** (invariant 2); term
 | `telegram_bot_chats` | array `{chat_id: chat_id}` | chats that receive notifications; added by password, removed by `/reset` |
 | `telegram_webhook_data` | array of raw Telegram updates | append-only log; cleared by `GET dovira/v1/telegram/reset-telegram-log` |
 
+The theme bot's secrets are not stored here: the bot token and the join password
+are the `wp-config.php` constants `DOVIRA_TELEGRAM_BOT_TOKEN` and
+`DOVIRA_TELEGRAM_JOIN_PASSWORD` (docs/ARCHITECTURE.md → Integrations).
+
 ### Users
 Roles: WordPress defaults + `customer_support_specialist` (caps `edit_conversations` … `read_conversation`, see `inc/custom-roles/`). Legacy: a `student` role (cap `take_course`) is added on theme activation and `user_study_state` usermeta is written by `dovira_update_user_study_state()` — remnants of a removed LMS, not used by any live page.
 

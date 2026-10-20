@@ -9,8 +9,6 @@ use WP_REST_Response;
 
 class TelegramController extends WP_REST_Controller {
 
-	private string $access_token = '7768117564:AAFS45iz5R_-VKnFGj5WzaIAHUtiXfdbiTs';
-
 	public function __construct() {
 		$this->namespace = 'dovira/v1';
 		$this->rest_base = 'telegram';
@@ -62,7 +60,7 @@ class TelegramController extends WP_REST_Controller {
 						$message = 'Для підключення до бота, будь ласка, введіть пароль:';
 					}
 
-					$url = 'https://api.telegram.org/bot' . $this->access_token . '/sendMessage';
+					$url = \dovira_telegram_api_url( 'sendMessage' );
 
 					$args = [
 						'timeout'     => 45,
@@ -81,7 +79,7 @@ class TelegramController extends WP_REST_Controller {
 						unset( $connected_chats[ $params['message']['chat']['id'] ] );
 						update_option( 'telegram_bot_chats', $connected_chats );
 
-						$url  = 'https://api.telegram.org/bot' . $this->access_token . '/sendMessage';
+						$url  = \dovira_telegram_api_url( 'sendMessage' );
 						$args = [
 							'timeout'     => 45,
 							'redirection' => 5,
@@ -95,14 +93,14 @@ class TelegramController extends WP_REST_Controller {
 					}
 					break;
 				default:
-					if ($params['message']['text'] === '12340987') {
+					if ( \dovira_telegram_is_join_password( (string) $params['message']['text'] ) ) {
 						$connected_chats = get_option( 'telegram_bot_chats', [] );
 						$connected_chats[$params['message']['chat']['id']] = $params['message']['chat']['id'];
 
 						update_option( 'telegram_bot_chats', $connected_chats );
 
 
-						$url  = 'https://api.telegram.org/bot' . $this->access_token . '/sendMessage';
+						$url  = \dovira_telegram_api_url( 'sendMessage' );
 						$args = [
 							'timeout'     => 45,
 							'redirection' => 5,
@@ -133,7 +131,7 @@ class TelegramController extends WP_REST_Controller {
 		$message .= 'Загальний залік <a href="https://irpin.run/events/struggle-2025/results/">тут</a>.';
 		$message .= '<strong>Тимофій</strong>, треба бігти!)';
 
-		$url  = 'https://api.telegram.org/bot' . $this->access_token . '/sendMessage';
+		$url  = \dovira_telegram_api_url( 'sendMessage' );
 		$args = [
 			'timeout'     => 45,
 			'redirection' => 5,
