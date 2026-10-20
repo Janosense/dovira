@@ -338,6 +338,12 @@ Entry format:
   - The DOMAIN rule "a service the chosen city's site does not have leads to that site's services list" means a service WordPress does not find.
   - `city-popup` Sprint 1 Step 4, plan Question 1, answer A.
 
+## 2026-10-20 — [core] Theme Telegram secrets are `wp-config.php` constants
+- **Context:** The theme bot's token and join password were string literals in four files (open question 1 below); the token is in the git history and is to be rotated. The developer asked for constants in `wp-config.php`.
+- **Decision:** Read the token from `DOVIRA_TELEGRAM_BOT_TOKEN` and the join password from `DOVIRA_TELEGRAM_JOIN_PASSWORD`, defined in each install's `wp-config.php`, only through `dovira_telegram_token()` / `dovira_telegram_join_password()` in `inc/utils/telegram.php`; with no fallback to a value in the code.
+- **Alternatives rejected:** the theme `.env` (the candidate of open question 1) — the plugin `ga-telegram-bridge` already keeps its secrets as `wp-config.php` constants (DECISIONS "Plugin structure, storage and secrets"), and one place per install for every Telegram secret is simpler to operate; a fallback to the old literal while the constant is missing — it would keep the secret in the code.
+- **Consequences:** settles open question 1; theme `CLAUDE.md` → Env names the exception; each install defines both constants before this code is deployed there, or notifications stop (records are still saved); unit tests that define the constants run in separate processes.
+
 ---
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)

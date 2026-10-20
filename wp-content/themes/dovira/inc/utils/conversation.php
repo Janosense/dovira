@@ -36,33 +36,13 @@ function dovira_wpcf7_submit_action( $that, $result ) {
 					update_field( 'email', sanitize_text_field( $_POST['your-email'] ), $post_id );
 					update_field( 'message', sanitize_text_field( $_POST['your-message'] ), $post_id );
 
-					$connected_chats = get_option( 'telegram_bot_chats', [] );
-					if ( ! empty( $connected_chats ) ) {
-						$url     = 'https://api.telegram.org/bot7768117564:AAFS45iz5R_-VKnFGj5WzaIAHUtiXfdbiTs/sendMessage';
-						if ( $result['contact_form_id'] === 1430 ) {
-							$message = 'Надійшло нове звернення з форми заявки на Франшизу. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
-						} else {
-							$message = 'Надійшло нове звернення з контактної форми. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
-
-						}
-
-						$args    = [
-							'timeout'     => 45,
-							'redirection' => 5,
-							'body'        => [
-								'text'                 => $message,
-								'parse_mode'           => 'html',
-								'link_preview_options' => json_encode( [
-									'is_disabled' => true,
-								], JSON_THROW_ON_ERROR ),
-							],
-						];
-
-						foreach ( $connected_chats as $chat_id ) {
-							$args['body']['chat_id'] = $chat_id;
-							wp_remote_get( $url, $args );
-						}
+					if ( $result['contact_form_id'] === 1430 ) {
+						$message = 'Надійшло нове звернення з форми заявки на Франшизу. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
+					} else {
+						$message = 'Надійшло нове звернення з контактної форми. <a href="https://dovira.vet/wp-admin/edit.php?post_type=conversation">Всі звернення тут</a>';
 					}
+
+					dovira_telegram_notify( $message );
 				}
 				break;
 		}

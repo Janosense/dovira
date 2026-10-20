@@ -71,6 +71,13 @@ logic in a plugin or a theme feature.
   test class needs nothing; adding a second class that defines **secret**
   constants means moving it into the last suite too. `UninstallTest` defines
   `WP_UNINSTALL_PLUGIN`, which nothing else reads, and stays in the first suite.
+- **Secret constants run in separate processes (theme).** The theme's suite is
+  one suite, so a test class that defines `DOVIRA_TELEGRAM_BOT_TOKEN` or
+  `DOVIRA_TELEGRAM_JOIN_PASSWORD` carries `#[RunTestsInSeparateProcesses]` and
+  `#[PreserveGlobalState( false )]` (`tests/Unit/Telegram/NotifyTest.php`); the
+  suite's own process never defines them, which `SecretsUnsetTest` asserts. A test
+  of code that calls `error_log()` declares `$this->expectErrorLog()` — PHPUnit
+  captures the log itself, so a test cannot redirect it.
 
 ## Fixtures
 - **Theme:** fixtures go in `wp-content/themes/dovira/tests/fixtures/{feature}/`.
