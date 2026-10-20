@@ -58,6 +58,7 @@ final class SettingsTest extends TestCase {
 		$this->assertSame( '', $defaults['property_id'] );
 		$this->assertSame( '', $defaults['service_account_json'] );
 		$this->assertSame( '', $defaults['telegram_bot_token'] );
+		$this->assertSame( '', $defaults['telegram_thread_id'] );
 		$this->assertSame( '', $defaults['telegram_chat_id'] );
 		$this->assertSame( '09:00', $defaults['send_time'] );
 		$this->assertSame( 3, $defaults['max_attempts'] );
@@ -256,6 +257,71 @@ final class SettingsTest extends TestCase {
 		return array(
 			'a private chat' => array( '123456789' ),
 			'a channel'      => array( '-1001234567890' ),
+		);
+	}
+
+	/**
+	 * A thread id that is not a positive whole number is refused alone: the
+	 * stored one survives and the rest of the submission is still saved.
+	 *
+	 * @param string $submitted The value the admin typed.
+	 */
+	#[DataProvider( 'provide_invalid_thread_ids' )]
+	public function test_an_invalid_thread_id_keeps_the_stored_one( string $submitted ): void {
+		$result = Settings::sanitize_settings(
+			array(
+				'telegram_thread_id' => $submitted,
+				'telegram_chat_id'   => '-100999',
+			),
+			array( 'telegram_thread_id' => '172' ) + $this->stored()
+		);
+
+		$this->assertSame( array( 'telegram_thread_id' ), array_keys( $result['errors'] ) );
+		$this->assertSame( '172', $result['values']['telegram_thread_id'] );
+		$this->assertSame( '-100999', $result['values']['telegram_chat_id'], 'the rest of the submission is still saved' );
+	}
+
+	/**
+	 * Thread ids that must not be accepted.
+	 *
+	 * @return array<string, array{string}>
+	 */
+	public static function provide_invalid_thread_ids(): array {
+		return array(
+			'zero'           => array( '0' ),
+			'negative'       => array( '-5' ),
+			'letters'        => array( 'abc' ),
+			'a fraction'     => array( '1.5' ),
+			'a leading zero' => array( '0172' ),
+		);
+	}
+
+	/**
+	 * A thread id is saved as typed, and an empty one clears it: the report
+	 * then goes into the chat itself.
+	 *
+	 * @param string $submitted The value the admin typed.
+	 */
+	#[DataProvider( 'provide_valid_thread_ids' )]
+	public function test_a_thread_id_is_saved_or_cleared( string $submitted ): void {
+		$result = Settings::sanitize_settings(
+			array( 'telegram_thread_id' => $submitted ),
+			array( 'telegram_thread_id' => '99' ) + $this->stored()
+		);
+
+		$this->assertSame( array(), $result['errors'] );
+		$this->assertSame( $submitted, $result['values']['telegram_thread_id'] );
+	}
+
+	/**
+	 * Thread ids that must be accepted.
+	 *
+	 * @return array<string, array{string}>
+	 */
+	public static function provide_valid_thread_ids(): array {
+		return array(
+			'a topic' => array( '172' ),
+			'empty'   => array( '' ),
 		);
 	}
 
@@ -487,6 +553,7 @@ final class SettingsTest extends TestCase {
 		$this->assertSame( 4, Settings::max_attempts() );
 		$this->assertSame( '09:00', Settings::send_time() );
 		$this->assertSame( '', Settings::telegram_chat_id() );
+		$this->assertSame( '', Settings::telegram_thread_id(), 'a row saved before the thread id existed posts into the chat itself' );
 		$this->assertTrue( Settings::is_block_enabled( 'visitors' ) );
 		$this->assertFalse( Settings::is_block_enabled( 'weather' ) );
 	}

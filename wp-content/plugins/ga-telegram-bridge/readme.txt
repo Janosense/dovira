@@ -4,7 +4,7 @@ Tags: analytics, google analytics, ga4, telegram, reports
 Requires at least: 7.1
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.3.0
+Stable tag: 0.4.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -84,13 +84,17 @@ two accounts first and the WordPress screen last.
    positive; a group or channel id begins with a minus, usually `-100...`.
    That URL contains your token -- do not paste it into a chat, an issue or a
    screenshot.
+4. Only if the chat is split into threads (topics) and the report should go into
+   one of them: open any message of that thread, choose *Copy link*, and take the
+   number that follows the chat in it -- in `https://t.me/c/1234567890/172/180`
+   the thread id is `172`. Leave the field empty to post into the chat itself.
 
 = 3. The settings screen =
 
 Install and activate the plugin, then open **Settings -> GA -> Telegram**
 (administrators only) and fill in the property id, the whole key file, the bot
-token and the chat id. Set the time the report should go out at, and how many
-attempts a day is given. Save.
+token and the chat id, and the thread id if there is one. Set the time the report
+should go out at, and how many attempts a day is given. Save.
 
 A field that is filled in wrongly is refused on its own: it keeps its previous
 value, the rest of the form is saved, and the reason appears above the form.
@@ -227,6 +231,11 @@ to read the report, and to `api.telegram.org` to send it. There is no third-part
 service, no telemetry, and no request made from a visitor's page view.
 
 == Changelog ==
+
+= 0.4.0 =
+* The report can go into one thread (topic) of a chat: the optional *Thread id*
+  field sends the report, the failure notice and the test message there. Left
+  empty, everything goes into the chat itself, as before.
 
 = 0.3.0 =
 * Other code on the site -- a theme or another plugin -- can add blocks of its

@@ -23,8 +23,8 @@ and wordpress.org, any change to the theme's own Telegram code.
 
 ## Data
 Owns three non-autoloaded `wp_options` rows (details in `docs/DATA-MODEL.md`):
-`gatb_settings` (property id, service-account JSON, bot token, chat id, send
-time, max attempts, enabled blocks — six: `visitors` always on, `pages`, `channels`, `cities`, `devices`, `trend`), `gatb_state` (`last_report_date`,
+`gatb_settings` (property id, service-account JSON, bot token, chat id, optional
+thread id, send time, max attempts, enabled blocks — six: `visitors` always on, `pages`, `channels`, `cities`, `devices`, `trend`), `gatb_state` (`last_report_date`,
 `attempt`, `last_cron_hit` — the next run is not stored: `wp_next_scheduled()` is
 the one copy of it), `gatb_log` (last 30 runs); one transient
 `gatb_google_access_token`; cron hooks `gatb_daily_report` (recurring) and
