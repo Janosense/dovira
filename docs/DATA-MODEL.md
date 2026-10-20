@@ -121,6 +121,7 @@ Cities the clinic operates in. **Not Polylang-translatable** (invariant 2); term
 | Option | Type | Notes |
 |---|---|---|
 | `telegram_bot_chats` | array `{chat_id: chat_id}` | chats that receive notifications; added by password, removed by `/reset` |
+| `telegram_bot_chat_threads` | array `{chat_id: thread_id}` (int) | the forum topic a subscribed chat gets its notifications in, instead of the chat itself; written when the password is typed inside a topic, removed when it is typed in the chat's main area or by `/reset`; at most one topic per chat. A chat with no entry — every chat subscribed before 2026-10-20 — gets them in the chat itself. Missing option = no entries |
 | `telegram_webhook_data` | array of raw Telegram updates | append-only log; cleared by `GET dovira/v1/telegram/reset-telegram-log` |
 
 The theme bot's secrets are not stored here: the bot token and the join password

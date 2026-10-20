@@ -84,6 +84,29 @@ final class NotifyTest extends TestCase {
 		}
 	}
 
+	public function test_a_chat_subscribed_from_a_topic_gets_the_message_only_there(): void {
+		$this->options['telegram_bot_chats']        = [ -100222 => -100222 ];
+		$this->options['telegram_bot_chat_threads'] = [ -100222 => 172 ];
+
+		dovira_telegram_notify( 'Нове звернення' );
+
+		self::assertCount( 1, $this->requests );
+		self::assertSame( -100222, $this->requests[0][1]['body']['chat_id'] );
+		self::assertSame( 172, $this->requests[0][1]['body']['message_thread_id'] );
+	}
+
+	public function test_a_thread_never_carries_over_to_the_next_chat(): void {
+		$this->options['telegram_bot_chats']        = [ 111 => 111, -100222 => -100222, 333 => 333 ];
+		$this->options['telegram_bot_chat_threads'] = [ -100222 => 172 ];
+
+		dovira_telegram_notify( 'Нове звернення' );
+
+		self::assertSame(
+			[ [ 111, null ], [ -100222, 172 ], [ 333, null ] ],
+			array_map( static fn ( array $request ) => [ $request[1]['body']['chat_id'], $request[1]['body']['message_thread_id'] ?? null ], $this->requests )
+		);
+	}
+
 	public function test_no_subscribers_means_no_request(): void {
 		dovira_telegram_notify( 'Нове звернення' );
 
