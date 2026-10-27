@@ -10,10 +10,12 @@
 function dovira_wpcf7_submit_action( $that, $result ) {
 	if ( $result['status'] === 'mail_sent' || getenv( 'IS_DDEV_PROJECT' ) == 'true' ) {
 		switch ( $result['contact_form_id'] ) {
-			case 6: // Contact Form
-			case 1430: // Franchising Form
+			case 6: // Contact Form UA
+			case 1692: // Contact Form RU
+			case 1430: // Franchising Form UA
+			case 1695: // Franchising Form RU
 				$post_title = sanitize_text_field( $_POST['your-name'] ) . ' | ' . sanitize_text_field( $_POST['your-phone'] );
-				if ( $result['contact_form_id'] === 1430 ) {
+				if ( $result['contact_form_id'] === 1430 || $result['contact_form_id'] === 1695 ) {
 					$post_title = 'Франшиза: ' . $post_title;
 				}
 
@@ -28,7 +30,8 @@ function dovira_wpcf7_submit_action( $that, $result ) {
 
 				if ( ! is_wp_error( $post_id ) ) {
 					update_field( 'name', sanitize_text_field( $_POST['your-name'] ), $post_id );
-					if ( $result['contact_form_id'] === 6 ) {
+
+					if ( $result['contact_form_id'] === 6 || $result['contact_form_id'] === 1692 ) {
 						update_field( 'pet_name', sanitize_text_field( $_POST['pet-name'] ), $post_id );
 					}
 
