@@ -2,10 +2,10 @@
 Contributors: Chouby, manooweb, raaaahman, marianne38, sebastienserre, greglone, hugod
 Donate link: https://polylang.pro
 Tags: multilingual, translate, translation, language, localization
-Requires at least: 6.5
+Requires at least: 6.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 3.8.9
+Stable tag: 3.9.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -71,7 +71,7 @@ Wherever third party code has been used, credit has been given in the code’s c
 
 == Installation ==
 
-1. Make sure you are using WordPress 6.5 or later and that your server is running PHP 7.4 or later (same requirement as WordPress itself).
+1. Make sure you are using WordPress 6.8 or later and that your server is running PHP 7.4 or later (same requirement as WordPress itself).
 1. If you tried other multilingual plugins, deactivate them before activating Polylang, otherwise, you may get unexpected results!
 1. Install and activate the plugin as usual from the 'Plugins' menu in WordPress.
 1. The [setup wizard](https://polylang.pro/documentation/support/getting-started/setup-wizard/) is automatically launched to help you get started more easily with Polylang by configuring the main features.
@@ -104,13 +104,48 @@ Wherever third party code has been used, credit has been given in the code’s c
 
 == Changelog ==
 
+= 3.9.1 (2026-10-21) =
+
+* Fix flags of Central African Republic, Honduras and Ukraine.
+
+= 3.9 (2026-10-19) =
+
+* Require WP 6.8 as minimum version
+* Pro: Allow to manage all Business Pack plugins with a single field for the license key
+* Pro: Allow to manage fallbacks and active languages with the REST API #2947
+* Pro: Allow to manage locale fallbacks and active status of languages with WP CLI #3007
+* Pro: Display DeepL billed characters after machine translation #3041
+* Pro: Fix inconsistency in translation setting displayed when an ACF field was created before the activation of Polylang Pro #2968
+* Pro: Fix bulk copy separating synchronized posts #2949
+* Pro: Fix XLIFF files with SVG images not imported #3118
+* Pro: Fix synchronized posts deleted when using "Rewrite & Republish" in Yoast Duplicate Post. Props @krokodok #1536
+* Add a dropdown language switcher with optional flags, available as a classic widget or block
+* Allow to customize the shape and size of the flags in all language switchers
+* Replace PNG 16x11 images by SVG 18x12 images for default flags #1864
+* Change the code of some flags to use ISO 3166 for countries or regions, ISO 639 for languages #1865
+* Remove the filter `pll_flag_title`, inoperative since v3.0 #1828
+* Harmonize flags across the administration area and improve their accessibility #1857 #2992
+* Translate taxonomy filter in post list table when switching the language filter #1891
+* Allow to filter untranslated posts in the posts list table #1892
+* Add views for languages in the posts list table #1899
+* Fix the synchronization of meta values when updating a meta with multiple values #1826
+* Fix orphan translation group after the language of a term is changed #2015
+
+= 3.8.11 (2026-10-12) =
+
+* Security: Fix deserialization of untrusted data. Reported by Ananda Dhakal (Patchstack).
+
+= 3.8.10 (2026-09-28) =
+
+* Security: Fix XSS in block attribute. Reported by Intrudify via Patchstack.
+
 = 3.8.9 (2026-09-08) =
 
 * Fix wrong redirect on home when the URL includes a query var #1998
 
 = 3.8.8 (2026-09-07) =
 
-* Security: Fix exposure of some draft posts metadata to non-authorized users. Reported by Patchstack.
+* Security: Fix exposure of some draft posts metadata to non-authorized users. Reported by Ananda Dhakal (Patchstack).
 * Pro: Allow plugins requiring Polylang to be installed when Polylang Pro is active #3051 #3116
 * Pro: Fix warning `WP_Post conversion to int` with WooCommerce #3101
 * Pro: Fix creation of translation in block editor for WP < 6.7 #3105
@@ -125,7 +160,7 @@ Wherever third party code has been used, credit has been given in the code’s c
 = 3.8.6 (2026-07-20) =
 
 * Pro: Security: Ensure the user has the required capability for ACF fields when switching language in the editor #3029
-* Security: Fix exposure of some private posts metadata to non-authorized users. Reported by Patchstack.
+* Security: Fix exposure of some private posts metadata to non-authorized users. Reported by Ananda Dhakal (Patchstack).
 * Security: Fix server side default language encoding for the block editor
 * Fix 404 for post type or taxonomy sitemap when its name ends with a language code #1909
 
