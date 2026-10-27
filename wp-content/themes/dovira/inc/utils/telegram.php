@@ -148,7 +148,7 @@ function dovira_telegram_notify( string $message ): void {
  * @return string
  */
 function dovira_conversation_telegram_message( int $form_id ): string {
-	$form = $form_id === 1430 ? 'з форми заявки на Франшизу' : 'з контактної форми';
+	$form = ( $form_id === 1430 || $form_id === 1695 ) ? 'з форми заявки на Франшизу' : 'з контактної форми';
 	$city = str_contains( get_site_url(), 'kyiv' ) ? 'Києві' : 'Харкові';
 	$link = htmlspecialchars( admin_url( 'edit.php?post_type=conversation' ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', true );
 
