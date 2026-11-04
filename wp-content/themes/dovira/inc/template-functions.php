@@ -783,12 +783,13 @@ function dovira_add_submenu_toggle( string $item_output, WP_Post $item, int $dep
 add_filter( 'walker_nav_menu_start_el', 'dovira_add_submenu_toggle', 10, 4 );
 
 /**
+ * Shortens the language names in the Polylang switcher markup (Polylang >= 3.9).
+ *
  * @param string $output The HTML output of the language switcher.
- * @param array $args An array of arguments passed to the language switcher.
  *
  * @return string
  */
-function dovira_change_language_switcher_names( string $output, array $args ): string {
+function dovira_change_language_switcher_names( string $output ): string {
 	$output = str_replace( [
 		'Українська',
 		'Русский',
@@ -800,4 +801,4 @@ function dovira_change_language_switcher_names( string $output, array $args ): s
 	return $output;
 }
 
-add_filter( 'pll_the_languages', 'dovira_change_language_switcher_names', 10, 2 );
+add_filter( 'pll_language_switcher_output', 'dovira_change_language_switcher_names' );
