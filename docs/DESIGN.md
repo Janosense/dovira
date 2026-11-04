@@ -23,7 +23,7 @@ Breakpoints (mobile-first `min-width`): 768, 1024, 1280, 1440, 1920; `@media (ho
 | Heading `.heading--h1…h6`, Caption, Text | color/level/style set per block from ACF (`heading_color`, `heading_level`, `heading_style`) | `heading.css`, `caption.css`, `text.css` |
 | Header + main nav + mobile nav | hamburger (`--elastic`), submenu toggle button (`.menu-item__toggle`), phones per city, search form (desktop/mobile) | `header.css`, `main-nav.css`, `mobile-nav.css`, `hamburger.css`, `search-form.css` |
 | Location switcher | desktop / mobile; active city with pin icon | `location-switcher.css`, `site-header.php` |
-| Language switcher | desktop / mobile; labels shortened to "Укр / Рус" | `language-switcher-mobile.css`, `pll_the_languages` filter |
+| Language switcher | desktop / mobile; labels shortened to "Укр / Рус" | `language-switcher-mobile.css`, `pll_language_switcher_output` filter |
 | Footer, footer calls, up button, social links | — | `footer.css`, `footer-calls.css`, `up-button.css`, `social-links.css` |
 | Section header (heading + caption + CTA) and background/gradient layer | every block shares `general` tab fields: `background_color`, `background_image`, `show_gradient_layer`, `gradient_tone`, `gradient_direction`, `margin_bottom` | `section.css`, `gradient-layer.css` |
 | Service price list | city tabs (`.service__prices-toggles`), search + reset, per-row price or phone | `service.css`, `city-toggle.css`, `init-service-price-lists.js`, `services-search.js` |

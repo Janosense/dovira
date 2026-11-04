@@ -9,7 +9,7 @@
     ]
   },
   "source/main.js": {
-    "file": "main.2V5XzNCo.js",
+    "file": "main.B2hHfSDM.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -31,7 +31,7 @@
       "source/scripts/features/city-popup/city-popup.js"
     ],
     "css": [
-      "main.B22nuTbt.css"
+      "main.CJH7Nr1T.css"
     ]
   },
   "source/scripts/features/city-popup/city-popup.js": {

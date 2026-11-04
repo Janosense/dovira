@@ -70,9 +70,8 @@ $current_site_id       = ( str_contains( get_site_url(), 'kyiv' ) ) ? 'kyiv' : '
 		</ul>
 		<ul class="language-switcher language-switcher--desktop">
 			<?php pll_the_languages( [
-				'show_flags'       => 0,
-				'show_names'       => 1,
-				'display_names_as' => 'name',
+				'show_flags'   => 0,
+				'show_wrapper' => false,
 			] ); ?>
 		</ul>
 		<div class="header__search-form search-form search-form--desktop">
@@ -137,9 +136,8 @@ $current_site_id       = ( str_contains( get_site_url(), 'kyiv' ) ) ? 'kyiv' : '
 		) ); ?>
 		<ul class="language-switcher language-switcher--mobile">
 			<?php pll_the_languages( [
-				'show_flags'       => 0,
-				'show_names'       => 1,
-				'display_names_as' => 'name',
+				'show_flags'   => 0,
+				'show_wrapper' => false,
 			] ); ?>
 		</ul>
 		<ul class="location-switcher location-switcher--mobile">
