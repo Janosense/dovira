@@ -22,6 +22,11 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-04 — [adhoc] [core] — Language switcher on the Polylang 3.9 API
+- Changed: both `pll_the_languages()` calls in `template-parts/header/site-header.php` pass `show_flags` + `show_wrapper => false` (the removed `show_names` / `display_names_as` are gone, and labels default to names). The «Укр / Рус» shortening (`inc/template-functions.php`) hooks `pll_language_switcher_output` instead of the deprecated `pll_the_languages` filter. Deprecation notices are gone on `/` and `/ru/`, and the markup is still bare `<li>` with `current-lang`. DESIGN and TECH-STACK (Polylang 3.9.1) updated.
+- Decisions: —
+- Open: every install needs Polylang ≥ 3.9 when this is hand-deployed (the new filter doesn't exist in 3.8).
+
 ## 2026-10-20 — [adhoc] [core] — Contact/franchise notification names the city and links to its own site
 - Changed: `dovira_conversation_telegram_message()` (in `inc/utils/telegram.php`, which tests can load; `conversation.php` registers hooks) builds the text `dovira_wpcf7_submit_action()` sends. The sentence ends with «із сайту в Харкові» / «із сайту в Києві» (site URL contains `kyiv`), and «Всі звернення тут» links to the install's own `admin_url( 'edit.php?post_type=conversation' )`, no longer always `dovira.vet`. Test `ConversationMessageTest`; theme PHPUnit 166.
 - Decisions: —
