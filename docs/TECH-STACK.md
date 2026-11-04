@@ -12,7 +12,7 @@
 | Theme | `dovira` — custom classic theme from the Syndicode starter | 1.1.2026 | all the site's own code lives here (feature `core`) |
 | Custom plugin | `ga-telegram-bridge` — standalone plugin in its own code area, zero runtime dependencies, own `CLAUDE.md` | 0.1.0 | daily GA4 → Telegram report; must run on any WP site — DECISIONS "A standalone plugin in a new code area" |
 | Fields & blocks | ACF Pro + StoutLogic ACF Builder | 6.8.8 / 1.12.0 | field groups and 21 blocks defined in PHP, version-controlled (invariant 6) |
-| i18n | Polylang | 3.8.4 | uk/ru content; ACF options per language via `inc/polylang.php` |
+| i18n | Polylang | 3.9.1 | uk/ru content; ACF options per language via `inc/polylang.php` |
 | Forms | Contact Form 7 | 6.1.6 | contact / franchise / vacancy forms → CPT records via hooks |
 | SEO | Yoast SEO | 27.7 | meta + `wp_yoast_indexable`; one-off import tooling in `temp-data/` |
 | Other plugins | Cyr2Lat 7.0.2 (Latin slugs), Simple Custom Post Order 2.7.2, Enable Media Replace 4.1.9, Akismet 5.7, Loco Translate 2.8.5 | — | — |
