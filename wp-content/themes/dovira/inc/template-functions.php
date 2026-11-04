@@ -418,7 +418,7 @@ function dovira_allowed_block_types( bool|array $allowed_blocks, WP_Block_Editor
 	return true;
 }
 
-add_filter( 'allowed_block_types_all', 'dovira_allowed_block_types', 10, 2 );
+//add_filter( 'allowed_block_types_all', 'dovira_allowed_block_types', 10, 2 );
 
 /**
  * Disable autop for Contact Form 7 Forms
