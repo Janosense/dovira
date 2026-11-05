@@ -22,6 +22,21 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-05 — [content-mcp] Sprint 2 Step 1 — Creating posts of every writable type, and blog terms
+- Changed:
+  - `dovira/create-post` (`PostWriter::create()`) inserts a Ukrainian service, employee, vacancy, page or blog post (blog only where the `news` page exists) in the status the person names, with no default. Missing required fields are named (`image`, `photo`, `description`).
+  - A new service's price rows are general rows of this city.
+  - `dovira/create-term` and `dovira/update-term` (`TermWriter`) handle `category` / `post_tag` only; new terms are `uk`.
+  - Twelve tools; theme PHPUnit 417.
+- Shared code: none changed.
+- Fixed on the way: a new `acf/*` block now stores its fields' defaults. Without them it rendered hidden (`is_visible`), in `update-post` since Sprint 1 Step 4 too.
+- Decisions:
+  - DECISIONS "A new service's price rows are written by `create-post` as general rows of this city".
+  - TECH-STACK ANTI-PATTERNS: block defaults.
+  - LEARNINGS: no named route for a closed step's defect found mid-step.
+- Open:
+  - Sprint 1's open items still stand: the Step 3 dump numbers, the local `DOVIRA_MCP_DUMP_DIR`, `master` not on `origin/main`, and the production prerequisites for Step 3.
+
 ## 2026-11-05 — [content-mcp] Sprint 1 Step 4 — Editing an existing post, and trashing one as an administrator
 - Changed:
   - `dovira/update-post` (`PostWriter`, `FieldInput`) changes only the named fields of a content post: title, status, slug, parent, menu order, existing terms, its ACF fields, and blocks within the editor's allowed set. An `acf/*` block takes named fields; ACF flattens them, and unnamed fields stay as stored.

@@ -22,7 +22,7 @@
      subsections, even if a subsection is "—". The checkbox in the heading is
      ticked by /close-step. -->
 
-### [ ] Step 1 — Creating posts of every writable type, and blog terms
+### [x] Step 1 — Creating posts of every writable type, and blog terms
 - **Tasks:**
   - `PostWriter::create()`: `post_type` (one of `service`, `employee`, `vacancy`, `page`, `post`; `post` only where the install has a blog — the `news` page exists, else refused), `lang` (`uk`; `ru` only through `create-translation`), `title`, `status` (required — `draft`, `pending`, `publish`, `private`; no default), `slug`, `parent`, `menu_order`, `terms`, `acf`, `blocks` | `content_html` — the same shapes and validation as the update path, plus the required ACF fields of the type (from `Schema`) checked before anything is inserted (root invariant 8): a `service` without `image` is refused with the field named. `wp_insert_post()` as the connected user, `pll_set_post_language()`, then the ACF fields, then the terms; the preview lists every value that will be written.
   - `TermWriter`: `create` / `update` for `category` and `post_tag` only (`name`, `slug`, `description`, `parent` for categories); any other taxonomy is refused by schema. Terms are not translated by this feature (the blog's taxonomies follow Polylang's own setting — the step records which in the report).

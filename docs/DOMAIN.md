@@ -98,7 +98,9 @@
   in every language; a Russian copy is updated in the same session under the
   same rule, and prices are the same in every language: a price is changed in
   the Ukrainian copy and follows into the Russian one by itself, while the
-  Russian wording is changed on the Russian copy.
+  Russian wording is changed on the Russian copy. A service created through
+  the connector gets one price per row for this site's city; prices for the
+  other city are added in wp-admin.
 - Before a session's first change the connector saves a dump of the database;
   if it cannot, it changes nothing. A dump is never overwritten.
 - Through the connector, administrators and editors edit the same content;

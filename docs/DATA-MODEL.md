@@ -370,8 +370,20 @@ The connector stores nothing of its own here: a change goes through
 ACF fields), as the connected user. An `acf/*` block's `attrs.data` is the
 flattened `name` / `_name` → field key data that ACF's own save returns
 (`acf_setup_meta()` capture), in the block's field order; a block's other
-attrs are kept. `trash-post` sets `post_status = trash` through
-`wp_trash_post` (with WordPress's `_wp_trash_meta_*`), never deletes.
+attrs are kept; a new block also stores its unnamed fields' defaults.
+`trash-post` sets `post_status = trash` through `wp_trash_post` (with
+WordPress's `_wp_trash_meta_*`), never deletes.
+
+`create-post` inserts with `wp_insert_post` (author = the connected user,
+the status the person named), sets the language `uk`
+(`pll_set_post_language`), then writes the ACF fields and the terms. A new
+service's `prices` rows are general rows: `is_price_general = 1`, `price`,
+and `cities` = `["city_{term_id}"]` of this install's own `service-city`
+term; `city_prices` is never written. `create-term` inserts a `category` /
+`post_tag` term with `wp_insert_term` and sets it to `uk`
+(`pll_set_term_language`) when Polylang translates the taxonomy;
+`update-term` uses `wp_update_term`. No `service-city` term is ever
+written.
 
 ### Reading `service` prices
 The connector stores nothing to read prices. It reads a row's price in this

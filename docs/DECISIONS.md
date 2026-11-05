@@ -423,6 +423,14 @@ Entry format:
 - **Alternatives rejected:** Mirroring text as well, which would put Ukrainian text into the Russian page (root invariant 7). Letting a Russian copy's price be changed on its own, which would let the two copies' prices drift apart.
 - **Consequences:** FEATURE.md → Interfaces (`update-price-row`); `update-post` writes a Russian copy only when the payload names it as `translation`; nothing follows on its own (corrected at Sprint 1 Step 4, whose step text says so).
 
+## 2026-11-05 — [content-mcp] A new service's price rows are written by `create-post` as general rows of this city
+- **Context:** Sprint 2 asks for "a service with its price list", but FEATURE.md said price rows are written only by `update-price-row`, which changes existing rows and never touches `is_price_general` or `cities`. A row the site shows needs its `cities` checklist ticked (root invariant 3), and 80% of today's rows are per-city legacy columns (`city_prices.price_city_{term}`).
+- **Decision:** `create-post` accepts `acf.prices` for a **new** service as rows in the reader's shape `{title, description, price, linked_page?}`. Each is written as a general row (`is_price_general = 1`, `price`) with `cities` = this install's own city, and `city_prices` is never written. Existing rows are still changed only by `update-price-row` (Sprint 2 Step 1, Question 1, A).
+- **Alternatives rejected:**
+  - No prices on create: the person would add every row in wp-admin before the connector could price it.
+  - Accepting `is_price_general` / `cities` / `city_prices` from the agent: it exposes the legacy per-city columns the reader hides, and lets one install write the other city's prices.
+- **Consequences:** FEATURE.md → Invariants and Interfaces; DATA-MODEL → Writing posts. A new service shows its prices only on the install that created it. Prices for the other city, or another row later, go through wp-admin.
+
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
 1. **Telegram bot token and join password are string literals in code**
    (`inc/rest-api/TelegramController.php`, `inc/utils/{conversation,application}.php`,

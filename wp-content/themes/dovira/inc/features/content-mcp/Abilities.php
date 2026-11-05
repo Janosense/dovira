@@ -48,7 +48,10 @@ final class Abilities {
 			ListMedia::NAME      => ListMedia::args(),
 			UpdatePriceRow::NAME => UpdatePriceRow::args(),
 			UpdatePost::NAME     => UpdatePost::args(),
+			CreatePost::NAME     => CreatePost::args(),
 			TrashPost::NAME      => TrashPost::args(),
+			CreateTerm::NAME     => CreateTerm::args(),
+			UpdateTerm::NAME     => UpdateTerm::args(),
 		];
 	}
 }

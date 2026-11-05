@@ -25,6 +25,15 @@ final class PostWriter {
 	/** @var callable(object): list<string> */
 	private $allowed;
 
+	/** While `create()` plans: the target has no id yet and nothing has a "from" value. */
+	private bool $creating = false;
+
+	/** The page whose existence means the install has a blog (city-popup finds the blog by the same slug). */
+	public const BLOG_SLUG = 'news';
+
+	/** The language a new post is created in; `ru` is `create-translation`'s. */
+	public const SOURCE_LANG = 'uk';
+
 	/**
 	 * @param bool|null       $acf      Whether ACF's API is there; null asks.
 	 * @param bool|null       $polylang Whether Polylang's API is there; null asks.
@@ -36,6 +45,213 @@ final class PostWriter {
 		$this->polylang = $polylang ?? function_exists( 'pll_get_post_language' );
 		$this->reader   = $reader ?? new PostReader( $this->acf, $this->polylang );
 		$this->allowed  = $allowed ?? [ self::class, 'allowed_blocks' ];
+	}
+
+	/**
+	 * Plans a new post in the source language: the update path's checks on a
+	 * post that does not exist yet, plus what only a new post needs — a type
+	 * in scope, a blog for `post`, a title, a status with no default, the
+	 * type's required ACF fields. `apply` inserts it and returns its id.
+	 *
+	 * @param array<string, mixed> $input `post_type`, `lang`, `title`, `status`, and `FIELDS`.
+	 * @return array{diff: Diff, apply: callable(): (int|\WP_Error)}|\WP_Error
+	 */
+	public function create( array $input, ?Diff $diff = null ) {
+		$diff = $diff ?? new Diff();
+		$type = (string) ( $input['post_type'] ?? '' );
+
+		if ( Scope::is_record( $type ) ) {
+			return new \WP_Error( 'dovira_read_only_type', 'Звернення, заявки й анкети через конектор не створюються.' );
+		}
+		if ( ! in_array( $type, Scope::CONTENT, true ) ) {
+			return new \WP_Error( 'dovira_type_out_of_scope', sprintf( 'Записи типу «%s» конектор не створює; можна: %s.', $type, implode( ', ', Scope::CONTENT ) ) );
+		}
+		if ( 'post' === $type && ! $this->has_blog() ) {
+			return new \WP_Error( 'dovira_no_blog', 'На цьому сайті немає блогу (сторінки news), тож новини тут не створюються.' );
+		}
+
+		$lang = (string) ( $input['lang'] ?? self::SOURCE_LANG );
+		if ( self::SOURCE_LANG !== $lang ) {
+			return new \WP_Error( 'dovira_lang_invalid', 'Новий запис створюється українською; російську копію робить create-translation.' );
+		}
+		if ( ! isset( $input['title'] ) || '' === trim( (string) $input['title'] ) ) {
+			return new \WP_Error( 'dovira_title_required', 'Потрібен заголовок (title).' );
+		}
+		if ( ! isset( $input['status'] ) || '' === (string) $input['status'] ) {
+			return new \WP_Error( 'dovira_status_required', 'Потрібен статус (status): ' . implode( ', ', self::STATUSES ) . ' — без значення за замовчуванням, як попросила людина.' );
+		}
+
+		$acf     = (array) ( $input['acf'] ?? [] );
+		$missing = [];
+		foreach ( $this->acf ? self::definitions( $type ) : [] as $field ) {
+			$name = (string) ( $field['name'] ?? '' );
+			if ( ! empty( $field['required'] ) && '' !== $name && ( ! array_key_exists( $name, $acf ) || in_array( $acf[ $name ], [ null, '', [] ], true ) ) ) {
+				$missing[] = $name;
+			}
+		}
+		if ( [] !== $missing ) {
+			return new \WP_Error( 'dovira_required_fields', sprintf( 'Не заповнено обов’язкові поля: %s.', implode( ', ', $missing ) ) );
+		}
+
+		$post = (object) [
+			'ID'           => 0,
+			'post_type'    => $type,
+			'post_status'  => 'auto-draft',
+			'post_title'   => '',
+			'post_name'    => '',
+			'post_parent'  => 0,
+			'menu_order'   => 0,
+			'post_content' => '',
+		];
+		$shown = $this->polylang ? $lang : null;
+
+		$this->creating = true;
+		try {
+			$diff->add( null, $shown, 'post_type', null, $type );
+
+			$postarr = [ 'post_type' => $type ];
+			$changes = array_intersect_key( $input, array_flip( self::FIELDS ) );
+
+			$planned = $this->post_fields( $post, $changes, $shown, $diff, $postarr );
+			if ( is_wp_error( $planned ) ) {
+				return $planned;
+			}
+
+			$terms = [];
+			if ( array_key_exists( 'terms', $changes ) ) {
+				$terms = $this->terms( $post, (array) $changes['terms'], $shown, $diff );
+				if ( is_wp_error( $terms ) ) {
+					return $terms;
+				}
+			}
+
+			$fields = [];
+			if ( [] !== $acf ) {
+				$fields = $this->acf_fields( $post, $acf, $shown, $diff );
+				if ( is_wp_error( $fields ) ) {
+					return $fields;
+				}
+			}
+
+			if ( array_key_exists( 'blocks', $changes ) ) {
+				$content = $this->blocks( $post, $changes['blocks'], $shown, $diff );
+				if ( is_wp_error( $content ) ) {
+					return $content;
+				}
+				$postarr['post_content'] = $content;
+			}
+		} finally {
+			$this->creating = false;
+		}
+
+		$polylang = $this->polylang;
+
+		return [
+			'diff'  => $diff,
+			'apply' => static function () use ( $postarr, $terms, $fields, $polylang ) {
+				$id = wp_insert_post( wp_slash( $postarr ), true );
+				if ( is_wp_error( $id ) ) {
+					return $id;
+				}
+				$id = (int) $id;
+
+				if ( $polylang ) {
+					pll_set_post_language( $id, self::SOURCE_LANG );
+				}
+				foreach ( $fields as $key => $value ) {
+					update_field( $key, $value, $id );
+				}
+				foreach ( $terms as $taxonomy => $ids ) {
+					$set = wp_set_object_terms( $id, $ids, $taxonomy, false );
+					if ( is_wp_error( $set ) ) {
+						return new \WP_Error( $set->get_error_code(), sprintf( 'Запис %d створено, але рубрики не додано: %s', $id, $set->get_error_message() ) );
+					}
+				}
+
+				return $id;
+			},
+		];
+	}
+
+	/**
+	 * Whether the install has a blog: its Ukrainian `news` page exists.
+	 */
+	private function has_blog(): bool {
+		$page = get_page_by_path( self::BLOG_SLUG, 'OBJECT', 'page' );
+
+		return is_object( $page ) && ( ! $this->polylang || self::SOURCE_LANG === pll_get_post_language( (int) $page->ID ) );
+	}
+
+	/**
+	 * The ACF field definitions of the groups located on a post type.
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	private static function definitions( string $type ): array {
+		$definitions = [];
+		foreach ( (array) acf_get_field_groups( [ 'post_type' => $type ] ) as $group ) {
+			foreach ( (array) acf_get_fields( $group ) as $field ) {
+				$definitions[] = $field;
+			}
+		}
+
+		return $definitions;
+	}
+
+	/**
+	 * A new service's price rows from the reader's shape: each a general row
+	 * (`is_price_general = 1`) ticked for this install's city only, so the
+	 * site shows it here; `city_prices` is never written.
+	 *
+	 * @return array{stored: list<array<string, mixed>>, shown: list<array<string, mixed>>}|\WP_Error
+	 */
+	private static function new_price_rows( mixed $rows ) {
+		if ( ! is_array( $rows ) || ! array_is_list( $rows ) ) {
+			return new \WP_Error( 'dovira_prices_invalid', 'prices — список рядків {title, description, price, linked_page?}.' );
+		}
+
+		$term = CityPrice::term_id( DescribeSite::city( (string) get_site_url() ) );
+		if ( null === $term ) {
+			return new \WP_Error( 'dovira_city_term_missing', 'Місто цього сайту не знайдено серед міст послуг — рядки цін не створено.' );
+		}
+
+		$stored = [];
+		$shown  = [];
+		foreach ( $rows as $i => $row ) {
+			$row   = (array) $row;
+			$price = $row['price'] ?? null;
+			if ( null !== $price && '' !== $price && ( ! is_numeric( $price ) || 0 >= $price ) ) {
+				return new \WP_Error( 'dovira_price_invalid', sprintf( 'Рядок %d: ціна — число, більше за 0 (або порожньо — тоді сайт покаже телефон).', $i ) );
+			}
+			$amount = null === $price || '' === $price ? null : 0 + $price;
+
+			$stored[] = [
+				'title'            => (string) ( $row['title'] ?? '' ),
+				'description'      => (string) ( $row['description'] ?? '' ),
+				'price'            => null === $amount ? '' : (string) $amount,
+				'linked_page'      => $row['linked_page'] ?? '',
+				'cities'           => [ 'city_' . $term ],
+				'is_price_general' => 1,
+			];
+			$shown[]  = [
+				'title'       => (string) ( $row['title'] ?? '' ),
+				'description' => (string) ( $row['description'] ?? '' ),
+				'price'       => $amount,
+			];
+		}
+
+		return [
+			'stored' => $stored,
+			'shown'  => $shown,
+		];
+	}
+
+	private function target( object $post ): ?int {
+		return $this->creating ? null : (int) $post->ID;
+	}
+
+	private function was( mixed $value ): mixed {
+		return $this->creating ? null : $value;
 	}
 
 	/**
@@ -143,7 +359,7 @@ final class PostWriter {
 
 		if ( array_key_exists( 'title', $changes ) ) {
 			$postarr['post_title'] = (string) $changes['title'];
-			$diff->add( $id, $lang, 'title', (string) $post->post_title, $postarr['post_title'] );
+			$diff->add( $this->target( $post ), $lang, 'title', $this->was( (string) $post->post_title ), $postarr['post_title'] );
 		}
 
 		if ( array_key_exists( 'status', $changes ) ) {
@@ -161,7 +377,7 @@ final class PostWriter {
 				}
 			}
 			$postarr['post_status'] = $status;
-			$diff->add( $id, $lang, 'status', (string) $post->post_status, $status );
+			$diff->add( $this->target( $post ), $lang, 'status', $this->was( (string) $post->post_status ), $status );
 		}
 
 		if ( array_key_exists( 'parent', $changes ) ) {
@@ -171,7 +387,7 @@ final class PostWriter {
 				return $valid;
 			}
 			$postarr['post_parent'] = $parent;
-			$diff->add( $id, $lang, 'parent', (int) $post->post_parent, $parent );
+			$diff->add( $this->target( $post ), $lang, 'parent', $this->was( (int) $post->post_parent ), $parent );
 		}
 
 		if ( array_key_exists( 'slug', $changes ) ) {
@@ -181,12 +397,12 @@ final class PostWriter {
 			}
 			$slug                 = wp_unique_post_slug( $slug, $id, $status, $type, $parent );
 			$postarr['post_name'] = $slug;
-			$diff->add( $id, $lang, 'slug', (string) $post->post_name, $slug );
+			$diff->add( $this->target( $post ), $lang, 'slug', $this->was( (string) $post->post_name ), $slug );
 		}
 
 		if ( array_key_exists( 'menu_order', $changes ) ) {
 			$postarr['menu_order'] = (int) $changes['menu_order'];
-			$diff->add( $id, $lang, 'menu_order', (int) $post->menu_order, $postarr['menu_order'] );
+			$diff->add( $this->target( $post ), $lang, 'menu_order', $this->was( (int) $post->menu_order ), $postarr['menu_order'] );
 		}
 
 		return true;
@@ -246,7 +462,7 @@ final class PostWriter {
 			ksort( $terms );
 
 			$current = [];
-			foreach ( (array) wp_get_object_terms( $id, $taxonomy ) as $term ) {
+			foreach ( $this->creating ? [] : (array) wp_get_object_terms( $id, $taxonomy ) as $term ) {
 				if ( is_object( $term ) ) {
 					$current[ (int) $term->term_id ] = [
 						'id'   => (int) $term->term_id,
@@ -256,7 +472,7 @@ final class PostWriter {
 			}
 			ksort( $current );
 
-			$diff->add( $id, $lang, "terms.{$taxonomy}", array_values( $current ), array_values( $terms ) );
+			$diff->add( $this->target( $post ), $lang, "terms.{$taxonomy}", $this->was( array_values( $current ) ), array_values( $terms ) );
 			$planned[ $taxonomy ] = array_keys( $terms );
 		}
 
@@ -320,16 +536,19 @@ final class PostWriter {
 		$id   = (int) $post->ID;
 		$type = (string) $post->post_type;
 
+		$prices = null;
 		if ( 'service' === $type && array_key_exists( 'prices', $values ) ) {
-			return new \WP_Error( 'dovira_prices_through_price_tool', 'Ціни послуги змінює лише dovira-update-price-row (find-price-rows → update-price-row).' );
+			if ( ! $this->creating ) {
+				return new \WP_Error( 'dovira_prices_through_price_tool', 'Ціни послуги змінює лише dovira-update-price-row (find-price-rows → update-price-row).' );
+			}
+			$prices = self::new_price_rows( $values['prices'] );
+			if ( is_wp_error( $prices ) ) {
+				return $prices;
+			}
+			unset( $values['prices'] );
 		}
 
-		$definitions = [];
-		foreach ( (array) acf_get_field_groups( [ 'post_type' => $type ] ) as $group ) {
-			foreach ( (array) acf_get_fields( $group ) as $field ) {
-				$definitions[] = $field;
-			}
-		}
+		$definitions = self::definitions( $type );
 
 		$keyed = FieldInput::keyed( $definitions, $values );
 		if ( is_wp_error( $keyed ) ) {
@@ -337,13 +556,22 @@ final class PostWriter {
 		}
 
 		$by_name = FieldInput::by_name( $definitions );
+
+		if ( null !== $prices ) {
+			if ( ! isset( $by_name['prices'] ) ) {
+				return new \WP_Error( 'dovira_unknown_field', 'У послуги немає поля prices.' );
+			}
+			$diff->add( null, $lang, 'acf.prices', null, $prices['shown'] );
+			$keyed[ (string) $by_name['prices']['key'] ] = $prices['stored'];
+		}
+
 		foreach ( $values as $name => $value ) {
 			$field = $by_name[ (string) $name ];
 			$diff->add(
-				$id,
+				$this->target( $post ),
 				$lang,
 				"acf.{$name}",
-				FieldValues::value( $field, get_field( (string) $field['key'], $id ) ),
+				$this->creating ? null : FieldValues::value( $field, get_field( (string) $field['key'], $id ) ),
 				FieldValues::value( $field, $keyed[ (string) $field['key'] ] )
 			);
 		}
@@ -386,10 +614,10 @@ final class PostWriter {
 
 				if ( $same ) {
 					foreach ( $built['changed'] as $field => [ $from, $to ] ) {
-						$diff->add( $id, $lang, "blocks[{$i}].{$name}.{$field}", $from, $to );
+						$diff->add( $this->target( $post ), $lang, "blocks[{$i}].{$name}.{$field}", $from, $to );
 					}
 				} else {
-					$diff->add( $id, $lang, "blocks[{$i}]", $shown[ $i ] ?? null, [ 'block' => $name, 'fields' => $built['fields'] ] );
+					$diff->add( $this->target( $post ), $lang, "blocks[{$i}]", $shown[ $i ] ?? null, [ 'block' => $name, 'fields' => $built['fields'] ] );
 				}
 				continue;
 			}
@@ -400,11 +628,11 @@ final class PostWriter {
 				return $parsed;
 			}
 			$written[] = $parsed;
-			$diff->add( $id, $lang, "blocks[{$i}]", $shown[ $i ] ?? null, [ 'block' => $name, 'html' => $html ] );
+			$diff->add( $this->target( $post ), $lang, "blocks[{$i}]", $shown[ $i ] ?? null, [ 'block' => $name, 'html' => $html ] );
 		}
 
 		for ( $i = count( $blocks ); $i < count( $shown ); $i++ ) {
-			$diff->add( $id, $lang, "blocks[{$i}]", $shown[ $i ], null );
+			$diff->add( $this->target( $post ), $lang, "blocks[{$i}]", $shown[ $i ], null );
 		}
 
 		return implode( "\n\n", array_map( 'serialize_block', $written ) );
@@ -440,6 +668,19 @@ final class PostWriter {
 		}
 		foreach ( $keep as $field => $value ) {
 			$keyed[ (string) $by_name[ (string) $field ]['key'] ] = $value;
+		}
+
+		// A new block gets every unnamed field's default, as the block editor
+		// stores them on insert: ACF applies `default_value` only to a field the
+		// block data names, so a template reading `is_visible` would see nothing.
+		if ( null === $current ) {
+			foreach ( $by_name as $definition ) {
+				$key     = (string) $definition['key'];
+				$default = $definition['default_value'] ?? null;
+				if ( ! array_key_exists( $key, $keyed ) && null !== $default && '' !== $default && [] !== $default ) {
+					$keyed[ $key ] = $default;
+				}
+			}
 		}
 
 		// In the order of the block's fields, as ACF itself saves them.
