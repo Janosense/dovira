@@ -23,6 +23,7 @@ require_once __DIR__ . '/Dump.php';
 require_once __DIR__ . '/Scope.php';
 require_once __DIR__ . '/Schema.php';
 require_once __DIR__ . '/FieldValues.php';
+require_once __DIR__ . '/FieldInput.php';
 require_once __DIR__ . '/CityPrice.php';
 require_once __DIR__ . '/PostReader.php';
 require_once __DIR__ . '/ReadTools.php';
