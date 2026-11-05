@@ -213,8 +213,12 @@ changes) — DECISIONS "Testing tooling and the project check command".
   data (`PostWriter::acf_block()`). Fields not being changed are taken
   unformatted (`get_fields( $block_id, false )`), never from the reader's
   formatted values, which would rewrite a wysiwyg with `<p>` and a
-  true_false `'1'` as `true` (DECISIONS 2026-11-05 — Every post's content is
-  read as blocks; content-mcp Sprint 1 Step 4).
+  true_false `'1'` as `true`. A **new** block gets every unnamed field's
+  `default_value`, as the block editor stores it on insert: ACF applies a
+  default only to a field the block data names, so a block stored with its
+  named fields alone renders hidden (`is_visible`) (DECISIONS 2026-11-05 —
+  Every post's content is read as blocks; content-mcp Sprint 1 Step 4,
+  Sprint 2 Step 1).
 
 ## CONVENTIONS (mandatory reading before writing code)
 <!-- Project-wide rules for code that later steps must follow and would

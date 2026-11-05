@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step; executed by /do-step,
      closed by /close-step. -->
 
-## Plan — Sprint 2, Step 1: Creating posts of every writable type, and blog terms   (status: implemented, awaiting verification)
+## Plan — Sprint 2, Step 1: Creating posts of every writable type, and blog terms   (status: closed)
 
 ### Branch
 `content-mcp/sprint-2-create` ← `master`, created from `master` = `133d9c56`

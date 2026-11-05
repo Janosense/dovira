@@ -24,6 +24,11 @@ Entry format:
 
 ---
 
+## [new] 2026-11-05 — A defect in a closed step's code, found by the live check of the step in flight, has no named route
+- **Playbook rule:** `.claude/commands/do-step.md` → step 2 "Scope is frozen" and Step protocol in `CLAUDE.md` ("rework of a closed step goes through `/fix-step`").
+- **What happened:** content-mcp Sprint 2 Step 1's DDEV check showed that a new `acf/*` block written by `PostWriter` rendered hidden, because unnamed fields lacked their defaults. That code was built in Sprint 1 Step 4, which is closed. The new step's own task (a published page from blocks) could not pass without the fix, so it was fixed inside the step and recorded in the step report. No user report existed to start `/fix-step`, and stopping for a mid-step decision would have asked only "fix it here?".
+- **Suggested change:** Say whether a defect in shared code that the step in flight builds on, found by that step's own checks, is fixed in the step (and reported) or always goes to a mid-step decision.
+
 ## [new] 2026-11-05 — A verification guide can ask the user to report values, but /close-step has nowhere to take them from
 - **Playbook rule:** `.claude/commands/do-step.md` → step 8 (verification guide) and `.claude/commands/close-step.md` → step 1 ("Running `/close-step` means verified").
 - **What happened:** content-mcp Step 3's guide asked the user to report the dump's footer (seconds, peak memory in a real web request on dev) and the HTTP status of the fallback folder, both meant for `PRODUCTION-CHECKLIST.md`. `/close-step` ran with no message carrying them, so the close could only record them as still open.
