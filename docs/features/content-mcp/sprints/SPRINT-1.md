@@ -67,7 +67,7 @@
 - **Docs to update:** `docs/features/content-mcp/FEATURE.md` (Interfaces: preview and write shapes); `docs/DATA-MODEL.md` → Feature `content-mcp` (transients, cron, files); `docs/ARCHITECTURE.md` → Data flows "Connector write → dump → write", Environments (`DOVIRA_MCP_DUMP_DIR`); `PRODUCTION-CHECKLIST.md`.
 - **Depends on:** Step 2
 
-### [ ] Step 4 — Editing an existing post, and trashing one as an administrator
+### [x] Step 4 — Editing an existing post, and trashing one as an administrator
 - **Tasks:**
   - `PostWriter` (`dovira\ContentMcp\PostWriter`): applies a partial change set to one post — `title`, `status`, `slug`, `parent`, `menu_order`, `terms` (ids or names of `category` / `post_tag` and of `service-city` by id only — never creating a city), `acf` (nested, through `update_field()` per top-level field; a repeater value replaces the whole repeater), `blocks` for a `page` (the inverse of the reader's mapping — names → field keys — serialized with `serialize_blocks()`; a block name outside the theme's blocks is refused), `content_html` for a `post` (sanitized with `wp_kses_post`) — and computes the diff before writing. A change to a Ukrainian post does not touch its Russian copy unless the payload names the copy's id as a second target; the preview lists both.
   - Abilities `dovira/update-post` (preview/write; `permission_callback`: `edit_post`; refused for `conversation` / `application` / `questionary` — no write ability is registered for them, and `update-post` refuses the type explicitly) and `dovira/trash-post` (preview/write; `permission_callback`: `manage_options` **and** `delete_post`; `wp_trash_post()`, never `wp_delete_post()`; the preview names the post, its language and its Russian copy, which is not trashed unless named).

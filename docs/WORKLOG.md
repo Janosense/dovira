@@ -22,6 +22,25 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-05 — [content-mcp] Sprint 1 Step 4 — Editing an existing post, and trashing one as an administrator
+- Changed:
+  - `dovira/update-post` (`PostWriter`, `FieldInput`) changes only the named fields of a content post: title, status, slug, parent, menu order, existing terms, its ACF fields, and blocks within the editor's allowed set. An `acf/*` block takes named fields; ACF flattens them, and unnamed fields stay as stored.
+  - A post's Russian copy is written only when named as `translation`.
+  - `dovira/trash-post` (administrators) moves a post to the trash with `wp_trash_post`.
+  - Records, `service.prices`, and new terms are refused.
+  - Nine tools; theme PHPUnit 373.
+- Shared code: none changed. `dovira_allowed_block_types()` is called, read only.
+- Decisions:
+  - Per DECISIONS, blocks are written for every type and there is no `content_html`.
+  - The Step 3 DECISIONS consequence is corrected: a post's Russian copy is never written on its own.
+  - TECH-STACK ANTI-PATTERNS: a block is written through the `acf_setup_meta()` capture, with unchanged fields unformatted.
+- Open:
+  - The Step 3 numbers (dump footer and fallback status on dev) are still unreported.
+  - The local `wp-config.php` sets `DOVIRA_MCP_DUMP_DIR` to dev's path, so DDEV writes fail there.
+  - `master` is not on `origin/main`.
+  - Production prerequisites (Sprint 2 Step 3): `Claude-User` allowed, a dump folder per install, Kyiv's `kyiv` city slug.
+- Sprint 1 complete — all steps closed, content-mcp/sprint-1-read-and-price merged into main
+
 ## 2026-11-05 — [content-mcp] Sprint 1 Step 3 — The write protocol: confirmation tokens, the session dump, and the price change
 - Changed:
   - The write protocol (`WriteAbility`): preview `{diff, warnings, confirmation}`, then the same payload with the token → `Dump::ensure()` → write `{written, dump, warnings}`. A token is bound to user, session and payload and works once (`Confirmation`, 15 min, stored hashed).

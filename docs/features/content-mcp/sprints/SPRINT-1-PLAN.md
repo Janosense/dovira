@@ -970,7 +970,7 @@ none
   - `dump` in a write result is the file name or `"existing"`.
 - **Mid-step decisions:** none.
 
-## Plan — Sprint 1, Step 4: Editing an existing post, and trashing one as an administrator   (status: implemented, awaiting verification)
+## Plan — Sprint 1, Step 4: Editing an existing post, and trashing one as an administrator   (status: closed)
 
 ### Branch
 `content-mcp/sprint-1-read-and-price` ← `master`. The branch is recreated from

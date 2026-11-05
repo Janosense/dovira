@@ -207,9 +207,14 @@ changes) — DECISIONS "Testing tooling and the project check command".
   `_years_0_year` → field key, and a repeater's row count under its name. Read
   it by name through ACF:
   `acf_setup_meta( $data, $block_id, true )` → `get_field_objects( $block_id )`
-  → `acf_reset_meta( $block_id )` (`PostReader::block_fields()`). Writing
-  goes back through ACF the same way (DECISIONS 2026-11-05 — Every post's
-  content is read as blocks).
+  → `acf_reset_meta( $block_id )` (`PostReader::block_fields()`). Write it
+  through ACF the same way: field-key values (`FieldInput::keyed()`) into
+  `acf_setup_meta()`, which simulates ACF's save and returns the flattened
+  data (`PostWriter::acf_block()`). Fields not being changed are taken
+  unformatted (`get_fields( $block_id, false )`), never from the reader's
+  formatted values, which would rewrite a wysiwyg with `<p>` and a
+  true_false `'1'` as `true` (DECISIONS 2026-11-05 — Every post's content is
+  read as blocks; content-mcp Sprint 1 Step 4).
 
 ## CONVENTIONS (mandatory reading before writing code)
 <!-- Project-wide rules for code that later steps must follow and would

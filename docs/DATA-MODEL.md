@@ -363,6 +363,16 @@ the feature.
 Deletes dump files of the pattern above older than the filtered days (default
 90, never fewer than 1). Nothing else is ever deleted from the folder.
 
+### Writing posts
+The connector stores nothing of its own here: a change goes through
+`wp_update_post` (title, status, slug, parent, menu order, `post_content`),
+`wp_set_object_terms` (existing terms only) and `update_field` (the post's
+ACF fields), as the connected user. An `acf/*` block's `attrs.data` is the
+flattened `name` / `_name` → field key data that ACF's own save returns
+(`acf_setup_meta()` capture), in the block's field order; a block's other
+attrs are kept. `trash-post` sets `post_status = trash` through
+`wp_trash_post` (with WordPress's `_wp_trash_meta_*`), never deletes.
+
 ### Reading `service` prices
 The connector stores nothing to read prices. It reads a row's price in this
 install's city by the rule of `single-service.php`:
