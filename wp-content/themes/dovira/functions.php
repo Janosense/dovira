@@ -66,6 +66,11 @@ require_once TEMPLATE_DIR . '/inc/features/search-stats/bootstrap.php';
 require_once TEMPLATE_DIR . '/inc/features/city-popup/bootstrap.php';
 
 /**
+ * Feature: content-mcp
+ */
+require_once TEMPLATE_DIR . '/inc/features/content-mcp/bootstrap.php';
+
+/**
  * WP-CLI commands
  */
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
