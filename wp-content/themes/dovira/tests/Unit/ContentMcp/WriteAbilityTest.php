@@ -78,6 +78,16 @@ final class WriteAbilityTest extends TestCase {
 		$this->assertSame( [ 'preview', 'preview', 'dump:session-a', 'write' ], $this->events );
 	}
 
+	public function test_what_a_write_returns_besides_the_protocols_keys_reaches_the_result_and_never_replaces_them(): void {
+		$token = $this->ability()->run( [ 'price' => 550, 'extra' => true ] )['confirmation'];
+
+		$result = $this->ability()->run( [ 'price' => 550, 'extra' => true, 'confirmation' => $token ] );
+
+		$this->assertSame( [ 'id' => 5 ], $result['media'] );
+		$this->assertSame( 'dovira-dev.dovira.vet-2026-11-05-101500.sql.gz', $result['dump'] );
+		$this->assertSame( [ 18 ], $result['written'] );
+	}
+
 	public function test_a_token_of_another_payload_writes_nothing_and_takes_no_dump(): void {
 		$token = $this->ability()->run( [ 'price' => 550 ] )['confirmation'];
 
@@ -249,7 +259,10 @@ final class WriteAbilityTest extends TestCase {
 				return [
 					'written'  => [ 18 ],
 					'warnings' => [],
-				];
+				] + ( empty( $payload['extra'] ) ? [] : [
+					'media' => [ 'id' => 5 ],
+					'dump'  => 'forged',
+				] );
 			}
 		};
 	}

@@ -32,7 +32,7 @@
 - **Docs to update:** `docs/features/content-mcp/FEATURE.md` → Interfaces; `docs/DOMAIN.md` (glossary: the connector's "preview", if not yet there).
 - **Depends on:** Sprint 1 closed (`master`)
 
-### [ ] Step 2 — The Russian copy, and images
+### [x] Step 2 — The Russian copy, and images
 - **Tasks:**
   - `Translator` (`dovira\ContentMcp\Translator`): `create-translation` for a Ukrainian post that has no Russian copy — copies the source (`title`, `status` as given, `acf`, `blocks` / `content_html`, terms, parent resolved to the parent's own translation when it exists), overlays the translated values the payload carries, `pll_set_post_language( …, 'ru' )`, `pll_save_post_translations()` — the same calls `inc/cli/` makes; fields the payload does not translate stay as the source's (prices identical by rule). A post that already has a copy is refused with the copy's id (use `update-post` on it). The preview lists every value of the copy, translated or carried over.
   - `MediaWriter`: `upload-media` with either `url` (sideloaded with `media_sideload_image()` / `download_url()` — only `http(s)`, only image mime types, size cap filterable `dovira_mcp_upload_max_bytes`, default 10 MB) or `base64` (same checks, decoded to a temp file), `filename`, `alt`, `title`, optional `attach_to` (post id) — returns `{id, url, alt, mime, width, height}`. The preview states the source and the target; the upload itself happens only on the confirmed call.

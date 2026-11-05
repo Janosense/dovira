@@ -22,6 +22,17 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-05 — [content-mcp] Sprint 2 Step 2 — The Russian copy, and images
+- Changed:
+  - `dovira/create-translation` (`Translator`) makes the `ru` copy of a Ukrainian post without one, linked through `pll_save_post_translations()`. Carried from the source: untranslated ACF values (raw by key), content, terms in `ru`, the parent's translation, template, featured image (`page` / `post`) and date. Prices are always the source's; only row texts are translated.
+  - `dovira/upload-media` (`MediaWriter`) uploads an image from a URL or base64. Preview = HEAD only (type, size, public host); the capped download and `media_handle_sideload()` come after consent. Cap: `dovira_mcp_upload_max_bytes`, 10 MB.
+  - `WriteAbility::run()` passes extra write keys (`media`) through. Fourteen tools; theme PHPUnit 456.
+- Shared code: none changed. `PostCopier`'s Russian-slug lines are repeated in `Translator`, not shared.
+- Decisions: `wp_safe_remote_get()` with `limit_response_size` instead of `download_url()` (no cap). TECH-STACK CONVENTIONS: the `WriteAbility` line covers extra result keys. DOMAIN: the Russian copy rule.
+- Open:
+  - A pasted image can't be uploaded from claude.ai: the model can't pass its bytes; URLs work.
+  - Sprint 1's open items still stand: the Step 3 dump numbers, the local `DOVIRA_MCP_DUMP_DIR`, `master` not on `origin/main`, and the production prerequisites for Step 3.
+
 ## 2026-11-05 — [content-mcp] Sprint 2 Step 1 — Creating posts of every writable type, and blog terms
 - Changed:
   - `dovira/create-post` (`PostWriter::create()`) inserts a Ukrainian service, employee, vacancy, page or blog post (blog only where the `news` page exists) in the status the person names, with no default. Missing required fields are named (`image`, `photo`, `description`).

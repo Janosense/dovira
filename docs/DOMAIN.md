@@ -100,7 +100,11 @@
   the Ukrainian copy and follows into the Russian one by itself, while the
   Russian wording is changed on the Russian copy. A service created through
   the connector gets one price per row for this site's city; prices for the
-  other city are added in wp-admin.
+  other city are added in wp-admin. A Russian copy is made through the
+  connector only from a Ukrainian post that has none: the agent writes the
+  Russian wording, and whatever it leaves out stays Ukrainian on the copy
+  (the preview names it) until it is translated; its prices are the
+  Ukrainian ones.
 - Before a session's first change the connector saves a dump of the database;
   if it cannot, it changes nothing. A dump is never overwritten.
 - Through the connector, administrators and editors edit the same content;
