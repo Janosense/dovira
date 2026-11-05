@@ -262,7 +262,7 @@ changed.
   `news` page for a live check was not worth the risk.
 - **Mid-step decisions:** none.
 
-## Plan — Sprint 2, Step 2: The Russian copy, and images   (status: implemented, awaiting verification)
+## Plan — Sprint 2, Step 2: The Russian copy, and images   (status: closed)
 ### Branch
 `content-mcp/sprint-2-translate-media` ← `master`, created from `master` =
 `3e430c54` (Step 1 closed and merged). The only branch not merged into
