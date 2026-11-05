@@ -23,7 +23,7 @@ foreach ( [ 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools' ] as $dovira_c
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/DescribeSite.php';
-foreach ( [ 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows' ] as $dovira_class ) {
+foreach ( [ 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows', 'Session', 'Confirmation', 'Diff', 'Dump', 'PriceRows', 'WriteAbility', 'UpdatePriceRow' ] as $dovira_class ) {
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Abilities.php';
@@ -80,6 +80,22 @@ final class ServerTest extends TestCase {
 		$this->assertTrue( $annotations['readonly'] );
 		$this->assertFalse( $annotations['destructive'] );
 		$this->assertTrue( $annotations['idempotent'] );
+	}
+
+	public function test_the_catalogue_reads_finds_prices_and_changes_a_price_row(): void {
+		$this->assertSame(
+			[ 'dovira/describe-site', 'dovira/list-posts', 'dovira/get-post', 'dovira/find-price-rows', 'dovira/list-terms', 'dovira/list-media', 'dovira/update-price-row' ],
+			Catalogue::TOOLS
+		);
+		$this->assertSame( Catalogue::TOOLS, array_keys( Abilities::definitions() ) );
+	}
+
+	public function test_the_instructions_name_the_price_tools_and_the_preview_rule(): void {
+		$this->assertStringContainsString( 'dovira-describe-site first', Server::INSTRUCTIONS );
+		$this->assertStringContainsString( 'dovira-find-price-rows', Server::INSTRUCTIONS );
+		$this->assertStringContainsString( 'dovira-update-price-row', Server::INSTRUCTIONS );
+		$this->assertStringContainsString( 'without "confirmation"', Server::INSTRUCTIONS );
+		$this->assertStringContainsString( 'Russian copy', Server::INSTRUCTIONS );
 	}
 
 	public function test_the_server_lists_exactly_the_catalogue_on_mcp_dovira_behind_the_adapters_gate(): void {

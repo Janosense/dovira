@@ -20,5 +20,6 @@ final class Catalogue {
 		FindPriceRows::NAME,
 		ListTerms::NAME,
 		ListMedia::NAME,
+		UpdatePriceRow::NAME,
 	];
 }

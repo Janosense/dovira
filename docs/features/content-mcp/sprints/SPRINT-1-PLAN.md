@@ -719,7 +719,7 @@ PHPUnit with Brain\Monkey. ACF (`acf_get_local_field_groups`,
     Meta: `ReadTools::meta()`.
   - `Catalogue::TOOLS` and `Abilities::definitions()` gain it; `bootstrap.php`
     requires the class.
-- [ ] **4. `WriteAbility` and `dovira/update-price-row`; the server
+- [x] **4. `WriteAbility` and `dovira/update-price-row`; the server
   instructions.** Commit: `feat(content-mcp): update-price-row behind
   preview, token and dump`.
   - `WriteAbility` (`dovira\ContentMcp\WriteAbility`, abstract):

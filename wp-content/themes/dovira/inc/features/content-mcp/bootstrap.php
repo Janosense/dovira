@@ -33,6 +33,8 @@ require_once __DIR__ . '/PriceRows.php';
 require_once __DIR__ . '/FindPriceRows.php';
 require_once __DIR__ . '/ListTerms.php';
 require_once __DIR__ . '/ListMedia.php';
+require_once __DIR__ . '/WriteAbility.php';
+require_once __DIR__ . '/UpdatePriceRow.php';
 require_once __DIR__ . '/Abilities.php';
 require_once __DIR__ . '/Server.php';
 
