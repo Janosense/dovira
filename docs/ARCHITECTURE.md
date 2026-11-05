@@ -290,7 +290,12 @@ application passwords. Before the first session an install needs: the plugin
 feature uses `wp-content/backup-db/` and writes an `.htaccess` deny and an
 `index.php` there — Apache/LiteSpeed only); the daily event
 `dovira_mcp_dump_retention` (registered on `init` when absent; filter
-`dovira_mcp_dump_retention_days`, default 90). Steps of the feature are verified
+`dovira_mcp_dump_retention_days`, default 90). On the shared host, dev's webroot
+`/home/dovirave/dovira.vet/dev` is nested inside `/home/dovirave/dovira.vet/`,
+so the dump folder of every install sits directly under `/home/dovirave/`, one
+per install, never inside `dovira.vet/`. The Sprint 1 spike dumped dev's
+database (18 tables, 7.18 MB SQL → 0.70 MB gz) in 0.75 s at a 96.5 MB peak;
+the numbers are in the checklist below. Steps of the feature are verified
 on `dev.dovira.vet` after the user's push to `dev`, because claude.ai calls the
 connector from Anthropic's cloud (DECISIONS "The connector is verified on
 `dev.dovira.vet`"). The per-install checklist is
