@@ -270,4 +270,17 @@ final class ReadAbilitiesTest extends TestCase {
 		}
 		$this->assertSame( ReadTools::PER_PAGE_MAX, ListPosts::args()['input_schema']['properties']['per_page']['maximum'] );
 	}
+
+	public function test_every_catalogued_list_caps_per_page_at_fifty(): void {
+		$lists = [];
+		foreach ( Abilities::definitions() as $name => $args ) {
+			$output = (array) ( $args['output_schema']['properties'] ?? [] );
+			if ( isset( $output['items'], $output['per_page'] ) ) {
+				$lists[] = $name;
+				$this->assertSame( 50, $args['input_schema']['properties']['per_page']['maximum'] ?? null, $name );
+			}
+		}
+
+		$this->assertSame( [ ListPosts::NAME, FindPriceRows::NAME, ListTerms::NAME, ListMedia::NAME ], $lists );
+	}
 }

@@ -24,6 +24,11 @@ Entry format:
 
 ---
 
+## [new] 2026-11-05 — A step whose verification is a production run cannot be verified on its task branch
+- **Playbook rule:** `CLAUDE.md` → Step protocol ("An implemented step is verified by the user on its task branch") and Project profile → git model ("a deploy is the user's own action from `main`, never a step task").
+- **What happened:** content-mcp Sprint 2 Step 3's verification is "the user follows the checklist on both productions after the hand deploy from `master`", but the step's own commits stay on its task branch until `/close-step` merges them, and production deploys only from `master`. The plan had to ask (Question 2) and took "productions from today's `master` before the close, final deploy after it"; the values the guide asked to report then had nowhere to go (see the entry below on reported values).
+- **Suggested change:** Say how a step whose verification needs a production run is verified: on the previous `master` before the close, or after the close with an `/adhoc` that records the result.
+
 ## [new] 2026-11-05 — A defect in a closed step's code, found by the live check of the step in flight, has no named route
 - **Playbook rule:** `.claude/commands/do-step.md` → step 2 "Scope is frozen" and Step protocol in `CLAUDE.md` ("rework of a closed step goes through `/fix-step`").
 - **What happened:** content-mcp Sprint 2 Step 1's DDEV check showed that a new `acf/*` block written by `PostWriter` rendered hidden, because unnamed fields lacked their defaults. That code was built in Sprint 1 Step 4, which is closed. The new step's own task (a published page from blocks) could not pass without the fix, so it was fixed inside the step and recorded in the step report. No user report existed to start `/fix-step`, and stopping for a mid-step decision would have asked only "fix it here?".

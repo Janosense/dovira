@@ -277,7 +277,7 @@ cross-site switcher; content differs per install (separate DBs), code is shared.
 | Google Tag Manager / GA4 | analytics; ids differ per install (`master`: GTM-53M4V7M5 + G-HKYZFG0E2W; `kyiv`: G-Q597WTF16L only) | inline in `header.php` | — |
 | Google Fonts | Inter, Oswald, Raleway (`header.php`); Open Sans self-hosted | — | — |
 | Yoast SEO | meta; one-off import via `temp-data/yoast-import.php` | — | see `temp-data/README.md` |
-| MCP clients — claude.ai, Claude Desktop (feature `content-mcp`) | the content connector: each person's Claude calls the `dovira` MCP server over Streamable HTTP; the server is the plugin `mcp-adapter`, the tools are the feature's abilities | the person's own WordPress application password as a fixed `Authorization: Basic` request header of their custom connector; no OAuth, no shared secret (DECISIONS "Each person connects with an application password of their own WordPress user") | a request without a valid password is 401 at the server gate; a write without a valid confirmation token, or whose session dump fails, writes nothing and returns an error |
+| MCP clients — claude.ai, Claude Desktop (feature `content-mcp`) | the content connector: each person's Claude calls the `dovira` MCP server over Streamable HTTP from Anthropic's cloud (user agent `Claude-User`); the server and transport are the plugin `mcp-adapter` (0.7.1, committed), the 14 tools are the feature's abilities (`Catalogue::TOOLS`) | the person's own WordPress application password as a fixed request header of their claude.ai custom connector — «Без входу», header `authorization`, value `Basic base64(login:password)`; no OAuth, no shared secret (DECISIONS "Each person connects with an application password of their own WordPress user") | the hosting's bot protection answers 403/405 before WordPress unless `Claude-User` is allowed (claude.ai then reports it cannot reach the server); a request without a valid password is 401 at the server gate; a write without a valid confirmation token, or whose session dump fails, writes nothing and returns an error |
 
 ## Environments & deploy
 | Env | URL | Source | How |
@@ -294,9 +294,16 @@ has no `master` — and local `kyiv` as `origin/kyiv` (DECISIONS "`origin/main` 
 the deploy remote").
 
 **Content connector per install (feature `content-mcp`).** The code is the
-same everywhere; each install is its own connector URL
-(`https://{host}/wp-json/mcp/dovira`) with its own database and its own three
-application passwords. Before the first session an install needs: the plugin
+same everywhere; each install is its own connector URL —
+`https://dovira.vet/wp-json/mcp/dovira`, `https://kyiv.dovira.vet/wp-json/mcp/dovira`,
+and `https://dev.dovira.vet/wp-json/mcp/dovira` where steps are verified —
+with its own database, its own dump folder and its own three application
+passwords (owner and developer as administrators, the content manager as
+editor), each in that person's own claude.ai. Before the first session an
+install needs: the hosting letting the user agent `Claude-User` through
+(claude.ai's calls carry it; the hosting's bot protection blocks it with
+403/405 before WordPress otherwise); its own `service-city` term with the slug
+its URL implies (`kharkiv` / `kyiv`); the plugin
 `mcp-adapter` activated; `DOVIRA_MCP_DUMP_DIR` `define()`d in its
 `wp-config.php` naming a writable folder outside the webroot (unset → the
 feature uses `wp-content/backup-db/` and writes an `.htaccess` deny and an
