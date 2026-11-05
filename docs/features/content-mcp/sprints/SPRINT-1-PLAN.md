@@ -969,3 +969,327 @@ none
     so a write applies exactly what the same request validated.
   - `dump` in a write result is the file name or `"existing"`.
 - **Mid-step decisions:** none.
+
+## Plan — Sprint 1, Step 4: Editing an existing post, and trashing one as an administrator   (status: closed)
+
+### Branch
+`content-mcp/sprint-1-read-and-price` ← `master`. The branch is recreated from
+`master` = `9b2f4201` (Step 3 merged). The only branch not merged into
+`master` is `kyiv`, the deploy branch. This is the sprint's last step: its
+`/close-step` completes Sprint 1.
+
+### Tasks (ordered)
+- [x] **1. `FieldInput`: ACF values from the reader's shape back to what ACF
+  stores.** Commit: `feat(content-mcp): FieldInput, the inverse of FieldValues`.
+  - `FieldInput::value( $field, $value )` is the inverse of
+    `FieldValues::value()`, by field type:
+    - image, file: `{id,…}` or an id → the id;
+    - gallery: a list of those → ids;
+    - post_object: `{id,title}` or an id → the id; a list when `multiple`;
+    - relationship: a list → ids;
+    - taxonomy: `[{id,name}]` or ids → ids;
+    - repeater: rows by sub-field name, each converted recursively. The value
+      replaces the whole repeater;
+    - group: an object by sub-field name, converted recursively;
+    - any other type passes through.
+  - `FieldInput::keyed( $fields, $values )` turns `{name: value}` into
+    `{field_key: value}` for the top level, unknown names refused. ACF's
+    repeater accepts sub-fields by name (`update_row`), so only the top level
+    needs keys.
+  - Tests: `FieldInputTest`. Every case of `FieldValuesTest` round-trips:
+    `FieldInput::value( FieldValues::value( x ) )` gives the stored form.
+- [x] **2. `PostWriter`: a partial change set of one post, planned and
+  then applied.** Commit: `feat(content-mcp): PostWriter plans and applies a
+  partial post change`.
+  - `PostWriter::plan( $post, $changes )` returns
+    `{diff: Diff, apply: callable}` or a `WP_Error`. Nothing is written
+    until `apply()`. As in `PriceRows`, the preview's diff is exactly what is
+    written.
+  - **`title`, `status`, `slug`, `parent`, `menu_order`:**
+    - **`status`** is one of `publish`, `draft`, `pending`, `private`. `trash`
+      is refused, pointing to `trash-post`. `future` is refused because there
+      is no date input. `publish` and `private` need the type's
+      `publish_posts`.
+    - **`slug`** is shown as it will be stored (`wp_unique_post_slug(
+      sanitize_title() )`).
+    - **`parent`** only for hierarchical types. It must be an existing post
+      of the same type, and not the post itself or one of its descendants.
+    - A trashed post is refused (`dovira_post_in_trash`).
+  - **`terms`:** `{taxonomy: [ids or names]}`, for the taxonomies of
+    `Scope::TAXONOMIES` that the type has.
+    - The list is the taxonomy's whole new set
+      (`wp_set_object_terms( …, false )`). «Додай рубрику» means the current
+      terms plus one; the preview shows both lists.
+    - `category` / `post_tag` take existing terms by id or by name, the name
+      looked up in the post's language.
+    - `service-city` takes ids only.
+    - An unknown term, a term in another language, or a name for
+      `service-city` is refused. Nothing is created: `create-term` is Sprint
+      2 (FEATURE.md → Roadmap).
+  - **`acf`:** `{field_name: value}`, the post's own fields only. Those are
+    the fields of the field groups located on the type
+    (`acf_get_field_groups( ['post_type' => …] )` → `acf_get_fields()`).
+    - Unknown names are refused.
+    - **`service.prices` is refused** and points to `update-price-row`
+      (FEATURE.md invariant: price rows are written only there).
+    - Each top-level field is written with `update_field( $key,
+      FieldInput::value(…), $id )`.
+    - The diff line is `acf.{name}`: from the reader's value, to the new one.
+  - **`blocks`:** the post's whole new content as the reader gives it
+    (`[{block, fields} | {block, html}]`). Each block is checked against the
+    blocks the editor allows on that post, via the shared
+    `dovira_allowed_block_types()` (read, not changed): only the theme's
+    `acf/*` blocks, except on `post`, where core blocks are allowed too (root
+    invariant 5). Any other block is refused.
+    - **An `acf/*` block** gets `fields` by name. When the current content
+      has the same block at the same index, fields not named keep their
+      current values, so «зміни заголовок у hero» cannot wipe the block's
+      other fields.
+    - The data is built **by ACF itself**:
+      1. `FieldInput::keyed( acf_get_block_fields( $block ), $fields )`;
+      2. `acf_setup_meta( $keyed, $block_id, true )`, which simulates a save
+         and returns the flattened `name` / `_name` → key data;
+      3. `acf_reset_meta( $block_id )`.
+      
+      It goes into `attrs.data`, keeping the block's other attrs (`mode`,
+      `align`, …) when the same block is at that index. TECH-STACK
+      ANTI-PATTERNS: block data goes through ACF only.
+    - **`{block, html}`** must parse (`parse_blocks`) as exactly one block
+      of that name, otherwise it is refused. It is written back as parsed.
+      `core/freeform` is the raw HTML.
+    - Then `serialize_blocks()`, `wp_slash()`, `wp_update_post()`, so
+      WordPress applies its own `content_save_pre` (kses for users without
+      `unfiltered_html`), as in the editor.
+    - The diff gives one line per changed block field
+      (`blocks[2].acf/hero.heading`), or `blocks[i]` for a block added,
+      removed or replaced.
+  - **Post fields** go through one `wp_update_post( wp_slash( […] ), true )`,
+    which applies `post_name` uniqueness and the post's own hooks. **Terms**
+    go through `wp_set_object_terms`. **ACF** goes through `update_field`.
+    A `WP_Error` from any of them is returned.
+- [x] **3. `dovira/update-post`.** Commit: `feat(content-mcp): update-post
+  behind preview, token and dump`.
+  - `UpdatePost extends WriteAbility`.
+  - **Input:** `{id, title?, status?, slug?, parent?, menu_order?, terms?,
+    acf?, blocks?, translation?: {id, …the same fields}, confirmation?}`.
+    `translation` must be the Polylang translation of `id`
+    (`pll_get_post_translations`); any other id is refused. The Russian copy
+    is written only when it is named there (sprint step; FEATURE.md
+    invariant), and the preview lists both targets.
+  - **Permission:** `edit_post` of `id` and of `translation.id`; a missing
+    post passes, so execute says `dovira_post_not_found`. A type outside
+    `Scope::CONTENT` is refused in execute: records get
+    `dovira_read_only_type` («звернення, заявки й анкети лише читаються»),
+    so no write ability exists for them.
+  - `preview` plans every target with `PostWriter`; `write` applies them,
+    Ukrainian first. Result `{written, dump, warnings}`.
+  - `Catalogue::TOOLS`, `Abilities`, `bootstrap.php`.
+- [x] **4. `dovira/trash-post`, and the server instructions.** Commit:
+  `feat(content-mcp): trash-post for administrators`.
+  - `TrashPost extends WriteAbility`.
+    - **Input:** `{id, translation_id?, confirmation?}`.
+    - **Permission:** `manage_options` **and** `delete_post` of each id.
+      `DescribeSite`'s `can_delete` already reports the first.
+    - **Refused in execute:** records (`dovira_read_only_type`) and a post
+      already in the trash.
+    - **Preview:** a line `{target:{id, lang}, field: 'status', from: …, to:
+      'trash'}` per post, plus a warning naming the Russian copy when it
+      exists and is not named («російську копію (id N) не буде видалено»).
+    - **Write:** `wp_trash_post()` per post, never `wp_delete_post()`. A
+      `false` / `null` result is an error.
+  - **`Server::INSTRUCTIONS`** gains:
+    - edit with `dovira-update-post`, passing only what changes (a block's
+      unnamed fields keep their values; a repeater value replaces the whole
+      repeater);
+    - the Russian copy is changed only when the person agrees, named as
+      `translation`;
+    - prices only through `update-price-row`;
+    - deleting is `dovira-trash-post`, administrators only, to the trash.
+  - `Catalogue::TOOLS`, `Abilities`, `bootstrap.php`.
+  - **Live check in DDEV, not part of the gate**, as in Step 3: a temporary
+    administrator and a temporary editor, removed afterwards, over `curl`.
+    - `update-post` on a vacancy: `is_open`, then back.
+    - A page title, uk then uk + ru.
+    - A block field of a page, read back by `get-post` and rendered on the
+      page (round trip of `acf_setup_meta` capture → `PostReader`), then the
+      content set back.
+    - A term on a blog post, then back.
+    - `trash-post` refused for the editor; as the administrator, preview,
+      write, and restore from the trash.
+    - The postmeta and `post_content` compared with the session's dump, as in
+      Step 3.
+
+### Files to create/change
+All under `wp-content/themes/dovira/` unless named otherwise. **No shared code is
+changed**: `dovira_allowed_block_types()` (`inc/template-functions.php`) and
+the field groups are only called or read.
+- `inc/features/content-mcp/FieldInput.php`, `PostWriter.php`, `UpdatePost.php`,
+  `TrashPost.php` (new)
+- `inc/features/content-mcp/bootstrap.php`, `Catalogue.php`, `Abilities.php`,
+  `Server.php` (changed)
+- `tests/Unit/ContentMcp/FieldInputTest.php`, `PostWriterTest.php`,
+  `PostAbilitiesTest.php` (new); `ServerTest.php`, `ReadAbilitiesTest.php`
+  (changed: nine tools; the readonly loop skips the write abilities)
+- `docs/features/content-mcp/FEATURE.md`, `docs/DECISIONS.md` (correction
+  below), `docs/DOMAIN.md` only if a rule's wording changes
+
+### Tests to write
+PHPUnit + Brain\Monkey, no WordPress.
+- **`FieldInputTest`:** each type's inverse; the round trip with
+  `FieldValues`; nested repeater and group; unknown names refused by
+  `keyed()`.
+- **`PostWriterTest`:**
+  - partial updates: only the named fields reach `wp_update_post`;
+  - status rules: trash and future refused, `publish` without
+    `publish_posts` refused;
+  - slug shown as stored;
+  - `parent` rules;
+  - terms:
+    - by name in the post's language and by id;
+    - an unknown term refused, and no term created;
+    - a name for `service-city` refused;
+  - `acf`:
+    - a repeater value replaces the whole repeater (`update_field` gets the
+      full converted rows);
+    - an image `{id,url,alt}` is written as its id;
+    - unknown fields refused;
+    - `service.prices` refused;
+  - `blocks`:
+    - names → keys through `acf_get_block_fields`, and the data stored in
+      `attrs.data` is what `acf_setup_meta` returned;
+    - unnamed fields of the same block keep their values;
+    - the block's other attrs kept;
+    - a block outside the allowed list refused (`acf/foo`, `core/paragraph`
+      on a page), while `core/paragraph` is allowed on a post;
+    - `{block, html}` that does not parse as that one block refused;
+    - the reader reads back what was written (stubbed `parse_blocks` /
+      `serialize_blocks` round trip);
+  - `wp_slash` applied to the content;
+  - the diff lists exactly the values passed to the writes.
+- **`PostAbilitiesTest`:**
+  - `update-post` refuses a record type and an unknown translation id;
+  - `update-post` writes nothing without a token or with another payload's
+    token;
+  - the Russian copy is untouched unless named, and both are written when it
+    is named;
+  - `trash-post` is refused for an editor (no `manage_options`), for a record
+    type and for a trashed post;
+  - `trash-post` calls `wp_trash_post`, never `wp_delete_post`;
+  - the Russian copy warning;
+  - both abilities are annotated as writes.
+- **`ServerTest`:** nine tools; the instructions name `update-post` and
+  `trash-post`.
+- Form-to-record pipelines are not touched. Records get no write ability, and
+  the tests above assert the refusal.
+
+### Docs to update
+- **`docs/features/content-mcp/FEATURE.md` → Interfaces:**
+  - the `update-post` and `trash-post` input;
+  - the term and block rules;
+  - `translation`;
+  - the new error codes.
+- **`docs/DECISIONS.md`:** correct one sentence in the consequences of
+  "Only a row's price follows into the Russian copy…" (written at Step 3's
+  close). "Step 4's `update-post` follows the same split: values the copies
+  share follow" becomes: "`update-post` writes a Russian copy only when the
+  payload names it as `translation`; nothing follows on its own."
+- **`docs/DOMAIN.md`:** only if the delete or edit wording changes. Expected:
+  no change.
+
+### Checks
+- **ANTI-PATTERNS / CONVENTIONS:** none violated.
+  - ACF values go through `update_field()`, and block data through
+    `acf_setup_meta()`, never postmeta or a hand-written key mapper.
+  - Both abilities extend `WriteAbility` and read the session through
+    `Session::id()`.
+  - `meta.mcp.public: false`; the tools are listed through
+    `Catalogue::TOOLS`.
+  - The records gate is not `read_post`.
+  - `service-city` terms are never created or renamed.
+  - Polylang is injected.
+  - No URL literal. No new dependency.
+- **Docs vs reality:**
+  - **`content_html` for a `post`** (step text) conflicts with DECISIONS
+    "Every post's content is read as blocks; there is no `content_html`".
+    Its consequences already say Step 4's writer takes `blocks` and that the
+    `content_html` task is to be re-read here. DECISIONS wins: `blocks` for
+    every type, with the editor's allowed blocks per type.
+    - The step's "`content_html` sanitized with `wp_kses_post`" becomes
+      WordPress's own `content_save_pre` on `wp_update_post`, the same as the
+      editor. A `{block, html}` must parse as exactly its block.
+  - **"`blocks` for a `page`"**, by the same entry: `blocks` for every type
+    in scope.
+  - **"a block name outside the theme's blocks is refused":** the theme
+    already decides which blocks each post may use,
+    `dovira_allowed_block_types()` (root invariant 5). Pages, services and
+    the rest get the theme's `acf/*` only; blog posts get core blocks too,
+    which two of them use today. The writer uses that function, so a blog
+    post's core blocks survive an edit.
+  - **The DECISIONS consequence written at Step 3's close** ("values the
+    copies share follow") went further than the sprint. For posts no value is
+    shared the way a price is, and the step says the copy is touched only
+    when named. Corrected under Docs to update.
+  - **`service.prices` through `update-post`:** FEATURE.md invariant says
+    price rows are written only by `update-price-row`, so it is refused.
+  - **Terms by name:** only existing terms; creating one is Sprint 2. The
+    verification's «додай рубрику Акції» needs the category to exist on dev
+    (it doesn't locally); the guide names an existing category.
+  - **Single site:** editors have `unfiltered_html` by default, so kses
+    changes nothing for them, as in the editor.
+- **Design:** n/a (DECISIONS "No UI design phase").
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command), green
+  on `master` `9b2f4201`.
+- **Not locally verifiable:** n/a. The DDEV live check covers the ACF block
+  round trip, and the guide runs everything again on dev in claude.ai.
+
+### Questions / ambiguities
+none
+
+### Step report (`/do-step`, 2026-11-05)
+- **Commits** on `content-mcp/sprint-1-read-and-price`:
+  - `87867265` — `FieldInput`;
+  - `f647692c` — `PostWriter`;
+  - `8326fb73` — `update-post`;
+  - `6635d8d3` — `trash-post` and the instructions;
+  - the guide commit.
+- **Gate:** theme PHPUnit 311 → 373.
+- **ACF block write, spiked on DDEV before the tests** (page 176, `acf/about`):
+  - `acf_setup_meta()` with field-key values captures ACF's own save and
+    returns the flattened `name` / `_name` data. `get-post` reads the edited
+    field back.
+  - The first version filled unnamed fields from the reader's formatted
+    values, which rewrote a wysiwyg with `<p>` and a true_false `'1'` as
+    `true`. Unnamed fields are now taken unformatted
+    (`get_fields( $block_id, false )`). After that only the edited key
+    changed (113 of 114 identical).
+  - The fields are written in the block's field order, so an edit that is set
+    back leaves `post_content` byte-identical to the original (checked by
+    md5).
+- **Live check on DDEV over MCP**, with a temporary administrator and editor
+  and a temporary uk category «Акції», all removed afterwards with the
+  probe's revisions:
+  - nine tools;
+  - vacancy 1535 `is_open` false → true;
+  - titles of 176 + its translation 1631 in one preview;
+  - the `acf/about` heading, rendered on `/about/` and set back;
+  - a category added to post 1498 and removed;
+  - refusals: `core/paragraph` on a page, `service.prices`, a
+    `conversation`, `trash-post` for the editor;
+  - the administrator's trash of 1535, with the warning about 1677, then
+    restored;
+  - one dump per session (0.42–0.44 s, ~30 MB).
+  - The fingerprint (titles, status, slug, content md5, postmeta md5,
+    categories) of the five posts is identical to before.
+- **Local configuration found during the check:** your local `wp-config.php`
+  now defines `DOVIRA_MCP_DUMP_DIR` as dev's path
+  `/home/dovirave/dovira-mcp-dumps/dev`, which doesn't exist in DDEV.
+  - The first run's writes all failed with `dovira_dump_failed`, and nothing
+    was written: the invariant, live.
+  - For the probe the folder was created inside the container only, then
+    removed. Your `wp-config.php` was not touched.
+  - Locally, writes need that line removed or pointed at a container path.
+- **Implementation choices inside the plan:**
+  - `UpdatePost::content_post()` is shared with `TrashPost`.
+  - A failure partway through a two-post write names what was already
+    written.
+- **Mid-step decisions:** none.
