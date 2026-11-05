@@ -590,3 +590,343 @@ PHPUnit with Brain\Monkey. ACF (`acf_get_local_field_groups`,
 - `GetPost::can()` lets a missing id through, so the agent hears "not found" rather than "not allowed".
 - `list-terms` returns the slug as WordPress stores it; the Ukrainian category slug is percent-encoded.
 - For Step 4: ACF block data is flattened on save. Writing blocks back will go through ACF's own flattening, the reverse of `acf_setup_meta`.
+
+## Plan — Sprint 1, Step 3: The write protocol: confirmation tokens, the session dump, and the price change   (status: approved, in progress)
+
+### Branch
+`content-mcp/sprint-1-read-and-price` ← `master`. The branch is recreated from
+`master` = `c478d90b` (Step 2 merged). The only branch not merged into
+`master` is `kyiv`, the deploy branch.
+
+### Tasks (ordered)
+- [x] **1. `Session`, `Confirmation`, `Diff`.** Commit:
+  `feat(content-mcp): confirmation tokens bound to user, session and payload`.
+  - `Session` (`dovira\ContentMcp\Session`) gives the current MCP session id:
+    - The adapter does not pass `Mcp-Session-Id` to an ability (see Checks →
+      Docs vs reality).
+    - So `Session::capture()` hooks `rest_request_before_callbacks` (filter,
+      returns the response unchanged). It keeps the request's
+      `mcp-session-id` header only when the route is `/mcp/dovira`, where the
+      adapter has already checked the session against the user's own sessions.
+    - `Session::id()` returns `''` for every other request: REST
+      `wp-abilities/v1`, WP-CLI, and the stateless MCP revision 2026-07-28.
+  - `Confirmation` (`dovira\ContentMcp\Confirmation`):
+    - **`issue( $user_id, $session_id, array $payload, array $diff )`** returns
+      a random token. It stores the transient `dovira_mcp_confirm_{hash}` for
+      15 minutes.
+      - `hash` = SHA-256 of (user id, session id, canonical JSON of the
+        payload). The canonical JSON is recursively key-sorted, with no
+        `confirmation`.
+      - The value is `{user_id, session, payload_hash, token_hash, diff, issued_at}`.
+        The token itself is never stored, only its SHA-256.
+      - A second preview of the same payload replaces the first one's token.
+    - **`verify( $token, $user_id, $session_id, $payload )`** computes the same
+      key and compares `token_hash` with `hash_equals`.
+      - It deletes the transient before returning true, so a token writes once.
+      - A token of another payload, user or session finds no transient, or a
+        different hash, so it gets false.
+  - `Diff` (`dovira\ContentMcp\Diff`) is the one preview format:
+    - `add( $id, ?$lang, $field, $from, $to )` makes a
+      `{target:{id, lang}, field, from, to}` line. A line where from equals to
+      is dropped.
+    - `warn( $text )` adds a warning.
+    - `is_empty()`; `to_array()` gives `{diff, warnings}`.
+  - `bootstrap.php`: requires the three classes, adds the
+    `rest_request_before_callbacks` filter.
+- [ ] **2. `Dump` and its retention.** Commit:
+  `feat(content-mcp): the session dump and its 90-day retention`.
+  - `Dump` (`dovira\ContentMcp\Dump`), constructor
+    `( ?object $wpdb = null, ?string $dir = null, ?string $fallback = null, ?string $host = null )`.
+    - `null` means: global `$wpdb`; `DOVIRA_MCP_DUMP_DIR` when defined;
+      `WP_CONTENT_DIR . '/backup-db'`; the host of `home_url()`.
+    - Tests inject a fake `$wpdb` and temp dirs.
+  - **`ensure( string $session_id ): string`.**
+    - With a non-empty session and the transient `dovira_mcp_dumped_{session}`
+      present, it returns `"existing"`.
+    - Otherwise it writes `dovira-{host}-{Y-m-d}-{His}.sql.gz`, in site time
+      (`wp_date`). An existing name gets `-2`, `-3`, … and nothing is ever
+      overwritten.
+    - Contents: a header comment (host, date); `SET NAMES utf8mb4`; then per
+      table from `SHOW TABLES`: `DROP TABLE IF EXISTS`, `SHOW CREATE TABLE`,
+      and `INSERT`s of 500 rows. That is the spike's proven loop, values
+      escaped with `$wpdb->_real_escape`.
+    - The file ends with a footer comment: seconds and peak memory. That is
+      how the dump's duration in a real web request on dev is read
+      (`zcat … | tail -2`), the open item of Step 1.
+    - Then `chmod 0600`, and the transient (24 h) when there is a session. It
+      returns the file name.
+    - With an empty session it always dumps and sets no transient.
+  - **The folder.**
+    - With `DOVIRA_MCP_DUMP_DIR` it is created with `wp_mkdir_p` if missing and
+      used as is.
+    - In the fallback it is created, then `.htaccess` (`Require all denied`)
+      and an empty `index.php` are written when absent.
+    - An unwritable folder throws.
+  - **Any failure throws `\RuntimeException`:** a query with `last_error`, an
+    empty `SHOW CREATE TABLE`, `gzopen` / `gzwrite` failing. The half-written
+    file is closed and deleted first. The caller writes nothing.
+  - **Retention.**
+    - `Dump::schedule()` on `init`: `wp_schedule_event( time(), 'daily',
+      'dovira_mcp_dump_retention' )` when `wp_next_scheduled` is false.
+    - `Dump::retain()` on that event deletes, in the folder in use, only files
+      matching `dovira-*-YYYY-MM-DD-HHMMSS[-N].sql.gz` whose mtime is older
+      than `max( 1, (int) apply_filters( 'dovira_mcp_dump_retention_days', 90 ) )`
+      days.
+  - `bootstrap.php`: requires `Dump`, adds both hooks.
+- [ ] **3. `PriceRows` and `dovira/find-price-rows`.** Commit:
+  `feat(content-mcp): find-price-rows`.
+  - `PriceRows` (`dovira\ContentMcp\PriceRows`), constructor
+    `( ?bool $polylang = null, ?callable $services = null )`, injected as in
+    Step 2.
+  - **`find( $text )`** reads the `prices` rows (`get_field( 'prices', $id )`)
+    of every `service` in Ukrainian (`lang => 'uk'` with Polylang; all
+    services without it), any status but trash.
+    - It matches rows whose `title` or `description` contains `$text`,
+      case-insensitively (`mb_stripos`).
+    - Each match is a row of FEATURE.md: `{service:{id,title}, row_index,
+      title, description, price, per_city}`.
+      - `row_index` counts from 0.
+      - `per_city` = not `is_price_general`.
+      - `price` comes from `CityPrice::resolve()` with the install's own term
+        (Step 2's rule), so an empty column is `null`, never a number.
+  - **`update( $service_id, $row_index, $changes )`** plans the change and
+    returns a `Diff` plus the writes.
+    - **The ACF write.** It reads the repeater raw
+      (`get_field( 'prices', $id, false )`, rows keyed by field key) and
+      changes only the targeted value. The keys come from the field object's
+      `sub_fields`. Then `update_field( 'prices', $rows, $id )`.
+      `is_price_general`, `cities`, `linked_page` and every other row go back
+      as they were read. TECH-STACK ANTI-PATTERNS: no raw postmeta.
+    - **The price** goes into that row's own resolved column: `price` when the
+      row is general, otherwise `city_prices.price_city_{own term}`. A
+      per-city row on an install without its own term is an error
+      (`dovira_city_term_missing`), never a guess.
+    - **The Russian copy.** When the service is the Ukrainian copy and its
+      Russian copy (`pll_get_post( $id, 'ru' )`) has the same number of rows,
+      a `price` change is applied to the Russian row of the same index, in
+      that row's own resolved column, with its own diff line. A different row
+      count gives a warning, and only the Ukrainian copy is written. If the
+      user cannot `edit_post` the copy, that also gives a warning.
+    - **`title` / `description`** are written to the targeted copy only. Text
+      is per language (see Checks → Docs vs reality). The Russian text is a
+      second call that targets the Russian copy's id.
+    - **A `price` on a Russian copy** is refused (`dovira_price_in_source`):
+      the price is changed in the Ukrainian copy and follows into the Russian
+      one (root invariant 7).
+  - Ability `dovira/find-price-rows`: input `{text (required, minLength 1),
+    page, per_page}`; output `{items, total, page, per_page}`, ≤ 50 per page
+    (FEATURE.md: every list). Permission: `Scope::can_read_type( 'service' )`.
+    Meta: `ReadTools::meta()`.
+  - `Catalogue::TOOLS` and `Abilities::definitions()` gain it; `bootstrap.php`
+    requires the class.
+- [ ] **4. `WriteAbility` and `dovira/update-price-row`; the server
+  instructions.** Commit: `feat(content-mcp): update-price-row behind
+  preview, token and dump`.
+  - `WriteAbility` (`dovira\ContentMcp\WriteAbility`, abstract):
+    - **Input:** each write ability's input schema plus `confirmation`
+      (string, optional).
+    - **Meta:** annotations `readonly: false`, `destructive: true` (a value is
+      overwritten), `idempotent: false`; `show_in_rest: true`;
+      `mcp.public: false`.
+    - **`run( $input )`:**
+      1. payload = input without `confirmation`;
+      2. `preview( $payload )` (abstract) validates and gives a `Diff`, or a
+         `WP_Error`. Nothing is issued on an error (root invariant 8);
+      3. without `confirmation`: an empty diff returns
+         `{diff:[], warnings:[…, «нічого не змінюється»], confirmation:null}`.
+         Otherwise `{diff, warnings, confirmation: Confirmation::issue(…)}`;
+      4. with `confirmation`, a failed `verify()` returns
+         `dovira_confirmation_invalid` («підтвердження не дійсне для цих змін —
+         покажіть новий перегляд»), and nothing is written;
+      5. `Dump::ensure( Session::id() )`. A throw becomes `dovira_dump_failed`
+         with the reason, and nothing is written;
+      6. `write( $payload )` (abstract) returns
+         `{written:[ids], dump: file name | "existing", warnings}`.
+  - `UpdatePriceRow` (`dovira/update-price-row`) extends it:
+    - **Input:** `{service_id, row_index, title?, description?, price?
+      (number > 0), confirmation?}`, at least one of the three.
+    - **Permission:** a missing post passes, so execute says
+      `dovira_post_not_found`. Otherwise it needs `current_user_can(
+      'edit_post', $id )`, and the post must be a `service`.
+    - `preview` / `write` = `PriceRows::update()`.
+  - `Catalogue::TOOLS` / `Abilities::definitions()` / `bootstrap.php` gain it.
+  - `Server::INSTRUCTIONS` changes to say:
+    - `describe-site` first;
+    - for a price, `find-price-rows`, then `update-price-row`;
+    - every write is called first without `confirmation`, the diff is shown,
+      and the write is repeated with the token only after consent;
+    - a changed request means a new preview;
+    - the price follows into the Russian copy by itself, while Russian text is
+      written as a separate change of the Russian copy;
+    - Ukrainian is the source.
+  - **Live check in DDEV, not part of the gate**, as in Step 2. A temporary
+    administrator and application password, removed afterwards, drive MCP
+    `tools/call` over `curl` on `https://dovira.ddev.site/wp-json/mcp/dovira`:
+    - a preview, then a write of one general row and one per-city row of a
+      local service;
+    - `get-post` shows the new prices in both copies;
+    - one dump file for two writes in one session;
+    - the repeater still opens in wp-admin (its `_prices_*` key rows intact).
+
+### Files to create/change
+All under `wp-content/themes/dovira/` unless named otherwise. No shared code is
+touched: `functions.php`, `inc/acf/**` and the templates are only read.
+- `inc/features/content-mcp/Session.php`, `Confirmation.php`, `Diff.php`,
+  `Dump.php`, `PriceRows.php`, `FindPriceRows.php`, `WriteAbility.php`,
+  `UpdatePriceRow.php` (new)
+- `inc/features/content-mcp/bootstrap.php`, `Catalogue.php`, `Abilities.php`,
+  `Server.php` (changed)
+- `tests/Unit/ContentMcp/SessionTest.php`, `ConfirmationTest.php`,
+  `DiffTest.php`, `DumpTest.php`, `PriceRowsTest.php`, `WriteAbilityTest.php`
+  (new); `ServerTest.php` (changed: seven tools, the new instructions)
+- `docs/features/content-mcp/FEATURE.md`, `docs/DATA-MODEL.md`,
+  `docs/ARCHITECTURE.md`, `docs/features/content-mcp/PRODUCTION-CHECKLIST.md`
+
+### Tests to write
+PHPUnit + Brain\Monkey, no WordPress. The per-city price of a Service is a
+test-critical zone (root `CLAUDE.md`).
+- **`SessionTest`:**
+  - the header of a `/mcp/dovira` request (a real `WP_REST_Request`) is kept;
+  - another route's header is ignored;
+  - no header gives `''`;
+  - the response passes through unchanged.
+- **`ConfirmationTest`:**
+  - a token verifies for the same user, session and payload, regardless of
+    key order;
+  - a second `verify` of it is false (single use: the transient is deleted);
+  - another user, another session, another payload, or an unknown token is
+    false;
+  - an expired transient is false;
+  - `set_transient` gets 900 s, and the stored value has no plain token.
+- **`DiffTest`:** the line shape; an unchanged value gives no line; warnings.
+- **`DumpTest`** (fake `$wpdb`, temp dirs):
+  - the name pattern, and `-2` on a collision;
+  - the SQL: `CREATE`, `INSERT`s batched at 500, escaped values, the footer;
+  - mode `0600`;
+  - `.htaccess` + `index.php` written in the fallback only;
+  - `"existing"` for a dumped session;
+  - an empty session dumps every time and sets no transient;
+  - a table whose query fails throws and leaves no file;
+  - an unwritable folder throws;
+  - retention deletes only matching files older than the filtered days, never
+    other files, and treats a filter value below 1 as 1;
+  - `schedule()` schedules once.
+- **`PriceRowsTest`:**
+  - search by title and by description, case-insensitive, Ukrainian copies
+    only;
+  - `price` from the general or the own-city column, and `null` for an empty
+    column;
+  - `update` writes the general `price` or the own city column through
+    `update_field`, with `is_price_general` and `cities` unchanged;
+  - the price is mirrored into the Russian row of the same index;
+  - the warning and Ukrainian-only write on a different row count;
+  - the title is not mirrored;
+  - a price on a Russian copy is refused;
+  - a per-city row without the own term is refused;
+  - a row index out of range is refused.
+- **`WriteAbilityTest`** (through `UpdatePriceRow`):
+  - a call without a token writes nothing and returns
+    `{diff, warnings, confirmation}`;
+  - a token of another payload (550 → 560) is refused, writes nothing and
+    takes no dump;
+  - a valid token dumps, then writes, in that order;
+  - a failed dump writes nothing;
+  - an empty diff issues no token;
+  - the permission needs `edit_post`, and a non-service is refused;
+  - a missing id is `dovira_post_not_found`.
+- **`ServerTest`:**
+  - the catalogue has seven tools, all `dovira/*`, none on the default
+    server;
+  - `update-price-row` is annotated not readonly;
+  - the instructions name both price tools.
+- Form-to-record pipelines are not touched.
+
+### Docs to update
+- **`docs/features/content-mcp/FEATURE.md`:**
+  - **Interfaces:**
+    - the preview `{diff, warnings, confirmation}` (an empty diff gives
+      `confirmation: null`);
+    - the write `{written, dump, warnings}`, where `dump` is the file name or
+      `"existing"`;
+    - `find-price-rows` is a list `{items, total, page, per_page}` of price
+      rows;
+    - `update-price-row` input; a price mirrors, text does not; a price on a
+      Russian copy is refused;
+    - the errors `dovira_confirmation_invalid` and `dovira_dump_failed`.
+  - **Fit:** the session id is read from the `/mcp/dovira` REST request.
+- **`docs/DATA-MODEL.md` → Feature `content-mcp`:**
+  - the confirm transient's value holds `token_hash`, never the token;
+  - Sessions: how the id is read, and that 2026-07-28 has none;
+  - the dump's footer comment.
+- **`docs/ARCHITECTURE.md`:**
+  - Data flows "Connector write → dump → write": the session id source and the
+    empty-diff case;
+  - Environments: unchanged unless a fact differs (it already names
+    `DOVIRA_MCP_DUMP_DIR`, the fallback and the event).
+- **`PRODUCTION-CHECKLIST.md`:**
+  - A2 "used from Sprint 1 Step 3 on" becomes "used by every write";
+  - B gets a row for the web-request dump on dev, filled at `/close-step`
+    from the guide's reported footer numbers;
+  - C's retention line stays.
+
+### Checks
+- **ANTI-PATTERNS / CONVENTIONS:** none violated.
+  - ACF is written through `update_field()` on the repeater, never postmeta.
+  - Both new abilities carry `mcp.public: false` and are listed through
+    `Catalogue::TOOLS`.
+  - No `function_exists()` branch is tested by leaving a function unstubbed:
+    Polylang is injected.
+  - The city comes from the site URL (`DescribeSite::city()` →
+    `CityPrice::term_id()`).
+  - No URL literal of an install.
+  - No dev package is added.
+  - `service-city` is never written.
+- **Docs vs reality:**
+  - **"The session id … the adapter passes":** it doesn't. Adapter 0.7.1
+    hands the id only to its own transport and observability. An ability gets
+    only its input, and `mcp_adapter_pre_tool_call` carries no session.
+    Resolution: `Session` reads the header from the WP REST request of
+    `/mcp/dovira` (task 1).
+    - Under protocol 2025-11-25 (and the legacy 2025-06-18 / 2024-11-05 it
+      maps there), the adapter validates the header before every tool call.
+      claude.ai connects with `initialize`, which negotiates one of those, so
+      its chats have a session.
+    - Revision 2026-07-28 is sessionless, so it gets `''` and dumps on every
+      write, as DECISIONS says for calls without a session.
+  - **"mirrors the same change into the Russian copy's row":** resolved by
+    DECISIONS "The tool catalogue speaks ACF field names…": prices are the
+    same in every language, and the Russian text is written by the agent in
+    the chat. So only `price` mirrors. Mirroring `title` / `description`
+    would put Ukrainian text into the Russian copy (root invariant 7).
+  - **FEATURE.md `dump:{file|"existing"}`:** implemented as a string, either
+    the file name or `"existing"`, which is what `Dump::ensure()` returns.
+    FEATURE.md is updated to say so.
+  - **DATA-MODEL's confirm transient value** gains `token_hash`. The key is
+    derived from (user, session, payload), so the random token is the secret
+    and is stored only hashed.
+  - **The fallback `.htaccess` on dev:** dev answers through nginx (`server:
+    nginx`; `/.htaccess` → 403, `/wp-content/backup-db/` → 404 today). Whether
+    Apache rules apply there is unknown. The guide's item with the constant
+    removed shows it, and mode `0600` already keeps the file from a web server
+    running as another user. The checklist rule stays: set
+    `DOVIRA_MCP_DUMP_DIR` on every install.
+  - **Out of this step:**
+    - `_to_delete/content-mcp-dump-spike.php` says "delete after Step 3 ships
+      `Dump`". The step does not name it, so it stays: `/adhoc`.
+    - Kyiv's `service-city` slug `kyiv` (WORKLOG open item) affects
+      per-city writes there exactly as reads; a missing term is refused with
+      `dovira_city_term_missing`.
+- **Design:** n/a (DECISIONS "No UI design phase").
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command). Green
+  on `master` `c478d90b` before planning.
+- **Not locally verifiable:**
+  - The real dump in a web request on `dev.dovira.vet`, which settles the
+    host's web `memory_limit` / `max_execution_time`;
+  - the fallback folder's 403 behind dev's nginx;
+  - the retention event on dev's WP-Cron.
+
+  All three are verified by the step's guide on dev after your push to `dev`.
+  The DDEV live check covers the rest.
+
+### Questions / ambiguities
+none
