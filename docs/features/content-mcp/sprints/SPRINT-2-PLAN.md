@@ -657,7 +657,7 @@ none
     `page` / `post`, so the preview shows only what is stored. The task text
     in this plan says so.
 
-## Plan — Sprint 2, Step 3: Production checklist and handover   (status: approved, in progress)
+## Plan — Sprint 2, Step 3: Production checklist and handover   (status: implemented, awaiting verification)
 ### Branch
 `content-mcp/sprint-2-handover` ← `master`, created from `master` = `c5224b3c`
 (Step 2 closed and merged). The only branch not merged into `master` is
@@ -889,3 +889,26 @@ changed.
      - Sprint 2 closes before its goal («both productions run the
        connector») is met.
    - Resolved: approved as recommended — B: the productions are taken through the checklist before the close, from today's `master`; `/close-step` records the reported results.
+
+### Step report (`/do-step`, 2026-11-05)
+- **Commits** on `content-mcp/sprint-2-handover`:
+  - `3595c8ca` — the catalogue order, the instructions naming every tool,
+    and the tests over the catalogue;
+  - `9ab94c34` — the production checklist, ARCHITECTURE and FEATURE;
+  - the guide commit.
+- **Gate:** theme PHPUnit 456 → 458.
+- **Live check on DDEV over MCP** (temporary administrator; container-only
+  dump folder):
+  - `tools/list` returned the 14 tools in the new order.
+  - **The restore was probed** as checklist D writes it:
+    1. the checksums of `wp_posts`, `wp_postmeta`, `wp_terms` and
+       `wp_term_relationships` were taken;
+    2. a consented `update-price-row` (500 → 501, service 18 and its
+       Russian copy 1641) changed `wp_postmeta` and left a dump;
+    3. `gunzip -c {dump} | wp db import -` brought back exactly the
+       checksums from before. The price read 500 again.
+  - **Clean-up:** the user, the folder and the transients were removed.
+- **Questions resolved as recommended:**
+  - Question 1: A, no `content_length`.
+  - Question 2: B, the productions go through before the close.
+- **Deviations:** none.
