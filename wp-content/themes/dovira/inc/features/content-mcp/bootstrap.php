@@ -14,6 +14,8 @@ if ( ! function_exists( 'wp_register_ability' ) || ! class_exists( 'WP\MCP\Core\
 }
 
 require_once __DIR__ . '/Catalogue.php';
+require_once __DIR__ . '/Scope.php';
+require_once __DIR__ . '/Schema.php';
 require_once __DIR__ . '/DescribeSite.php';
 require_once __DIR__ . '/Abilities.php';
 require_once __DIR__ . '/Server.php';

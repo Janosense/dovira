@@ -11,11 +11,14 @@ use Brain\Monkey\Functions;
 use dovira\ContentMcp\Abilities;
 use dovira\ContentMcp\Catalogue;
 use dovira\ContentMcp\DescribeSite;
+use dovira\ContentMcp\Schema;
 use dovira\ContentMcp\Server;
 use dovira\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Catalogue.php';
+require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Scope.php';
+require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Schema.php';
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/DescribeSite.php';
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Abilities.php';
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Server.php';
@@ -134,7 +137,7 @@ final class ServerTest extends TestCase {
 		$this->stub_user( [ 'administrator' ], $manage_options );
 		Functions\when( 'get_site_url' )->justReturn( 'https://dev.dovira.vet' );
 
-		$result = ( new DescribeSite( false ) )->execute();
+		$result = ( $this->describe( false ) )->execute();
 
 		$this->assertSame( $expected, $result['user']['can_delete'] );
 		$this->assertSame( 'tymofii', $result['user']['login'] );
@@ -158,14 +161,14 @@ final class ServerTest extends TestCase {
 		$this->stub_user( [ 'editor' ], false );
 		Functions\when( 'get_site_url' )->justReturn( $url );
 
-		$this->assertSame( $city, ( new DescribeSite( false ) )->execute()['city'] );
+		$this->assertSame( $city, ( $this->describe( false ) )->execute()['city'] );
 	}
 
 	public function test_languages_are_empty_without_polylang(): void {
 		$this->stub_user( [ 'editor' ], false );
 		Functions\when( 'get_site_url' )->justReturn( 'https://dovira.vet' );
 
-		$this->assertSame( [], ( new DescribeSite( false ) )->execute()['languages'] );
+		$this->assertSame( [], ( $this->describe( false ) )->execute()['languages'] );
 	}
 
 	public function test_languages_come_from_polylang(): void {
@@ -173,7 +176,7 @@ final class ServerTest extends TestCase {
 		Functions\when( 'get_site_url' )->justReturn( 'https://dovira.vet' );
 		Functions\when( 'pll_languages_list' )->justReturn( [ 'uk', 'ru' ] );
 
-		$this->assertSame( [ 'uk', 'ru' ], ( new DescribeSite( true ) )->execute()['languages'] );
+		$this->assertSame( [ 'uk', 'ru' ], ( $this->describe( true ) )->execute()['languages'] );
 	}
 
 	/**
@@ -191,6 +194,17 @@ final class ServerTest extends TestCase {
 		Functions\expect( 'current_user_can' )->once()->with( 'read' )->andReturn( $can );
 
 		$this->assertSame( $can, call_user_func( DescribeSite::args()['permission_callback'] ) );
+	}
+
+	/**
+	 * describe-site without ACF and with no post type or taxonomy registered:
+	 * these tests are about the city, the languages and the user.
+	 */
+	private function describe( bool $polylang ): DescribeSite {
+		Functions\when( 'get_post_type_object' )->justReturn( null );
+		Functions\when( 'get_taxonomy' )->justReturn( false );
+
+		return new DescribeSite( $polylang, new Schema( false, false ) );
 	}
 
 	/**
