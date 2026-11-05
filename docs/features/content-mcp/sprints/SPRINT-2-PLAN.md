@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step; executed by /do-step,
      closed by /close-step. -->
 
-## Plan — Sprint 2, Step 1: Creating posts of every writable type, and blog terms   (status: approved, in progress)
+## Plan — Sprint 2, Step 1: Creating posts of every writable type, and blog terms   (status: implemented, awaiting verification)
 
 ### Branch
 `content-mcp/sprint-2-create` ← `master`, created from `master` = `133d9c56`
@@ -210,3 +210,54 @@ changed.
      `update-price-row`. Task 1 drops the price-row writing and its tests,
      and the verification's «з двома рядками прайсу» is done in wp-admin.
    - Resolved: approved as recommended — A: `create-post` writes a new service's rows as general rows ticked for this install's city; the FEATURE invariant is amended accordingly.
+
+### Step report (`/do-step`, 2026-11-05)
+- **Commits** on `content-mcp/sprint-2-create`:
+  - `ddf2d073` — `PostWriter::create()` and the price-row invariant;
+  - `347f1ad5` — `create-post`;
+  - `40a42012` — the term tools, the instructions, and a new block's
+    defaults;
+  - the guide commit.
+- **Gate:** theme PHPUnit 373 → 417.
+- **Live check on DDEV over MCP**, with a temporary administrator and the
+  dump folder created inside the container only (the local `wp-config.php`
+  points `DOVIRA_MCP_DUMP_DIR` at dev's path):
+  - 12 tools.
+  - **Terms:**
+    - `create-term` category «Акції (проба)» and a tag, both `uk`;
+    - a duplicate refused with its id;
+    - `service-city` refused by the schema enum.
+  - **A draft blog post** with that category and tag, as an `acf/rich-text`
+    block, `uk`.
+  - A missing `status` is refused by the schema.
+  - **A published page** with `acf/hero` + `acf/rich-text`, rendered (after
+    the fix below).
+  - **A service:**
+    - without `image`, refused: «Не заповнено обов’язкові поля: image.»;
+    - with image 1759 and two rows, shown on its page;
+    - `find-price-rows` gives 450 / 320 with `per_city: false`.
+  - **An employee** with a photo, **a vacancy** as a draft, and
+    `update-term` description.
+  - One dump per session (0.45 s, 29.7 MB).
+  - Everything created, the user, the transients and the folder were removed
+    afterwards.
+- **Fixed during the live check** (inside task 3, the code it builds on):
+  - **The fault:** a new `acf/*` block written with only its named fields
+    rendered nothing. ACF applies a field's `default_value` only to a field
+    the block data names (`_is_visible` → key). So templates gated on
+    `is_visible` (`hero`, `rich-text`, …) read it as empty.
+  - **The fix:** a new block now gets every unnamed field's non-empty
+    default, as the block editor stores them on insert. An existing block
+    still keeps its stored values.
+  - The same code serves `update-post`, so a block added to an existing
+    post by Sprint 1 Step 4's tool would have been hidden the same way.
+    This fixes it there too. Sprint 1 Step 4's live check only edited
+    existing blocks.
+  - Test: `PostWriterTest::test_a_new_block_gets_the_defaults…`.
+- **Polylang on the local install:** `category` and `post_tag` are both
+  translated, so a new term is set to `uk`. Dev's setting is the same
+  database lineage, and the guide's item 3 shows the term's language in
+  wp-admin.
+- **`post` without a blog** is covered by unit tests only. Renaming the local
+  `news` page for a live check was not worth the risk.
+- **Mid-step decisions:** none.
