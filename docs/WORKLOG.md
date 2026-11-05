@@ -22,6 +22,20 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-05 — [content-mcp] Sprint 2 Step 3 — Production checklist and handover
+- Changed:
+  - `Catalogue::TOOLS` is in the order a chat uses the tools (reads; a term or image before the post; the Russian copy after; trash last).
+  - `Server::INSTRUCTIONS` names all 14 tools; tests hold that and every list's `per_page` ≤ 50. Theme PHPUnit 458.
+  - `PRODUCTION-CHECKLIST.md` is the install procedure: `Claude-User` allowed, plugin, dump folder, city-term slug, a password per person, claude.ai's real form, smoke test, retention. Section D: restore (`gunzip -c … | wp db import -`, probed on DDEV), removing a person. Both productions are ticked in C.
+- Shared code: none changed.
+- Decisions: Question 1 A (`get-post` gets no length field). Question 2 B (productions taken through from `master` before the close). LEARNINGS: production verification vs task-branch verification.
+- Open:
+  - The guide's values were not reported: the `curl` codes, the dump footers (checklist B's web-request row stays empty), Kyiv's term id and webroot path.
+  - One more hand deploy of `master` and `kyiv` brings this step's instructions and order to production.
+  - `master` is not pushed to `origin/main`.
+  - The leaked password's revocation is guide item 1, verified.
+- Sprint 2 complete — all steps closed, content-mcp/sprint-2-handover merged into main
+
 ## 2026-11-05 — [content-mcp] Sprint 2 Step 2 — The Russian copy, and images
 - Changed:
   - `dovira/create-translation` (`Translator`) makes the `ru` copy of a Ukrainian post without one, linked through `pll_save_post_translations()`. Carried from the source: untranslated ACF values (raw by key), content, terms in `ru`, the parent's translation, template, featured image (`page` / `post`) and date. Prices are always the source's; only row texts are translated.

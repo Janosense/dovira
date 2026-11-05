@@ -42,7 +42,7 @@
 - **Docs to update:** `docs/features/content-mcp/FEATURE.md` → Interfaces, Invariants; `docs/ARCHITECTURE.md` → Data flows (the Russian copy); `docs/DATA-MODEL.md` (attachments written by the connector carry the connected user).
 - **Depends on:** Step 1
 
-### [ ] Step 3 — Production checklist and handover
+### [x] Step 3 — Production checklist and handover
 - **Tasks:**
   - `docs/features/content-mcp/PRODUCTION-CHECKLIST.md` (started in Sprint 1 Step 1): for each install — the plugin activated; `DOVIRA_MCP_DUMP_DIR` defined in `wp-config.php` and the folder created, writable, outside the webroot (or the fallback's 403 checked); an application password per person (owner, content manager, developer) created in their own WP profile, named `claude`; the connector added in each person's own claude.ai with the install's URL and the Basic header; the first session's smoke test (`describe-site`, one price preview without consent, no dump written); the retention cron present (`wp cron event list`); how the developer restores a dump (`wp db import` from the `.sql.gz`) and how a person is removed (revoke the password). No secret or password value is written into the repository.
   - `describe-site` final pass: the instructions text names every tool and the protocol; the server returns the catalogue in the order a chat uses it.

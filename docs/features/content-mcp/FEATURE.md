@@ -79,4 +79,4 @@ Owns no table and no post type. Owns: the transients `dovira_mcp_confirm_{hash}`
 
 ## Roadmap
 - Sprint 1 — Read everything and change a price from Claude: the connector is reachable from claude.ai on `dev.dovira.vet`, lists and shows every post type with structured ACF, blocks and translations, and changes a price row after a preview, with the session's dump taken first; existing posts are edited and trashed (administrators) under the same protocol (`sprints/SPRINT-1.md`)
-- Sprint 2 — Create content: pages from blocks, blog posts, services, employees and vacancies with ACF; Russian copies linked through Polylang; images uploaded and attached; blog terms created and edited; the production checklist for both installs (`sprints/SPRINT-2.md`)
+- Sprint 2 — Create content: pages from blocks, blog posts, services, employees and vacancies with ACF; Russian copies linked through Polylang; images uploaded and attached; blog terms created and edited; the production checklist for both installs (`sprints/SPRINT-2.md`) — done 2026-11-05: both productions taken through `PRODUCTION-CHECKLIST.md`

@@ -657,7 +657,7 @@ none
     `page` / `post`, so the preview shows only what is stored. The task text
     in this plan says so.
 
-## Plan — Sprint 2, Step 3: Production checklist and handover   (status: implemented, awaiting verification)
+## Plan — Sprint 2, Step 3: Production checklist and handover   (status: closed)
 ### Branch
 `content-mcp/sprint-2-handover` ← `master`, created from `master` = `c5224b3c`
 (Step 2 closed and merged). The only branch not merged into `master` is

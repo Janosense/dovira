@@ -130,11 +130,14 @@ A PHP-only dump through `$wpdb` (`SHOW TABLES`, `SHOW CREATE TABLE`, 500-row
 
 - [x] `dev.dovira.vet`: A1–A8 during Sprints 1–2 (dump folder
       `/home/dovirave/dovira-mcp-dumps/dev`).
-- [ ] Kharkiv `dovira.vet`, after the hand deploy from `master`: A1–A8, plus
-      one consented small change that left one dump in its folder.
-- [ ] Kyiv `kyiv.dovira.vet`, after merging `master` into `kyiv` and
-      deploying: the same. Its host and webroot layout are not measured yet:
-      check that its dump folder is outside its webroot.
+- [x] Kharkiv `dovira.vet`, after the hand deploy from `master`: A1–A8, plus
+      one consented small change that left one dump in its folder. Verified
+      by the user at the close of Sprint 2 Step 3 (2026-11-05); the `curl`
+      code and the dump's footer were not reported.
+- [x] Kyiv `kyiv.dovira.vet`, after merging `master` into `kyiv` and
+      deploying: the same, with its dump folder outside its webroot.
+      Verified by the user at the same close; its city term, webroot path,
+      `curl` code and dump footer were not reported.
 
 ## D. Operations
 
