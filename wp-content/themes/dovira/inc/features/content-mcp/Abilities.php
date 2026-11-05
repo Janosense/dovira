@@ -41,6 +41,10 @@ final class Abilities {
 	public static function definitions(): array {
 		return [
 			DescribeSite::NAME => DescribeSite::args(),
+			ListPosts::NAME    => ListPosts::args(),
+			GetPost::NAME      => GetPost::args(),
+			ListTerms::NAME    => ListTerms::args(),
+			ListMedia::NAME    => ListMedia::args(),
 		];
 	}
 }

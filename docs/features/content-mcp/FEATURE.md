@@ -29,7 +29,22 @@ Owns no table and no post type. Owns: the transients `dovira_mcp_confirm_{hash}`
 ## Interfaces
 - **MCP server** `https://{host}/wp-json/mcp/dovira` (Streamable HTTP, the adapter's sessions; the adapter's gate is `current_user_can( 'read' )`, so no valid application password = 401); `instructions` (the adapter has no instructions argument and sends the server description as `instructions`, so the text is `Server::INSTRUCTIONS`, the description; MCP tool names are the ability names with `/` → `-`, e.g. `dovira-describe-site`): call `describe-site` first, preview every write, show the diff, write only after consent, Ukrainian is the source and the Russian copy follows.
 - **Abilities** (also REST `wp-abilities/v1/abilities/dovira/*` and `wp mcp-adapter serve --server=dovira`): read — `describe-site`, `list-posts`, `get-post`, `find-price-rows`, `list-terms`, `list-media`; write — `update-price-row`, `update-post`, `create-post`, `create-translation`, `upload-media`, `create-term`, `update-term`, `trash-post`.
-- **Result shapes:** a post = `{id, type, status, lang, translations:{uk,ru}, title, slug, parent, link, terms:{taxonomy:[{id,name}]}, acf:{…by field name; repeater → [{…}], image → {id,url,alt}, post_object → {id,title}}, blocks:[{block, fields}] (page) | content_html (post)}`; a price row = `{service:{id,title}, row_index, title, description, price, per_city}`; a preview = `{diff:[{target:{id,lang}, field, from, to}], warnings:[…], confirmation}`; a write = `{written:[…ids], dump:{file|"existing"}, warnings}`. Changing these shapes = touches this feature's interface.
+- **Read access:**
+  - Content types (`service`, `employee`, `vacancy`, `page`, `post`) need the type's `edit_posts`, so editors and administrators.
+  - Records (`conversation`, `application`, `questionary`) need `edit_others_conversations`, so administrators and the support role, never an editor. It is not `read_post`: core maps that to `read` for a published post.
+  - `list-terms` needs the taxonomy's `assign_terms`; `list-media` needs `upload_files`.
+  - A missing id gets `dovira_post_not_found`; a type outside the scope is refused.
+  - Every list is `{items, total, page, per_page}`, with `per_page` ≤ 50 (the schema refuses more).
+- **Result shapes:**
+  - A post = `{id, type, status, lang, translations:{uk,ru}, title, slug, parent, link, menu_order, modified, terms:{taxonomy:[{id,name}]}, acf:{…by field name; repeater → [{…}], group → {…}, image → {id,url,alt}, file → {id,url,title}, post_object → {id,title}, relationship → [{id,title}]}, blocks:[…]}`.
+    - `blocks` is the content of **every** type (blog posts, services and employees are built from `acf/*` blocks too). An `acf/*` block is `{block, fields}`, read by name through ACF's block meta. Any other block is `{block, html}`, its serialized markup. Freeform text is `core/freeform`. There is no `content_html`.
+    - A `service`'s `acf.prices[].price` is the price in this install's city (`CityPrice`). It is the general price, or the row's `city_prices.price_city_{term}` for the install's `service-city` term, found by the slug of the URL's city. `null` means no price (the site shows the phone). `city_prices` is not shown.
+    - Records and untranslated types have `lang: null` and `translations: {}`. Non-viewable types have `link: null`.
+  - A `list-posts` item = `{id, type, status, lang, translations, title, modified, link}`.
+  - A term = `{id, name, slug, parent, count, lang}`.
+  - A media item = `{id, title, url, alt, mime, width, height, date}`.
+  - `describe-site` = `{city, languages, user:{login, roles, can_delete}, post_types:[{name, label, hierarchical, translated, read_only, taxonomies, fields}], blocks:[{name, title, fields}], taxonomies:[{name, label, object_types, translated, read_only, terms (≤50), terms_total}]}`. A field there is `{name, label, type, required, choices?, sub_fields?}`, without `message`/`tab`/`accordion`.
+  - A price row = `{service:{id,title}, row_index, title, description, price, per_city}`; a preview = `{diff:[{target:{id,lang}, field, from, to}], warnings:[…], confirmation}`; a write = `{written:[…ids], dump:{file|"existing"}, warnings}`. Changing these shapes = touches this feature's interface.
 - **Filters/hooks:** `dovira_mcp_dump_retention_days`; cron `dovira_mcp_dump_retention`.
 
 ## Roadmap

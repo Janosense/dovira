@@ -19,7 +19,13 @@ use PHPUnit\Framework\Attributes\DataProvider;
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Catalogue.php';
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Scope.php';
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Schema.php';
+foreach ( [ 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools' ] as $dovira_class ) {
+	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
+}
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/DescribeSite.php';
+foreach ( [ 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia' ] as $dovira_class ) {
+	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
+}
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Abilities.php';
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Server.php';
 

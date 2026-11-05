@@ -355,6 +355,14 @@ an `.htaccess` (deny) and an empty `index.php` written by the feature.
 Deletes dump files of the pattern above older than the filtered days (default
 90, never fewer than 1). Nothing else is ever deleted from the folder.
 
+### Reading `service` prices
+The connector stores nothing to read prices. It reads a row's price in this
+install's city by the rule of `single-service.php`:
+- `is_price_general` → `price`;
+- otherwise `city_prices_price_city_{term_id}` of the install's own
+  `service-city` term (the term whose slug is the city of the site URL);
+- `empty()` → no price (`null`).
+
 ### Sessions
 The MCP sessions are the adapter's: user meta of the connected user, idle
 expiry 24 h (plugin `mcp-adapter`). This feature reads the session id from the
