@@ -197,7 +197,11 @@ the connected user → `{written, dump, warnings}`. A Russian copy
 connected user from the Ukrainian source's values overlaid by the Russian
 texts the agent wrote, set to `ru` and linked with
 `pll_save_post_translations()` — the calls `wp dovira translate` makes, with
-the text from the chat instead of a server-side API. Reads issue no token and no
+the text from the chat instead of a server-side API. An image upload
+(`upload-media`) checks the URL at preview with a HEAD request only (scheme,
+public host, type, declared size) or decodes the base64; after consent it
+downloads with `wp_safe_remote_get()` capped at the size limit and adds the
+file with `media_handle_sideload()`. Reads issue no token and no
 dump. No write ability exists for `conversation`, `application`,
 `questionary`; `trash-post` needs `manage_options`. Details in
 `docs/features/content-mcp/FEATURE.md`.

@@ -380,7 +380,7 @@ changed.
   - **Live check:** probed on DDEV over MCP, as in Step 1. A temporary dump
     folder is made in the container only (local `DOVIRA_MCP_DUMP_DIR` points
     at dev's path) and removed afterwards; probe posts and users are deleted.
-- [ ] **2. `MediaWriter` and `dovira/upload-media`.** Commit:
+- [x] **2. `MediaWriter` and `dovira/upload-media`.** Commit:
   `feat(content-mcp): upload-media from a URL or base64 behind preview, token and dump`.
   - **`MediaWriter`** plans an upload.
     - **Input:**

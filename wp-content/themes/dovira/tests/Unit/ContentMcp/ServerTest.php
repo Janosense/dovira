@@ -23,7 +23,7 @@ foreach ( [ 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools' ] as $dovira_c
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/DescribeSite.php';
-foreach ( [ 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows', 'Session', 'Confirmation', 'Diff', 'Dump', 'PriceRows', 'FieldInput', 'PostWriter', 'WriteAbility', 'UpdatePriceRow', 'UpdatePost', 'CreatePost', 'Translator', 'CreateTranslation', 'TrashPost', 'TermWriter', 'CreateTerm', 'UpdateTerm' ] as $dovira_class ) {
+foreach ( [ 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows', 'Session', 'Confirmation', 'Diff', 'Dump', 'PriceRows', 'FieldInput', 'PostWriter', 'WriteAbility', 'UpdatePriceRow', 'UpdatePost', 'CreatePost', 'Translator', 'CreateTranslation', 'MediaWriter', 'UploadMedia', 'TrashPost', 'TermWriter', 'CreateTerm', 'UpdateTerm' ] as $dovira_class ) {
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Abilities.php';
@@ -84,7 +84,7 @@ final class ServerTest extends TestCase {
 
 	public function test_the_catalogue_reads_finds_prices_and_changes_a_price_row(): void {
 		$this->assertSame(
-			[ 'dovira/describe-site', 'dovira/list-posts', 'dovira/get-post', 'dovira/find-price-rows', 'dovira/list-terms', 'dovira/list-media', 'dovira/update-price-row', 'dovira/update-post', 'dovira/create-post', 'dovira/create-translation', 'dovira/trash-post', 'dovira/create-term', 'dovira/update-term' ],
+			[ 'dovira/describe-site', 'dovira/list-posts', 'dovira/get-post', 'dovira/find-price-rows', 'dovira/list-terms', 'dovira/list-media', 'dovira/update-price-row', 'dovira/update-post', 'dovira/create-post', 'dovira/create-translation', 'dovira/upload-media', 'dovira/trash-post', 'dovira/create-term', 'dovira/update-term' ],
 			Catalogue::TOOLS
 		);
 		$this->assertSame( Catalogue::TOOLS, array_keys( Abilities::definitions() ) );
@@ -101,6 +101,7 @@ final class ServerTest extends TestCase {
 		$this->assertStringContainsString( 'dovira-create-post in exactly the status the person names', Server::INSTRUCTIONS );
 		$this->assertStringContainsString( 'dovira-create-term', Server::INSTRUCTIONS );
 		$this->assertStringContainsString( 'dovira-create-translation', Server::INSTRUCTIONS );
+		$this->assertStringContainsString( 'dovira-upload-media', Server::INSTRUCTIONS );
 		$this->assertStringContainsString( 'dovira-update-term', Server::INSTRUCTIONS );
 	}
 

@@ -35,10 +35,11 @@ abstract class WriteAbility {
 	abstract protected function preview( array $payload );
 
 	/**
-	 * Writes what `preview()` computed for the same payload.
+	 * Writes what `preview()` computed for the same payload. Keys besides
+	 * `written` / `warnings` are added to the result.
 	 *
 	 * @param array<string, mixed> $payload
-	 * @return array{written: list<int>, warnings: list<string>}|\WP_Error
+	 * @return array{written: list<int>, warnings: list<string>, ...}|\WP_Error
 	 */
 	abstract protected function write( array $payload );
 
@@ -91,11 +92,13 @@ abstract class WriteAbility {
 			return $written;
 		}
 
+		// What a write returns besides `written` / `warnings` (`upload-media`'s
+		// `media`) goes into the result; it never replaces the protocol's keys.
 		return [
 			'written'  => $written['written'],
 			'dump'     => $dump,
 			'warnings' => $written['warnings'],
-		];
+		] + array_diff_key( $written, array_flip( [ 'written', 'dump', 'warnings' ] ) );
 	}
 
 	/**

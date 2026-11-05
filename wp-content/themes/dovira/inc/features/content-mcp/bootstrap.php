@@ -41,6 +41,8 @@ require_once __DIR__ . '/UpdatePost.php';
 require_once __DIR__ . '/CreatePost.php';
 require_once __DIR__ . '/Translator.php';
 require_once __DIR__ . '/CreateTranslation.php';
+require_once __DIR__ . '/MediaWriter.php';
+require_once __DIR__ . '/UploadMedia.php';
 require_once __DIR__ . '/TrashPost.php';
 require_once __DIR__ . '/TermWriter.php';
 require_once __DIR__ . '/CreateTerm.php';

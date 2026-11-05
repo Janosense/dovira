@@ -397,6 +397,12 @@ service's price rows as stored, with only `title` / `description` replaced.
 Its terms are the source's mapped to their `ru` terms (`pll_get_term`),
 `service-city` by the same id.
 
+`upload-media` adds an attachment through `media_handle_sideload()`: author =
+the connected user, `post_parent` = `attach_to` (0 when not asked), the file
+in the uploads folder with WordPress's own metadata and sizes, and the alt
+text as `_wp_attachment_image_alt`. Attachments have no language (Polylang's
+media support is off).
+
 ### Reading `service` prices
 The connector stores nothing to read prices. It reads a row's price in this
 install's city by the rule of `single-service.php`:
