@@ -28,7 +28,8 @@ model). This checklist starts once the files are on the server.
       `define( 'DOVIRA_MCP_DUMP_DIR', '/home/…/…' );` to that install's
       `wp-config.php`. The folder must be writable by PHP and **outside every
       webroot of the hosting account** (see B, Webroot layout).
-      - The folder is used from Sprint 1 Step 3 on.
+      - Every confirmed write uses it: the first write of a session dumps
+        the database there, and a failed dump means no write.
       - Unset, the feature falls back to `wp-content/backup-db/` behind an
         `.htaccess` deny it writes itself, which works on Apache/LiteSpeed only.
 - [ ] **A3. One application password per person.** Each person creates one in
@@ -67,6 +68,7 @@ A PHP-only dump through `$wpdb` (`SHOW TABLES`, `SHOW CREATE TABLE`, 500-row
 | `WP_MEMORY_LIMIT` | 40M | 40M |
 | `exec` callable | yes | yes (not used: the dump is PHP-only by decision) |
 | Folder | `/tmp/dovira-dump-spike` (container) | `/home/dovirave/dovira-dump-spike`, outside the webroot |
+| **Web request** (the first `update-price-row` write, Sprint 1 Step 3; the dump's footer) | — | filled from the Step 3 verification |
 
 - **Exit criteria met.** The dump fits one request with large headroom: 0.75 s
   against any web limit of 30 s or more.

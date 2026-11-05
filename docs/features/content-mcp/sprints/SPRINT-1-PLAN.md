@@ -633,7 +633,7 @@ PHPUnit with Brain\Monkey. ACF (`acf_get_local_field_groups`,
     - `is_empty()`; `to_array()` gives `{diff, warnings}`.
   - `bootstrap.php`: requires the three classes, adds the
     `rest_request_before_callbacks` filter.
-- [ ] **2. `Dump` and its retention.** Commit:
+- [x] **2. `Dump` and its retention.** Commit:
   `feat(content-mcp): the session dump and its 90-day retention`.
   - `Dump` (`dovira\ContentMcp\Dump`), constructor
     `( ?object $wpdb = null, ?string $dir = null, ?string $fallback = null, ?string $host = null )`.

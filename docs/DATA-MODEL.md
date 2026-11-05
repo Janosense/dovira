@@ -351,8 +351,13 @@ session (REST `wp-abilities/v1`, WP-CLI) sets no transient and dumps every time.
 ### Dump files — `DOVIRA_MCP_DUMP_DIR` (fallback `wp-content/backup-db/`)
 `dovira-{host}-{YYYY-MM-DD}-{HHMMSS}.sql.gz`, mode `0600`, a numeric suffix
 when the name exists; never overwritten or renamed. Whole database, written by
-PHP (`SHOW CREATE TABLE` + batched `INSERT`s). The fallback folder also holds
-an `.htaccess` (deny) and an empty `index.php` written by the feature.
+PHP (`SHOW TABLES`, `SHOW CREATE TABLE` + `INSERT`s of 500 rows, gzip level
+6). The file opens with a comment naming the host and the date and ends with
+`-- tables: N` and `-- finished in X s, peak memory Y MB` (read with
+`zcat … | tail -2`); a dump without that footer is incomplete and is never
+left behind: any failure deletes the file and aborts the write. The fallback
+folder also holds an `.htaccess` (deny) and an empty `index.php` written by
+the feature.
 
 ### Cron `dovira_mcp_dump_retention` (daily) and filter `dovira_mcp_dump_retention_days`
 Deletes dump files of the pattern above older than the filtered days (default
