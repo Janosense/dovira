@@ -56,6 +56,10 @@ final class DiffTest extends TestCase {
 		$this->assertSame( [], $diff->warnings() );
 	}
 
+	public function test_a_post_that_does_not_exist_yet_has_a_null_id(): void {
+		$this->assertSame( [ 'id' => null, 'lang' => 'uk' ], ( new Diff() )->add( null, 'uk', 'title', null, 'Нова' )->lines()[0]['target'] );
+	}
+
 	public function test_null_and_zero_differ(): void {
 		$this->assertFalse( ( new Diff() )->add( 1, null, 'f', null, '' )->is_empty() );
 	}

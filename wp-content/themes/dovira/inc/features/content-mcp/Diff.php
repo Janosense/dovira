@@ -8,19 +8,20 @@ namespace dovira\ContentMcp;
  */
 final class Diff {
 
-	/** @var list<array{target: array{id: int, lang: string|null}, field: string, from: mixed, to: mixed}> */
+	/** @var list<array{target: array{id: int|null, lang: string|null}, field: string, from: mixed, to: mixed}> */
 	private array $lines = [];
 
 	/** @var list<string> */
 	private array $warnings = [];
 
 	/**
-	 * Adds a line; a value that does not change adds nothing.
+	 * Adds a line; a value that does not change adds nothing. A post that
+	 * does not exist yet has the id null.
 	 *
 	 * @param mixed $from
 	 * @param mixed $to
 	 */
-	public function add( int $id, ?string $lang, string $field, $from, $to ): self {
+	public function add( ?int $id, ?string $lang, string $field, $from, $to ): self {
 		if ( self::same( $from, $to ) ) {
 			return $this;
 		}
@@ -49,7 +50,7 @@ final class Diff {
 	}
 
 	/**
-	 * @return list<array{target: array{id: int, lang: string|null}, field: string, from: mixed, to: mixed}>
+	 * @return list<array{target: array{id: int|null, lang: string|null}, field: string, from: mixed, to: mixed}>
 	 */
 	public function lines(): array {
 		return $this->lines;

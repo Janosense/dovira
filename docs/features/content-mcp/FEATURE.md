@@ -23,7 +23,7 @@ Owns no table and no post type. Owns: the transients `dovira_mcp_confirm_{hash}`
 - No write without a valid confirmation token for this payload, user and session; a read never issues one.
 - No write before the session's dump exists; a failed dump aborts the write with an error. A dump file is never overwritten or renamed.
 - The server exposes only `dovira/*` abilities; no write ability exists for `conversation`, `application`, `questionary`; `service-city` terms and the options page are never written; `trash-post` requires `manage_options`.
-- ACF values go through `update_field()`, never raw postmeta; price rows are written only by `update-price-row`, which never changes `is_price_general` or the `cities` checklist.
+- ACF values go through `update_field()`, never raw postmeta; an existing service's price rows are changed only by `update-price-row`, which never changes `is_price_general` or the `cities` checklist; a new service's rows are written by `create-post` as general rows (`is_price_general = 1`) ticked for this install's city only, never `city_prices` (Sprint 2 Step 1, Question 1).
 - The Russian copy is written only when the person confirmed its diff; a price mirrors only into a copy with the same number of rows, otherwise the result carries a warning.
 - No URL literal of either install; the city comes from the site URL (root invariant 4). No secret in code: authentication is WordPress's own.
 

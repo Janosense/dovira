@@ -89,7 +89,11 @@ final class PostWriterTest extends TestCase {
 		Functions\when( 'acf_get_fields' )->alias(
 			static fn( array $group ) => match ( $group['key'] ) {
 				'group_vacancy' => [ [ 'key' => 'field_vacancy_is_open', 'name' => 'is_open', 'type' => 'true_false' ] ],
-				'group_service' => [ [ 'key' => 'field_service_prices', 'name' => 'prices', 'type' => 'repeater' ] ],
+				'group_service' => [
+					[ 'key' => 'field_service_image', 'name' => 'image', 'type' => 'image', 'required' => 1 ],
+					[ 'key' => 'field_service_prices', 'name' => 'prices', 'type' => 'repeater', 'sub_fields' => [] ],
+				],
+				'group_employee' => [ [ 'key' => 'field_employee_photo', 'name' => 'photo', 'type' => 'image', 'required' => true ] ],
 				default         => [
 					[ 'key' => 'field_page_image', 'name' => 'image', 'type' => 'image' ],
 					[
@@ -352,12 +356,157 @@ final class PostWriterTest extends TestCase {
 		$this->assertSame( 'core/paragraph', json_decode( stripslashes( $this->writes[0][1]['post_content'] ), true )['blockName'] );
 	}
 
+	public function test_a_new_post_is_previewed_value_by_value_and_inserted_in_ukrainian(): void {
+		$this->creation_stubs();
+		$plan = $this->writer()->create(
+			[
+				'post_type' => 'post',
+				'title'     => 'Акція на вакцинацію',
+				'status'    => 'draft',
+				'terms'     => [ 'category' => [ 'Акції' ] ],
+				'blocks'    => [ [ 'block' => 'acf/hero', 'fields' => [ 'heading' => 'Вакцинація' ] ] ],
+			]
+		);
+
+		$this->assertSame(
+			[ 'post_type', 'title', 'status', 'terms.category', 'blocks[0]' ],
+			array_column( $plan['diff']->lines(), 'field' )
+		);
+		foreach ( $plan['diff']->lines() as $line ) {
+			$this->assertSame( [ 'id' => null, 'lang' => 'uk' ], $line['target'] );
+			$this->assertNull( $line['from'] );
+		}
+		$this->assertSame( [], $this->writes, 'planning inserts nothing' );
+
+		$this->assertSame( 501, $plan['apply']() );
+		$this->assertSame( 'post', $this->writes[0][1]['post_type'] );
+		$this->assertSame( 'Акція на вакцинацію', $this->writes[0][1]['post_title'] );
+		$this->assertSame( 'draft', $this->writes[0][1]['post_status'] );
+		$this->assertSame( 'Вакцинація', json_decode( stripslashes( $this->writes[0][1]['post_content'] ), true )['attrs']['data']['heading'] );
+		$this->assertSame( [ 'lang', [ 501, 'uk' ] ], $this->writes[1] );
+		$this->assertSame( [ 'terms:category', [ [ 7 ], false ] ], $this->writes[2] );
+	}
+
+	/**
+	 * @return array<string, array{array<string, mixed>, string}>
+	 */
+	public static function refused_creations(): array {
+		$base = [ 'post_type' => 'page', 'title' => 'Нова', 'status' => 'draft' ];
+
+		return [
+			'no status, no default'  => [ array_diff_key( $base, [ 'status' => 1 ] ), 'dovira_status_required' ],
+			'no title'               => [ array_diff_key( $base, [ 'title' => 1 ] ), 'dovira_title_required' ],
+			'Russian'                => [ [ 'lang' => 'ru' ] + $base, 'dovira_lang_invalid' ],
+			'a record'               => [ [ 'post_type' => 'conversation' ] + $base, 'dovira_read_only_type' ],
+			'a type out of scope'    => [ [ 'post_type' => 'attachment' ] + $base, 'dovira_type_out_of_scope' ],
+			'trash as status'        => [ [ 'status' => 'trash' ] + $base, 'dovira_status_invalid' ],
+			'service without image'  => [ [ 'post_type' => 'service', 'acf' => [ 'image' => '' ] ] + $base, 'dovira_required_fields' ],
+			'employee without photo' => [ [ 'post_type' => 'employee' ] + $base, 'dovira_required_fields' ],
+			'a term that is not there' => [ [ 'post_type' => 'post', 'terms' => [ 'category' => [ 'Нова рубрика' ] ] ] + $base, 'dovira_term_unknown' ],
+		];
+	}
+
+	/**
+	 * @param array<string, mixed> $input
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider( 'refused_creations' )]
+	public function test_a_creation_is_refused_before_anything_is_inserted( array $input, string $code ): void {
+		$this->creation_stubs();
+		Functions\expect( 'wp_insert_post' )->never();
+
+		$result = $this->writer()->create( $input );
+
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( $code, $result->get_error_code() );
+	}
+
+	public function test_the_refusal_names_the_missing_required_fields(): void {
+		$this->creation_stubs();
+
+		$result = $this->writer()->create( [ 'post_type' => 'service', 'title' => 'Нова послуга', 'status' => 'draft' ] );
+
+		$this->assertStringContainsString( 'image', $result->get_error_message() );
+	}
+
+	public function test_a_blog_post_is_refused_where_there_is_no_news_page(): void {
+		$this->creation_stubs();
+		Functions\when( 'get_page_by_path' )->justReturn( null );
+
+		$this->assertSame( 'dovira_no_blog', $this->writer()->create( [ 'post_type' => 'post', 'title' => 'x', 'status' => 'draft' ] )->get_error_code() );
+	}
+
+	public function test_publishing_a_new_post_needs_the_publish_capability(): void {
+		$this->creation_stubs();
+		Functions\when( 'current_user_can' )->justReturn( false );
+
+		$this->assertSame( 'dovira_cannot_publish', $this->writer()->create( [ 'post_type' => 'page', 'title' => 'x', 'status' => 'publish' ] )->get_error_code() );
+	}
+
+	public function test_a_new_services_price_rows_are_general_rows_of_this_city(): void {
+		$this->creation_stubs();
+
+		$plan = $this->writer()->create(
+			[
+				'post_type' => 'service',
+				'title'     => 'Нова послуга',
+				'status'    => 'draft',
+				'acf'       => [
+					'image'  => [ 'id' => 768, 'url' => 'u', 'alt' => '' ],
+					'prices' => [ [ 'title' => 'Огляд', 'description' => '', 'price' => 450 ], [ 'title' => 'Аналіз', 'price' => null ] ],
+				],
+			]
+		);
+		$plan['apply']();
+
+		$this->assertSame(
+			[ [ 'title' => 'Огляд', 'description' => '', 'price' => 450 ], [ 'title' => 'Аналіз', 'description' => '', 'price' => null ] ],
+			array_values( array_filter( $plan['diff']->lines(), static fn( $l ) => 'acf.prices' === $l['field'] ) )[0]['to']
+		);
+		$rows = array_values( array_filter( $this->writes, static fn( $w ) => 'acf:field_service_prices' === $w[0] ) )[0][1];
+		$this->assertSame( [ 'title' => 'Огляд', 'description' => '', 'price' => '450', 'linked_page' => '', 'cities' => [ 'city_4' ], 'is_price_general' => 1 ], $rows[0] );
+		$this->assertSame( '', $rows[1]['price'], 'no amount: the site shows the phone' );
+		$this->assertArrayNotHasKey( 'city_prices', $rows[0] );
+		$this->assertContains( [ 'acf:field_service_image', 768 ], $this->writes );
+	}
+
+	public function test_a_new_services_rows_are_refused_without_the_city_term_or_with_a_bad_price(): void {
+		$this->creation_stubs();
+		$input = [ 'post_type' => 'service', 'title' => 'x', 'status' => 'draft', 'acf' => [ 'image' => 5, 'prices' => [ [ 'title' => 'a', 'price' => 'договірна' ] ] ] ];
+
+		$this->assertSame( 'dovira_price_invalid', $this->writer()->create( $input )->get_error_code() );
+
+		Functions\when( 'get_term_by' )->justReturn( false );
+		$input['acf']['prices'][0]['price'] = 100;
+		$this->assertSame( 'dovira_city_term_missing', $this->writer()->create( $input )->get_error_code() );
+	}
+
+	public function test_an_existing_services_prices_are_still_refused(): void {
+		$this->assertSame( 'dovira_prices_through_price_tool', $this->writer()->plan( self::post( 'service' ), [ 'acf' => [ 'prices' => [] ] ] )->get_error_code() );
+	}
+
 	public function test_several_targets_share_one_diff(): void {
 		$diff = new Diff();
 		$this->writer()->plan( self::post( 'page' ), [ 'title' => 'A' ], $diff );
 		$this->writer()->plan( self::post( 'page', 'publish', 177 ), [ 'title' => 'B' ], $diff );
 
 		$this->assertSame( [ 176, 177 ], array_column( array_column( $diff->lines(), 'target' ), 'id' ) );
+	}
+
+	private function creation_stubs(): void {
+		Functions\when( 'get_page_by_path' )->justReturn( (object) [ 'ID' => 211 ] );
+		Functions\when( 'get_site_url' )->justReturn( 'https://dev.dovira.vet' );
+		Functions\when( 'get_term_by' )->justReturn( (object) [ 'term_id' => 4 ] );
+		Functions\when( 'wp_insert_post' )->alias(
+			function ( array $postarr, bool $wp_error ) {
+				$this->writes[] = [ 'insert', $postarr ];
+				return 501;
+			}
+		);
+		Functions\when( 'pll_set_post_language' )->alias(
+			function ( int $id, string $lang ): void {
+				$this->writes[] = [ 'lang', [ $id, $lang ] ];
+			}
+		);
 	}
 
 	private function writer(): PostWriter {
