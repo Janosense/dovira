@@ -32,7 +32,8 @@ final class PostWriterTest extends TestCase {
 
 	/** @var list<array<string, mixed>> The hero block's field definitions. */
 	private const HERO = [
-		[ 'key' => 'field_hero_heading', 'name' => 'heading', 'type' => 'text' ],
+		[ 'key' => 'field_hero_visible', 'name' => 'is_visible', 'type' => 'true_false', 'default_value' => 1 ],
+		[ 'key' => 'field_hero_heading', 'name' => 'heading', 'type' => 'text', 'default_value' => '' ],
 		[ 'key' => 'field_hero_text', 'name' => 'text', 'type' => 'wysiwyg' ],
 		[ 'key' => 'field_hero_image', 'name' => 'image', 'type' => 'image' ],
 	];
@@ -304,6 +305,23 @@ final class PostWriterTest extends TestCase {
 		$read = ( new PostReader( true, false ) )->blocks( $content );
 		$this->assertSame( 'Вітаємо', $read[0]['fields']->heading );
 		$this->assertSame( '<p>Старий текст</p>', $read[0]['fields']->text );
+	}
+
+	public function test_a_new_block_gets_the_defaults_of_its_unnamed_fields_and_an_existing_one_does_not(): void {
+		$plan = $this->writer()->plan( self::post( 'page' ), [ 'blocks' => [ [ 'block' => 'acf/hero', 'fields' => [ 'heading' => 'Новий' ] ] ] ] );
+		$plan['apply']();
+		$data = json_decode( stripslashes( $this->writes[0][1]['post_content'] ), true )['attrs']['data'];
+
+		$this->assertSame( [ 'is_visible', '_is_visible', 'heading', '_heading' ], array_keys( $data ), 'an empty default adds nothing' );
+		$this->assertSame( 1, $data['is_visible'] );
+
+		$this->writes = [];
+		$current      = self::hero( [ 'heading' => 'Привіт', '_heading' => 'field_hero_heading' ] );
+		$plan         = $this->writer()->plan( self::post( 'page', 'publish', 176, $current ), [ 'blocks' => [ [ 'block' => 'acf/hero', 'fields' => [ 'heading' => 'Вітаємо' ] ] ] ] );
+		$plan['apply']();
+		$data = json_decode( stripslashes( $this->writes[0][1]['post_content'] ), true )['attrs']['data'];
+
+		$this->assertArrayNotHasKey( 'is_visible', $data, 'an existing block keeps what it stores' );
 	}
 
 	public function test_the_content_is_slashed_for_wp_update_post(): void {

@@ -670,6 +670,19 @@ final class PostWriter {
 			$keyed[ (string) $by_name[ (string) $field ]['key'] ] = $value;
 		}
 
+		// A new block gets every unnamed field's default, as the block editor
+		// stores them on insert: ACF applies `default_value` only to a field the
+		// block data names, so a template reading `is_visible` would see nothing.
+		if ( null === $current ) {
+			foreach ( $by_name as $definition ) {
+				$key     = (string) $definition['key'];
+				$default = $definition['default_value'] ?? null;
+				if ( ! array_key_exists( $key, $keyed ) && null !== $default && '' !== $default && [] !== $default ) {
+					$keyed[ $key ] = $default;
+				}
+			}
+		}
+
 		// In the order of the block's fields, as ACF itself saves them.
 		$ordered = [];
 		foreach ( $by_name as $definition ) {

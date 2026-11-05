@@ -60,7 +60,7 @@ Written for the recommended answer to Question 1 (A).
     type's `create_posts`, plus `publish_posts` for `publish` / `private`.
   - **Result:** `{written: [new id], dump, warnings}`.
   - `Catalogue::TOOLS`, `Abilities`, `bootstrap.php`.
-- [ ] **3. `TermWriter`, `dovira/create-term`, `dovira/update-term`, and
+- [x] **3. `TermWriter`, `dovira/create-term`, `dovira/update-term`, and
   the instructions.** Commit: `feat(content-mcp): create-term and
   update-term for blog categories and tags`.
   - **`TermWriter::create( $taxonomy, $fields )`:**

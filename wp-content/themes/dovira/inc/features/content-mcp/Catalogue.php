@@ -24,5 +24,7 @@ final class Catalogue {
 		UpdatePost::NAME,
 		CreatePost::NAME,
 		TrashPost::NAME,
+		CreateTerm::NAME,
+		UpdateTerm::NAME,
 	];
 }
