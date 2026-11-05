@@ -23,6 +23,7 @@ final class Catalogue {
 		UpdatePriceRow::NAME,
 		UpdatePost::NAME,
 		CreatePost::NAME,
+		CreateTranslation::NAME,
 		TrashPost::NAME,
 		CreateTerm::NAME,
 		UpdateTerm::NAME,

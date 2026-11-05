@@ -105,44 +105,14 @@ final class PostWriter {
 		];
 		$shown = $this->polylang ? $lang : null;
 
-		$this->creating = true;
-		try {
-			$diff->add( null, $shown, 'post_type', null, $type );
+		$diff->add( null, $shown, 'post_type', null, $type );
 
-			$postarr = [ 'post_type' => $type ];
-			$changes = array_intersect_key( $input, array_flip( self::FIELDS ) );
-
-			$planned = $this->post_fields( $post, $changes, $shown, $diff, $postarr );
-			if ( is_wp_error( $planned ) ) {
-				return $planned;
-			}
-
-			$terms = [];
-			if ( array_key_exists( 'terms', $changes ) ) {
-				$terms = $this->terms( $post, (array) $changes['terms'], $shown, $diff );
-				if ( is_wp_error( $terms ) ) {
-					return $terms;
-				}
-			}
-
-			$fields = [];
-			if ( [] !== $acf ) {
-				$fields = $this->acf_fields( $post, $acf, $shown, $diff );
-				if ( is_wp_error( $fields ) ) {
-					return $fields;
-				}
-			}
-
-			if ( array_key_exists( 'blocks', $changes ) ) {
-				$content = $this->blocks( $post, $changes['blocks'], $shown, $diff );
-				if ( is_wp_error( $content ) ) {
-					return $content;
-				}
-				$postarr['post_content'] = $content;
-			}
-		} finally {
-			$this->creating = false;
+		$planned = $this->plan_new( $post, array_intersect_key( $input, array_flip( self::FIELDS ) ), $shown, $diff );
+		if ( is_wp_error( $planned ) ) {
+			return $planned;
 		}
+		[ 'postarr' => $postarr, 'terms' => $terms, 'fields' => $fields ] = $planned;
+		$postarr = [ 'post_type' => $type ] + $postarr;
 
 		$polylang = $this->polylang;
 
@@ -170,6 +140,77 @@ final class PostWriter {
 
 				return $id;
 			},
+		];
+	}
+
+	/**
+	 * Plans the values of a post that does not exist yet — `create()`'s new
+	 * post, `Translator`'s copy — with the update path's checks, in creating
+	 * mode: no target id, nothing has a "from". Writes nothing.
+	 *
+	 * A copy (`$copy`) starts from the source's content: without `blocks` it
+	 * is taken as it is, with them the named fields replace the source's
+	 * (the unnamed ones stay raw); either way the preview lists every block
+	 * of the result, `blocks[i]` from null.
+	 *
+	 * @param object               $stub    The new post: `post_type`, and `post_content` a copy starts from.
+	 * @param array<string, mixed> $changes By field of `FIELDS`.
+	 * @return array{postarr: array<string, mixed>, terms: array<string, list<int>>, fields: array<string, mixed>}|\WP_Error
+	 */
+	public function plan_new( object $stub, array $changes, ?string $lang, Diff $diff, bool $copy = false ) {
+		$changes = array_intersect_key( $changes, array_flip( self::FIELDS ) );
+		$postarr = [];
+		$terms   = [];
+		$fields  = [];
+
+		$this->creating = true;
+		try {
+			$planned = $this->post_fields( $stub, $changes, $lang, $diff, $postarr );
+			if ( is_wp_error( $planned ) ) {
+				return $planned;
+			}
+
+			if ( array_key_exists( 'terms', $changes ) ) {
+				$terms = $this->terms( $stub, (array) $changes['terms'], $lang, $diff );
+				if ( is_wp_error( $terms ) ) {
+					return $terms;
+				}
+			}
+
+			if ( [] !== (array) ( $changes['acf'] ?? [] ) ) {
+				$fields = $this->acf_fields( $stub, (array) $changes['acf'], $lang, $diff );
+				if ( is_wp_error( $fields ) ) {
+					return $fields;
+				}
+			}
+
+			if ( $copy ) {
+				$content = (string) $stub->post_content;
+				if ( array_key_exists( 'blocks', $changes ) ) {
+					$content = $this->blocks( $stub, $changes['blocks'], $lang, new Diff() );
+					if ( is_wp_error( $content ) ) {
+						return $content;
+					}
+				}
+				foreach ( $this->reader->blocks( $content ) as $i => $block ) {
+					$diff->add( null, $lang, "blocks[{$i}]", null, $block );
+				}
+				$postarr['post_content'] = $content;
+			} elseif ( array_key_exists( 'blocks', $changes ) ) {
+				$content = $this->blocks( $stub, $changes['blocks'], $lang, $diff );
+				if ( is_wp_error( $content ) ) {
+					return $content;
+				}
+				$postarr['post_content'] = $content;
+			}
+		} finally {
+			$this->creating = false;
+		}
+
+		return [
+			'postarr' => $postarr,
+			'terms'   => $terms,
+			'fields'  => $fields,
 		];
 	}
 

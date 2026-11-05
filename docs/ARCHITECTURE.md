@@ -192,7 +192,12 @@ this session → PHP-only dump of the whole database
 to `DOVIRA_MCP_DUMP_DIR` as a new timestamped `.sql.gz` (a failure aborts the
 write) → the write through WordPress's own functions (`wp_insert_post`,
 `update_field`, `wp_set_object_terms`, `wp_trash_post`, Polylang's linking) as
-the connected user → `{written, dump, warnings}`. Reads issue no token and no
+the connected user → `{written, dump, warnings}`. A Russian copy
+(`create-translation`) is one more such write: the copy is inserted as the
+connected user from the Ukrainian source's values overlaid by the Russian
+texts the agent wrote, set to `ru` and linked with
+`pll_save_post_translations()` — the calls `wp dovira translate` makes, with
+the text from the chat instead of a server-side API. Reads issue no token and no
 dump. No write ability exists for `conversation`, `application`,
 `questionary`; `trash-post` needs `manage_options`. Details in
 `docs/features/content-mcp/FEATURE.md`.

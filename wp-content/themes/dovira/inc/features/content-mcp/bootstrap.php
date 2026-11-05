@@ -39,6 +39,8 @@ require_once __DIR__ . '/WriteAbility.php';
 require_once __DIR__ . '/UpdatePriceRow.php';
 require_once __DIR__ . '/UpdatePost.php';
 require_once __DIR__ . '/CreatePost.php';
+require_once __DIR__ . '/Translator.php';
+require_once __DIR__ . '/CreateTranslation.php';
 require_once __DIR__ . '/TrashPost.php';
 require_once __DIR__ . '/TermWriter.php';
 require_once __DIR__ . '/CreateTerm.php';

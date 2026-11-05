@@ -40,18 +40,19 @@ final class Abilities {
 	 */
 	public static function definitions(): array {
 		return [
-			DescribeSite::NAME   => DescribeSite::args(),
-			ListPosts::NAME      => ListPosts::args(),
-			GetPost::NAME        => GetPost::args(),
-			FindPriceRows::NAME  => FindPriceRows::args(),
-			ListTerms::NAME      => ListTerms::args(),
-			ListMedia::NAME      => ListMedia::args(),
-			UpdatePriceRow::NAME => UpdatePriceRow::args(),
-			UpdatePost::NAME     => UpdatePost::args(),
-			CreatePost::NAME     => CreatePost::args(),
-			TrashPost::NAME      => TrashPost::args(),
-			CreateTerm::NAME     => CreateTerm::args(),
-			UpdateTerm::NAME     => UpdateTerm::args(),
+			DescribeSite::NAME      => DescribeSite::args(),
+			ListPosts::NAME         => ListPosts::args(),
+			GetPost::NAME           => GetPost::args(),
+			FindPriceRows::NAME     => FindPriceRows::args(),
+			ListTerms::NAME         => ListTerms::args(),
+			ListMedia::NAME         => ListMedia::args(),
+			UpdatePriceRow::NAME    => UpdatePriceRow::args(),
+			UpdatePost::NAME        => UpdatePost::args(),
+			CreatePost::NAME        => CreatePost::args(),
+			CreateTranslation::NAME => CreateTranslation::args(),
+			TrashPost::NAME         => TrashPost::args(),
+			CreateTerm::NAME        => CreateTerm::args(),
+			UpdateTerm::NAME        => UpdateTerm::args(),
 		];
 	}
 }

@@ -385,6 +385,18 @@ term; `city_prices` is never written. `create-term` inserts a `category` /
 `update-term` uses `wp_update_term`. No `service-city` term is ever
 written.
 
+`create-translation` inserts the Russian copy of a Ukrainian post with
+`wp_insert_post` (author = the connected user; `page_template`,
+`_thumbnail_id` for `page` / `post`, and the source's `post_date` /
+`post_date_gmt` as arguments), sets it to `ru` (`pll_set_post_language`) and
+links it to the source and its other translations
+(`pll_save_post_translations`). Its ACF fields are written with
+`update_field` by field key: the payload's translated values, and the
+source's raw values (`get_field_objects( id, false )`) for the rest — a
+service's price rows as stored, with only `title` / `description` replaced.
+Its terms are the source's mapped to their `ru` terms (`pll_get_term`),
+`service-city` by the same id.
+
 ### Reading `service` prices
 The connector stores nothing to read prices. It reads a row's price in this
 install's city by the rule of `single-service.php`:
