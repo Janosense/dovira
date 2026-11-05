@@ -110,6 +110,7 @@ the file hierarchy.
 | ga-telegram-bridge | `docs/features/ga-telegram-bridge/` | `wp-content/plugins/ga-telegram-bridge/` (standalone plugin, own `CLAUDE.md`) |
 | search-stats | `docs/features/search-stats/` | `wp-content/themes/dovira/inc/features/search-stats/` (theme feature; JS in `source/scripts/features/search-stats/`, tests in `tests/Unit/SearchStats/`) |
 | city-popup | `docs/features/city-popup/` | `wp-content/themes/dovira/inc/features/city-popup/` (theme feature; JS in `source/scripts/features/city-popup/`, styles in `source/styles/features/city-popup/`, tests in `tests/Unit/CityPopup/` and `tests/js/city-popup/`) |
+| content-mcp | `docs/features/content-mcp/` | `wp-content/themes/dovira/inc/features/content-mcp/` (theme feature; tests in `tests/Unit/ContentMcp/`; transport = third-party plugin `wp-content/plugins/mcp-adapter/`) |
 
 ## Commands
 ```bash

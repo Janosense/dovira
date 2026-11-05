@@ -1,0 +1,37 @@
+# Feature — content-mcp
+
+<!-- playbook: v1.25. Lightweight ARCHITECTURE + DATA-MODEL for one
+     feature. Lives at docs/features/content-mcp/FEATURE.md next to its
+     sprints/. Root ARCHITECTURE.md holds only one row + a link here.
+     Keep ≤80 lines. -->
+
+## Purpose & scope
+An MCP connector to each city install (Kharkiv `dovira.vet`, Kyiv `kyiv.dovira.vet` — two connections, two databases) through which the owner, the content manager and the developer manage the site's content from Claude (claude.ai web connector, Claude Desktop) in natural language: read every post type, change prices, add pages and blog posts (Kharkiv only), upload images, create and edit blog categories and tags. Every connector user is a real WP user connecting with their own application password; administrators and editors have the same content scope, and only administrators may delete (to the WordPress trash). Every write, in every language, is previewed and happens only with a confirmation token the preview issued; inside the first confirmed write of a session the connector dumps the database into a web-closed folder — a new timestamped file every time. The Russian copy of a changed Ukrainian post is updated in the same session under the same rule.
+OUT of scope: site settings (WP options, the ACF options page «Налаштування»), users, plugins, themes; writing to `conversation`, `application`, `questionary` (read-only — status stays with the admin and Dovira Bridge); permanent deletion; roll-back as a connector action; one connector for both cities; a Kyiv blog; translating on the server.
+
+## Fit into the host
+- **Code location:** `wp-content/themes/dovira/inc/features/content-mcp/` (namespace `dovira\ContentMcp`; tests in `tests/Unit/ContentMcp/`); the plugin `wp-content/plugins/mcp-adapter/` (third-party, committed) is its transport
+- **Host area:** theme `dovira` — obeys its `CLAUDE.md` isolation rules
+- **Entry point:** `inc/features/content-mcp/bootstrap.php`, required by one line in `functions.php`; registers abilities on `wp_abilities_api_init` and the server on `mcp_adapter_init`
+- **Shared code it depends on:** the registered post types (`inc/post-types/*.php`) and taxonomy; the ACF local field groups and block definitions (`inc/acf/**`) it introspects — read only, never changed by this feature; Polylang (`pll_get_post`, `pll_set_post_language`, `pll_save_post_translations`); `wp-config.php` constant `DOVIRA_MCP_DUMP_DIR`
+
+## Data
+Owns no table and no post type. Owns: the transients `dovira_mcp_confirm_{hash}` (a pending confirmation: user, session, payload hash; 15 min) and `dovira_mcp_dumped_{session}` (24 h); the dump files `dovira-{host}-{YYYY-MM-DD}-{HHMMSS}.sql.gz` in `DOVIRA_MCP_DUMP_DIR` (fallback `wp-content/backup-db/`, with the `.htaccess` and `index.php` it writes there); the daily cron hook `dovira_mcp_dump_retention` and the filter `dovira_mcp_dump_retention_days` (default 90); the server's sessions are the adapter's (user meta). It writes posts, postmeta (through ACF), terms and attachments that belong to `core` — as the connected user, through the same functions the admin uses (details in `docs/DATA-MODEL.md` → Feature `content-mcp`).
+
+## Invariants
+- No write without a valid confirmation token for this payload, user and session; a read never issues one.
+- No write before the session's dump exists; a failed dump aborts the write with an error. A dump file is never overwritten or renamed.
+- The server exposes only `dovira/*` abilities; no write ability exists for `conversation`, `application`, `questionary`; `service-city` terms and the options page are never written; `trash-post` requires `manage_options`.
+- ACF values go through `update_field()`, never raw postmeta; price rows are written only by `update-price-row`, which never changes `is_price_general` or the `cities` checklist.
+- The Russian copy is written only when the person confirmed its diff; a price mirrors only into a copy with the same number of rows, otherwise the result carries a warning.
+- No URL literal of either install; the city comes from the site URL (root invariant 4). No secret in code: authentication is WordPress's own.
+
+## Interfaces
+- **MCP server** `https://{host}/wp-json/mcp/dovira` (Streamable HTTP, the adapter's sessions); `instructions`: call `describe-site` first, preview every write, show the diff, write only after consent, Ukrainian is the source and the Russian copy follows.
+- **Abilities** (also REST `wp-abilities/v1/abilities/dovira/*` and `wp mcp-adapter serve --server=dovira`): read — `describe-site`, `list-posts`, `get-post`, `find-price-rows`, `list-terms`, `list-media`; write — `update-price-row`, `update-post`, `create-post`, `create-translation`, `upload-media`, `create-term`, `update-term`, `trash-post`.
+- **Result shapes:** a post = `{id, type, status, lang, translations:{uk,ru}, title, slug, parent, link, terms:{taxonomy:[{id,name}]}, acf:{…by field name; repeater → [{…}], image → {id,url,alt}, post_object → {id,title}}, blocks:[{block, fields}] (page) | content_html (post)}`; a price row = `{service:{id,title}, row_index, title, description, price, per_city}`; a preview = `{diff:[{target:{id,lang}, field, from, to}], warnings:[…], confirmation}`; a write = `{written:[…ids], dump:{file|"existing"}, warnings}`. Changing these shapes = touches this feature's interface.
+- **Filters/hooks:** `dovira_mcp_dump_retention_days`; cron `dovira_mcp_dump_retention`.
+
+## Roadmap
+- Sprint 1 — Read everything and change a price from Claude: the connector is reachable from claude.ai on `dev.dovira.vet`, lists and shows every post type with structured ACF, blocks and translations, and changes a price row after a preview, with the session's dump taken first; existing posts are edited and trashed (administrators) under the same protocol (`sprints/SPRINT-1.md`)
+- Sprint 2 — Create content: pages from blocks, blog posts, services, employees and vacancies with ACF; Russian copies linked through Polylang; images uploaded and attached; blog terms created and edited; the production checklist for both installs (`sprints/SPRINT-2.md`)

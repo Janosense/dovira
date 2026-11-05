@@ -40,6 +40,7 @@ mu-plugins. Content is bilingual (uk source, ru translation) via Polylang.
 | `ga-telegram-bridge` | plugin `wp-content/plugins/ga-telegram-bridge/` (own `CLAUDE.md`) | `docs/features/ga-telegram-bridge/FEATURE.md` |
 | `search-stats` | theme feature `wp-content/themes/dovira/inc/features/search-stats/` (+ `source/scripts/features/search-stats/`) | `docs/features/search-stats/FEATURE.md` |
 | `city-popup` | theme feature `wp-content/themes/dovira/inc/features/city-popup/` (+ `source/scripts/features/city-popup/`, `source/styles/features/city-popup/`) | `docs/features/city-popup/FEATURE.md` |
+| `content-mcp` | theme feature `wp-content/themes/dovira/inc/features/content-mcp/` (tests in `tests/Unit/ContentMcp/`); transport: the third-party plugin `wp-content/plugins/mcp-adapter/` | `docs/features/content-mcp/FEATURE.md` |
 
 A new feature inside the theme goes into
 `wp-content/themes/dovira/inc/features/{name}/` with one registration line in
@@ -175,6 +176,24 @@ what would otherwise be shown as a 404 page falls back. A 404 without the
 marker, or outside the service base, stays a 404. No PHP reads either
 cookie, so every URL returns the same HTML to every visitor and crawler.
 
+**Connector write → dump → write (feature `content-mcp`; invariants 7, 8 —
+FIXED, do not deviate).** A person's Claude calls a write ability of the
+`dovira` MCP server (`/wp-json/mcp/dovira`, plugin `mcp-adapter`,
+authenticated as that person's WP user by application password) **without**
+`confirmation` → the ability validates the payload, computes the diff (every
+target post and language, field, from, to; warnings) and stores a confirmation
+token bound to the user, the `Mcp-Session-Id` and the payload hash (transient,
+15 min) → the agent shows the diff and waits for consent → the same call
+**with** `confirmation` → token verified and consumed → `Dump::ensure(
+session )`: no dump yet for this session → PHP-only dump of the whole database
+to `DOVIRA_MCP_DUMP_DIR` as a new timestamped `.sql.gz` (a failure aborts the
+write) → the write through WordPress's own functions (`wp_insert_post`,
+`update_field`, `wp_set_object_terms`, `wp_trash_post`, Polylang's linking) as
+the connected user → `{written, dump, warnings}`. Reads issue no token and no
+dump. No write ability exists for `conversation`, `application`,
+`questionary`; `trash-post` needs `manage_options`. Details in
+`docs/features/content-mcp/FEATURE.md`.
+
 **Telegram join.** Bot webhook → `handle-updates` appends the raw update to option
 `telegram_webhook_data`; `/start|/join` asks for a password; the password message
 stores the chat id in `telegram_bot_chats`; `/reset` removes it. **Dormant:** the
@@ -246,6 +265,7 @@ cross-site switcher; content differs per install (separate DBs), code is shared.
 | Google Tag Manager / GA4 | analytics; ids differ per install (`master`: GTM-53M4V7M5 + G-HKYZFG0E2W; `kyiv`: G-Q597WTF16L only) | inline in `header.php` | — |
 | Google Fonts | Inter, Oswald, Raleway (`header.php`); Open Sans self-hosted | — | — |
 | Yoast SEO | meta; one-off import via `temp-data/yoast-import.php` | — | see `temp-data/README.md` |
+| MCP clients — claude.ai, Claude Desktop (feature `content-mcp`) | the content connector: each person's Claude calls the `dovira` MCP server over Streamable HTTP; the server is the plugin `mcp-adapter`, the tools are the feature's abilities | the person's own WordPress application password as a fixed `Authorization: Basic` request header of their custom connector; no OAuth, no shared secret (DECISIONS "Each person connects with an application password of their own WordPress user") | a request without a valid password is 401 at the server gate; a write without a valid confirmation token, or whose session dump fails, writes nothing and returns an error |
 
 ## Environments & deploy
 | Env | URL | Source | How |
@@ -260,6 +280,21 @@ file sync, no build step on the server. The deployment branches are published
 on GitHub as their deploy remotes: local `master` as `origin/main` — the remote
 has no `master` — and local `kyiv` as `origin/kyiv` (DECISIONS "`origin/main` is
 the deploy remote").
+
+**Content connector per install (feature `content-mcp`).** The code is the
+same everywhere; each install is its own connector URL
+(`https://{host}/wp-json/mcp/dovira`) with its own database and its own three
+application passwords. Before the first session an install needs: the plugin
+`mcp-adapter` activated; `DOVIRA_MCP_DUMP_DIR` `define()`d in its
+`wp-config.php` naming a writable folder outside the webroot (unset → the
+feature uses `wp-content/backup-db/` and writes an `.htaccess` deny and an
+`index.php` there — Apache/LiteSpeed only); the daily event
+`dovira_mcp_dump_retention` (registered on `init` when absent; filter
+`dovira_mcp_dump_retention_days`, default 90). Steps of the feature are verified
+on `dev.dovira.vet` after the user's push to `dev`, because claude.ai calls the
+connector from Anthropic's cloud (DECISIONS "The connector is verified on
+`dev.dovira.vet`"). The per-install checklist is
+`docs/features/content-mcp/PRODUCTION-CHECKLIST.md`.
 
 **Theme Telegram bot per install.** `DOVIRA_TELEGRAM_BOT_TOKEN` and
 `DOVIRA_TELEGRAM_JOIN_PASSWORD` are `define()`d in each install's own
