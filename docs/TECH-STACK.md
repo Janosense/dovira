@@ -187,6 +187,13 @@ changes) — DECISIONS "Testing tooling and the project check command".
   feature's whole surface, and every tool on it carries the write protocol
   (DECISIONS 2026-11-05 — The content connector is the official MCP Adapter
   serving Dovira abilities registered by a theme feature).
+  - So a `dovira/*` ability never sets `meta.public: true`. The adapter reads
+    `meta.public` as the default of `meta.mcp.public`, and that flag is what
+    lets its default server discover and execute an ability.
+  - Every one carries `meta.mcp.public: false` and `meta.show_in_rest: true`
+    instead (`DescribeSite::args()`).
+  - The `dovira` server lists abilities by name from `Catalogue::TOOLS` and
+    ignores the flag (content-mcp Sprint 1 Step 1).
 
 ## CONVENTIONS (mandatory reading before writing code)
 <!-- Project-wide rules for code that later steps must follow and would

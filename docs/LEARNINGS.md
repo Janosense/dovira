@@ -24,6 +24,11 @@ Entry format:
 
 ---
 
+## [new] 2026-11-05 — A step task that needs the user's run on a remote host mid-`/do-step` has no rule
+- **Playbook rule:** `.claude/commands/do-step.md` → "Scope is frozen" / "One task → working state → commit"; `.claude/commands/plan-step.md` → §5 "creates an artefact the check command cannot execute".
+- **What happened:** content-mcp Sprint 1 Step 1's spike had to measure the dump on the shared host, which the agent cannot reach. The plan made it a do-step task paused for the user's SSH run (asked during planning), and the user first asked whether to deploy or use DDEV. Neither command says how a task waits for a user-run measurement. The "Not locally verifiable" rule covers only deploy-type artefacts verified after the step.
+- **Suggested change:** Add to plan-step §5 a case for a measurement only the user can run on a remote host: either a do-step task that names the exact command and stops for the output, or a verification item whose result `/close-step` records.
+
 ## [new] 2026-10-20 — /adhoc's "touches schema" does not say whether a new wp_options row counts
 - **Playbook rule:** `.claude/commands/adhoc.md` → step 1, "too large for an ad-hoc (touches schema, …): STOP".
 - **What happened:** The Telegram thread ad-hoc needed one new `wp_options` row (`telegram_bot_chat_threads`): no table, no migration, but a `docs/DATA-MODEL.md` entry. The agent treated it as not "schema", following the 2026-10-20 plugin ad-hoc that added a settings key, said so in the mini-plan, and the user approved it. The rule leaves that call to the agent.

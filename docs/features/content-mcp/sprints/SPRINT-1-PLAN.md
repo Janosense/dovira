@@ -3,7 +3,7 @@
 <!-- Written by /plan-step, one section per step. Approval of a section
      authorizes that step only. -->
 
-## Plan — Sprint 1, Step 1: Delta-audit, the adapter in the repo, and the spike: a tool in claude.ai and a dump on the host   (status: implemented, awaiting verification)
+## Plan — Sprint 1, Step 1: Delta-audit, the adapter in the repo, and the spike: a tool in claude.ai and a dump on the host   (status: closed)
 
 ### Branch
 `content-mcp/sprint-1-read-and-price` ← `master`
