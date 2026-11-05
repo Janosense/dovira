@@ -23,7 +23,7 @@ foreach ( [ 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools' ] as $dovira_c
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/DescribeSite.php';
-foreach ( [ 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows', 'Session', 'Confirmation', 'Diff', 'Dump', 'PriceRows', 'FieldInput', 'PostWriter', 'WriteAbility', 'UpdatePriceRow', 'UpdatePost' ] as $dovira_class ) {
+foreach ( [ 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows', 'Session', 'Confirmation', 'Diff', 'Dump', 'PriceRows', 'FieldInput', 'PostWriter', 'WriteAbility', 'UpdatePriceRow', 'UpdatePost', 'TrashPost' ] as $dovira_class ) {
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 require_once dirname( __DIR__, 3 ) . '/inc/features/content-mcp/Abilities.php';
@@ -84,7 +84,7 @@ final class ServerTest extends TestCase {
 
 	public function test_the_catalogue_reads_finds_prices_and_changes_a_price_row(): void {
 		$this->assertSame(
-			[ 'dovira/describe-site', 'dovira/list-posts', 'dovira/get-post', 'dovira/find-price-rows', 'dovira/list-terms', 'dovira/list-media', 'dovira/update-price-row', 'dovira/update-post' ],
+			[ 'dovira/describe-site', 'dovira/list-posts', 'dovira/get-post', 'dovira/find-price-rows', 'dovira/list-terms', 'dovira/list-media', 'dovira/update-price-row', 'dovira/update-post', 'dovira/trash-post' ],
 			Catalogue::TOOLS
 		);
 		$this->assertSame( Catalogue::TOOLS, array_keys( Abilities::definitions() ) );
@@ -96,6 +96,8 @@ final class ServerTest extends TestCase {
 		$this->assertStringContainsString( 'dovira-update-price-row', Server::INSTRUCTIONS );
 		$this->assertStringContainsString( 'without "confirmation"', Server::INSTRUCTIONS );
 		$this->assertStringContainsString( 'Russian copy', Server::INSTRUCTIONS );
+		$this->assertStringContainsString( 'dovira-update-post', Server::INSTRUCTIONS );
+		$this->assertStringContainsString( 'dovira-trash-post: administrators only', Server::INSTRUCTIONS );
 	}
 
 	public function test_the_server_lists_exactly_the_catalogue_on_mcp_dovira_behind_the_adapters_gate(): void {

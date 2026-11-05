@@ -421,7 +421,7 @@ Entry format:
   - `title` / `description` change only the copy the call names; the Russian row's text is a separate call on the Russian copy's id, previewed under the same rule.
   - A `price` on a Russian copy is refused (`dovira_price_in_source`).
 - **Alternatives rejected:** Mirroring text as well, which would put Ukrainian text into the Russian page (root invariant 7). Letting a Russian copy's price be changed on its own, which would let the two copies' prices drift apart.
-- **Consequences:** FEATURE.md → Interfaces (`update-price-row`); Step 4's `update-post` follows the same split: values the copies share follow, text never does.
+- **Consequences:** FEATURE.md → Interfaces (`update-price-row`); `update-post` writes a Russian copy only when the payload names it as `translation`; nothing follows on its own (corrected at Sprint 1 Step 4, whose step text says so).
 
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
 1. **Telegram bot token and join password are string literals in code**

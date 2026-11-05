@@ -442,6 +442,16 @@ final class PostWriter {
 			$keyed[ (string) $by_name[ (string) $field ]['key'] ] = $value;
 		}
 
+		// In the order of the block's fields, as ACF itself saves them.
+		$ordered = [];
+		foreach ( $by_name as $definition ) {
+			$key = (string) $definition['key'];
+			if ( array_key_exists( $key, $keyed ) ) {
+				$ordered[ $key ] = $keyed[ $key ];
+			}
+		}
+		$keyed = $ordered;
+
 		$block_id = 'block_dovira_mcp_' . md5( $name . (string) wp_json_encode( $keyed ) );
 		try {
 			$data = [] === $keyed ? [] : (array) acf_setup_meta( $keyed, $block_id, true );

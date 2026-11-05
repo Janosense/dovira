@@ -1084,7 +1084,7 @@ none
   - `preview` plans every target with `PostWriter`; `write` applies them,
     Ukrainian first. Result `{written, dump, warnings}`.
   - `Catalogue::TOOLS`, `Abilities`, `bootstrap.php`.
-- [ ] **4. `dovira/trash-post`, and the server instructions.** Commit:
+- [x] **4. `dovira/trash-post`, and the server instructions.** Commit:
   `feat(content-mcp): trash-post for administrators`.
   - `TrashPost extends WriteAbility`.
     - **Input:** `{id, translation_id?, confirmation?}`.

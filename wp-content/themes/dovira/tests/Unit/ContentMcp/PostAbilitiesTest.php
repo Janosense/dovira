@@ -12,10 +12,11 @@ use Brain\Monkey\Functions;
 use dovira\ContentMcp\PostReader;
 use dovira\ContentMcp\PostWriter;
 use dovira\ContentMcp\Session;
+use dovira\ContentMcp\TrashPost;
 use dovira\ContentMcp\UpdatePost;
 use dovira\Tests\TestCase;
 
-foreach ( [ 'Catalogue', 'Server', 'Scope', 'Session', 'Confirmation', 'Diff', 'Dump', 'DescribeSite', 'FieldValues', 'FieldInput', 'CityPrice', 'PostReader', 'PostWriter', 'WriteAbility', 'UpdatePost' ] as $dovira_class ) {
+foreach ( [ 'Catalogue', 'Server', 'Scope', 'Session', 'Confirmation', 'Diff', 'Dump', 'DescribeSite', 'FieldValues', 'FieldInput', 'CityPrice', 'PostReader', 'PostWriter', 'WriteAbility', 'UpdatePost', 'TrashPost' ] as $dovira_class ) {
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 
@@ -154,6 +155,83 @@ final class PostAbilitiesTest extends TestCase {
 		$this->assertArrayHasKey( 'confirmation', $args['input_schema']['properties'] );
 		$this->assertArrayHasKey( 'blocks', $args['input_schema']['properties']['translation']['properties'] );
 		$this->assertArrayNotHasKey( 'content_html', $args['input_schema']['properties'] );
+	}
+
+	public function test_trash_post_needs_manage_options_and_delete_post(): void {
+		$this->assertTrue( TrashPost::can( [ 'id' => self::UK, 'translation_id' => self::RU ] ) );
+
+		$this->caps = [ 'edit_post', 'delete_post' ];
+		$this->assertFalse( TrashPost::can( [ 'id' => self::UK ] ), 'an editor' );
+
+		$this->caps = [ 'manage_options' ];
+		$this->assertFalse( TrashPost::can( [ 'id' => self::UK ] ) );
+	}
+
+	public function test_trash_post_previews_the_post_and_warns_that_the_translation_stays(): void {
+		Functions\expect( 'wp_trash_post' )->never();
+
+		$result = $this->trash()->run( [ 'id' => self::UK ] );
+
+		$this->assertSame( [ [ 'target' => [ 'id' => self::UK, 'lang' => 'uk' ], 'field' => 'status', 'from' => 'publish', 'to' => 'trash' ] ], $result['diff'] );
+		$this->assertStringContainsString( (string) self::RU, $result['warnings'][0] );
+		$this->assertIsString( $result['confirmation'] );
+	}
+
+	public function test_trash_post_moves_to_the_trash_and_never_deletes(): void {
+		Functions\expect( 'wp_delete_post' )->never();
+		Functions\when( 'wp_trash_post' )->alias(
+			function ( int $id ) {
+				$this->events[] = "trash:{$id}";
+				return self::post( $id, 'page', 'trash' );
+			}
+		);
+
+		$input  = [ 'id' => self::UK, 'translation_id' => self::RU ];
+		$token  = $this->trash()->run( $input )['confirmation'];
+		$result = $this->trash()->run( $input + [ 'confirmation' => $token ] );
+
+		$this->assertSame( [ self::UK, self::RU ], $result['written'] );
+		$this->assertSame( [], $result['warnings'] );
+		$this->assertSame( [ 'dump', 'trash:' . self::UK, 'trash:' . self::RU ], $this->events );
+	}
+
+	/**
+	 * @return array<string, array{array<string, int>, string}>
+	 */
+	public static function refused_trash(): array {
+		return [
+			'a record'            => [ [ 'id' => 900 ], 'dovira_read_only_type' ],
+			'already in the trash' => [ [ 'id' => 960 ], 'dovira_post_in_trash' ],
+			'not its translation' => [ [ 'id' => self::UK, 'translation_id' => 5 ], 'dovira_not_a_translation' ],
+			'a missing post'      => [ [ 'id' => 404 ], 'dovira_post_not_found' ],
+		];
+	}
+
+	/**
+	 * @param array<string, int> $input
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider( 'refused_trash' )]
+	public function test_trash_post_refuses_before_any_token( array $input, string $code ): void {
+		$this->assertSame( $code, $this->trash()->run( $input )->get_error_code() );
+		$this->assertSame( [], $this->transients );
+	}
+
+	public function test_trash_post_is_a_write(): void {
+		$args = TrashPost::args();
+
+		$this->assertFalse( $args['meta']['annotations']['readonly'] );
+		$this->assertTrue( $args['meta']['annotations']['destructive'] );
+		$this->assertArrayHasKey( 'confirmation', $args['input_schema']['properties'] );
+	}
+
+	private function trash(): TrashPost {
+		return new TrashPost(
+			function ( string $session ): string {
+				$this->events[] = 'dump';
+				return 'dovira-x-2026-11-05-101500.sql.gz';
+			},
+			true
+		);
 	}
 
 	private function update(): UpdatePost {

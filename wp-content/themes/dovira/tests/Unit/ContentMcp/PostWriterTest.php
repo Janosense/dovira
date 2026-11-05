@@ -294,6 +294,7 @@ final class PostWriterTest extends TestCase {
 		$this->assertSame( 'Старий текст', $block['attrs']['data']['text'], 'an unnamed field keeps its stored value, unformatted' );
 		$this->assertSame( 'Вітаємо', $block['attrs']['data']['heading'] );
 		$this->assertSame( 'field_hero_heading', $block['attrs']['data']['_heading'] );
+		$this->assertSame( [ 'heading', '_heading', 'text', '_text' ], array_keys( $block['attrs']['data'] ), 'in the order of the block\'s fields' );
 		$this->assertSame( [ 'edit', 'full', 'acf/hero' ], [ $block['attrs']['mode'], $block['attrs']['align'], $block['attrs']['name'] ] );
 
 		$read = ( new PostReader( true, false ) )->blocks( $content );
