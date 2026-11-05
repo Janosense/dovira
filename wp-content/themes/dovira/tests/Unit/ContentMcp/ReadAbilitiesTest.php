@@ -17,11 +17,12 @@ use dovira\ContentMcp\ListTerms;
 use dovira\ContentMcp\PostReader;
 use dovira\ContentMcp\ReadTools;
 use dovira\ContentMcp\Scope;
+use dovira\ContentMcp\UpdatePost;
 use dovira\ContentMcp\UpdatePriceRow;
 use dovira\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-foreach ( [ 'Catalogue', 'Scope', 'Schema', 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools', 'DescribeSite', 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows', 'Server', 'Session', 'Confirmation', 'Diff', 'Dump', 'PriceRows', 'WriteAbility', 'UpdatePriceRow', 'Abilities' ] as $dovira_class ) {
+foreach ( [ 'Catalogue', 'Scope', 'Schema', 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools', 'DescribeSite', 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows', 'Server', 'Session', 'Confirmation', 'Diff', 'Dump', 'PriceRows', 'FieldInput', 'PostWriter', 'WriteAbility', 'UpdatePriceRow', 'UpdatePost', 'Abilities' ] as $dovira_class ) {
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 
@@ -256,7 +257,7 @@ final class ReadAbilitiesTest extends TestCase {
 	}
 
 	public function test_every_catalogued_read_ability_is_readonly_with_an_output_schema(): void {
-		foreach ( array_diff_key( Abilities::definitions(), [ UpdatePriceRow::NAME => true ] ) as $name => $args ) {
+		foreach ( array_diff_key( Abilities::definitions(), array_flip( [ UpdatePriceRow::NAME, UpdatePost::NAME ] ) ) as $name => $args ) {
 			$this->assertTrue( $args['meta']['annotations']['readonly'], $name );
 			$this->assertFalse( $args['meta']['mcp']['public'], $name );
 			$this->assertNotEmpty( $args['output_schema'], $name );

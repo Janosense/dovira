@@ -1067,7 +1067,7 @@ none
     which applies `post_name` uniqueness and the post's own hooks. **Terms**
     go through `wp_set_object_terms`. **ACF** goes through `update_field`.
     A `WP_Error` from any of them is returned.
-- [ ] **3. `dovira/update-post`.** Commit: `feat(content-mcp): update-post
+- [x] **3. `dovira/update-post`.** Commit: `feat(content-mcp): update-post
   behind preview, token and dump`.
   - `UpdatePost extends WriteAbility`.
   - **Input:** `{id, title?, status?, slug?, parent?, menu_order?, terms?,
