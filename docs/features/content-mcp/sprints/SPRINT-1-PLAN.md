@@ -591,7 +591,7 @@ PHPUnit with Brain\Monkey. ACF (`acf_get_local_field_groups`,
 - `list-terms` returns the slug as WordPress stores it; the Ukrainian category slug is percent-encoded.
 - For Step 4: ACF block data is flattened on save. Writing blocks back will go through ACF's own flattening, the reverse of `acf_setup_meta`.
 
-## Plan — Sprint 1, Step 3: The write protocol: confirmation tokens, the session dump, and the price change   (status: implemented, awaiting verification)
+## Plan — Sprint 1, Step 3: The write protocol: confirmation tokens, the session dump, and the price change   (status: closed)
 
 ### Branch
 `content-mcp/sprint-1-read-and-price` ← `master`. The branch is recreated from

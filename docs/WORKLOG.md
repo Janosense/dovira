@@ -22,6 +22,23 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-05 — [content-mcp] Sprint 1 Step 3 — The write protocol: confirmation tokens, the session dump, and the price change
+- Changed:
+  - The write protocol (`WriteAbility`): preview `{diff, warnings, confirmation}`, then the same payload with the token → `Dump::ensure()` → write `{written, dump, warnings}`. A token is bound to user, session and payload and works once (`Confirmation`, 15 min, stored hashed).
+  - `Session` reads `Mcp-Session-Id` from the `/mcp/dovira` request, because the adapter doesn't pass it to abilities.
+  - `Dump`: a PHP-only gz dump into `DOVIRA_MCP_DUMP_DIR` (fallback `wp-content/backup-db/` + `.htaccess`), `0600`, a suffix instead of overwriting, a duration/memory footer; daily 90-day retention.
+  - New tools `find-price-rows` and `update-price-row` (`PriceRows`). The price goes into the row's own city column and follows into the Russian row of the same index. Theme PHPUnit 311.
+- Shared code: none.
+- Decisions:
+  - DECISIONS "Only a row's price follows into the Russian copy, and a price is changed only in the Ukrainian copy".
+  - TECH-STACK CONVENTIONS: every write ability extends `WriteAbility`; the session comes only from `Session::id()`.
+  - LEARNINGS: values a guide asks the user to report have no way into `/close-step`.
+- Open:
+  - Not reported at the close: the dump footer from dev (web-request seconds and memory), and the HTTP status of the fallback folder behind dev's nginx. `PRODUCTION-CHECKLIST.md` → B keeps its "filled from the Step 3 verification" row until they are reported.
+  - `_to_delete/content-mcp-dump-spike.php` can now go (`/adhoc`).
+  - Earlier open items still stand: let `Claude-User` through on production; Kyiv's term slug `kyiv` (per-city writes there are refused without it).
+  - An ACF repeater write stores empty sub-fields of every row, as a save in wp-admin does.
+
 ## 2026-11-05 — [content-mcp] Sprint 1 Step 2 — Reading: describe the site, list and open any post, terms and media
 - Changed:
   - `describe-site` now describes the whole content model (`Scope`, `Schema`): types with their ACF fields, the 21 blocks, and terms capped at 50.
