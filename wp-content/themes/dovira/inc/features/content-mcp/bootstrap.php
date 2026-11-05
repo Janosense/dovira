@@ -29,6 +29,8 @@ require_once __DIR__ . '/ReadTools.php';
 require_once __DIR__ . '/DescribeSite.php';
 require_once __DIR__ . '/ListPosts.php';
 require_once __DIR__ . '/GetPost.php';
+require_once __DIR__ . '/PriceRows.php';
+require_once __DIR__ . '/FindPriceRows.php';
 require_once __DIR__ . '/ListTerms.php';
 require_once __DIR__ . '/ListMedia.php';
 require_once __DIR__ . '/Abilities.php';

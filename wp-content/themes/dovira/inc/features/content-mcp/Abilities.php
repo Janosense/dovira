@@ -40,11 +40,12 @@ final class Abilities {
 	 */
 	public static function definitions(): array {
 		return [
-			DescribeSite::NAME => DescribeSite::args(),
-			ListPosts::NAME    => ListPosts::args(),
-			GetPost::NAME      => GetPost::args(),
-			ListTerms::NAME    => ListTerms::args(),
-			ListMedia::NAME    => ListMedia::args(),
+			DescribeSite::NAME  => DescribeSite::args(),
+			ListPosts::NAME     => ListPosts::args(),
+			GetPost::NAME       => GetPost::args(),
+			FindPriceRows::NAME => FindPriceRows::args(),
+			ListTerms::NAME     => ListTerms::args(),
+			ListMedia::NAME     => ListMedia::args(),
 		];
 	}
 }

@@ -33,7 +33,7 @@ Owns no table and no post type. Owns: the transients `dovira_mcp_confirm_{hash}`
 - **Read access:**
   - Content types (`service`, `employee`, `vacancy`, `page`, `post`) need the type's `edit_posts`, so editors and administrators.
   - Records (`conversation`, `application`, `questionary`) need `edit_others_conversations`, so administrators and the support role, never an editor. It is not `read_post`: core maps that to `read` for a published post.
-  - `list-terms` needs the taxonomy's `assign_terms`; `list-media` needs `upload_files`.
+  - `list-terms` needs the taxonomy's `assign_terms`; `list-media` needs `upload_files`; `find-price-rows` needs `service`'s `edit_posts`.
   - A missing id gets `dovira_post_not_found`; a type outside the scope is refused.
   - Every list is `{items, total, page, per_page}`, with `per_page` ≤ 50 (the schema refuses more).
 - **Result shapes:**
@@ -45,7 +45,7 @@ Owns no table and no post type. Owns: the transients `dovira_mcp_confirm_{hash}`
   - A term = `{id, name, slug, parent, count, lang}`.
   - A media item = `{id, title, url, alt, mime, width, height, date}`.
   - `describe-site` = `{city, languages, user:{login, roles, can_delete}, post_types:[{name, label, hierarchical, translated, read_only, taxonomies, fields}], blocks:[{name, title, fields}], taxonomies:[{name, label, object_types, translated, read_only, terms (≤50), terms_total}]}`. A field there is `{name, label, type, required, choices?, sub_fields?}`, without `message`/`tab`/`accordion`.
-  - A price row = `{service:{id,title}, row_index, title, description, price, per_city}`; a preview = `{diff:[{target:{id,lang}, field, from, to}], warnings:[…], confirmation}`; a write = `{written:[…ids], dump:{file|"existing"}, warnings}`. Changing these shapes = touches this feature's interface.
+  - A price row (`find-price-rows`: rows of the Ukrainian services whose `title` or `description` contains `text`, any case, as a paginated list) = `{service:{id,title}, row_index (from 0), title, description, price (this city's, `null` = none), per_city}`; a preview = `{diff:[{target:{id,lang}, field, from, to}], warnings:[…], confirmation}`; a write = `{written:[…ids], dump:{file|"existing"}, warnings}`. Changing these shapes = touches this feature's interface.
 - **Filters/hooks:** `dovira_mcp_dump_retention_days`; cron `dovira_mcp_dump_retention`.
 
 ## Roadmap

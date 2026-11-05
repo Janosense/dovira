@@ -9,6 +9,7 @@ namespace dovira\Tests\Unit\ContentMcp;
 
 use Brain\Monkey\Functions;
 use dovira\ContentMcp\Abilities;
+use dovira\ContentMcp\FindPriceRows;
 use dovira\ContentMcp\GetPost;
 use dovira\ContentMcp\ListMedia;
 use dovira\ContentMcp\ListPosts;
@@ -19,7 +20,7 @@ use dovira\ContentMcp\Scope;
 use dovira\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-foreach ( [ 'Catalogue', 'Scope', 'Schema', 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools', 'DescribeSite', 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'Abilities' ] as $dovira_class ) {
+foreach ( [ 'Catalogue', 'Scope', 'Schema', 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools', 'DescribeSite', 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows', 'Abilities' ] as $dovira_class ) {
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 
@@ -128,6 +129,14 @@ final class ReadAbilitiesTest extends TestCase {
 
 		$this->assertSame( 18, $read['id'] );
 		$this->assertSame( 'https://dovira.vet/services/t/', $read['link'] );
+	}
+
+	public function test_find_price_rows_needs_the_services_edit_posts(): void {
+		$this->caps = [ 'read' ];
+		$this->assertFalse( FindPriceRows::can() );
+
+		$this->caps = [ 'read', 'edit_pages' ];
+		$this->assertTrue( FindPriceRows::can() );
 	}
 
 	public function test_list_media_needs_upload_files(): void {

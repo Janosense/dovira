@@ -673,7 +673,7 @@ PHPUnit with Brain\Monkey. ACF (`acf_get_local_field_groups`,
       than `max( 1, (int) apply_filters( 'dovira_mcp_dump_retention_days', 90 ) )`
       days.
   - `bootstrap.php`: requires `Dump`, adds both hooks.
-- [ ] **3. `PriceRows` and `dovira/find-price-rows`.** Commit:
+- [x] **3. `PriceRows` and `dovira/find-price-rows`.** Commit:
   `feat(content-mcp): find-price-rows`.
   - `PriceRows` (`dovira\ContentMcp\PriceRows`), constructor
     `( ?bool $polylang = null, ?callable $services = null )`, injected as in
