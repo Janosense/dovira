@@ -591,7 +591,7 @@ PHPUnit with Brain\Monkey. ACF (`acf_get_local_field_groups`,
 - `list-terms` returns the slug as WordPress stores it; the Ukrainian category slug is percent-encoded.
 - For Step 4: ACF block data is flattened on save. Writing blocks back will go through ACF's own flattening, the reverse of `acf_setup_meta`.
 
-## Plan — Sprint 1, Step 3: The write protocol: confirmation tokens, the session dump, and the price change   (status: approved, in progress)
+## Plan — Sprint 1, Step 3: The write protocol: confirmation tokens, the session dump, and the price change   (status: implemented, awaiting verification)
 
 ### Branch
 `content-mcp/sprint-1-read-and-price` ← `master`. The branch is recreated from
@@ -930,3 +930,42 @@ test-critical zone (root `CLAUDE.md`).
 
 ### Questions / ambiguities
 none
+
+### Step report (`/do-step`, 2026-11-05)
+- **Commits** on `content-mcp/sprint-1-read-and-price`:
+  - `38a06ce7` — tokens, `Session`, `Diff`;
+  - `12999701` — `Dump` and retention;
+  - `27daf6cc` — `PriceRows` and `find-price-rows`;
+  - `fa994949` — `WriteAbility` and `update-price-row`;
+  - the guide commit.
+- **Gate:** theme PHPUnit 245 → 311.
+- **Live check on DDEV**, over MCP with `curl`, protocol 2025-11-25, with a
+  temporary administrator and application password (removed afterwards):
+  - `tools/list` returns the seven tools.
+  - **First session:**
+    - The Ендоскопія row 0 (general) preview 2800 → 1234 has lines for uk 60
+      and ru 1646.
+    - A 1235 call with that token is refused.
+    - The write gives `{written:[60,1646], dump:"dovira-dovira.ddev.site-…-181150.sql.gz"}`.
+    - Приймальне відділення row 0 (per-city, Kharkiv column) 550 → 777 writes
+      to 18 and 1641 with `dump:"existing"`.
+    - A price on 1641 is refused.
+    - `get-post` shows 777 in both copies.
+  - **Second session:** the restore took a new dump, then `"existing"`. A
+    no-op preview returns `confirmation: null`.
+  - **The local dump:** 19 tables, 0.25 s, 29.6 MB peak, mode `0600`. The
+    fallback folder got `.htaccess` and `index.php`.
+  - **Postmeta against the pre-write dump:** no value changed, no key was
+    removed. ACF added empty rows for sub-fields that had never been stored
+    (`prices_{i}_price` / `_linked_page` = `''`, +4 per row on Ендоскопія).
+    That is what any save of the repeater in wp-admin does, and the
+    templates read `''` as they read a missing value.
+  - **Cleanup:** the local dumps, the probe transients and the temporary user
+    are removed. The retention event is scheduled (`1 day`).
+- **Implementation choices inside the plan:**
+  - `gzopen` has no exclusive-create mode, so `Dump` reserves the name with
+    `fopen( $path, 'xb' )` before gzipping into it.
+  - `UpdatePriceRow` keeps the plan computed by its preview within the call,
+    so a write applies exactly what the same request validated.
+  - `dump` in a write result is the file name or `"existing"`.
+- **Mid-step decisions:** none.
