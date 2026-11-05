@@ -26,7 +26,7 @@
      subsections, even if a subsection is "—". The checkbox in the heading is
      ticked by /close-step. -->
 
-### [ ] Step 1 — Delta-audit, the adapter in the repo, and the spike: a tool in claude.ai and a dump on the host
+### [x] Step 1 — Delta-audit, the adapter in the repo, and the spike: a tool in claude.ai and a dump on the host
 - **Tasks:**
   - Delta-audit:
     - Read `docs/features/core/FEATURE.md`, `docs/features/search-stats/FEATURE.md`, `docs/features/city-popup/FEATURE.md`, `docs/features/ga-telegram-bridge/FEATURE.md`; the shared code this feature reads: `inc/post-types/*.php`, `inc/taxonomies/city.php`, `inc/acf/fields/*.php`, `inc/acf/blocks/*/fields.php`, `inc/acf.php`, `inc/polylang.php`, `inc/cli/*.php` (how the CLI copies a post and links translations), `functions.php`, `bin/check.sh`; the plugin `dovira-bridge-conversations` (its capability check is the precedent for the read-only types).

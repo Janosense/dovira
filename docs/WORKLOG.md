@@ -22,6 +22,24 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-05 — [content-mcp] Sprint 1 Step 1 — Delta-audit, the adapter in the repo, and the spike
+- Changed:
+  - Plugin `mcp-adapter` 0.7.1 is committed unchanged; TECH-STACK marks it verified.
+  - New feature `inc/features/content-mcp/` (`Catalogue`, `Abilities`, `DescribeSite`, `Server`). It registers the category `dovira` and the ability `dovira/describe-site` `{city, languages, user:{login, roles, can_delete}}`, and serves the server `/wp-json/mcp/dovira` with exactly `Catalogue::TOOLS`. The agent instructions are the server description.
+  - `bootstrap.php` does nothing without the Abilities API or the adapter.
+  - Theme PHPUnit 182.
+  - Spike: dev's PHP dump took 0.75 s at a 96.5 MB peak (7.18 MB → 0.70 MB gz), see `PRODUCTION-CHECKLIST.md` (new).
+- Shared code: one `require_once` in `functions.php`, after city-popup. Every install also gets a new plugin.
+- Decisions:
+  - TECH-STACK ANTI-PATTERNS: a `dovira/*` ability carries `meta.mcp.public: false`, because `meta.public` would put it on the adapter's default server.
+  - The adapter's gate is `current_user_can( 'read' )`, not `is_user_logged_in()` as DECISIONS says. The effect is the same here (FEATURE.md).
+  - LEARNINGS: no rule for a mid-step task that needs the user's run on a remote host.
+- Open:
+  - The web PHP `max_execution_time` / `memory_limit` on the host were not read; the account `php.ini` says 512M. Step 3's real dump on dev settles it.
+  - Dump folders go directly under `/home/dovirave/`: dev's webroot is nested in `dovira.vet/`.
+  - The verification guide's 4.4 notes (what claude.ai offered for auth, where the header went) were not reported. `PRODUCTION-CHECKLIST.md` → A4 stays as written.
+  - On every hand deploy, activate the plugin by hand.
+
 ## 2026-11-04 — [adhoc] [core] — Language switcher on the Polylang 3.9 API
 - Changed: both `pll_the_languages()` calls in `template-parts/header/site-header.php` pass `show_flags` + `show_wrapper => false` (the removed `show_names` / `display_names_as` are gone, and labels default to names). The «Укр / Рус» shortening (`inc/template-functions.php`) hooks `pll_language_switcher_output` instead of the deprecated `pll_the_languages` filter. Deprecation notices are gone on `/` and `/ru/`, and the markup is still bare `<li>` with `current-lang`. DESIGN and TECH-STACK (Polylang 3.9.1) updated.
 - Decisions: —

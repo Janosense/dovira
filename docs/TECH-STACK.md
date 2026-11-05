@@ -16,7 +16,7 @@
 | Forms | Contact Form 7 | 6.1.6 | contact / franchise / vacancy forms → CPT records via hooks |
 | SEO | Yoast SEO | 27.7 | meta + `wp_yoast_indexable`; one-off import tooling in `temp-data/` |
 | Other plugins | Cyr2Lat 7.0.2 (Latin slugs), Simple Custom Post Order 2.7.2, Enable Media Replace 4.1.9, Akismet 5.7, Loco Translate 2.8.5 | — | — |
-| MCP transport | `mcp-adapter` — the official WordPress MCP Adapter (WordPress AI Team), committed under `wp-content/plugins/mcp-adapter/`, activated by hand per install; serves the `dovira/*` abilities of feature `content-mcp` on `/wp-json/mcp/dovira` | 0.7.1 (unverified — pinned at bootstrap) | DECISIONS 2026-11-05 — "The content connector is the official MCP Adapter serving Dovira abilities registered by a theme feature"; the Abilities API itself is WordPress core (6.9+) |
+| MCP transport | `mcp-adapter` — the official WordPress MCP Adapter (WordPress AI Team), committed under `wp-content/plugins/mcp-adapter/`, activated by hand per install; serves the `dovira/*` abilities of feature `content-mcp` on `/wp-json/mcp/dovira` | 0.7.1 (verified 2026-11-05 — WordPress.org, released 2026-10-16, requires WP 6.9 / PHP 7.4, tested up to 7.1.4; core here 7.1.4) | DECISIONS 2026-11-05 — "The content connector is the official MCP Adapter serving Dovira abilities registered by a theme feature"; the Abilities API itself is WordPress core (6.9+) |
 | PHP deps (theme `composer.json`) | vlucas/phpdotenv 5.6.3, anthropic-ai/sdk 0.25.0, guzzlehttp/guzzle 7.11.0; dev: roave/security-advisories | — | `.env` loading; CLI translation; `vendor/` is committed |
 | Front-end build | Vite + PostCSS (preset-env stage 1, assets, prefix-selector, replace) + LightningCSS | 5.4.19 / 8.4.49 / 1.28.2 | `source/` → hashed `assets/` with manifest; `assets/` is committed |
 | Front-end libs | Swiper 11.2.1, Fancybox (`@fancyapps/ui`) 5.0.36, iMask 7.6.1; vanilla ES modules, no framework | — | dynamic `import()` per module in `scripts/app.js` |
@@ -187,6 +187,13 @@ changes) — DECISIONS "Testing tooling and the project check command".
   feature's whole surface, and every tool on it carries the write protocol
   (DECISIONS 2026-11-05 — The content connector is the official MCP Adapter
   serving Dovira abilities registered by a theme feature).
+  - So a `dovira/*` ability never sets `meta.public: true`. The adapter reads
+    `meta.public` as the default of `meta.mcp.public`, and that flag is what
+    lets its default server discover and execute an ability.
+  - Every one carries `meta.mcp.public: false` and `meta.show_in_rest: true`
+    instead (`DescribeSite::args()`).
+  - The `dovira` server lists abilities by name from `Catalogue::TOOLS` and
+    ignores the flag (content-mcp Sprint 1 Step 1).
 
 ## CONVENTIONS (mandatory reading before writing code)
 <!-- Project-wide rules for code that later steps must follow and would
@@ -222,7 +229,7 @@ justification.
 | 2026-09-22 | phpunit/phpunit `^12.5` (12.5.35) — **theme** | test runner for the theme's unit suite; same pin and reason as the plugin's row above |
 | 2026-09-22 | brain/monkey `^2.7` (2.7.0) — **theme** | stubs WordPress functions for the theme's suite (pulls mockery 1.6.15, antecedent/patchwork 2.2.3, hamcrest v3.0.0) |
 | 2026-09-23 | vitest `^3.2` — **theme**, `devDependencies` of `package.json` | unit tests of the theme features' pure JS modules, reusing the theme's Vite toolchain; approved in DECISIONS "The theme gets Vitest for the unit tests of its JavaScript, run by the check command". Installed 3.2.7 by `city-popup` Sprint 1 Step 1 (pulls `@vitest/*` 3.2.7, vite-node 3.2.4, chai 5.3.3, tinypool 1.1.1; reuses the theme's Vite 5.4.19, no second copy) |
-| 2026-11-05 | `mcp-adapter` 0.7.1 — **plugin**, `wp-content/plugins/mcp-adapter/` (runtime, committed, the WordPress.org zip unchanged) | the MCP server and transport for feature `content-mcp`; approved in DECISIONS "The content connector is the official MCP Adapter serving Dovira abilities registered by a theme feature". Added by `content-mcp` Sprint 1 Step 1; updated only as a plugin-folder change plus this row |
+| 2026-11-05 | `mcp-adapter` 0.7.1 — **plugin**, `wp-content/plugins/mcp-adapter/` (runtime, committed, the WordPress.org zip unchanged) | the MCP server and transport for feature `content-mcp`; approved in DECISIONS "The content connector is the official MCP Adapter serving Dovira abilities registered by a theme feature". Installed by `content-mcp` Sprint 1 Step 1 (2026-11-05: 330 files, no `.gitignore`d file in the zip); updated only as a plugin-folder change plus this row |
 
 The first seven are **dev-only**, live in `wp-content/plugins/ga-telegram-bridge/composer.json`,
 and never reach a server: the plugin's `vendor/` is gitignored and it has zero runtime
