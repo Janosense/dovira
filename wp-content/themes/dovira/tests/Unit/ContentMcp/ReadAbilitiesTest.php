@@ -9,6 +9,7 @@ namespace dovira\Tests\Unit\ContentMcp;
 
 use Brain\Monkey\Functions;
 use dovira\ContentMcp\Abilities;
+use dovira\ContentMcp\FindPriceRows;
 use dovira\ContentMcp\GetPost;
 use dovira\ContentMcp\ListMedia;
 use dovira\ContentMcp\ListPosts;
@@ -16,10 +17,11 @@ use dovira\ContentMcp\ListTerms;
 use dovira\ContentMcp\PostReader;
 use dovira\ContentMcp\ReadTools;
 use dovira\ContentMcp\Scope;
+use dovira\ContentMcp\UpdatePriceRow;
 use dovira\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-foreach ( [ 'Catalogue', 'Scope', 'Schema', 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools', 'DescribeSite', 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'Abilities' ] as $dovira_class ) {
+foreach ( [ 'Catalogue', 'Scope', 'Schema', 'FieldValues', 'CityPrice', 'PostReader', 'ReadTools', 'DescribeSite', 'ListPosts', 'GetPost', 'ListTerms', 'ListMedia', 'FindPriceRows', 'Server', 'Session', 'Confirmation', 'Diff', 'Dump', 'PriceRows', 'WriteAbility', 'UpdatePriceRow', 'Abilities' ] as $dovira_class ) {
 	require_once dirname( __DIR__, 3 ) . "/inc/features/content-mcp/{$dovira_class}.php";
 }
 
@@ -128,6 +130,14 @@ final class ReadAbilitiesTest extends TestCase {
 
 		$this->assertSame( 18, $read['id'] );
 		$this->assertSame( 'https://dovira.vet/services/t/', $read['link'] );
+	}
+
+	public function test_find_price_rows_needs_the_services_edit_posts(): void {
+		$this->caps = [ 'read' ];
+		$this->assertFalse( FindPriceRows::can() );
+
+		$this->caps = [ 'read', 'edit_pages' ];
+		$this->assertTrue( FindPriceRows::can() );
 	}
 
 	public function test_list_media_needs_upload_files(): void {
@@ -246,7 +256,7 @@ final class ReadAbilitiesTest extends TestCase {
 	}
 
 	public function test_every_catalogued_read_ability_is_readonly_with_an_output_schema(): void {
-		foreach ( Abilities::definitions() as $name => $args ) {
+		foreach ( array_diff_key( Abilities::definitions(), [ UpdatePriceRow::NAME => true ] ) as $name => $args ) {
 			$this->assertTrue( $args['meta']['annotations']['readonly'], $name );
 			$this->assertFalse( $args['meta']['mcp']['public'], $name );
 			$this->assertNotEmpty( $args['output_schema'], $name );

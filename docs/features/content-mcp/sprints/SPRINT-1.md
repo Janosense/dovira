@@ -53,7 +53,7 @@
 - **Docs to update:** `docs/features/content-mcp/FEATURE.md` → Interfaces (result shapes as implemented); `docs/DATA-MODEL.md` → Feature `content-mcp` if the reader needs anything the model does not already describe.
 - **Depends on:** Step 1
 
-### [ ] Step 3 — The write protocol: confirmation tokens, the session dump, and the price change
+### [x] Step 3 — The write protocol: confirmation tokens, the session dump, and the price change
 - **Tasks:**
   - `Confirmation` (`dovira\ContentMcp\Confirmation`): `issue( $user_id, $session_id, array $payload, array $diff )` stores the transient `dovira_mcp_confirm_{hash}` for 15 minutes and returns the token; `verify( $token, $user_id, $session_id, $payload )` is true once — the transient is deleted on use. The session id comes from the request header `Mcp-Session-Id` the adapter passes; absent (REST, CLI) = `''`.
   - `Diff`: the one preview format of FEATURE.md → Interfaces, built from `{target:{id, lang}, field, from, to}` lines and warnings.

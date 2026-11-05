@@ -225,6 +225,7 @@ changes) — DECISIONS "Testing tooling and the project check command".
      of one code area → that area's CLAUDE.md → Area conventions.
      `none yet` while there are none. -->
 - A theme feature's JavaScript logic lives in pure modules with no DOM access, unit-tested with Vitest in `tests/js/{feature}/`; the DOM glue that calls them stays thin and is verified by hand — Vitest runs without a DOM library (DECISIONS 2026-09-23 — The theme gets Vitest for the unit tests of its JavaScript, run by the check command).
+- Every `dovira/*` write ability extends `WriteAbility` (`inc/features/content-mcp/`): it implements `preview()` → `Diff` and `write()`, and leaves the token, the session's dump and the result shapes to `run()`; the MCP session is read only through `Session::id()`, because the adapter gives an ability its input alone (content-mcp Sprint 1 Step 3).
 
 ## Dependency policy
 New dependencies (runtime AND dev/tooling) only after explicit user approval —

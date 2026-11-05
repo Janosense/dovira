@@ -17,7 +17,9 @@ final class Catalogue {
 		DescribeSite::NAME,
 		ListPosts::NAME,
 		GetPost::NAME,
+		FindPriceRows::NAME,
 		ListTerms::NAME,
 		ListMedia::NAME,
+		UpdatePriceRow::NAME,
 	];
 }

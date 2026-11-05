@@ -338,8 +338,11 @@ the same WordPress functions the admin uses. Its own data:
 
 ### Transient `dovira_mcp_confirm_{hash}` — one pending confirmation, 15 minutes
 `hash` = SHA-256 of (user id, `Mcp-Session-Id`, canonical JSON of the write
-payload). Value: `{user_id, session, payload_hash, diff, issued_at}`. Deleted
-when the token is used, so a token writes once.
+payload: keys sorted at every level, without `confirmation`). Value:
+`{user_id, session, payload_hash, token_hash, diff, issued_at}`. The random
+token the preview returns is stored only as its SHA-256 (`token_hash`). A new
+preview of the same payload replaces the pending one. Deleted when the token
+is used, so a token writes once (`Confirmation`).
 
 ### Transient `dovira_mcp_dumped_{session}` — the session has its dump, 24 hours
 Value: the dump file name. `session` = the adapter's `Mcp-Session-Id`; an empty
@@ -348,8 +351,13 @@ session (REST `wp-abilities/v1`, WP-CLI) sets no transient and dumps every time.
 ### Dump files — `DOVIRA_MCP_DUMP_DIR` (fallback `wp-content/backup-db/`)
 `dovira-{host}-{YYYY-MM-DD}-{HHMMSS}.sql.gz`, mode `0600`, a numeric suffix
 when the name exists; never overwritten or renamed. Whole database, written by
-PHP (`SHOW CREATE TABLE` + batched `INSERT`s). The fallback folder also holds
-an `.htaccess` (deny) and an empty `index.php` written by the feature.
+PHP (`SHOW TABLES`, `SHOW CREATE TABLE` + `INSERT`s of 500 rows, gzip level
+6). The file opens with a comment naming the host and the date and ends with
+`-- tables: N` and `-- finished in X s, peak memory Y MB` (read with
+`zcat … | tail -2`); a dump without that footer is incomplete and is never
+left behind: any failure deletes the file and aborts the write. The fallback
+folder also holds an `.htaccess` (deny) and an empty `index.php` written by
+the feature.
 
 ### Cron `dovira_mcp_dump_retention` (daily) and filter `dovira_mcp_dump_retention_days`
 Deletes dump files of the pattern above older than the filtered days (default
@@ -366,7 +374,11 @@ install's city by the rule of `single-service.php`:
 ### Sessions
 The MCP sessions are the adapter's: user meta of the connected user, idle
 expiry 24 h (plugin `mcp-adapter`). This feature reads the session id from the
-request only.
+request only: `Session` keeps the `Mcp-Session-Id` header of a REST request to
+`/mcp/dovira` (filter `rest_request_before_callbacks`), which the adapter has
+checked against the user's sessions (protocol 2025-11-25 and the legacy
+revisions it maps there). Any other request (REST `wp-abilities/v1`, WP-CLI,
+the sessionless revision 2026-07-28) has the session `''`.
 
 ## Relations
 ```

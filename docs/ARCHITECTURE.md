@@ -183,9 +183,12 @@ authenticated as that person's WP user by application password) **without**
 `confirmation` → the ability validates the payload, computes the diff (every
 target post and language, field, from, to; warnings) and stores a confirmation
 token bound to the user, the `Mcp-Session-Id` and the payload hash (transient,
-15 min) → the agent shows the diff and waits for consent → the same call
+15 min; a diff that changes nothing issues no token) → the agent shows the diff
+and waits for consent → the same call
 **with** `confirmation` → token verified and consumed → `Dump::ensure(
-session )`: no dump yet for this session → PHP-only dump of the whole database
+session )` (the session id is the header of the `/mcp/dovira` REST request,
+kept by `Session`; the adapter does not hand it to abilities): no dump yet for
+this session → PHP-only dump of the whole database
 to `DOVIRA_MCP_DUMP_DIR` as a new timestamped `.sql.gz` (a failure aborts the
 write) → the write through WordPress's own functions (`wp_insert_post`,
 `update_field`, `wp_set_object_terms`, `wp_trash_post`, Polylang's linking) as

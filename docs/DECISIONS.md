@@ -414,6 +414,15 @@ Entry format:
   - Step 4's writer takes the same shape: `acf/*` fields by name, flattened back through ACF, and `{block, html}` written back verbatim. Its `content_html` (`wp_kses_post`) task is to be re-read against this entry when Step 4 is planned.
   - Amends the catalogue entry above only in the content shape; the rest of that entry stands.
 
+## 2026-11-05 — [content-mcp] Only a row's price follows into the Russian copy, and a price is changed only in the Ukrainian copy
+- **Context:** Sprint 1 Step 3's text says `update-price-row` "mirrors the same change into the Russian copy's row", and the change may be `title`, `description` or `price`. The catalogue entry above says prices are the same in every language and the Russian text is written by the agent in the chat.
+- **Decision:**
+  - A `price` change of the Ukrainian copy goes into the Russian copy's row of the same index, each in that row's own column for this city.
+  - `title` / `description` change only the copy the call names; the Russian row's text is a separate call on the Russian copy's id, previewed under the same rule.
+  - A `price` on a Russian copy is refused (`dovira_price_in_source`).
+- **Alternatives rejected:** Mirroring text as well, which would put Ukrainian text into the Russian page (root invariant 7). Letting a Russian copy's price be changed on its own, which would let the two copies' prices drift apart.
+- **Consequences:** FEATURE.md → Interfaces (`update-price-row`); Step 4's `update-post` follows the same split: values the copies share follow, text never does.
+
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
 1. **Telegram bot token and join password are string literals in code**
    (`inc/rest-api/TelegramController.php`, `inc/utils/{conversation,application}.php`,

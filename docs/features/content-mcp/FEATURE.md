@@ -13,6 +13,7 @@ OUT of scope: site settings (WP options, the ACF options page «Налаштув
 - **Code location:** `wp-content/themes/dovira/inc/features/content-mcp/` (namespace `dovira\ContentMcp`; tests in `tests/Unit/ContentMcp/`); the plugin `wp-content/plugins/mcp-adapter/` (third-party, committed) is its transport
 - **Host area:** theme `dovira` — obeys its `CLAUDE.md` isolation rules
 - **Entry point:** `inc/features/content-mcp/bootstrap.php`, required by one plain line in `functions.php`; it returns at once (the site loads as before) unless `wp_register_ability()` and the adapter's `WP\MCP\Core\McpAdapter` exist, then registers the ability category `dovira` on `wp_abilities_api_categories_init` (core refuses an ability whose category is not registered first), the abilities on `wp_abilities_api_init` and the server on `mcp_adapter_init` (the adapter fires it on `rest_api_init` priority 15, on `init` priority 20 under WP-CLI). The names the server lists and the names registered are one constant, `Catalogue::TOOLS`; every ability carries `meta.mcp.public: false`, so the adapter's default server neither discovers nor executes it, and `meta.show_in_rest: true` for REST `wp-abilities/v1`
+- **Session:** the adapter gives an ability only its input, so `Session` reads the `Mcp-Session-Id` header from the REST request of `/mcp/dovira` (`rest_request_before_callbacks`); any other request has the session `''`
 - **Shared code it depends on:** the registered post types (`inc/post-types/*.php`) and taxonomy; the ACF local field groups and block definitions (`inc/acf/**`) it introspects — read only, never changed by this feature; Polylang (`pll_get_post`, `pll_set_post_language`, `pll_save_post_translations`); `wp-config.php` constant `DOVIRA_MCP_DUMP_DIR`
 
 ## Data
@@ -32,7 +33,7 @@ Owns no table and no post type. Owns: the transients `dovira_mcp_confirm_{hash}`
 - **Read access:**
   - Content types (`service`, `employee`, `vacancy`, `page`, `post`) need the type's `edit_posts`, so editors and administrators.
   - Records (`conversation`, `application`, `questionary`) need `edit_others_conversations`, so administrators and the support role, never an editor. It is not `read_post`: core maps that to `read` for a published post.
-  - `list-terms` needs the taxonomy's `assign_terms`; `list-media` needs `upload_files`.
+  - `list-terms` needs the taxonomy's `assign_terms`; `list-media` needs `upload_files`; `find-price-rows` needs `service`'s `edit_posts`.
   - A missing id gets `dovira_post_not_found`; a type outside the scope is refused.
   - Every list is `{items, total, page, per_page}`, with `per_page` ≤ 50 (the schema refuses more).
 - **Result shapes:**
@@ -44,7 +45,10 @@ Owns no table and no post type. Owns: the transients `dovira_mcp_confirm_{hash}`
   - A term = `{id, name, slug, parent, count, lang}`.
   - A media item = `{id, title, url, alt, mime, width, height, date}`.
   - `describe-site` = `{city, languages, user:{login, roles, can_delete}, post_types:[{name, label, hierarchical, translated, read_only, taxonomies, fields}], blocks:[{name, title, fields}], taxonomies:[{name, label, object_types, translated, read_only, terms (≤50), terms_total}]}`. A field there is `{name, label, type, required, choices?, sub_fields?}`, without `message`/`tab`/`accordion`.
-  - A price row = `{service:{id,title}, row_index, title, description, price, per_city}`; a preview = `{diff:[{target:{id,lang}, field, from, to}], warnings:[…], confirmation}`; a write = `{written:[…ids], dump:{file|"existing"}, warnings}`. Changing these shapes = touches this feature's interface.
+  - A price row (`find-price-rows`: rows of the Ukrainian services whose `title` or `description` contains `text`, any case, as a paginated list) = `{service:{id,title}, row_index (from 0), title, description, price (this city's, `null` = none), per_city}`.
+  - **Writes** (`WriteAbility`): the same call twice. Without `confirmation` = a preview `{diff:[{target:{id,lang}, field, from, to}], warnings:[…], confirmation}` and nothing written; an empty diff gives `confirmation: null`. With the token = a write `{written:[…ids], dump, warnings}`, where `dump` is the new file's name or `"existing"`. A token of another payload, user or session, used or older than 15 minutes = `dovira_confirmation_invalid`; a failed dump = `dovira_dump_failed`; both write nothing. Write abilities are annotated `readonly: false, destructive: true, idempotent: false`.
+  - `update-price-row` = `{service_id, row_index, title?, description?, price? (> 0), confirmation?}`, permission `edit_post` of the service. `price` goes into the row's own column in this city (`price`, or `city_prices.price_city_{own term}`; a per-city row without that term = `dovira_city_term_missing`). It is changed in the Ukrainian copy only (`dovira_price_in_source` on a Russian one) and follows into the Russian copy's row of the same index; different row counts, or a copy the user cannot edit = a warning and Ukrainian only. `title` / `description` change the targeted copy only: the Russian text is a call on the Russian copy's id. The repeater is written whole through `update_field()`; `is_price_general`, `cities` and the other rows go back as read (ACF stores empty sub-fields of every row, as a save in wp-admin does).
+  - Changing these shapes = touches this feature's interface.
 - **Filters/hooks:** `dovira_mcp_dump_retention_days`; cron `dovira_mcp_dump_retention`.
 
 ## Roadmap

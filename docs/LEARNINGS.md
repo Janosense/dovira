@@ -24,6 +24,11 @@ Entry format:
 
 ---
 
+## [new] 2026-11-05 — A verification guide can ask the user to report values, but /close-step has nowhere to take them from
+- **Playbook rule:** `.claude/commands/do-step.md` → step 8 (verification guide) and `.claude/commands/close-step.md` → step 1 ("Running `/close-step` means verified").
+- **What happened:** content-mcp Step 3's guide asked the user to report the dump's footer (seconds, peak memory in a real web request on dev) and the HTTP status of the fallback folder, both meant for `PRODUCTION-CHECKLIST.md`. `/close-step` ran with no message carrying them, so the close could only record them as still open.
+- **Suggested change:** Either a guide item that needs a reported value says the value goes into the `/close-step` arguments, or `/close-step` asks for values a guide marks as "report" before writing the docs.
+
 ## [new] 2026-11-05 — /fix-step's "the step awaiting verification owns every failure" deadlocks when an earlier step's item blocks its verification
 - **Playbook rule:** `.claude/commands/fix-step.md` → "Which step" and step 1 "Cause already on the base … STOP: this step is verified and closed first".
 - **What happened:**
