@@ -24,6 +24,14 @@ Entry format:
 
 ---
 
+## [new] 2026-11-05 — /fix-step's "the step awaiting verification owns every failure" deadlocks when an earlier step's item blocks its verification
+- **Playbook rule:** `.claude/commands/fix-step.md` → "Which step" and step 1 "Cause already on the base … STOP: this step is verified and closed first".
+- **What happened:**
+  - While content-mcp Step 2 awaited verification, the user reported that Step 1's guide item (connecting claude.ai) failed.
+  - By the rule, Step 2 owns the report, and a cause on the base means "close Step 2 first". But Step 2 cannot be verified without that connection.
+  - The cause turned out to be the hosting's AI-bot block, outside every step, so the deadlock did not bite this time. It would have, had the cause been in Step 1's code.
+- **Suggested change:** When the failed item belongs to an earlier closed step and blocks the open step's own verification, the fix goes on a fix branch of that closed step and is merged into the open step's base first. The open step's branch then rebases or merges it.
+
 ## [new] 2026-11-05 — A step task that needs the user's run on a remote host mid-`/do-step` has no rule
 - **Playbook rule:** `.claude/commands/do-step.md` → "Scope is frozen" / "One task → working state → commit"; `.claude/commands/plan-step.md` → §5 "creates an artefact the check command cannot execute".
 - **What happened:** content-mcp Sprint 1 Step 1's spike had to measure the dump on the shared host, which the agent cannot reach. The plan made it a do-step task paused for the user's SSH run (asked during planning), and the user first asked whether to deploy or use DDEV. Neither command says how a task waits for a user-run measurement. The "Not locally verifiable" rule covers only deploy-type artefacts verified after the step.

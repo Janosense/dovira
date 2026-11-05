@@ -22,6 +22,28 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-05 — [content-mcp] Sprint 1 Step 2 — Reading: describe the site, list and open any post, terms and media
+- Changed:
+  - `describe-site` now describes the whole content model (`Scope`, `Schema`): types with their ACF fields, the 21 blocks, and terms capped at 50.
+  - New tools `list-posts`, `get-post`, `list-terms`, `list-media`, each paginated with `per_page` ≤ 50.
+  - `PostReader` + `FieldValues` read ACF by name, and read every type's content as `blocks` (`acf/*` through ACF block meta, others `{block, html}`).
+  - `CityPrice` gives a service row's price in this city by the site's own rule; it is `null` when there is none, and 80% of rows are per-city.
+  - Records need `edit_others_conversations`, so editors are refused.
+  - Theme PHPUnit 245.
+- Shared code: none. `inc/acf/**`, `inc/post-types/**` and the templates are only read.
+- Decisions:
+  - DECISIONS "Every post's content is read as blocks; there is no `content_html`" (plan Question 1, A). It amends the catalogue entry; Step 4 re-reads it.
+  - TECH-STACK ANTI-PATTERNS: no `read_post` gate on the records, and ACF block data is read only through ACF's block meta.
+  - LEARNINGS: `/fix-step` ownership can deadlock across steps.
+- Verification: Step 1's guide item 4 (claude.ai connect) first failed because the hosting's nginx answers user agent `Claude-User` (also `ClaudeBot`, `GPTBot`) with 405/403 before PHP. Allowing it in the hosting panel fixed dev: `Claude-User` now gets 401 from WordPress. A wrong login (`lditor.user`) was also corrected on the way.
+- Open:
+  - **Before Sprint 2's rollout:** let `Claude-User` through on `dovira.vet` and `kyiv.dovira.vet`; `dovira.vet` blocks it today (403).
+  - Record that requirement and the exact claude.ai form (Без входу, header `authorization`, value `Basic <base64>`) in `PRODUCTION-CHECKLIST.md` / ARCHITECTURE via `/adhoc`.
+  - Kyiv's own `service-city` slug must be `kyiv`, or its per-city prices read `null`.
+  - `describe-site` is ~59 KB.
+  - ACF Pro is 6.8.10, while TECH-STACK says 6.8.8.
+  - The editor's first application password was posted in the chat; it must be revoked.
+
 ## 2026-11-05 — [content-mcp] Sprint 1 Step 1 — Delta-audit, the adapter in the repo, and the spike
 - Changed:
   - Plugin `mcp-adapter` 0.7.1 is committed unchanged; TECH-STACK marks it verified.

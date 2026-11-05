@@ -195,6 +195,22 @@ changes) — DECISIONS "Testing tooling and the project check command".
   - The `dovira` server lists abilities by name from `Catalogue::TOOLS` and
     ignores the flag (content-mcp Sprint 1 Step 1).
 
+- Do not gate a `conversation` / `application` / `questionary` read with
+  `read_post` (or any check that reduces to it). The records are `publish`,
+  and core maps `read_post` of a public status to the type's `read` cap, plain
+  `read`, which every editor has. Gate with the type's `edit_others_posts`
+  (`edit_others_conversations`) instead: `Scope::can_read_type()` in
+  `inc/features/content-mcp/`, the same gate `dovira-bridge-conversations`
+  uses (content-mcp Sprint 1 Step 2).
+- Do not read an ACF block's `attrs.data` by its stored keys or with a
+  hand-written key mapper. It is flattened like postmeta: `years_0_year` plus
+  `_years_0_year` → field key, and a repeater's row count under its name. Read
+  it by name through ACF:
+  `acf_setup_meta( $data, $block_id, true )` → `get_field_objects( $block_id )`
+  → `acf_reset_meta( $block_id )` (`PostReader::block_fields()`). Writing
+  goes back through ACF the same way (DECISIONS 2026-11-05 — Every post's
+  content is read as blocks).
+
 ## CONVENTIONS (mandatory reading before writing code)
 <!-- Project-wide rules for code that later steps must follow and would
      otherwise write differently, where the stack has no default or leaves

@@ -4,9 +4,9 @@ namespace dovira\ContentMcp;
 
 /**
  * Ability `dovira/describe-site`: which install the connector is talking to,
- * its languages, and who is connected. Sprint 1 Step 1 returns only
- * `{city, languages, user:{login, roles, can_delete}}`; the post types, fields,
- * blocks and terms are Step 2.
+ * its languages, who is connected, and the content model — post types with
+ * their ACF fields, the theme's blocks with theirs, taxonomies with their
+ * terms (`Schema`).
  */
 final class DescribeSite {
 
@@ -16,14 +16,17 @@ final class DescribeSite {
 	public const KYIV = 'kyiv';
 
 	private bool $polylang;
+	private Schema $schema;
 
 	/**
-	 * @param bool|null $polylang Whether Polylang's API is there; null asks.
-	 *                            Tests pass false, since a function stubbed
-	 *                            once stays declared for the whole run.
+	 * @param bool|null   $polylang Whether Polylang's API is there; null asks.
+	 *                              Tests pass false, since a function stubbed
+	 *                              once stays declared for the whole run.
+	 * @param Schema|null $schema   The content model; null builds the default.
 	 */
-	public function __construct( ?bool $polylang = null ) {
+	public function __construct( ?bool $polylang = null, ?Schema $schema = null ) {
 		$this->polylang = $polylang ?? function_exists( 'pll_languages_list' );
+		$this->schema   = $schema ?? new Schema();
 	}
 
 	/**
@@ -40,7 +43,7 @@ final class DescribeSite {
 	public static function args(): array {
 		return [
 			'label'               => 'Опис сайту',
-			'description'         => 'Яке це місто (Харків чи Київ), які мови має сайт і хто підключений: логін, ролі та чи може він видаляти (лише адміністратор). Викликай першим у кожній розмові.',
+			'description'         => 'Яке це місто (Харків чи Київ), які мови має сайт, хто підключений (логін, ролі, чи може видаляти — лише адміністратор) і з чого складається контент: типи записів з їхніми полями ACF, блоки сторінок з їхніми полями, рубрики, мітки й міста. Викликай першим у кожній розмові.',
 			'category'            => Catalogue::CATEGORY,
 			'execute_callback'    => static fn() => ( new self() )->execute(),
 			'permission_callback' => [ self::class, 'can_read' ],
@@ -66,6 +69,18 @@ final class DescribeSite {
 							'can_delete' => [ 'type' => 'boolean' ],
 						],
 					],
+					'post_types' => [
+						'type'  => 'array',
+						'items' => [ 'type' => 'object' ],
+					],
+					'blocks'     => [
+						'type'  => 'array',
+						'items' => [ 'type' => 'object' ],
+					],
+					'taxonomies' => [
+						'type'  => 'array',
+						'items' => [ 'type' => 'object' ],
+					],
 				],
 			],
 			'meta'                => [
@@ -88,12 +103,12 @@ final class DescribeSite {
 	}
 
 	/**
-	 * @return array{city: string, languages: list<string>, user: array{login: string, roles: list<string>, can_delete: bool}}
+	 * @return array<string, mixed> `{city, languages, user, post_types, blocks, taxonomies}`.
 	 */
 	public function execute(): array {
 		$user = wp_get_current_user();
 
-		return [
+		return array_merge( [
 			'city'      => self::city( (string) get_site_url() ),
 			'languages' => $this->polylang ? array_values( (array) pll_languages_list() ) : [],
 			'user'      => [
@@ -101,7 +116,7 @@ final class DescribeSite {
 				'roles'      => array_values( (array) $user->roles ),
 				'can_delete' => current_user_can( 'manage_options' ),
 			],
-		];
+		], $this->schema->describe() );
 	}
 
 	/**

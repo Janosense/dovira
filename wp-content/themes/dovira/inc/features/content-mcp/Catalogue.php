@@ -15,5 +15,9 @@ final class Catalogue {
 	/** The abilities the server lists as tools, in this order. */
 	public const TOOLS = [
 		DescribeSite::NAME,
+		ListPosts::NAME,
+		GetPost::NAME,
+		ListTerms::NAME,
+		ListMedia::NAME,
 	];
 }
