@@ -970,7 +970,7 @@ none
   - `dump` in a write result is the file name or `"existing"`.
 - **Mid-step decisions:** none.
 
-## Plan — Sprint 1, Step 4: Editing an existing post, and trashing one as an administrator   (status: approved, in progress)
+## Plan — Sprint 1, Step 4: Editing an existing post, and trashing one as an administrator   (status: implemented, awaiting verification)
 
 ### Branch
 `content-mcp/sprint-1-read-and-price` ← `master`. The branch is recreated from
@@ -1244,3 +1244,52 @@ PHPUnit + Brain\Monkey, no WordPress.
 
 ### Questions / ambiguities
 none
+
+### Step report (`/do-step`, 2026-11-05)
+- **Commits** on `content-mcp/sprint-1-read-and-price`:
+  - `87867265` — `FieldInput`;
+  - `f647692c` — `PostWriter`;
+  - `8326fb73` — `update-post`;
+  - `6635d8d3` — `trash-post` and the instructions;
+  - the guide commit.
+- **Gate:** theme PHPUnit 311 → 373.
+- **ACF block write, spiked on DDEV before the tests** (page 176, `acf/about`):
+  - `acf_setup_meta()` with field-key values captures ACF's own save and
+    returns the flattened `name` / `_name` data. `get-post` reads the edited
+    field back.
+  - The first version filled unnamed fields from the reader's formatted
+    values, which rewrote a wysiwyg with `<p>` and a true_false `'1'` as
+    `true`. Unnamed fields are now taken unformatted
+    (`get_fields( $block_id, false )`). After that only the edited key
+    changed (113 of 114 identical).
+  - The fields are written in the block's field order, so an edit that is set
+    back leaves `post_content` byte-identical to the original (checked by
+    md5).
+- **Live check on DDEV over MCP**, with a temporary administrator and editor
+  and a temporary uk category «Акції», all removed afterwards with the
+  probe's revisions:
+  - nine tools;
+  - vacancy 1535 `is_open` false → true;
+  - titles of 176 + its translation 1631 in one preview;
+  - the `acf/about` heading, rendered on `/about/` and set back;
+  - a category added to post 1498 and removed;
+  - refusals: `core/paragraph` on a page, `service.prices`, a
+    `conversation`, `trash-post` for the editor;
+  - the administrator's trash of 1535, with the warning about 1677, then
+    restored;
+  - one dump per session (0.42–0.44 s, ~30 MB).
+  - The fingerprint (titles, status, slug, content md5, postmeta md5,
+    categories) of the five posts is identical to before.
+- **Local configuration found during the check:** your local `wp-config.php`
+  now defines `DOVIRA_MCP_DUMP_DIR` as dev's path
+  `/home/dovirave/dovira-mcp-dumps/dev`, which doesn't exist in DDEV.
+  - The first run's writes all failed with `dovira_dump_failed`, and nothing
+    was written: the invariant, live.
+  - For the probe the folder was created inside the container only, then
+    removed. Your `wp-config.php` was not touched.
+  - Locally, writes need that line removed or pointed at a container path.
+- **Implementation choices inside the plan:**
+  - `UpdatePost::content_post()` is shared with `TrashPost`.
+  - A failure partway through a two-post write names what was already
+    written.
+- **Mid-step decisions:** none.
