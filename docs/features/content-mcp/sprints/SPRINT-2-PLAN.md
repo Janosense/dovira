@@ -262,7 +262,7 @@ changed.
   `news` page for a live check was not worth the risk.
 - **Mid-step decisions:** none.
 
-## Plan — Sprint 2, Step 2: The Russian copy, and images   (status: approved, in progress)
+## Plan — Sprint 2, Step 2: The Russian copy, and images   (status: implemented, awaiting verification)
 ### Branch
 `content-mcp/sprint-2-translate-media` ← `master`, created from `master` =
 `3e430c54` (Step 1 closed and merged). The only branch not merged into
@@ -612,3 +612,47 @@ changed.
 
 ### Questions / ambiguities
 none
+
+### Step report (`/do-step`, 2026-11-05)
+- **Commits** on `content-mcp/sprint-2-translate-media`:
+  - `fbc2bdf2` — `Translator`, `create-translation`, `PostWriter::plan_new()`;
+  - `3189290c` — `MediaWriter`, `upload-media`, and `WriteAbility::run()`
+    passing extra write keys through;
+  - the guide commit.
+- **Gate:** theme PHPUnit 417 → 456.
+- **Live check on DDEV over MCP**, done the same way as Step 1: a temporary
+  administrator, and the dump folder created inside the container only.
+  - **14 tools.**
+  - **A copy of a service:**
+    - First a Ukrainian probe service was made with `create-post`: two price
+      rows, an `acf/rich-text` block, and parent 60.
+    - Its copy was previewed with every value: parent 1646 (60's `ru`), a
+      Russian slug, row texts translated and amounts carried.
+    - A warning named the untranslated `acf.description`.
+    - Written: `ru`, linked `{uk, ru}`, the author the probe user.
+    - The raw price rows were identical except `title` / `description`.
+    - The block data differed only in the translated `heading` (all 30
+      keys otherwise equal).
+    - With both published, the Ukrainian page's language switcher linked to
+      the copy, and the copy answered 200.
+  - **Refusals:** a second copy was refused with the copy's id, and the copy
+    as a source was refused, naming the Ukrainian id.
+  - **A sub-service copy** carried `templates/sub-service.php`.
+  - **Uploads:**
+    - Refused at preview: a `.exe` URL (by its HEAD type), a 663.9 MB image
+      (by its HEAD size, no download), `127.0.0.1`, and `attach_to` a record.
+    - Uploaded: `Cat03.jpg` from Wikimedia (alt and title written), a base64
+      PNG attached to service 1757 (`probe.jpg` → `probe.png`), and a picsum
+      URL whose HEAD answers 405 (decided by its extension).
+    - Each upload's author was the probe user.
+  - **Clean-up:** every probe post, attachment and file, the user, the
+    transients and the folder were removed.
+- **Fixed during the live check** (inside task 1):
+  - **`acf.prices` ignored:** given for a service that has no price rows, it
+    was silently ignored. It is now refused (`dovira_prices_invalid`), with
+    a test.
+  - **A featured image that wasn't stored:** the preview listed one for a
+    service, but WordPress ignores `_thumbnail_id` on `service`, `employee`
+    and `vacancy` (no `thumbnail` support). It is now carried only for
+    `page` / `post`, so the preview shows only what is stored. The task text
+    in this plan says so.
