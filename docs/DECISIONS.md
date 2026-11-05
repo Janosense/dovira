@@ -394,6 +394,26 @@ Entry format:
 - **Alternatives rejected:** A tunnel from DDEV (`ddev share`) — a moving URL and a tool outside the project; fine for a developer's own look, not for the verification guide. Installing the adapter from the dashboard on each host — the repository would no longer be the whole deploy.
 - **Consequences:** The verification guide of each step says what the user does on `dev.dovira.vet` in claude.ai; pushing `dev` is never a step task. `DOVIRA_MCP_DUMP_DIR` and the application passwords exist on dev before Step 3 is verified. Updating the adapter is a change under `wp-content/plugins/` and a TECH-STACK row, not a dashboard action.
 
+## 2026-11-05 — [content-mcp] Every post's content is read as blocks; there is no `content_html`
+- **Context:** DECISIONS "The tool catalogue speaks ACF field names and block names…" (2026-11-05) and FEATURE.md had pages read as `blocks:[{block, fields}]` and blog posts as `content_html`, "core-block HTML". Sprint 1 Step 2's plan found the data otherwise:
+  - 23 of 25 blog posts are built from `acf/*` blocks, mostly `acf/rich-text`, and only 2 from core blocks.
+  - 7 services (`templates/sub-service.php`) and 28 employees also carry `acf/*` block content that their templates render.
+  - ACF stores a block's data flattened, the same way as postmeta (`years_0_year` plus `_years_0_year` → field key).
+- **Decision:** `get-post` reads the `post_content` of every type as `blocks`:
+  - an `acf/*` block is `{block, fields}`, its values by field name through ACF's own block meta (`acf_setup_meta()` → `get_field_objects()` → `acf_reset_meta()`);
+  - any other block is `{block, html}`, its `serialize_block()` markup;
+  - freeform text is `core/freeform`.
+
+  No post has `content_html` (Step 2 plan, Question 1, A).
+- **Alternatives rejected:**
+  - `content_html` = raw `post_content`: for 23 posts the agent would read ACF JSON inside block comments and could easily corrupt it on write, and services and employees would show no content.
+  - `content_html` = rendered HTML: readable, but it cannot be written back and differs from what the editor stores.
+  - A hand-written mapper of the flattened block keys: it re-implements ACF's repeater layout.
+- **Consequences:**
+  - The post shape in FEATURE.md → Interfaces is `blocks` for every type.
+  - Step 4's writer takes the same shape: `acf/*` fields by name, flattened back through ACF, and `{block, html}` written back verbatim. Its `content_html` (`wp_kses_post`) task is to be re-read against this entry when Step 4 is planned.
+  - Amends the catalogue entry above only in the content shape; the rest of that entry stands.
+
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
 1. **Telegram bot token and join password are string literals in code**
    (`inc/rest-api/TelegramController.php`, `inc/utils/{conversation,application}.php`,

@@ -284,7 +284,7 @@ planning: the user runs it over SSH/WP-CLI during `/do-step`.
   - Dev's webroot is nested inside `/home/dovirave/dovira.vet/`, so dump folders go directly under `/home/dovirave/`.
 - The claude.ai half of the spike (header, detected authentication) is the verification guide's items 3–6.
 
-## Plan — Sprint 1, Step 2: Reading: describe the site, list and open any post, terms and media   (status: implemented, awaiting verification)
+## Plan — Sprint 1, Step 2: Reading: describe the site, list and open any post, terms and media   (status: closed)
 
 ### Branch
 `content-mcp/sprint-1-read-and-price` ← `master`. The branch is recreated from
