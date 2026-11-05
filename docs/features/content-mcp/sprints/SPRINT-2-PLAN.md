@@ -656,3 +656,236 @@ none
     and `vacancy` (no `thumbnail` support). It is now carried only for
     `page` / `post`, so the preview shows only what is stored. The task text
     in this plan says so.
+
+## Plan — Sprint 2, Step 3: Production checklist and handover   (status: approved, in progress)
+### Branch
+`content-mcp/sprint-2-handover` ← `master`, created from `master` = `c5224b3c`
+(Step 2 closed and merged). The only branch not merged into `master` is
+`kyiv`, the deploy branch.
+
+### Tasks (ordered)
+- [x] **1. The catalogue in the order a chat uses it, instructions that name
+  every tool, and the result-size guard under test.** Commit:
+  `feat(content-mcp): catalogue order and instructions naming every tool`.
+  - **`Catalogue::TOOLS`** (and so `Abilities::definitions()` and the
+    server's `tools/list`) is ordered by when a chat uses each tool. Reads
+    come before writes. Among the writes, a prerequisite comes before what
+    uses it, and trashing comes last:
+    1. `describe-site`
+    2. `list-posts`
+    3. `get-post`
+    4. `find-price-rows`
+    5. `list-terms`
+    6. `list-media`
+    7. `update-price-row`
+    8. `update-post`
+    9. `create-term`
+    10. `update-term`
+    11. `upload-media`
+    12. `create-post`
+    13. `create-translation`
+    14. `trash-post`
+  - **`Server::INSTRUCTIONS` final pass.** The text names every tool, and
+    today three are missing: `list-posts`, `list-terms`, `list-media`. It
+    keeps every rule it states now:
+    - `describe-site` first;
+    - prices only through the price tools;
+    - the status as the person names it;
+    - terms and images first, then the post;
+    - the Russian copy only when asked;
+    - preview → consent → the same call with `confirmation`, and any change
+      is a new preview;
+    - a token is valid once, for 15 minutes;
+    - trash for administrators only.
+    - The text keeps the protocol as one paragraph in the catalogue's order,
+      so a reader finds each tool where a chat needs it.
+  - **The result-size guard** is already shipped (Sprint 1 Step 2):
+    `ReadTools::PER_PAGE_MAX = 50` in the schema of every list, and clamped
+    in `ReadTools::paging()`. This task adds the test over the catalogue
+    that holds it. `get-post` truncates nothing (Question 1).
+- [ ] **2. The production checklist, the restore and the docs.** Commit:
+  `docs(content-mcp): production checklist and handover`.
+  - **`PRODUCTION-CHECKLIST.md`** becomes the one list an install is taken
+    through. Section A, before the first session:
+    1. **The hosting lets the `Claude-User` user agent through** on the
+       install's host, at least for `/wp-json/mcp/`. Check:
+       `curl -s -o /dev/null -w '%{http_code}' -A 'Claude-User' -H 'Content-Type: application/json' https://{host}/wp-json/mcp/dovira -d '{}'`
+       prints 401 (WordPress), not 403 or 405 (the hosting). This is the
+       cause found in Sprint 1 Step 1's fix.
+    2. **The plugin is activated.**
+    3. **The dump folder:**
+       - `DOVIRA_MCP_DUMP_DIR` is set in `wp-config.php`;
+       - the folder is created with `mkdir -p … && chmod 700 …`, directly
+         under `/home/dovirave/` and outside every webroot;
+       - `wp eval 'echo DOVIRA_MCP_DUMP_DIR;'` prints it;
+       - or, without the constant, the fallback's 403 is checked as in
+         Sprint 1 Step 3, item 11.
+    4. **The city term:** `wp term list service-city --fields=term_id,slug,name`
+       shows the install's own city with slug `kharkiv` / `kyiv`. Without it
+       per-city prices read `null`, and per-city price writes and a new
+       service's rows are refused.
+    5. **One application password per person**, named «Claude», each in
+       their own profile: the owner (administrator), the content manager
+       (editor) and the developer (administrator). No value is written
+       anywhere but the person's own connector.
+    6. **The connector in each person's own claude.ai**, exactly as claude.ai's
+       form takes it: URL `https://{host}/wp-json/mcp/dovira`, «Без входу»,
+       header name `authorization`, value `Basic ` + base64 of
+       `login:password`. This corrects A4's one-line form.
+    7. **The first session's smoke test:**
+       - `describe-site` names the right city and the person, and
+         `can_delete` is true only for administrators;
+       - one price preview is shown without consent, and `ls` of the dump
+         folder shows no new file;
+       - a request without the header gets 401.
+    8. **Retention:** `wp cron event list --fields=hook,recurrence | grep dovira_mcp`
+       shows `dovira_mcp_dump_retention` with `1 day`.
+  - **Section D, operations:**
+    - **Restoring a dump:**
+      `gunzip -c {file}.sql.gz | wp db import -` from the install's folder.
+      It replaces the whole database, every change made after the dump
+      included. The dump has `DROP TABLE IF EXISTS` before each table.
+    - **Finding the dump of a session:** the newest file before the change;
+      the files are timestamped.
+    - **Removing a person:** revoke their application password in their
+      profile (or `wp user application-password delete {user} {uuid}`). Their
+      connector then gets 401.
+    - **Retention:** files older than 90 days are deleted daily (filter
+      `dovira_mcp_dump_retention_days`).
+  - **Section C** keeps the per-install lines for `dev.dovira.vet`,
+    `dovira.vet` and `kyiv.dovira.vet`, ticked as each passes. B's
+    web-request row stays to be filled from a real first session.
+  - **The restore command is probed on DDEV.** A confirmed write dumps the
+    local database; `gunzip -c … | ddev wp db import -` restores it; a
+    fingerprint (table checksums of `wp_posts`, `wp_postmeta`,
+    `wp_options`) matches before and after. The probe uses a container-only
+    folder, as in Steps 1–2, and is cleaned up.
+  - **`ARCHITECTURE.md`:**
+    - **Environments & deploy:** the connector per install is two production
+      URLs plus dev, each with its own three application passwords, its own
+      dump folder and the `Claude-User` allowance. The code is one.
+    - **Integrations:** the MCP clients row names the plugin `mcp-adapter`
+      (the server and transport), the claude.ai custom connector (its form,
+      as above) and the hosting's bot filter as a failure mode (403/405
+      before WordPress).
+  - **`FEATURE.md` → Interfaces:**
+    - the catalogue order;
+    - the instructions' summary;
+    - the result-size guard: every list's `per_page` ≤ 50, `describe-site`'s
+      terms ≤ 50 per taxonomy, `get-post` whole.
+
+### Files to create/change
+All under `wp-content/themes/dovira/` unless named otherwise. No shared code is
+changed.
+- `inc/features/content-mcp/Catalogue.php`, `Abilities.php`, `Server.php`
+- `tests/Unit/ContentMcp/ServerTest.php`, `ReadAbilitiesTest.php`
+- `docs/features/content-mcp/PRODUCTION-CHECKLIST.md`, `docs/ARCHITECTURE.md`,
+  `docs/features/content-mcp/FEATURE.md`
+
+### Tests to write
+- **`ServerTest`:**
+  - the instructions name every tool of `Catalogue::TOOLS` (a loop over the
+    catalogue, `/` → `-`), so a tool added later without a line fails;
+  - `tools/list` / `create_server()` gets the catalogue in the new order;
+  - the rules the instructions state are asserted as today.
+- **`ReadAbilitiesTest`:** every catalogued ability whose output is a list
+  (`items`, `per_page`) has `per_page.maximum` = 50 in its input schema.
+- The existing suites pass.
+
+### Docs to update
+- `docs/features/content-mcp/PRODUCTION-CHECKLIST.md` (task 2).
+- `docs/ARCHITECTURE.md` → Environments & deploy, Integrations (task 2).
+- `docs/features/content-mcp/FEATURE.md` → Interfaces (tasks 1–2);
+  → Roadmap (Sprint 2 done) at `/close-step`, once the productions passed
+  (Question 2).
+- `docs/TECH-STACK.md`: the `mcp-adapter` row gets «verified on `dovira.vet`
+  and `kyiv.dovira.vet` {date}» at `/close-step`, from the user's report
+  (Question 2). Nothing is claimed before.
+- `docs/DOMAIN.md` → Roles: already names the three connector users
+  (owner = administrator, content manager = editor, developer =
+  administrator) and what they do, Russian copies and images included. It
+  is checked at close, with no change expected.
+
+### Checks
+- **ANTI-PATTERNS / CONVENTIONS:** none violated.
+  - No ability is exposed beyond `Catalogue::TOOLS`; every ability keeps
+    `meta.mcp.public: false`.
+  - No URL literal: the checklist names hosts as documentation, never in
+    code. No secret is written: the checklist says where a password goes,
+    never a value. No new dependency.
+- **Docs vs reality:**
+  - **"`get-post` … reports `content_html` length"** (step text): there is
+    no `content_html` (DECISIONS "Every post's content is read as blocks").
+    → Question 1.
+  - **"every list ability caps `per_page` at 50"**: already true since
+    Sprint 1 Step 2. This step adds only the catalogue-wide test.
+  - **"how the developer restores a dump (`wp db import` from the
+    `.sql.gz`)"**: `wp db import` reads plain SQL, so the file is piped
+    through `gunzip -c … | wp db import -`. The dump writes
+    `DROP TABLE IF EXISTS` before each `CREATE TABLE`, so it imports over a
+    live database.
+  - **The checklist lacks the production prerequisites** the WORKLOG has
+    carried since Sprint 1 Step 1: the `Claude-User` allowance (Sprint 1
+    Step 1's fix said to record it through `/adhoc`, which never ran), the
+    city-term slug, and claude.ai's real form. They are part of "everything
+    an install needs before the first connector session", so task 2 adds
+    them.
+  - **Kyiv's `service-city` term** doesn't exist in the local database (only
+    `kharkiv`, id 4). Its slug on `kyiv.dovira.vet` is checked by A4 of the
+    checklist.
+  - **DOMAIN → Roles** already says what the step asks for.
+  - **The step's verification on production vs the step protocol:** a step
+    is verified on its task branch, but a production deploy is from
+    `master` only. → Question 2.
+  - **Carried open items:**
+    - Sprint 1 Step 3's web-request dump numbers are filled in B from the
+      first real session the guide asks for.
+    - The local `DOVIRA_MCP_DUMP_DIR` points at dev's path (the probe uses a
+      container folder).
+    - `master` is not on `origin/main`; pushing it is the user's action.
+    - The leaked application password is revoked: guide item 1.
+- **Design:** n/a (no UI; the surface is the tool catalogue, DECISIONS
+  "No UI design phase").
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command).
+- **Not locally verifiable:** the productions.
+  - The checklist run on `dovira.vet` (after the hand deploy from `master`)
+    and on `kyiv.dovira.vet` (after merging `master` into `kyiv` and
+    deploying) is verified only by the user's run there.
+  - It covers the `Claude-User` allowance, the dump folder, three people
+    connecting, one consented write leaving one dump, and the editor unable
+    to trash.
+  - How it fits the step: Question 2.
+
+### Questions / ambiguities
+1. **What `get-post` reports instead of the `content_html` length.**
+   - **A. No new field (recommended).** `get-post` truncates nothing, so a
+     length tells the agent nothing it can act on. FEATURE.md states that
+     `get-post` returns the whole post. The task is a docs line and the
+     test over the lists.
+   - **B. Add `content_length`** (bytes of `post_content`) to the post
+     shape. This changes the interface: `PostReader`, `get-post`'s output
+     schema, `PostReaderTest`, FEATURE.md.
+   - Resolved: approved as recommended — A: no new field; FEATURE.md states `get-post` returns the whole post.
+2. **When the productions are taken through the checklist.**
+   - **B. Before the close, from today's `master` (recommended).**
+     - `master` already has every tool of Steps 1–2. This step changes only
+       the instructions' wording, the tools' order and the docs.
+     - The guide's production items:
+       1. the user deploys `master` by hand to `dovira.vet`;
+       2. merges `master` into `kyiv` and deploys `kyiv.dovira.vet`;
+       3. runs the checklist on each.
+     - `/close-step` records the results the user reports: checklist C,
+       B's web-request row, the TECH-STACK row and Roadmap «Sprint 2 done».
+     - After the close, one more hand deploy of `master` / `kyiv` brings
+       the final instructions; that changes no data.
+     - This keeps the step's own verification text («the checklist is
+       complete when both productions pass it») inside the sprint.
+   - **A. After the close.** The guide verifies on dev from the task
+     branch only.
+     - The productions follow the checklist after `/close-step` merges and
+       the user deploys (one deploy each).
+     - The results are recorded through `/adhoc`: checklist C, the
+       TECH-STACK row, the Roadmap.
+     - Sprint 2 closes before its goal («both productions run the
+       connector») is met.
+   - Resolved: approved as recommended — B: the productions are taken through the checklist before the close, from today's `master`; `/close-step` records the reported results.

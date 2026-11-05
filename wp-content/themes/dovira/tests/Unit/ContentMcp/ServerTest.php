@@ -84,7 +84,7 @@ final class ServerTest extends TestCase {
 
 	public function test_the_catalogue_reads_finds_prices_and_changes_a_price_row(): void {
 		$this->assertSame(
-			[ 'dovira/describe-site', 'dovira/list-posts', 'dovira/get-post', 'dovira/find-price-rows', 'dovira/list-terms', 'dovira/list-media', 'dovira/update-price-row', 'dovira/update-post', 'dovira/create-post', 'dovira/create-translation', 'dovira/upload-media', 'dovira/trash-post', 'dovira/create-term', 'dovira/update-term' ],
+			[ 'dovira/describe-site', 'dovira/list-posts', 'dovira/get-post', 'dovira/find-price-rows', 'dovira/list-terms', 'dovira/list-media', 'dovira/update-price-row', 'dovira/update-post', 'dovira/create-term', 'dovira/update-term', 'dovira/upload-media', 'dovira/create-post', 'dovira/create-translation', 'dovira/trash-post' ],
 			Catalogue::TOOLS
 		);
 		$this->assertSame( Catalogue::TOOLS, array_keys( Abilities::definitions() ) );
@@ -103,6 +103,12 @@ final class ServerTest extends TestCase {
 		$this->assertStringContainsString( 'dovira-create-translation', Server::INSTRUCTIONS );
 		$this->assertStringContainsString( 'dovira-upload-media', Server::INSTRUCTIONS );
 		$this->assertStringContainsString( 'dovira-update-term', Server::INSTRUCTIONS );
+	}
+
+	public function test_the_instructions_name_every_tool_of_the_catalogue(): void {
+		foreach ( Catalogue::TOOLS as $name ) {
+			$this->assertStringContainsString( str_replace( '/', '-', $name ), Server::INSTRUCTIONS, "{$name} is a tool the instructions never mention" );
+		}
 	}
 
 	public function test_the_server_lists_exactly_the_catalogue_on_mcp_dovira_behind_the_adapters_gate(): void {

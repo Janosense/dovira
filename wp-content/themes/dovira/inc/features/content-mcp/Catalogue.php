@@ -12,7 +12,11 @@ final class Catalogue {
 	/** The ability category every `dovira/*` ability belongs to. */
 	public const CATEGORY = 'dovira';
 
-	/** The abilities the server lists as tools, in this order. */
+	/**
+	 * The abilities the server lists as tools, in the order a chat uses them:
+	 * reads before writes; among the writes, what a new post needs (a term,
+	 * an image) before the post, its Russian copy after it, trashing last.
+	 */
 	public const TOOLS = [
 		DescribeSite::NAME,
 		ListPosts::NAME,
@@ -22,11 +26,11 @@ final class Catalogue {
 		ListMedia::NAME,
 		UpdatePriceRow::NAME,
 		UpdatePost::NAME,
-		CreatePost::NAME,
-		CreateTranslation::NAME,
-		UploadMedia::NAME,
-		TrashPost::NAME,
 		CreateTerm::NAME,
 		UpdateTerm::NAME,
+		UploadMedia::NAME,
+		CreatePost::NAME,
+		CreateTranslation::NAME,
+		TrashPost::NAME,
 	];
 }
