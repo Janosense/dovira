@@ -283,3 +283,310 @@ planning: the user runs it over SSH/WP-CLI during `/do-step`.
   - The web values of `max_execution_time` and `memory_limit` were not read; the account `php.ini` says 512M. A peak of 96.5 MB is above `WP_MEMORY_LIMIT` 40M, so Step 3's verification of a real dump inside a web request on dev settles this.
   - Dev's webroot is nested inside `/home/dovirave/dovira.vet/`, so dump folders go directly under `/home/dovirave/`.
 - The claude.ai half of the spike (header, detected authentication) is the verification guide's items 3–6.
+
+## Plan — Sprint 1, Step 2: Reading: describe the site, list and open any post, terms and media   (status: implemented, awaiting verification)
+
+### Branch
+`content-mcp/sprint-1-read-and-price` ← `master`. The branch is recreated from
+`master` = `e5a51f84` (Step 1 merged). The only branch not merged into
+`master` is `kyiv`, the deploy branch.
+
+### Tasks (ordered)
+Written for the recommended answer to Question 1 (A).
+
+- [x] **1. `Scope` and the full `describe-site`.** Commit:
+  `feat(content-mcp): describe-site lists types, fields, blocks and terms`.
+  - `Scope` (`dovira\ContentMcp\Scope`):
+    - `CONTENT = [service, employee, vacancy, page, post]`,
+      `RECORDS = [conversation, application, questionary]`.
+    - `can_read_type( $type )`:
+      - content type → `current_user_can( $type_obj->cap->edit_posts )`;
+      - record type → `current_user_can( $type_obj->cap->edit_others_posts )`,
+        which is `edit_others_conversations`. Only the administrator and the
+        support role have it.
+      - Any type outside the scope → false.
+    - The reason it is not `read_post`: see Checks → Docs vs reality.
+  - `Schema` (`dovira\ContentMcp\Schema`) builds the description:
+    - **Per type:** name, label, hierarchical, whether Polylang translates it,
+      taxonomies, and `fields`.
+      - `fields` comes from the ACF local field groups whose location names
+        that `post_type` (`acf_get_local_field_groups()` → `acf_get_fields()`).
+      - A field is `{name, label, type, required, choices?, sub_fields?}`.
+      - UI-only types (`message`, `tab`, `accordion`) are dropped.
+    - **Per block:** each `acf_get_block_types()` entry
+      `{name, title, fields}`, with fields from the group whose location is
+      `block == name`.
+    - **Taxonomies** `category`, `post_tag`, `service-city`: label, object
+      types, translated, and terms `{id, name, slug, lang?}`, capped at 50
+      plus `terms_total`.
+    - **`service.prices`:** `city_prices` is dropped, and `price` is described
+      as «ціна в місті цього сайту; null — ціни немає, сайт показує телефон».
+    - The ACF and Polylang `function_exists()` checks are injected.
+  - `DescribeSite::execute()` = Step 1's `{city, languages, user}` plus
+    `{post_types, blocks, taxonomies}`.
+  - The options page group `group_settings` is out of scope and never
+    described.
+- [x] **2. Reading one post: `PostReader` with ACF, blocks, translations and
+  the price in this city.** Commit:
+  `feat(content-mcp): PostReader — one post in the connector's shape`.
+  - `FieldValues` (`dovira\ContentMcp\FieldValues`) normalizes ACF formatted
+    values, by field name, through the field definitions:
+    - image → `{id, url, alt}`;
+    - file → `{id, url, title}`;
+    - gallery → `[{id, url, alt}]`;
+    - post_object / relationship / page_link with ids → `{id, title}` or a
+      list of them;
+    - taxonomy → `[{id, name}]`;
+    - repeater → `[{…}]`, group → `{…}`, recursing into both;
+    - every other type → as ACF returns it.
+    - An image or file given as id, url or array always ends in the same
+      shape.
+  - `CityPrice` (`dovira\ContentMcp\CityPrice`): `term_id( $city )` finds the
+    install's own `service-city` term by slug, with the city from the site
+    URL. `resolve( $row, $term_id )` gives:
+    - `is_price_general` true → `price`;
+    - otherwise → `city_prices['price_city_{term_id}']`;
+    - empty or missing → `null`, never a made-up number (root invariant 3).
+
+    This is the site's own rule (`single-service.php:116`, `search.php:110`).
+    Step 3's `PriceRows` reuses it.
+  - `PostReader` (`dovira\ContentMcp\PostReader`): `read( WP_Post )` → the
+    FEATURE.md post shape:
+    - `{id, type, status, lang, translations:{uk,ru}, title, slug, parent, link, menu_order, modified, terms:{taxonomy:[{id,name}]}, acf:{…}, blocks:[…]}`.
+    - `acf` = `get_fields( $id )` normalized by `FieldValues`. For a `service`,
+      every `prices` row has `price` resolved by `CityPrice`, and
+      `city_prices` is removed. `is_price_general`, `cities`, `linked_page`
+      are kept.
+    - `blocks`, for every post with non-empty `post_content` (Question 1):
+      `parse_blocks()`, then:
+      - an `acf/*` block → `{block, fields}`. The fields come from ACF's own
+        block meta (`acf_setup_meta( $data, $block_id, true )` →
+        `get_fields( $block_id )` → `acf_reset_meta()`), normalized by
+        `FieldValues`. This was checked on page 176 while planning.
+      - any other block → `{block, html}`, with `html` = `serialize_block()`
+        of it.
+      - freeform text → `{block: "core/freeform", html}`.
+    - `lang` / `translations` come from `pll_get_post_language()` /
+      `pll_get_post_translations()`. Record types are untranslated:
+      `lang: null`, `translations: {}`.
+    - `link` = `get_permalink()` for a viewable type, otherwise `null`.
+- [x] **3. The four read abilities on the server.** Commit:
+  `feat(content-mcp): list-posts, get-post, list-terms, list-media`.
+  - Each gets the Step 1 pattern: `args()` with an input schema and an output
+    schema, `meta.annotations` readonly, `meta.mcp.public: false`,
+    `show_in_rest: true`. Each is added to `Catalogue::TOOLS` and
+    `Abilities::definitions()`.
+  - **`dovira/list-posts`**
+    - Input: `type` (required, from `Scope`), `search`, `status`
+      (`publish|draft|pending|private|future|any`, default `any`), `lang`
+      (`uk|ru|all`, default `uk`; ignored for record types), `terms`
+      `{taxonomy: [ids]}`, `page` ≥ 1, `per_page` 1–50 (default 20).
+    - Output: `{items:[{id, type, status, lang, translations, title, modified, link}], total, page, per_page}`.
+    - Permission: `Scope::can_read_type( type )`.
+  - **`dovira/get-post`**
+    - Input: `id`.
+    - Output: the `PostReader` shape.
+    - Permission: the post exists, its type is in scope, and
+      `Scope::can_read_type()`.
+    - An editor gets a permission error on the three record types, not an
+      empty object.
+  - **`dovira/list-terms`**
+    - Input: `taxonomy` (`category|post_tag|service-city`), `search`, `lang`,
+      `page`, `per_page` ≤ 50.
+    - Output: `{items:[{id, name, slug, parent, count, lang}], total, …}`.
+    - Permission: `current_user_can( $tax->cap->assign_terms )`.
+  - **`dovira/list-media`**
+    - Input: `search`, `mime` (e.g. `image`), `page`, `per_page` ≤ 50.
+    - Output: `{items:[{id, title, url, alt, mime, width, height, date}], total, …}`.
+    - Permission: `upload_files`.
+  - Pagination and caps: a schema `maximum` of 50 for `per_page`. Execute also
+    clamps it, because the REST route validates against the schema too.
+  - Run locally on DDEV with temporary application passwords (administrator,
+    editor), deleted afterwards:
+    - `tools/list` shows 5 tools;
+    - `get-post` on a service, on page 176 and on a blog post;
+    - the editor's `get-post` / `list-posts` on `conversation` are refused,
+      the administrator's are listed.
+  - In the same commit, update FEATURE.md → Interfaces (shapes as
+    implemented).
+
+### Files to create/change
+- New, in `wp-content/themes/dovira/inc/features/content-mcp/`: `Scope.php`,
+  `Schema.php`, `FieldValues.php`, `CityPrice.php`, `PostReader.php`,
+  `ListPosts.php`, `GetPost.php`, `ListTerms.php`, `ListMedia.php`.
+- Changed in the same folder: `DescribeSite.php`, `Catalogue.php`,
+  `Abilities.php`, `bootstrap.php` (requires).
+- New tests, in `wp-content/themes/dovira/tests/Unit/ContentMcp/`:
+  `SchemaTest.php`, `FieldValuesTest.php`, `CityPriceTest.php`,
+  `PostReaderTest.php`, `ReadAbilitiesTest.php`.
+- Changed test: `ServerTest.php`. The catalogue now has 5 names; the test
+  still asserts `TOOLS` equals the registered names.
+- Docs below.
+- No shared code: `inc/post-types`, `inc/acf/**` and `functions.php` are only
+  read.
+
+### Tests to write
+PHPUnit with Brain\Monkey. ACF (`acf_get_local_field_groups`,
+`acf_get_fields`, `acf_get_block_types`, `get_fields`, `acf_setup_meta`,
+`acf_reset_meta`), Polylang and WP functions are stubbed. Every
+`function_exists()` check is injected.
+- **`SchemaTest`**
+  - A fixture of the service, page and block groups produces the
+    description.
+  - `message` / `tab` fields are dropped.
+  - `prices` has no `city_prices`, and `price` carries the "this city"
+    description.
+  - The options group is absent.
+  - Terms are capped at 50, with `terms_total`.
+  - Without ACF or Polylang there are no fields / no languages, and no error.
+- **`CityPriceTest`** (test-critical zone «per-city price grouping»):
+  - a general row gives `price`;
+  - a per-city row gives the own city's `price_city_{id}`;
+  - an empty or missing column gives `null`;
+  - a Kyiv URL picks the `kyiv` term;
+  - an install with no term for its city gives `null` for every per-city
+    row, and the general rows keep their price.
+- **`FieldValuesTest`**
+  - Image as id / url / array all give `{id,url,alt}`.
+  - post_object gives `{id,title}`.
+  - Repeaters and groups are normalized recursively.
+  - Unknown types pass through.
+- **`PostReaderTest`**
+  - The service's `prices` are resolved and `city_prices` is gone.
+  - An `acf/*` block's flattened data (`years_0_year` + `_years_0_year`)
+    comes out as `fields.years[0].year` through the meta API calls.
+  - A core block gives `{block, html}`; a freeform gives `core/freeform`.
+  - A blog post made of `acf/rich-text` gives `blocks`.
+  - `translations` / `lang` come from Polylang.
+  - A record type has `lang: null`; a non-viewable type has `link: null`.
+- **`ReadAbilitiesTest`**
+  - An editor (no `edit_others_conversations`) is refused `get-post` /
+    `list-posts` on each of the three record types; an administrator is not.
+  - A type outside the scope is refused.
+  - `per_page` 500 is clamped to 50.
+  - `list-media` without `upload_files` is refused.
+  - Every catalogued ability has an output schema and `readonly: true`.
+
+### Docs to update
+- `docs/features/content-mcp/FEATURE.md` → Interfaces: the post shape as
+  implemented (`blocks` for every type, `{block, html}` for non-ACF blocks,
+  service `prices[].price` resolved, no `content_html`), plus the list shapes
+  and permissions.
+- `docs/DATA-MODEL.md` → Feature `content-mcp`: one line, "reads `service`
+  prices through the same general/per-city rule as `single-service.php`; stores
+  nothing". Nothing else, since the reader adds no data.
+
+### Checks
+- **ANTI-PATTERNS / CONVENTIONS: none violated.**
+  - ACF is read only through `get_fields()` / ACF's block meta, never
+    `get_post_meta()` by stored key.
+  - `service-city` is read, never written.
+  - The city comes from the site URL.
+  - `function_exists()` checks are injected.
+  - Only `dovira/*` tools are on the server, with `meta.mcp.public: false`.
+  - No URL literal, no new dependency.
+- **Docs vs reality:**
+  - mismatch: Step 2 says the record types' permission is "`read_post` of that
+    type".
+    - All 91 local records are `publish`, and for a public status core maps
+      `read_post` to `$post_type->cap->read` = `read`
+      (`wp-includes/capabilities.php:369`). The editor has `read`, so they
+      would be **allowed**.
+    - Resolved: `edit_others_posts` of the type (`edit_others_conversations`),
+      the precedent of `dovira-bridge-conversations`
+      (`dovira_bridge_conv_capability()`). It refuses the editor as the step
+      requires.
+  - mismatch, settled by Question 1:
+    - DECISIONS "The tool catalogue speaks ACF field names and block names…"
+      and FEATURE.md say a blog post is "core-block HTML" read as
+      `content_html`.
+    - In the local DB, 23 of 25 posts are built from `acf/*` blocks (mostly
+      `acf/rich-text`) and 2 from core blocks.
+    - 7 services (`templates/sub-service.php`) and 28 employees also carry
+      `acf/*` block content that their templates render with `the_content()`.
+  - mismatch: ACF block data is stored flattened, the same way as postmeta
+    (`years_0_year` plus `_years_0_year` → field key, a repeater count under
+    its name), not as "`field_key → value` and `_name → field_key` pairs".
+    - Resolved: read through ACF's own `acf_setup_meta()` / `get_fields()`,
+      which returns names and lists (checked on page 176: `years` → 11 rows),
+      instead of a hand-written mapper.
+    - Step 4's writer will need the reverse, ACF's flattening on save; that is
+      for Step 4's plan.
+  - match:
+    - 1160 of 1444 price rows are per-city (`is_price_general = 0`) and keep
+      their amount in `city_prices.price_city_4`, so a raw `price` would be
+      empty for 80% of rows.
+    - The "price in this city" rule above is the site's own
+      (`single-service.php:116`).
+  - note: this install has one `service-city` term (`kharkiv`, id 4). The
+    Kyiv install's term slugs are unknown. If its own term is not slug `kyiv`,
+    `price` is `null` for its per-city rows. Sprint 2 Step 3's production
+    checklist checks it.
+  - note: 4 services use `templates/sub-service.php`, which the service field
+    group excludes. Their `acf` is `{}` and their content is in `blocks`.
+  - note: ACF Pro installed is 6.8.10, while TECH-STACK says 6.8.8. That
+    changes no task and is left for an `/adhoc`.
+- **Design:** n/a. DECISIONS "No UI design phase".
+- **Check command:** `bin/check.sh` (docs/TECH-STACK.md → Check command).
+  Green on `master` after Step 1: theme 182.
+- **Not locally verifiable:** the claude.ai conversation items of the
+  verification («що є на сайті?», «покажи послугу Терапія»…). They are
+  checked on `dev.dovira.vet` after the user's push to `dev`. Every ability
+  is also run locally over HTTP in task 3.
+
+### Questions / ambiguities
+1. **How is a post's content read, when blog posts (and some services and
+   employees) are built from `acf/*` blocks?** The answer changes the
+   `PostReader` output shape, its tests, and FEATURE.md → Interfaces, which
+   is the feature's interface.
+   - **A (recommended):** every post with content is read as
+     `blocks: [...]`, pages and blog posts alike:
+     - `acf/*` → `{block, fields}`;
+     - any other block → `{block, html}`, its serialized markup;
+     - `content_html` is dropped from the shape.
+
+     The agent then sees a blog post's text as named fields. The same shape
+     works for the 7 services and 28 employees that carry blocks. Step 4's
+     writer gets a shape it can write back. At the close this amends the
+     DECISIONS catalogue entry with a new entry.
+   - **B:** keep FEATURE.md as written: a `post` gets `content_html` = raw
+     `post_content`. For 23 of 25 posts the agent then sees ACF JSON inside
+     block comments, and Step 4 would write raw block markup it can easily
+     corrupt. Services and employees would get no content at all.
+   - **C:** `content_html` = rendered HTML (`apply_filters( 'the_content' )`).
+     Readable, but it cannot be written back, and it differs from what the
+     editor stores.
+   - Resolved: approved as recommended — A: every post with content is read as `blocks` (`acf/*` → `{block, fields}`, any other → `{block, html}`), no `content_html`.
+
+### Step report (`/do-step`, 2026-11-05)
+**Gate.** Green after every task. The theme PHPUnit count went 182 → 190 → 225 → **245**, and 168 files are linted.
+
+**Built as planned:**
+- `describe-site` describes the content model. Live on DDEV:
+  - 8 types, 21 blocks;
+  - `category` 2 terms, `post_tag` 0, `service-city` 1;
+  - `service.prices` has `price` with the "this city" description and no `city_prices`.
+- **Size:** the whole description is ~59 KB, most of it the 21 blocks' fields with their choice lists. It is one call per conversation and is not trimmed in this step.
+- `PostReader` and the four read tools match the plan; the shapes are recorded in FEATURE.md → Interfaces.
+
+**Local MCP run on DDEV.** Done with a temporary editor user and application passwords, both deleted afterwards:
+- `tools/list` → `describe-site`, `list-posts`, `get-post`, `list-terms`, `list-media`.
+- Service 18 «Приймальне відділення»:
+  - `lang: uk`, `translations: {uk: 18, ru: 1641}`;
+  - `prices[0].price: 550`, read from the Kharkiv column of a per-city row, with no `city_prices`.
+- Page 176: `acf/about` with `years[0] = {year: 2014, title: «Початок шляху», …}`.
+- Blog post 1498: `terms.category = [Без категорії]`, `blocks = [acf/rich-text]` with named fields.
+- `list-terms category`, `list-media mime=image` (394 in the library): items as specified.
+- `per_page: 500` → refused by the schema: «input[per_page] повинен бути між 1 і 50».
+- Administrator `list-posts conversation` → 89. Editor `list-posts` / `get-post` on conversation 1730 → «Permission denied».
+- Editor `get-post 18` → read.
+- Missing id → «Запису з id 999999 немає.» Attachment 768 (outside the scope) → refused.
+
+**Notes:**
+- Implementation choices:
+  - The read abilities share `ReadTools` (meta, paging, list schema).
+  - `ListPosts` and `ListMedia` take an injectable query callable, so the query args are unit-tested without `WP_Query`.
+  - `Schema::term()` and `DescribeSite` take `object`/injected collaborators, because the test bootstrap loads no `WP_Term` and no core block functions.
+- `GetPost::can()` lets a missing id through, so the agent hears "not found" rather than "not allowed".
+- `list-terms` returns the slug as WordPress stores it; the Ukrainian category slug is percent-encoded.
+- For Step 4: ACF block data is flattened on save. Writing blocks back will go through ACF's own flattening, the reverse of `acf_setup_meta`.
