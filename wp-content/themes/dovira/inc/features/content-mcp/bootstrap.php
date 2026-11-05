@@ -26,6 +26,7 @@ require_once __DIR__ . '/FieldValues.php';
 require_once __DIR__ . '/FieldInput.php';
 require_once __DIR__ . '/CityPrice.php';
 require_once __DIR__ . '/PostReader.php';
+require_once __DIR__ . '/PostWriter.php';
 require_once __DIR__ . '/ReadTools.php';
 require_once __DIR__ . '/DescribeSite.php';
 require_once __DIR__ . '/ListPosts.php';

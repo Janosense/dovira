@@ -998,7 +998,7 @@ none
     needs keys.
   - Tests: `FieldInputTest`. Every case of `FieldValuesTest` round-trips:
     `FieldInput::value( FieldValues::value( x ) )` gives the stored form.
-- [ ] **2. `PostWriter`: a partial change set of one post, planned and
+- [x] **2. `PostWriter`: a partial change set of one post, planned and
   then applied.** Commit: `feat(content-mcp): PostWriter plans and applies a
   partial post change`.
   - `PostWriter::plan( $post, $changes )` returns
