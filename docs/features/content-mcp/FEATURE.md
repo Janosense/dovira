@@ -36,7 +36,7 @@ Owns no table and no post type. Owns: the transients `dovira_mcp_confirm_{hash}`
   - Records (`conversation`, `application`, `questionary`) need `edit_others_conversations`, so administrators and the support role, never an editor. It is not `read_post`: core maps that to `read` for a published post.
   - `list-terms` needs the taxonomy's `assign_terms`; `list-media` needs `upload_files`; `find-price-rows` needs `service`'s `edit_posts`.
   - A missing id gets `dovira_post_not_found`; a type outside the scope is refused.
-  - Every list is `{items, total, page, per_page}`, with `per_page` ≤ 50 (the schema refuses more).
+  - Every list is `{items, total, page, per_page}`, with `per_page` ≤ 50 (the schema refuses more, `ReadTools::paging()` clamps a direct call; `ReadAbilitiesTest` holds it for every list of the catalogue). `describe-site` lists at most 50 terms per taxonomy (with `terms_total`). `get-post` returns the whole post: no field is truncated and no length is reported (Sprint 2 Step 3, Question 1).
 - **Result shapes:**
   - A post = `{id, type, status, lang, translations:{uk,ru}, title, slug, parent, link, menu_order, modified, terms:{taxonomy:[{id,name}]}, acf:{…by field name; repeater → [{…}], group → {…}, image → {id,url,alt}, file → {id,url,title}, post_object → {id,title}, relationship → [{id,title}]}, blocks:[…]}`.
     - `blocks` is the content of **every** type (blog posts, services and employees are built from `acf/*` blocks too). An `acf/*` block is `{block, fields}`, read by name through ACF's block meta. Any other block is `{block, html}`, its serialized markup. Freeform text is `core/freeform`. There is no `content_html`.

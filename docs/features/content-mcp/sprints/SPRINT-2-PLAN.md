@@ -703,7 +703,7 @@ none
     `ReadTools::PER_PAGE_MAX = 50` in the schema of every list, and clamped
     in `ReadTools::paging()`. This task adds the test over the catalogue
     that holds it. `get-post` truncates nothing (Question 1).
-- [ ] **2. The production checklist, the restore and the docs.** Commit:
+- [x] **2. The production checklist, the restore and the docs.** Commit:
   `docs(content-mcp): production checklist and handover`.
   - **`PRODUCTION-CHECKLIST.md`** becomes the one list an install is taken
     through. Section A, before the first session:
