@@ -51,7 +51,7 @@ Written for the recommended answer to Question 1 (A).
     3. `update_field` per field, through the field key;
     4. `wp_set_object_terms`;
     5. returns the new id. A failure after the insert names the created id.
-- [ ] **2. `dovira/create-post`.** Commit: `feat(content-mcp): create-post
+- [x] **2. `dovira/create-post`.** Commit: `feat(content-mcp): create-post
   behind preview, token and dump`.
   - `CreatePost extends WriteAbility`.
   - **Input:** the above plus `confirmation`; `required: [post_type, title,

@@ -189,7 +189,7 @@ final class UpdatePost extends WriteAbility {
 	/**
 	 * @return array<string, array<string, mixed>>
 	 */
-	private static function fields_schema(): array {
+	public static function fields_schema(): array {
 		return [
 			'title'      => [ 'type' => 'string' ],
 			'status'     => [

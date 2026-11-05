@@ -22,6 +22,7 @@ final class Catalogue {
 		ListMedia::NAME,
 		UpdatePriceRow::NAME,
 		UpdatePost::NAME,
+		CreatePost::NAME,
 		TrashPost::NAME,
 	];
 }
