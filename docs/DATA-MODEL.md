@@ -331,6 +331,95 @@ wp option delete dovira_search_stats_db_version
 wp cron event delete dovira_search_stats_purge
 ```
 
+## Feature `content-mcp` (transients, cron, files — no table)
+The connector owns no table, post type or option. It writes posts, postmeta
+(through ACF), terms and attachments of `core` as the connected user, through
+the same WordPress functions the admin uses. Its own data:
+
+### Transient `dovira_mcp_confirm_{hash}` — one pending confirmation, 15 minutes
+`hash` = SHA-256 of (user id, `Mcp-Session-Id`, canonical JSON of the write
+payload: keys sorted at every level, without `confirmation`). Value:
+`{user_id, session, payload_hash, token_hash, diff, issued_at}`. The random
+token the preview returns is stored only as its SHA-256 (`token_hash`). A new
+preview of the same payload replaces the pending one. Deleted when the token
+is used, so a token writes once (`Confirmation`).
+
+### Transient `dovira_mcp_dumped_{session}` — the session has its dump, 24 hours
+Value: the dump file name. `session` = the adapter's `Mcp-Session-Id`; an empty
+session (REST `wp-abilities/v1`, WP-CLI) sets no transient and dumps every time.
+
+### Dump files — `DOVIRA_MCP_DUMP_DIR` (fallback `wp-content/backup-db/`)
+`dovira-{host}-{YYYY-MM-DD}-{HHMMSS}.sql.gz`, mode `0600`, a numeric suffix
+when the name exists; never overwritten or renamed. Whole database, written by
+PHP (`SHOW TABLES`, `SHOW CREATE TABLE` + `INSERT`s of 500 rows, gzip level
+6). The file opens with a comment naming the host and the date and ends with
+`-- tables: N` and `-- finished in X s, peak memory Y MB` (read with
+`zcat … | tail -2`); a dump without that footer is incomplete and is never
+left behind: any failure deletes the file and aborts the write. The fallback
+folder also holds an `.htaccess` (deny) and an empty `index.php` written by
+the feature.
+
+### Cron `dovira_mcp_dump_retention` (daily) and filter `dovira_mcp_dump_retention_days`
+Deletes dump files of the pattern above older than the filtered days (default
+90, never fewer than 1). Nothing else is ever deleted from the folder.
+
+### Writing posts
+The connector stores nothing of its own here: a change goes through
+`wp_update_post` (title, status, slug, parent, menu order, `post_content`),
+`wp_set_object_terms` (existing terms only) and `update_field` (the post's
+ACF fields), as the connected user. An `acf/*` block's `attrs.data` is the
+flattened `name` / `_name` → field key data that ACF's own save returns
+(`acf_setup_meta()` capture), in the block's field order; a block's other
+attrs are kept; a new block also stores its unnamed fields' defaults.
+`trash-post` sets `post_status = trash` through `wp_trash_post` (with
+WordPress's `_wp_trash_meta_*`), never deletes.
+
+`create-post` inserts with `wp_insert_post` (author = the connected user,
+the status the person named), sets the language `uk`
+(`pll_set_post_language`), then writes the ACF fields and the terms. A new
+service's `prices` rows are general rows: `is_price_general = 1`, `price`,
+and `cities` = `["city_{term_id}"]` of this install's own `service-city`
+term; `city_prices` is never written. `create-term` inserts a `category` /
+`post_tag` term with `wp_insert_term` and sets it to `uk`
+(`pll_set_term_language`) when Polylang translates the taxonomy;
+`update-term` uses `wp_update_term`. No `service-city` term is ever
+written.
+
+`create-translation` inserts the Russian copy of a Ukrainian post with
+`wp_insert_post` (author = the connected user; `page_template`,
+`_thumbnail_id` for `page` / `post`, and the source's `post_date` /
+`post_date_gmt` as arguments), sets it to `ru` (`pll_set_post_language`) and
+links it to the source and its other translations
+(`pll_save_post_translations`). Its ACF fields are written with
+`update_field` by field key: the payload's translated values, and the
+source's raw values (`get_field_objects( id, false )`) for the rest — a
+service's price rows as stored, with only `title` / `description` replaced.
+Its terms are the source's mapped to their `ru` terms (`pll_get_term`),
+`service-city` by the same id.
+
+`upload-media` adds an attachment through `media_handle_sideload()`: author =
+the connected user, `post_parent` = `attach_to` (0 when not asked), the file
+in the uploads folder with WordPress's own metadata and sizes, and the alt
+text as `_wp_attachment_image_alt`. Attachments have no language (Polylang's
+media support is off).
+
+### Reading `service` prices
+The connector stores nothing to read prices. It reads a row's price in this
+install's city by the rule of `single-service.php`:
+- `is_price_general` → `price`;
+- otherwise `city_prices_price_city_{term_id}` of the install's own
+  `service-city` term (the term whose slug is the city of the site URL);
+- `empty()` → no price (`null`).
+
+### Sessions
+The MCP sessions are the adapter's: user meta of the connected user, idle
+expiry 24 h (plugin `mcp-adapter`). This feature reads the session id from the
+request only: `Session` keeps the `Mcp-Session-Id` header of a REST request to
+`/mcp/dovira` (filter `rest_request_before_callbacks`), which the adapter has
+checked against the user's sessions (protocol 2025-11-25 and the legacy
+revisions it maps there). Any other request (REST `wp-abilities/v1`, WP-CLI,
+the sessionless revision 2026-07-28) has the session `''`.
+
 ## Relations
 ```
 service-city ──< service            application >── vacancy (post_object)

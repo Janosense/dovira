@@ -22,6 +22,122 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-05 — [content-mcp] Sprint 2 Step 3 — Production checklist and handover
+- Changed:
+  - `Catalogue::TOOLS` is in the order a chat uses the tools (reads; a term or image before the post; the Russian copy after; trash last).
+  - `Server::INSTRUCTIONS` names all 14 tools; tests hold that and every list's `per_page` ≤ 50. Theme PHPUnit 458.
+  - `PRODUCTION-CHECKLIST.md` is the install procedure: `Claude-User` allowed, plugin, dump folder, city-term slug, a password per person, claude.ai's real form, smoke test, retention. Section D: restore (`gunzip -c … | wp db import -`, probed on DDEV), removing a person. Both productions are ticked in C.
+- Shared code: none changed.
+- Decisions: Question 1 A (`get-post` gets no length field). Question 2 B (productions taken through from `master` before the close). LEARNINGS: production verification vs task-branch verification.
+- Open:
+  - The guide's values were not reported: the `curl` codes, the dump footers (checklist B's web-request row stays empty), Kyiv's term id and webroot path.
+  - One more hand deploy of `master` and `kyiv` brings this step's instructions and order to production.
+  - `master` is not pushed to `origin/main`.
+  - The leaked password's revocation is guide item 1, verified.
+- Sprint 2 complete — all steps closed, content-mcp/sprint-2-handover merged into main
+
+## 2026-11-05 — [content-mcp] Sprint 2 Step 2 — The Russian copy, and images
+- Changed:
+  - `dovira/create-translation` (`Translator`) makes the `ru` copy of a Ukrainian post without one, linked through `pll_save_post_translations()`. Carried from the source: untranslated ACF values (raw by key), content, terms in `ru`, the parent's translation, template, featured image (`page` / `post`) and date. Prices are always the source's; only row texts are translated.
+  - `dovira/upload-media` (`MediaWriter`) uploads an image from a URL or base64. Preview = HEAD only (type, size, public host); the capped download and `media_handle_sideload()` come after consent. Cap: `dovira_mcp_upload_max_bytes`, 10 MB.
+  - `WriteAbility::run()` passes extra write keys (`media`) through. Fourteen tools; theme PHPUnit 456.
+- Shared code: none changed. `PostCopier`'s Russian-slug lines are repeated in `Translator`, not shared.
+- Decisions: `wp_safe_remote_get()` with `limit_response_size` instead of `download_url()` (no cap). TECH-STACK CONVENTIONS: the `WriteAbility` line covers extra result keys. DOMAIN: the Russian copy rule.
+- Open:
+  - A pasted image can't be uploaded from claude.ai: the model can't pass its bytes; URLs work.
+  - Sprint 1's open items still stand: the Step 3 dump numbers, the local `DOVIRA_MCP_DUMP_DIR`, `master` not on `origin/main`, and the production prerequisites for Step 3.
+
+## 2026-11-05 — [content-mcp] Sprint 2 Step 1 — Creating posts of every writable type, and blog terms
+- Changed:
+  - `dovira/create-post` (`PostWriter::create()`) inserts a Ukrainian service, employee, vacancy, page or blog post (blog only where the `news` page exists) in the status the person names, with no default. Missing required fields are named (`image`, `photo`, `description`).
+  - A new service's price rows are general rows of this city.
+  - `dovira/create-term` and `dovira/update-term` (`TermWriter`) handle `category` / `post_tag` only; new terms are `uk`.
+  - Twelve tools; theme PHPUnit 417.
+- Shared code: none changed.
+- Fixed on the way: a new `acf/*` block now stores its fields' defaults. Without them it rendered hidden (`is_visible`), in `update-post` since Sprint 1 Step 4 too.
+- Decisions:
+  - DECISIONS "A new service's price rows are written by `create-post` as general rows of this city".
+  - TECH-STACK ANTI-PATTERNS: block defaults.
+  - LEARNINGS: no named route for a closed step's defect found mid-step.
+- Open:
+  - Sprint 1's open items still stand: the Step 3 dump numbers, the local `DOVIRA_MCP_DUMP_DIR`, `master` not on `origin/main`, and the production prerequisites for Step 3.
+
+## 2026-11-05 — [content-mcp] Sprint 1 Step 4 — Editing an existing post, and trashing one as an administrator
+- Changed:
+  - `dovira/update-post` (`PostWriter`, `FieldInput`) changes only the named fields of a content post: title, status, slug, parent, menu order, existing terms, its ACF fields, and blocks within the editor's allowed set. An `acf/*` block takes named fields; ACF flattens them, and unnamed fields stay as stored.
+  - A post's Russian copy is written only when named as `translation`.
+  - `dovira/trash-post` (administrators) moves a post to the trash with `wp_trash_post`.
+  - Records, `service.prices`, and new terms are refused.
+  - Nine tools; theme PHPUnit 373.
+- Shared code: none changed. `dovira_allowed_block_types()` is called, read only.
+- Decisions:
+  - Per DECISIONS, blocks are written for every type and there is no `content_html`.
+  - The Step 3 DECISIONS consequence is corrected: a post's Russian copy is never written on its own.
+  - TECH-STACK ANTI-PATTERNS: a block is written through the `acf_setup_meta()` capture, with unchanged fields unformatted.
+- Open:
+  - The Step 3 numbers (dump footer and fallback status on dev) are still unreported.
+  - The local `wp-config.php` sets `DOVIRA_MCP_DUMP_DIR` to dev's path, so DDEV writes fail there.
+  - `master` is not on `origin/main`.
+  - Production prerequisites (Sprint 2 Step 3): `Claude-User` allowed, a dump folder per install, Kyiv's `kyiv` city slug.
+- Sprint 1 complete — all steps closed, content-mcp/sprint-1-read-and-price merged into main
+
+## 2026-11-05 — [content-mcp] Sprint 1 Step 3 — The write protocol: confirmation tokens, the session dump, and the price change
+- Changed:
+  - The write protocol (`WriteAbility`): preview `{diff, warnings, confirmation}`, then the same payload with the token → `Dump::ensure()` → write `{written, dump, warnings}`. A token is bound to user, session and payload and works once (`Confirmation`, 15 min, stored hashed).
+  - `Session` reads `Mcp-Session-Id` from the `/mcp/dovira` request, because the adapter doesn't pass it to abilities.
+  - `Dump`: a PHP-only gz dump into `DOVIRA_MCP_DUMP_DIR` (fallback `wp-content/backup-db/` + `.htaccess`), `0600`, a suffix instead of overwriting, a duration/memory footer; daily 90-day retention.
+  - New tools `find-price-rows` and `update-price-row` (`PriceRows`). The price goes into the row's own city column and follows into the Russian row of the same index. Theme PHPUnit 311.
+- Shared code: none.
+- Decisions:
+  - DECISIONS "Only a row's price follows into the Russian copy, and a price is changed only in the Ukrainian copy".
+  - TECH-STACK CONVENTIONS: every write ability extends `WriteAbility`; the session comes only from `Session::id()`.
+  - LEARNINGS: values a guide asks the user to report have no way into `/close-step`.
+- Open:
+  - Not reported at the close: the dump footer from dev (web-request seconds and memory), and the HTTP status of the fallback folder behind dev's nginx. `PRODUCTION-CHECKLIST.md` → B keeps its "filled from the Step 3 verification" row until they are reported.
+  - `_to_delete/content-mcp-dump-spike.php` can now go (`/adhoc`).
+  - Earlier open items still stand: let `Claude-User` through on production; Kyiv's term slug `kyiv` (per-city writes there are refused without it).
+  - An ACF repeater write stores empty sub-fields of every row, as a save in wp-admin does.
+
+## 2026-11-05 — [content-mcp] Sprint 1 Step 2 — Reading: describe the site, list and open any post, terms and media
+- Changed:
+  - `describe-site` now describes the whole content model (`Scope`, `Schema`): types with their ACF fields, the 21 blocks, and terms capped at 50.
+  - New tools `list-posts`, `get-post`, `list-terms`, `list-media`, each paginated with `per_page` ≤ 50.
+  - `PostReader` + `FieldValues` read ACF by name, and read every type's content as `blocks` (`acf/*` through ACF block meta, others `{block, html}`).
+  - `CityPrice` gives a service row's price in this city by the site's own rule; it is `null` when there is none, and 80% of rows are per-city.
+  - Records need `edit_others_conversations`, so editors are refused.
+  - Theme PHPUnit 245.
+- Shared code: none. `inc/acf/**`, `inc/post-types/**` and the templates are only read.
+- Decisions:
+  - DECISIONS "Every post's content is read as blocks; there is no `content_html`" (plan Question 1, A). It amends the catalogue entry; Step 4 re-reads it.
+  - TECH-STACK ANTI-PATTERNS: no `read_post` gate on the records, and ACF block data is read only through ACF's block meta.
+  - LEARNINGS: `/fix-step` ownership can deadlock across steps.
+- Verification: Step 1's guide item 4 (claude.ai connect) first failed because the hosting's nginx answers user agent `Claude-User` (also `ClaudeBot`, `GPTBot`) with 405/403 before PHP. Allowing it in the hosting panel fixed dev: `Claude-User` now gets 401 from WordPress. A wrong login (`lditor.user`) was also corrected on the way.
+- Open:
+  - **Before Sprint 2's rollout:** let `Claude-User` through on `dovira.vet` and `kyiv.dovira.vet`; `dovira.vet` blocks it today (403).
+  - Record that requirement and the exact claude.ai form (Без входу, header `authorization`, value `Basic <base64>`) in `PRODUCTION-CHECKLIST.md` / ARCHITECTURE via `/adhoc`.
+  - Kyiv's own `service-city` slug must be `kyiv`, or its per-city prices read `null`.
+  - `describe-site` is ~59 KB.
+  - ACF Pro is 6.8.10, while TECH-STACK says 6.8.8.
+  - The editor's first application password was posted in the chat; it must be revoked.
+
+## 2026-11-05 — [content-mcp] Sprint 1 Step 1 — Delta-audit, the adapter in the repo, and the spike
+- Changed:
+  - Plugin `mcp-adapter` 0.7.1 is committed unchanged; TECH-STACK marks it verified.
+  - New feature `inc/features/content-mcp/` (`Catalogue`, `Abilities`, `DescribeSite`, `Server`). It registers the category `dovira` and the ability `dovira/describe-site` `{city, languages, user:{login, roles, can_delete}}`, and serves the server `/wp-json/mcp/dovira` with exactly `Catalogue::TOOLS`. The agent instructions are the server description.
+  - `bootstrap.php` does nothing without the Abilities API or the adapter.
+  - Theme PHPUnit 182.
+  - Spike: dev's PHP dump took 0.75 s at a 96.5 MB peak (7.18 MB → 0.70 MB gz), see `PRODUCTION-CHECKLIST.md` (new).
+- Shared code: one `require_once` in `functions.php`, after city-popup. Every install also gets a new plugin.
+- Decisions:
+  - TECH-STACK ANTI-PATTERNS: a `dovira/*` ability carries `meta.mcp.public: false`, because `meta.public` would put it on the adapter's default server.
+  - The adapter's gate is `current_user_can( 'read' )`, not `is_user_logged_in()` as DECISIONS says. The effect is the same here (FEATURE.md).
+  - LEARNINGS: no rule for a mid-step task that needs the user's run on a remote host.
+- Open:
+  - The web PHP `max_execution_time` / `memory_limit` on the host were not read; the account `php.ini` says 512M. Step 3's real dump on dev settles it.
+  - Dump folders go directly under `/home/dovirave/`: dev's webroot is nested in `dovira.vet/`.
+  - The verification guide's 4.4 notes (what claude.ai offered for auth, where the header went) were not reported. `PRODUCTION-CHECKLIST.md` → A4 stays as written.
+  - On every hand deploy, activate the plugin by hand.
+
 ## 2026-11-04 — [adhoc] [core] — Language switcher on the Polylang 3.9 API
 - Changed: both `pll_the_languages()` calls in `template-parts/header/site-header.php` pass `show_flags` + `show_wrapper => false` (the removed `show_names` / `display_names_as` are gone, and labels default to names). The «Укр / Рус» shortening (`inc/template-functions.php`) hooks `pll_language_switcher_output` instead of the deprecated `pll_the_languages` filter. Deprecation notices are gone on `/` and `/ru/`, and the markup is still bare `<li>` with `current-lang`. DESIGN and TECH-STACK (Polylang 3.9.1) updated.
 - Decisions: —

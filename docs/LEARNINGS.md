@@ -24,6 +24,34 @@ Entry format:
 
 ---
 
+## [new] 2026-11-05 — A step whose verification is a production run cannot be verified on its task branch
+- **Playbook rule:** `CLAUDE.md` → Step protocol ("An implemented step is verified by the user on its task branch") and Project profile → git model ("a deploy is the user's own action from `main`, never a step task").
+- **What happened:** content-mcp Sprint 2 Step 3's verification is "the user follows the checklist on both productions after the hand deploy from `master`", but the step's own commits stay on its task branch until `/close-step` merges them, and production deploys only from `master`. The plan had to ask (Question 2) and took "productions from today's `master` before the close, final deploy after it"; the values the guide asked to report then had nowhere to go (see the entry below on reported values).
+- **Suggested change:** Say how a step whose verification needs a production run is verified: on the previous `master` before the close, or after the close with an `/adhoc` that records the result.
+
+## [new] 2026-11-05 — A defect in a closed step's code, found by the live check of the step in flight, has no named route
+- **Playbook rule:** `.claude/commands/do-step.md` → step 2 "Scope is frozen" and Step protocol in `CLAUDE.md` ("rework of a closed step goes through `/fix-step`").
+- **What happened:** content-mcp Sprint 2 Step 1's DDEV check showed that a new `acf/*` block written by `PostWriter` rendered hidden, because unnamed fields lacked their defaults. That code was built in Sprint 1 Step 4, which is closed. The new step's own task (a published page from blocks) could not pass without the fix, so it was fixed inside the step and recorded in the step report. No user report existed to start `/fix-step`, and stopping for a mid-step decision would have asked only "fix it here?".
+- **Suggested change:** Say whether a defect in shared code that the step in flight builds on, found by that step's own checks, is fixed in the step (and reported) or always goes to a mid-step decision.
+
+## [new] 2026-11-05 — A verification guide can ask the user to report values, but /close-step has nowhere to take them from
+- **Playbook rule:** `.claude/commands/do-step.md` → step 8 (verification guide) and `.claude/commands/close-step.md` → step 1 ("Running `/close-step` means verified").
+- **What happened:** content-mcp Step 3's guide asked the user to report the dump's footer (seconds, peak memory in a real web request on dev) and the HTTP status of the fallback folder, both meant for `PRODUCTION-CHECKLIST.md`. `/close-step` ran with no message carrying them, so the close could only record them as still open.
+- **Suggested change:** Either a guide item that needs a reported value says the value goes into the `/close-step` arguments, or `/close-step` asks for values a guide marks as "report" before writing the docs.
+
+## [new] 2026-11-05 — /fix-step's "the step awaiting verification owns every failure" deadlocks when an earlier step's item blocks its verification
+- **Playbook rule:** `.claude/commands/fix-step.md` → "Which step" and step 1 "Cause already on the base … STOP: this step is verified and closed first".
+- **What happened:**
+  - While content-mcp Step 2 awaited verification, the user reported that Step 1's guide item (connecting claude.ai) failed.
+  - By the rule, Step 2 owns the report, and a cause on the base means "close Step 2 first". But Step 2 cannot be verified without that connection.
+  - The cause turned out to be the hosting's AI-bot block, outside every step, so the deadlock did not bite this time. It would have, had the cause been in Step 1's code.
+- **Suggested change:** When the failed item belongs to an earlier closed step and blocks the open step's own verification, the fix goes on a fix branch of that closed step and is merged into the open step's base first. The open step's branch then rebases or merges it.
+
+## [new] 2026-11-05 — A step task that needs the user's run on a remote host mid-`/do-step` has no rule
+- **Playbook rule:** `.claude/commands/do-step.md` → "Scope is frozen" / "One task → working state → commit"; `.claude/commands/plan-step.md` → §5 "creates an artefact the check command cannot execute".
+- **What happened:** content-mcp Sprint 1 Step 1's spike had to measure the dump on the shared host, which the agent cannot reach. The plan made it a do-step task paused for the user's SSH run (asked during planning), and the user first asked whether to deploy or use DDEV. Neither command says how a task waits for a user-run measurement. The "Not locally verifiable" rule covers only deploy-type artefacts verified after the step.
+- **Suggested change:** Add to plan-step §5 a case for a measurement only the user can run on a remote host: either a do-step task that names the exact command and stops for the output, or a verification item whose result `/close-step` records.
+
 ## [new] 2026-10-20 — /adhoc's "touches schema" does not say whether a new wp_options row counts
 - **Playbook rule:** `.claude/commands/adhoc.md` → step 1, "too large for an ad-hoc (touches schema, …): STOP".
 - **What happened:** The Telegram thread ad-hoc needed one new `wp_options` row (`telegram_bot_chat_threads`): no table, no migration, but a `docs/DATA-MODEL.md` entry. The agent treated it as not "schema", following the 2026-10-20 plugin ad-hoc that added a settings key, said so in the mini-plan, and the user approved it. The rule leaves that call to the agent.

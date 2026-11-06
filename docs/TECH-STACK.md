@@ -16,6 +16,7 @@
 | Forms | Contact Form 7 | 6.1.6 | contact / franchise / vacancy forms → CPT records via hooks |
 | SEO | Yoast SEO | 27.7 | meta + `wp_yoast_indexable`; one-off import tooling in `temp-data/` |
 | Other plugins | Cyr2Lat 7.0.2 (Latin slugs), Simple Custom Post Order 2.7.2, Enable Media Replace 4.1.9, Akismet 5.7, Loco Translate 2.8.5 | — | — |
+| MCP transport | `mcp-adapter` — the official WordPress MCP Adapter (WordPress AI Team), committed under `wp-content/plugins/mcp-adapter/`, activated by hand per install; serves the `dovira/*` abilities of feature `content-mcp` on `/wp-json/mcp/dovira` | 0.7.1 (verified 2026-11-05 — WordPress.org, released 2026-10-16, requires WP 6.9 / PHP 7.4, tested up to 7.1.4; core here 7.1.4; running on `dev.dovira.vet`, `dovira.vet` and `kyiv.dovira.vet` — the productions taken through `PRODUCTION-CHECKLIST.md` at content-mcp Sprint 2 Step 3, 2026-11-05) | DECISIONS 2026-11-05 — "The content connector is the official MCP Adapter serving Dovira abilities registered by a theme feature"; the Abilities API itself is WordPress core (6.9+) |
 | PHP deps (theme `composer.json`) | vlucas/phpdotenv 5.6.3, anthropic-ai/sdk 0.25.0, guzzlehttp/guzzle 7.11.0; dev: roave/security-advisories | — | `.env` loading; CLI translation; `vendor/` is committed |
 | Front-end build | Vite + PostCSS (preset-env stage 1, assets, prefix-selector, replace) + LightningCSS | 5.4.19 / 8.4.49 / 1.28.2 | `source/` → hashed `assets/` with manifest; `assets/` is committed |
 | Front-end libs | Swiper 11.2.1, Fancybox (`@fancyapps/ui`) 5.0.36, iMask 7.6.1; vanilla ES modules, no framework | — | dynamic `import()` per module in `scripts/app.js` |
@@ -172,6 +173,53 @@ changes) — DECISIONS "Testing tooling and the project check command".
     before 2024 do not pass custom properties into `::backdrop`, so write the
     value (city-popup Sprint 1 Step 3).
 
+- Do not write an ACF value with `update_post_meta()` / `$wpdb` and do not
+  read one with `get_post_meta()` by its stored key — go through
+  `update_field()` / `get_field()` (`get_fields()`), by field name on the
+  post, so ACF keeps the `_{name}` field-key rows and the repeater's row
+  count in step; a connector or script that writes `prices_0_price` directly
+  leaves a repeater the editor cannot open (DECISIONS 2026-11-05 — The tool
+  catalogue speaks ACF field names and block names, prices have their own
+  tools, and a price change mirrors into the Russian copy by row index).
+- Do not expose a core or adapter ability, or an ability of another plugin, on
+  the `dovira` MCP server, and do not register an ability of this project on
+  the adapter's default server — the `dovira` server's tool list is the
+  feature's whole surface, and every tool on it carries the write protocol
+  (DECISIONS 2026-11-05 — The content connector is the official MCP Adapter
+  serving Dovira abilities registered by a theme feature).
+  - So a `dovira/*` ability never sets `meta.public: true`. The adapter reads
+    `meta.public` as the default of `meta.mcp.public`, and that flag is what
+    lets its default server discover and execute an ability.
+  - Every one carries `meta.mcp.public: false` and `meta.show_in_rest: true`
+    instead (`DescribeSite::args()`).
+  - The `dovira` server lists abilities by name from `Catalogue::TOOLS` and
+    ignores the flag (content-mcp Sprint 1 Step 1).
+
+- Do not gate a `conversation` / `application` / `questionary` read with
+  `read_post` (or any check that reduces to it). The records are `publish`,
+  and core maps `read_post` of a public status to the type's `read` cap, plain
+  `read`, which every editor has. Gate with the type's `edit_others_posts`
+  (`edit_others_conversations`) instead: `Scope::can_read_type()` in
+  `inc/features/content-mcp/`, the same gate `dovira-bridge-conversations`
+  uses (content-mcp Sprint 1 Step 2).
+- Do not read an ACF block's `attrs.data` by its stored keys or with a
+  hand-written key mapper. It is flattened like postmeta: `years_0_year` plus
+  `_years_0_year` → field key, and a repeater's row count under its name. Read
+  it by name through ACF:
+  `acf_setup_meta( $data, $block_id, true )` → `get_field_objects( $block_id )`
+  → `acf_reset_meta( $block_id )` (`PostReader::block_fields()`). Write it
+  through ACF the same way: field-key values (`FieldInput::keyed()`) into
+  `acf_setup_meta()`, which simulates ACF's save and returns the flattened
+  data (`PostWriter::acf_block()`). Fields not being changed are taken
+  unformatted (`get_fields( $block_id, false )`), never from the reader's
+  formatted values, which would rewrite a wysiwyg with `<p>` and a
+  true_false `'1'` as `true`. A **new** block gets every unnamed field's
+  `default_value`, as the block editor stores it on insert: ACF applies a
+  default only to a field the block data names, so a block stored with its
+  named fields alone renders hidden (`is_visible`) (DECISIONS 2026-11-05 —
+  Every post's content is read as blocks; content-mcp Sprint 1 Step 4,
+  Sprint 2 Step 1).
+
 ## CONVENTIONS (mandatory reading before writing code)
 <!-- Project-wide rules for code that later steps must follow and would
      otherwise write differently, where the stack has no default or leaves
@@ -186,6 +234,7 @@ changes) — DECISIONS "Testing tooling and the project check command".
      of one code area → that area's CLAUDE.md → Area conventions.
      `none yet` while there are none. -->
 - A theme feature's JavaScript logic lives in pure modules with no DOM access, unit-tested with Vitest in `tests/js/{feature}/`; the DOM glue that calls them stays thin and is verified by hand — Vitest runs without a DOM library (DECISIONS 2026-09-23 — The theme gets Vitest for the unit tests of its JavaScript, run by the check command).
+- Every `dovira/*` write ability extends `WriteAbility` (`inc/features/content-mcp/`): it implements `preview()` → `Diff` and `write()`, and leaves the token, the session's dump and the result shapes to `run()` (what `write()` returns besides `written` / `warnings`, e.g. `upload-media`'s `media`, is added to the result, never replacing the protocol's keys); the MCP session is read only through `Session::id()`, because the adapter gives an ability its input alone (content-mcp Sprint 1 Step 3, Sprint 2 Step 2).
 
 ## Dependency policy
 New dependencies (runtime AND dev/tooling) only after explicit user approval —
@@ -206,6 +255,7 @@ justification.
 | 2026-09-22 | phpunit/phpunit `^12.5` (12.5.35) — **theme** | test runner for the theme's unit suite; same pin and reason as the plugin's row above |
 | 2026-09-22 | brain/monkey `^2.7` (2.7.0) — **theme** | stubs WordPress functions for the theme's suite (pulls mockery 1.6.15, antecedent/patchwork 2.2.3, hamcrest v3.0.0) |
 | 2026-09-23 | vitest `^3.2` — **theme**, `devDependencies` of `package.json` | unit tests of the theme features' pure JS modules, reusing the theme's Vite toolchain; approved in DECISIONS "The theme gets Vitest for the unit tests of its JavaScript, run by the check command". Installed 3.2.7 by `city-popup` Sprint 1 Step 1 (pulls `@vitest/*` 3.2.7, vite-node 3.2.4, chai 5.3.3, tinypool 1.1.1; reuses the theme's Vite 5.4.19, no second copy) |
+| 2026-11-05 | `mcp-adapter` 0.7.1 — **plugin**, `wp-content/plugins/mcp-adapter/` (runtime, committed, the WordPress.org zip unchanged) | the MCP server and transport for feature `content-mcp`; approved in DECISIONS "The content connector is the official MCP Adapter serving Dovira abilities registered by a theme feature". Installed by `content-mcp` Sprint 1 Step 1 (2026-11-05: 330 files, no `.gitignore`d file in the zip); updated only as a plugin-folder change plus this row |
 
 The first seven are **dev-only**, live in `wp-content/plugins/ga-telegram-bridge/composer.json`,
 and never reach a server: the plugin's `vendor/` is gitignored and it has zero runtime

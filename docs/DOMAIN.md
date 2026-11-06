@@ -39,6 +39,10 @@
 | Блог (blog) | The clinic's articles, published only on the Kharkiv site: the page «Блог» (`/news/`, ru `/ru/blog/`) and every article (`/news/{slug}/`, ru `/ru/news/{slug}/`). Search brings readers to it from all of Ukraine, not only from Kharkiv |
 | Питання міста (city question) | The small window «Яке місто вас цікавить?» with the buttons «Харків» and «Київ» that a blog reader sees when they tap a link to the services list, to a service or to the contacts page while no city is remembered for them. Russian: «Какой город вас интересует?», «Харьков», «Киев» |
 | Обране місто (chosen city) | The city a visitor picked in the city question or in the header city switcher. It is remembered on their device for 90 days and is known on both city sites |
+| Конектор (content connector) | The way the owner, the content manager and the developer manage a city site's content from Claude in their own words — «зміни ціну…», «додай новину…» — instead of wp-admin; one connector per city site, each person acting as their own site user |
+| Перегляд змін (preview) | What the connector shows before it writes anything: which post, in which language, which field, from what to what. Nothing is written until the person agrees to exactly that preview |
+| Сеанс конектора (connector session) | One connection of one person's Claude to one city site; the dump is taken once per session, inside its first agreed change |
+| Дамп (session dump) | A full copy of the site's database the connector saves on the same host, in a folder the web cannot reach, before the first change of a session — a new file with the date and time in its name every time, kept 90 days, so the developer can undo a session by hand |
 
 ## Rules & invariants
 - Every service, employee and vacancy belongs to exactly one or more cities; a
@@ -90,6 +94,24 @@
   chosen city never changes what a page shows, only where a tap on the blog
   leads.
 
+- The connector writes only what the person saw in a preview and agreed to —
+  in every language; a Russian copy is updated in the same session under the
+  same rule, and prices are the same in every language: a price is changed in
+  the Ukrainian copy and follows into the Russian one by itself, while the
+  Russian wording is changed on the Russian copy. A service created through
+  the connector gets one price per row for this site's city; prices for the
+  other city are added in wp-admin. A Russian copy is made through the
+  connector only from a Ukrainian post that has none: the agent writes the
+  Russian wording, and whatever it leaves out stays Ukrainian on the copy
+  (the preview names it) until it is translated; its prices are the
+  Ukrainian ones.
+- Before a session's first change the connector saves a dump of the database;
+  if it cannot, it changes nothing. A dump is never overwritten.
+- Through the connector, administrators and editors edit the same content;
+  only administrators delete, and only to the trash. Conversations,
+  applications and questionnaires are read there, never changed. Site
+  settings are not the connector's business.
+
 ## Roles
 | Role | Can do |
 |---|---|
@@ -98,6 +120,7 @@
 | Customer support specialist | see and process conversations, applications and questionnaires; nothing else in the admin |
 | Staff in the Telegram bot | receive a message for every new record after joining the bot with the password — and in the one staff group topic (thread) the site is configured with |
 | Developer (Syndicode) | code, deploys, translation CLI |
+| Connector user (owner — administrator, content manager — editor, developer — administrator) | manages content from Claude through the connector as their own site user: reads every post type, changes prices, adds pages, blog posts, services, employees, vacancies and their Russian copies, uploads images, edits blog categories and tags; administrators also move posts to the trash |
 | Owner in Telegram (report recipient) | receives the daily report of each city site; reads, does not configure |
 
 ## Explicitly out of scope (v1)
