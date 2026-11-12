@@ -127,7 +127,7 @@ $cities = get_terms( array(
 							</div>
 							<h2 class="vacancies__title heading heading--h5"><?= $vacancy->post_title; ?></h2>
 							<a href="<?= get_permalink( $vacancy->ID ); ?>"
-							   class="button button--black-border vacancies__cta">Ознайомитись</a>
+							   class="button button--black-border vacancies__cta"><?= dovira_translate_string( 'Learn more' ); ?></a>
 						</li>
 					<?php endforeach; ?>
 				</ul>

@@ -74,7 +74,7 @@ $form_cta_style      = dovira_get_acf_field( 'form_cta_style' );
 				 <?php if ( ! $view_is_row ) : ?>style="max-width: <?= $column_max_width; ?>%;" <?php endif; ?>>
 				<?= do_shortcode( '[contact-form-7 id="' . $form . '"]' ); ?>
 				<div class="contacts-form7__google-disclaimer">
-					Цей сайт захищено reCAPTCHA, а також застосовуються <a href="https://policies.google.com/privacy">Політика конфіденційності</a> та <a href="https://policies.google.com/terms">Умови надання послуг</a> Google.
+					<?= dovira_recaptcha_disclaimer(); ?>
 				</div>
 			</div>
 		</div>

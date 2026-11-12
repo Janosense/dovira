@@ -112,6 +112,9 @@ const questionaryFormHandler = () => {
 	}
 
   const submitButton = form.querySelector('.questionary-form__submit');
+  // Texts come from the form's data-message-* attributes (Polylang strings printed by the block template).
+  const messages = form.dataset;
+  const submitLabel = submitButton.textContent.trim();
 
 	// Add event listeners to text fields to remove error class on input
 	const textFields = form.querySelectorAll('.questionary-form__text-field');
@@ -149,7 +152,7 @@ const questionaryFormHandler = () => {
 		const isSelectFieldsValid = validateRequiredSelectFields(form);
 
 		if (!isTextFieldsValid || !isRadioGroupsValid || !isSelectFieldsValid) {
-			showMessage(form, 'Будь ласка, заповніть всі обовʼязкові поля', 'error');
+			showMessage(form, messages.messageRequired, 'error');
 
 			// Scroll to first error
 			const firstError = form.querySelector('.questionary-form__item--error');
@@ -166,7 +169,7 @@ const questionaryFormHandler = () => {
 
 		// Disable submit button during request
 		submitButton.disabled = true;
-		submitButton.textContent = 'Відправка...';
+		submitButton.textContent = messages.messageSending;
 
 		try {
 			const response = await fetch(`${REST_BASE_PATH}/save`, {
@@ -178,7 +181,7 @@ const questionaryFormHandler = () => {
 
 			if (response.ok && data.success) {
 				// Success
-				showMessage(form, 'Анкету успішно надіслано!', 'success');
+				showMessage(form, messages.messageSuccess, 'success');
 
 				// Reset form
 				form.reset();
@@ -191,18 +194,18 @@ const questionaryFormHandler = () => {
 				loader.classList.remove('loader--active');
 			} else {
 				// Error from API
-				const errorMessage = data.message || 'Виникла помилка при відправці анкети';
+				const errorMessage = data.message || messages.messageError;
 				showMessage(form, errorMessage, 'error');
 				loader.classList.remove('loader--active');
 			}
 		} catch (error) {
 			// Network or other error
 			console.error('Error submitting questionary:', error);
-			showMessage(form, 'Не вдалося відправити анкету. Спробуйте пізніше.', 'error');
+			showMessage(form, messages.messageNetwork, 'error');
 		} finally {
 			// Re-enable submit button
 			submitButton.disabled = false;
-			submitButton.textContent = 'Записатись';
+			submitButton.textContent = submitLabel;
 			loader.classList.remove('loader--active');
 		}
 	});

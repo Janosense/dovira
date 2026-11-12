@@ -80,7 +80,7 @@ endif;
 										'class' => 'news__thumbnail',
 										'alt'   => get_the_title( $article->ID ),
 									) ) ?>
-									<span class="news__link-more">Читати далі</span>
+									<span class="news__link-more"><?= dovira_translate_string( 'Read more' ); ?></span>
 								</div>
 								<h3 class="heading heading--h6 news__heading"><?= get_the_title( $article->ID ); ?></h3>
 								<?php if ( ! empty( get_the_excerpt( $article->ID ) ) ) : ?>

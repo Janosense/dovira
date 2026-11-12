@@ -87,13 +87,13 @@ endif;
 						<div class="contacts__schedules">
 							<?php if ( ! empty( $contact['schedule'] ) ) : ?>
 								<p class="caption contacts__schedule">
-									<span>Ветклініка</span>
+									<span><?= dovira_translate_string( 'Vetclinic' ); ?></span>
 									<?= $contact['schedule']; ?>
 								</p>
 							<?php endif; ?>
 							<?php if ( ! empty( $contact['schedule_shop'] ) ) : ?>
 								<p class="caption contacts__schedule">
-									<span>Зоомагазин</span>
+									<span><?= dovira_translate_string( 'Pet shop' ); ?></span>
 									<?= $contact['schedule_shop']; ?>
 								</p>
 							<?php endif; ?>

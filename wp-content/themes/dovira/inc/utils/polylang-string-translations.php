@@ -62,6 +62,44 @@ $strings = [
 	'This site is protected by reCAPTCHA and the Google %1$s and %2$s apply.', // Цей сайт захищено reCAPTCHA, а також застосовуються %1$s та %2$s Google.
 	'Privacy Policy', // Політика конфіденційності
 	'Terms of Service', // Умови надання послуг
+	// ACF blocks.
+	'View all documents', // Дивитись усі документи
+	'Quick search of services', // Швидкий пошук по послугах
+	'Learn more', // Ознайомитись
+	// Block questionary (blood donor form) and its JS messages.
+	'Your name', // Ваше ім’я
+	'Your phone number', // Ваш номер телефону
+	'Your email', // Ваш email
+	'Your city', // Ваше місто
+	'Animal', // Вид тварини
+	'Dog', // Собака
+	'Cat', // Кіт
+	'Sex', // Стать
+	'Female', // Самка
+	'Male', // Самець
+	'Blood group', // Група крові
+	'Choose the blood group', // Оберіть групу крові
+	'I do not know', // Не знаю
+	'Pet breed', // Порода улюбленця
+	'Pet age', // Вік улюбленця
+	'Approximate weight', // Приблизна вага
+	'Date of the last vaccination', // Дата останньої вакцинації
+	'Pet name', // Клічка улюбленця
+	'Goes outside', // Вихід на вулицю
+	'Neutered', // Кастрація
+	'Contact with cats that go outside', // Контакт із котами, які виходять на вулицю
+	'Has your pet been a donor before?', // Чи доводилося Вашому улюбленцю раніше бути донором?
+	'Has your pet ever had a blood transfusion?', // Чи переливали Вашому улюбленцю будь-коли кров?
+	'Any chronic diseases?', // Наявність хронічних захворювань?
+	'Is your pet taking any medication now?', // Чи приймає Ваш улюбленець якісь лікувальні засоби зараз?
+	'Yes', // Так
+	'No', // Ні
+	'Sign up', // Записатись
+	'Please fill in all required fields', // Будь ласка, заповніть всі обовʼязкові поля
+	'Sending...', // Відправка...
+	'The questionnaire has been sent!', // Анкету успішно надіслано!
+	'An error occurred while sending the questionnaire', // Виникла помилка при відправці анкети
+	'Could not send the questionnaire. Please try again later.', // Не вдалося відправити анкету. Спробуйте пізніше.
 ];
 
 if ( ! empty( $strings ) && function_exists( 'pll_register_string' ) ) {
