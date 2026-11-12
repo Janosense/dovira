@@ -52,12 +52,14 @@
 	<?php if ( ! empty( $prices_data ) ) : ?>
 	<div class="section section--mb-standard service">
 		<div class="wrapper wrapper--tight">
-			<header class="section__header">
-				<h1 class="heading heading--h1"><?php the_title(); ?></h1>
-				<?php if ( ! empty( $description ) ) : ?>
-					<div class="text"><?= $description; ?></div>
-				<?php endif; ?>
-			</header>
+			<?php if ( ! $post->post_parent ) : ?>
+				<header class="section__header">
+					<h1 class="heading heading--h1"><?php the_title(); ?></h1>
+					<?php if ( ! empty( $description ) ) : ?>
+						<div class="text"><?= $description; ?></div>
+					<?php endif; ?>
+				</header>
+			<?php endif; ?>
 			<div class="service__prices">
 				<div class="service__header">
 					<h2 class="heading heading--h3 service__heading">Послуги та вартість</h2>
