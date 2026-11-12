@@ -28,7 +28,7 @@ $status_names_map = [
 <main>
 	<div class="application">
 		<div class="wrapper">
-			<h1 class="heading heading--h3 application__heading">Заявка на вакансію "<?= $vacancy->post_title; ?>"</h1>
+			<h1 class="heading heading--h3 application__heading"><?= dovira_translate_string('Job Applying'); ?> "<?= $vacancy->post_title; ?>"</h1>
 			<div class="application__content">
 				<?php if ( ! empty( $status ) ) : ?>
 					<div class="application__row">

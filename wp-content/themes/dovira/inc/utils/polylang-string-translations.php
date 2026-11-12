@@ -23,6 +23,18 @@ $strings = [
 	'Закрити',
 	'Харків',
 	'Київ',
+	'Home',
+	'Vacancies',
+	'Services',
+	'Team',
+	'Job Applying', // Заявка на вакансію
+	'Search', // Пошук
+	'Services found', // Знайдені сервіси
+	'Get a price', // Дізнатись ціну
+	'Services found in', // Сервіси знайдено в
+	'More', // Детальніше
+	'News found', // Знайдені новини
+	'News', // Новини
 ];
 
 if ( ! empty( $strings ) && function_exists( 'pll_register_string' ) ) {

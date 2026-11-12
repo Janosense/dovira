@@ -7,10 +7,10 @@
 				<div class="wrapper">
 					<ul class="breadcrumbs__list">
 						<li class="breadcrumbs__item">
-							<a href="<?= home_url(); ?>" class="breadcrumbs__link">Головна</a>
+							<a href="<?= home_url(); ?>" class="breadcrumbs__link"><?= dovira_translate_string('Home'); ?></a>
 						</li>
 						<li class="breadcrumbs__item">
-							<span class="breadcrumbs__current">Пошук</span>
+							<span class="breadcrumbs__current"><?= dovira_translate_string('Search'); ?></span>
 						</li>
 					</ul>
 				</div>
@@ -88,7 +88,7 @@
 							'hide_empty' => false,
 						) ); ?>
 						<div class="search-results__holder">
-							<h3 class="heading heading--h5 search-results__subheading">Знайдені сервіси:</h3>
+							<h3 class="heading heading--h5 search-results__subheading"><?= dovira_translate_string('Services found'); ?>:</h3>
 							<ul class="search-results__sub-services">
 								<?php foreach ( $sub_services as $sub_service ) : ?>
 									<li class="search-results__sub-service sub-service">
@@ -119,7 +119,7 @@
 																endif;
 															endforeach;
 														endif; ?>
-														<div class="sub-service__price-empty">Дізнатись ціну:<br>
+														<div class="sub-service__price-empty"><?= dovira_translate_string('Get a price'); ?>:<br>
 															<span><?= $phone; ?></span></div>
 													<?php else: ?>
 														<div class="sub-service__price-amount">
@@ -137,7 +137,7 @@
 					<?php endif; ?>
 					<?php if ( ! empty( $search_posts['service'] ) ): ?>
 						<div class="search-results__holder">
-							<h3 class="heading heading--h5 search-results__subheading">Сервіси знайдено в:</h3>
+							<h3 class="heading heading--h5 search-results__subheading"><?= dovira_translate_string('Services found in'); ?>:</h3>
 							<ul class="services__list services__list--3">
 								<?php foreach ( $search_posts['service'] as $service ):
 									if ( $service->post_parent === 0 ) :
@@ -154,7 +154,7 @@
 													class="services__counter">Послуг: <?= is_countable( $prices ) ? count( $prices ) : 0 ?></span>
 												<h3 class="heading heading--h6 services__title"><?= $service->post_title; ?></h3>
 												<span
-													class="button button--black-border services__cta">Детальніше</span>
+													class="button button--black-border services__cta"><?= dovira_translate_string('More'); ?></span>
 											</a>
 										</li>
 									<?php endif; ?>
@@ -164,7 +164,7 @@
 					<?php endif; ?>
 					<?php if ( ! empty( $search_posts['post'] ) ): ?>
 						<div class="search-results__holder">
-							<h3 class="heading heading--h5 search-results__subheading">Знайдені новини:</h3>
+							<h3 class="heading heading--h5 search-results__subheading"><?= dovira_translate_string('News found'); ?>:</h3>
 							<ul class="news__list news__list--3">
 								<?php foreach ( $search_posts['post'] as $article ) : ?>
 									<li class="news__item">
