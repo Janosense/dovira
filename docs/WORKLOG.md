@@ -22,6 +22,13 @@ steps closed, {{sprint branch}} merged into main`)
 
 ---
 
+## 2026-11-12 — [adhoc] [core] — Hardcoded Ukrainian UI strings moved into Polylang
+- Changed: page templates (404, service, search, post, employee, vacancy, sub-service), header city switcher, schema.org names, ACF blocks (questionary, contacts, text-form, news, files, services, employees, vacancies) and the donor form's JS (`data-message-*`) print Polylang strings via `dovira_translate_string()`; ~60 new strings; `dovira_recaptcha_disclaimer()`; `assets/` rebuilt.
+- Decisions: DECISIONS "Theme UI strings are Polylang strings keyed in English" — reverses the theme `CLAUDE.md` rule (Ukrainian keys); city-popup strings keep theirs. LEARNINGS: area `CLAUDE.md` not read before the mini-plan.
+- Open:
+  - Before deploying: fill uk and ru for the new strings in Polylang → Strings on dev, Kharkiv and Kyiv — until then both languages show English.
+  - Not in scope: admin print pages (`single-questionary.php`, `single-application.php`, simple header), Telegram texts, LMS templates, dead `authentication.js`; hardcoded `dovira.vet` URLs in `QuestionaryController` and the schema.org breadcrumbs; the forgotten personal message in `TelegramController.php:128-132`.
+
 ## 2026-11-05 — [content-mcp] Sprint 2 Step 3 — Production checklist and handover
 - Changed:
   - `Catalogue::TOOLS` is in the order a chat uses the tools (reads; a term or image before the post; the Russian copy after; trash last).

@@ -52,15 +52,15 @@
 							if ( ! empty( $salary ) ) :?>
 								<div class="vacancy__salary vacancy__salary--desktop">
 									<span
-										class="vacancy__salary-value"><?= number_format( (int) $salary, 0, '.', ' ' ); ?></span>грн
+										class="vacancy__salary-value"><?= number_format( (int) $salary, 0, '.', ' ' ); ?></span><?= dovira_translate_string( 'UAH' ); ?>
 								</div>
 							<?php endif; ?>
 						<?php elseif ( $salary_type === 'from' ):
 							$salary_from = dovira_get_acf_field( 'salary_from' );
 							if ( ! empty( $salary_from ) ) :?>
 								<div class="vacancy__salary vacancy__salary--desktop">
-									від <span
-										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span>грн
+									<?= dovira_translate_string( 'from' ); ?> <span
+										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span><?= dovira_translate_string( 'UAH' ); ?>
 								</div>
 							<?php endif; ?>
 						<?php elseif ( $salary_type === 'range' ):
@@ -71,13 +71,13 @@
 									<span
 										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span>
 									- <span
-										class="vacancy__salary-value"><?= number_format( (int) $salary_to, 0, '.', ' ' ); ?></span>грн
+										class="vacancy__salary-value"><?= number_format( (int) $salary_to, 0, '.', ' ' ); ?></span><?= dovira_translate_string( 'UAH' ); ?>
 								</div>
 							<?php endif; ?>
 						<?php endif; ?>
 						<?php if ( ! empty( $contacts ) ) : ?>
 							<div class="vacancy__contacts vacancy__contacts--desktop">
-								<h3 class="heading heading--h5">Контакти:</h3>
+								<h3 class="heading heading--h5"><?= dovira_translate_string( 'Contacts' ); ?>:</h3>
 								<ul class="vacancy__contacts-list">
 									<?php foreach ( $contacts as $contact ) : ?>
 										<li class="vacancy__contacts-item"><?= $contact['phone']; ?></li>
@@ -95,15 +95,15 @@
 							if ( ! empty( $salary ) ) :?>
 								<div class="vacancy__salary vacancy__salary--mobile">
 									<span
-										class="vacancy__salary-value"><?= number_format( (int) $salary, 0, '.', ' ' ); ?></span>грн
+										class="vacancy__salary-value"><?= number_format( (int) $salary, 0, '.', ' ' ); ?></span><?= dovira_translate_string( 'UAH' ); ?>
 								</div>
 							<?php endif; ?>
 						<?php elseif ( $salary_type === 'from' ):
 							$salary_from = dovira_get_acf_field( 'salary_from' );
 							if ( ! empty( $salary_from ) ) :?>
 								<div class="vacancy__salary vacancy__salary--mobile">
-									від <span
-										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span>грн
+									<?= dovira_translate_string( 'from' ); ?> <span
+										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span><?= dovira_translate_string( 'UAH' ); ?>
 								</div>
 							<?php endif; ?>
 						<?php elseif ( $salary_type === 'range' ):
@@ -114,13 +114,13 @@
 									<span
 										class="vacancy__salary-value"><?= number_format( (int) $salary_from, 0, '.', ' ' ); ?></span>
 									- <span
-										class="vacancy__salary-value"><?= number_format( (int) $salary_to, 0, '.', ' ' ); ?></span>грн
+										class="vacancy__salary-value"><?= number_format( (int) $salary_to, 0, '.', ' ' ); ?></span><?= dovira_translate_string( 'UAH' ); ?>
 								</div>
 							<?php endif; ?>
 						<?php endif; ?>
 						<?php if ( ! empty( $contacts ) ) : ?>
 							<div class="vacancy__contacts vacancy__contacts--mobile">
-								<h3 class="heading heading--h5">Контакти:</h3>
+								<h3 class="heading heading--h5"><?= dovira_translate_string( 'Contacts' ); ?>:</h3>
 								<ul class="vacancy__contacts-list">
 									<?php foreach ( $contacts as $contact ) : ?>
 										<li class="vacancy__contacts-item"><?= $contact['phone']; ?></li>
@@ -129,7 +129,7 @@
 							</div>
 						<?php endif; ?>
 						<div class="vacancy__form-holder contacts-form7">
-							<h3 class="heading heading--h5 contacts-form7__heading">Надіслати резюме:</h3>
+							<h3 class="heading heading--h5 contacts-form7__heading"><?= dovira_translate_string( 'Send your CV' ); ?>:</h3>
 							<?php if ( getenv( 'IS_DDEV_PROJECT' ) == 'true' ) : ?>
 								<?= do_shortcode( '[contact-form-7 id="1321657" title="Форма заявки на вакансію" vacancy="' . $post->ID . '"]' ); ?>
 							<?php else :
@@ -141,9 +141,7 @@
 								<?php endif; ?>
 							<?php endif; ?>
 							<div class="contacts-form7__google-disclaimer">
-								Цей сайт захищено reCAPTCHA, а також застосовуються <a
-									href="https://policies.google.com/privacy">Політика конфіденційності</a> та <a
-									href="https://policies.google.com/terms">Умови надання послуг</a> Google.
+								<?= dovira_recaptcha_disclaimer(); ?>
 							</div>
 						</div>
 					</div>
@@ -151,9 +149,7 @@
 			</div>
 		<?php else: ?>
 			<div class="wrapper">
-				<p>Дана вакансія більше не активна. Повернутись до <a href="/vacancies/">списку всіх відкритих
-						вакансій</a>
-				</p>
+				<p><?= sprintf( dovira_translate_string( 'This vacancy is no longer active. Back to %s' ), '<a href="/vacancies/">' . dovira_translate_string( 'the list of all open vacancies' ) . '</a>' ); ?></p>
 			</div>
 		<?php endif; ?>
 		<!-- VACANCY end -->

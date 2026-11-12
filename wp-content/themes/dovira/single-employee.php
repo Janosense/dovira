@@ -131,7 +131,7 @@
 						</ul>
 					<?php endif; ?>
 					<?php if ( $is_contact_cta_enabled ) : ?>
-						<a href="/contacts/" class="button button--black">Записатись</a>
+						<a href="/contacts/" class="button button--black"><?= dovira_translate_string( 'Book an appointment' ); ?></a>
 					<?php endif; ?>
 				</div>
 			</div>

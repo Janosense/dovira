@@ -431,6 +431,12 @@ Entry format:
   - Accepting `is_price_general` / `cities` / `city_prices` from the agent: it exposes the legacy per-city columns the reader hides, and lets one install write the other city's prices.
 - **Consequences:** FEATURE.md → Invariants and Interfaces; DATA-MODEL → Writing posts. A new service shows its prices only on the install that created it. Prices for the other city, or another row later, go through wp-admin.
 
+## 2026-11-12 — [core] Theme UI strings are Polylang strings keyed in English
+- **Context:** The public templates, ACF blocks and the donor form's JS held Ukrainian literals, so `/ru/` showed Ukrainian. The theme `CLAUDE.md` said a new string is keyed by its Ukrainian text (city-popup Sprint 1); the breadcrumbs commit `479b210e` already keyed new strings in English.
+- **Decision:** Key every new UI string in English in `inc/utils/polylang-string-translations.php` (Ukrainian original as a comment) and print it with `dovira_translate_string()`; JS gets its strings through `data-*` attributes.
+- **Alternatives rejected:** Ukrainian keys — an untranslated install would still show Ukrainian, but the developer chose English keys to match the breadcrumbs work.
+- **Consequences:** Until both the uk and the ru value of a new string are entered in Polylang → Strings, both languages show English — the translations are filled on dev, Kharkiv and Kyiv before each deploy that adds strings. The city-popup strings stay keyed in Ukrainian (their ru values are shared with the city term names); this entry does not re-key them.
+
 ## Open questions from the adoption audit (not decisions — to be settled in a Feature-mode discovery)
 1. **Telegram bot token and join password are string literals in code**
    (`inc/rest-api/TelegramController.php`, `inc/utils/{conversation,application}.php`,

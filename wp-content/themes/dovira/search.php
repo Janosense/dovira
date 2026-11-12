@@ -79,7 +79,7 @@
 			     data-search-stats-results="<?= (int) $search_stats_results; ?>">
 				<div class="wrapper">
 					<div class="section__header">
-						<h2 class="heading heading--h3 search-results__heading">Результати пошуку для запиту:
+						<h2 class="heading heading--h3 search-results__heading"><?= dovira_translate_string( 'Search results for' ); ?>:
 							<span><?= $search_query_var; ?></span></h2>
 					</div>
 					<?php if ( ! empty( $sub_services ) ) :
@@ -124,7 +124,7 @@
 													<?php else: ?>
 														<div class="sub-service__price-amount">
 															<?= $price; ?>
-															<span>грн</span>
+															<span><?= dovira_translate_string( 'UAH' ); ?></span>
 														</div>
 													<?php endif; ?>
 												</div>
@@ -148,10 +148,10 @@
 											<a href="<?= get_permalink( $service->ID ); ?>" class="services__link">
 												<?= wp_get_attachment_image( $cover['id'], 'full', false, array(
 													'class' => 'services__image',
-													'alt' => 'Ветеринарна клініка: ' . $service->post_title,
+													'alt' => dovira_translate_string( 'Veterinary clinic' ) . ': ' . $service->post_title,
 												) ); ?>
 												<span
-													class="services__counter">Послуг: <?= is_countable( $prices ) ? count( $prices ) : 0 ?></span>
+													class="services__counter"><?= dovira_translate_string( 'Services:' ); ?> <?= is_countable( $prices ) ? count( $prices ) : 0 ?></span>
 												<h3 class="heading heading--h6 services__title"><?= $service->post_title; ?></h3>
 												<span
 													class="button button--black-border services__cta"><?= dovira_translate_string('More'); ?></span>
@@ -174,7 +174,7 @@
 													'class' => 'news__thumbnail',
 													'alt' => get_the_title( $article->ID ),
 												) ) ?>
-												<span class="news__link-more">Читати далі</span>
+												<span class="news__link-more"><?= dovira_translate_string( 'Read more' ); ?></span>
 											</div>
 											<h3 class="heading heading--h6 news__heading"><?= get_the_title( $article->ID ); ?></h3>
 											<?php if ( ! empty( get_the_excerpt( $article->ID ) ) ) : ?>
@@ -188,7 +188,7 @@
 					<?php endif; ?>
 					<?php if ( ! empty( $search_posts['page'] ) ): ?>
 						<div class="search-results__holder">
-							<h3 class="heading heading--h5 search-results__subheading">Знайдені сторінки:</h3>
+							<h3 class="heading heading--h5 search-results__subheading"><?= dovira_translate_string( 'Pages found' ); ?>:</h3>
 							<ul class="search-results__list">
 								<?php foreach ( $search_posts['page'] as $page ) : ?>
 									<li class="search-results__item">
@@ -201,8 +201,7 @@
 					<?php endif; ?>
 					<?php if ( ! empty( $search_posts['employee'] ) ): ?>
 						<div class="search-results__holder">
-							<h3 class="heading heading--h5 search-results__subheading">Знайдені люди, що створюють
-								довіру:</h3>
+							<h3 class="heading heading--h5 search-results__subheading"><?= dovira_translate_string( 'Team members found' ); ?>:</h3>
 							<ul class="employees__grid employees__grid--5">
 								<?php foreach ( $search_posts['employee'] as $employee ) :
 									$photo = dovira_get_acf_field( 'photo', $employee->ID );
@@ -214,7 +213,7 @@
 													'class' => 'employees__photo',
 													'alt' =>  $employee->post_title,
 												) ) ?>
-												<span class="employees__link-more">Познайомитись</span>
+												<span class="employees__link-more"><?= dovira_translate_string( 'Get to know' ); ?></span>
 											</div>
 											<span
 												class="heading heading--h6 employees__name"><?= $employee->post_title; ?></span>

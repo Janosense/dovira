@@ -24,6 +24,11 @@ Entry format:
 
 ---
 
+## [new] 2026-11-12 — /adhoc's mini-plan was approved without the code area's CLAUDE.md having been read
+- **Playbook rule:** `.claude/commands/adhoc.md` → steps 1–2 (scope check, mini-plan); `wp-content/themes/dovira/CLAUDE.md` → Feature isolation ("Shared code … is changed ONLY as an explicit plan task marked touches shared code").
+- **What happened:** The ad-hoc "move hardcoded Ukrainian strings into Polylang" planned from root docs only; the theme `CLAUDE.md` loaded when the first theme file was edited. Its Templates rule (new strings keyed in Ukrainian) contradicted the key language the user had just chosen, and the plan had no "touches shared code" marking, so the agent had to stop mid-execution and ask again (the user chose English keys + a rule change).
+- **Suggested change:** Have /adhoc step 1 (and /plan-step) read the `CLAUDE.md` of every code area the change touches before writing the mini-plan, and require the shared-code marking there.
+
 ## [new] 2026-11-05 — A step whose verification is a production run cannot be verified on its task branch
 - **Playbook rule:** `CLAUDE.md` → Step protocol ("An implemented step is verified by the user on its task branch") and Project profile → git model ("a deploy is the user's own action from `main`, never a step task").
 - **What happened:** content-mcp Sprint 2 Step 3's verification is "the user follows the checklist on both productions after the hand deploy from `master`", but the step's own commits stay on its task branch until `/close-step` merges them, and production deploys only from `master`. The plan had to ask (Question 2) and took "productions from today's `master` before the close, final deploy after it"; the values the guide asked to report then had nowhere to go (see the entry below on reported values).

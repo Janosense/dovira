@@ -8,7 +8,7 @@
 ## Design system source
 - **Made in:** documented from code (Adoption); original: client Figma, not in repo
 - **Source of truth in code:** `wp-content/themes/dovira/source/styles/` — `colors.css` (tokens), `fonts.css`, `components/*.css` (one file per component), `blocks/*.css` (one file per ACF block), all imported by `app.css`; admin/editor styles in `admin.css`
-- **Strings:** front-end strings are either PHP literals in templates (uk) or Polylang strings registered in `inc/utils/polylang-string-translations.php`; a new user-visible string is registered there, never left as an untranslated literal.
+- **Strings:** front-end strings are Polylang strings registered in `inc/utils/polylang-string-translations.php`, keyed in English and printed with `dovira_translate_string()` (DECISIONS 2026-11-12); a new user-visible string is registered there, never left as an untranslated literal. A JS module reads its strings from `data-*` attributes of its element.
 
 ## Tokens
 Colors (`source/styles/colors.css`, CSS custom properties): `--color-white #fff`, `--color-black #1b1b1b`, `--color-gray-dark #3c3c3c`, `--color-gray #727270`, `--color-gray-light #f5f5f5`, `--color-violet-light #c06f94` (accent: active city pin, button hover), `--color-transparent`. The editor palette registers one extra color `color-cyan #1995AD` (legacy).

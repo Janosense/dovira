@@ -77,7 +77,7 @@ endif;
 				<div class="services__search">
 					<label class="services__search-field">
 						<input type="text" id="services-search-input"
-						       placeholder="Швидкий пошук по послугах:"
+						       placeholder="<?= esc_attr( dovira_translate_string( 'Quick search of services' ) ); ?>:"
 						       data-search-stats-context="<?= (int) get_the_ID(); ?>">
 						<button type="reset" id="services-search-reset"><?= pll__( 'Reset' ); ?>
 							<svg width="27px" height="27px" viewBox="0 -0.5 25 25" fill="none"
@@ -113,7 +113,7 @@ endif;
 							<a href="<?= get_permalink( $service->ID ); ?>" class="services__link">
 								<?= wp_get_attachment_image( $cover['id'], 'full', false, array(
 									'class' => 'services__image',
-									'alt'   => 'Ветеринарна клініка: ' . $service->post_title,
+									'alt'   => dovira_translate_string( 'Veterinary clinic' ) . ': ' . $service->post_title,
 								) ); ?>
 								<span
 									class="services__counter"><?= pll__( 'Services:' ); ?> <?= is_countable( $prices ) ? count( $prices ) : 0 ?></span>
