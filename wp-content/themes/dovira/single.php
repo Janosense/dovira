@@ -51,7 +51,7 @@
 				'data' => [
 					'is_visible' => 1,
 					'_is_visible' => 'field_news_is_visible',
-					'heading' => 'Схожі новини',
+					'heading' => dovira_translate_string( 'Related news' ),
 					'_heading' => 'field_news_heading',
 					'heading_level' => 'h2',
 					'_heading_level' => 'field_news_heading_level',

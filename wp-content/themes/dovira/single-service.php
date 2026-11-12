@@ -62,14 +62,14 @@
 			<?php endif; ?>
 			<div class="service__prices">
 				<div class="service__header">
-					<h2 class="heading heading--h3 service__heading">Послуги та вартість</h2>
+					<h2 class="heading heading--h3 service__heading"><?= dovira_translate_string( 'Services and prices' ); ?></h2>
 					<?php if ( ! $post->post_parent ) : ?>
 						<div class="service__search">
 							<label class="service__search-field">
 								<input type="text" id="service-search-input"
-									   placeholder="Пошук по послугах:"
+									   placeholder="<?= esc_attr( dovira_translate_string( 'Search services' ) ); ?>:"
 									   data-search-stats-context="<?= (int) get_the_ID(); ?>">
-								<button type="reset" id="service-search-reset">Скинути
+								<button type="reset" id="service-search-reset"><?= dovira_translate_string( 'Reset' ); ?>
 									<svg width="27px" height="27px" viewBox="0 -0.5 25 25" fill="none"
 										 xmlns="http://www.w3.org/2000/svg">
 										<path fill-rule="evenodd" clip-rule="evenodd"
@@ -129,12 +129,12 @@
 
 												endforeach;
 											endif; ?>
-											<div class="service__price-empty">Дізнатись ціну:
+											<div class="service__price-empty"><?= dovira_translate_string( 'Get a price' ); ?>:
 												<span><?= $phone; ?></span></div>
 										<?php else: ?>
 											<div class="service__price-amount">
 												<?= $price; ?>
-												<span>грн</span>
+												<span><?= dovira_translate_string( 'UAH' ); ?></span>
 											</div>
 										<?php endif; ?>
 									</li>
@@ -162,22 +162,14 @@
 				</div>
 				<?php
 				$current_language = pll_current_language( 'slug' );
-				$title            = [
-					'ru' => 'Мы рядом!',
-					'uk' => 'Ми поруч!',
-				];
-				$caption          = [
-					'ru' => 'И всегда рады вам помочь!',
-					'uk' => 'І завжди раді вам допомогти!',
-				];
 				$form             = [
 					'ru' => '07c6997',
 					'uk' => 'fba22da',
 				];
 				?>
 				<h2 class="heading heading--h3"
-					style="color: #3c3c3c; margin: 60px 0 0"><?= $title[ $current_language ]; ?></h2>
-				<p class="caption" style="color: #c06f94;margin: 0 0 40px"><?= $caption[ $current_language ]; ?></p>
+					style="color: #3c3c3c; margin: 60px 0 0"><?= dovira_translate_string( 'We are nearby!' ); ?></h2>
+				<p class="caption" style="color: #c06f94;margin: 0 0 40px"><?= dovira_translate_string( 'And always happy to help you!' ); ?></p>
 				<div class="text-form__form-holder contacts-form7">
 					<?= do_shortcode( '[contact-form-7 id="' . $form[ $current_language ] . '" title="Контактна форма"]' ); ?>
 				</div>
