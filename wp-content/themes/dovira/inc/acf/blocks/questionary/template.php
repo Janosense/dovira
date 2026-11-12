@@ -57,25 +57,30 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 				</header>
 			<?php endif; ?>
 			<div class="questionary__form-holder">
-				<form action="#" class="questionary__form questionary-form">
+				<form action="#" class="questionary__form questionary-form"
+				      data-message-required="<?= esc_attr( dovira_translate_string( 'Please fill in all required fields' ) ); ?>"
+				      data-message-sending="<?= esc_attr( dovira_translate_string( 'Sending...' ) ); ?>"
+				      data-message-success="<?= esc_attr( dovira_translate_string( 'The questionnaire has been sent!' ) ); ?>"
+				      data-message-error="<?= esc_attr( dovira_translate_string( 'An error occurred while sending the questionnaire' ) ); ?>"
+				      data-message-network="<?= esc_attr( dovira_translate_string( 'Could not send the questionnaire. Please try again later.' ) ); ?>">
 					<?php wp_nonce_field( 'wp_rest' ); ?>
 					<div class="questionary-form__row">
 						<div class="questionary-form__item">
 							<label>
 								<input type="text" name="name" class="questionary-form__text-field" required>
-								<span class="questionary-form__text-field-label">Ваше ім’я</span>
+								<span class="questionary-form__text-field-label"><?= dovira_translate_string( 'Your name' ); ?></span>
 							</label>
 						</div>
 						<div class="questionary-form__item">
 							<label>
 								<input type="tel" name="phone" class="questionary-form__text-field" required>
-								<span class="questionary-form__text-field-label">Ваш номер телефону</span>
+								<span class="questionary-form__text-field-label"><?= dovira_translate_string( 'Your phone number' ); ?></span>
 							</label>
 						</div>
 						<div class="questionary-form__item">
 							<label>
 								<input type="email" name="email" class="questionary-form__text-field">
-								<span class="questionary-form__text-field-label">Ваш email</span>
+								<span class="questionary-form__text-field-label"><?= dovira_translate_string( 'Your email' ); ?></span>
 							</label>
 						</div>
 					</div>
@@ -83,39 +88,39 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 						<div class="questionary-form__item">
 							<label>
 								<input type="text" name="city" class="questionary-form__text-field" required>
-								<span class="questionary-form__text-field-label">Ваше місто</span>
+								<span class="questionary-form__text-field-label"><?= dovira_translate_string( 'Your city' ); ?></span>
 							</label>
 						</div>
 					</div>
 					<div class="questionary-form__row">
 						<div class="questionary-form__item">
-							<span class="questionary-form__item-title questionary-form__item-title--required">Вид тварини:</span>
+							<span class="questionary-form__item-title questionary-form__item-title--required"><?= dovira_translate_string( 'Animal' ); ?>:</span>
 							<div class="questionary-form__radio-group">
 								<label>
 									<input type="radio" name="animal" value="dog" class="questionary-form__radio-field"
 										   required>
-									<span>Собака</span>
+									<span><?= dovira_translate_string( 'Dog' ); ?></span>
 								</label>
 								<label>
 									<input type="radio" name="animal" value="cat" class="questionary-form__radio-field"
 										   required>
-									<span>Кіт</span>
+									<span><?= dovira_translate_string( 'Cat' ); ?></span>
 								</label>
 							</div>
 						</div>
 						<div class="questionary-form__item">
 							<span
-								class="questionary-form__item-title questionary-form__item-title--required">Стать:</span>
+								class="questionary-form__item-title questionary-form__item-title--required"><?= dovira_translate_string( 'Sex' ); ?>:</span>
 							<div class="questionary-form__radio-group">
 								<label>
 									<input type="radio" name="pet-sex" value="female"
 										   class="questionary-form__radio-field" required>
-									<span>Самка</span>
+									<span><?= dovira_translate_string( 'Female' ); ?></span>
 								</label>
 								<label>
 									<input type="radio" name="pet-sex" value="male"
 										   class="questionary-form__radio-field" required>
-									<span>Самець</span>
+									<span><?= dovira_translate_string( 'Male' ); ?></span>
 								</label>
 							</div>
 						</div>
@@ -124,11 +129,11 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 						<div class="questionary-form__item">
 							<label
 								class="questionary-form__item-title questionary-form__item-title--select questionary-form__item-title--required"
-								for="blood-group">Група крові</label>
+								for="blood-group"><?= dovira_translate_string( 'Blood group' ); ?></label>
 							<select name="blood-group" id="blood-group" class="questionary-form__select-field" required
 									onchange="this.classList.add('questionary-form__select-field--active')">
-								<option value="all-choose" disabled selected>Оберіть групу крові</option>
-								<option value="all-dont-know">Не знаю</option>
+								<option value="all-choose" disabled selected><?= dovira_translate_string( 'Choose the blood group' ); ?></option>
+								<option value="all-dont-know"><?= dovira_translate_string( 'I do not know' ); ?></option>
 								<option value="cat-a" data-animal="cat">A</option>
 								<option value="cat-b" data-animal="cat">B</option>
 								<option value="cat-ab" data-animal="cat">AB</option>
@@ -141,19 +146,19 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 						<div class="questionary-form__item">
 							<label>
 								<input type="text" name="pet-type" class="questionary-form__text-field">
-								<span class="questionary-form__text-field-label">Порода улюбленця</span>
+								<span class="questionary-form__text-field-label"><?= dovira_translate_string( 'Pet breed' ); ?></span>
 							</label>
 						</div>
 						<div class="questionary-form__item">
 							<label>
 								<input type="text" name="pet-old" class="questionary-form__text-field" required>
-								<span class="questionary-form__text-field-label">Вік улюбленця</span>
+								<span class="questionary-form__text-field-label"><?= dovira_translate_string( 'Pet age' ); ?></span>
 							</label>
 						</div>
 						<div class="questionary-form__item">
 							<label>
 								<input type="text" name="pet-weight" class="questionary-form__text-field" required>
-								<span class="questionary-form__text-field-label">Приблизна вага</span>
+								<span class="questionary-form__text-field-label"><?= dovira_translate_string( 'Approximate weight' ); ?></span>
 							</label>
 						</div>
 					</div>
@@ -162,135 +167,135 @@ $margin_bottom       = dovira_get_acf_field( 'margin_bottom' );
 							<label>
 								<input type="text" name="vaccination-date" class="questionary-form__text-field"
 									   required>
-								<span class="questionary-form__text-field-label">Дата останньої вакцинації</span>
+								<span class="questionary-form__text-field-label"><?= dovira_translate_string( 'Date of the last vaccination' ); ?></span>
 							</label>
 						</div>
 						<div class="questionary-form__item">
 							<label>
 								<input type="text" name="pet-name" class="questionary-form__text-field">
-								<span class="questionary-form__text-field-label">Клічка улюбленця</span>
+								<span class="questionary-form__text-field-label"><?= dovira_translate_string( 'Pet name' ); ?></span>
 							</label>
 						</div>
 					</div>
 					<div class="questionary-form__row">
 						<div class="questionary-form__item">
-							<span class="questionary-form__item-title questionary-form__item-title--required">Вихід на вулицю:</span>
+							<span class="questionary-form__item-title questionary-form__item-title--required"><?= dovira_translate_string( 'Goes outside' ); ?>:</span>
 							<div class="questionary-form__radio-group">
 								<label>
 									<input type="radio" name="street" value="yes" class="questionary-form__radio-field"
 										   required>
-									<span>Так</span>
+									<span><?= dovira_translate_string( 'Yes' ); ?></span>
 								</label>
 								<label>
 									<input type="radio" name="street" value="no" class="questionary-form__radio-field"
 										   required>
-									<span>Ні</span>
+									<span><?= dovira_translate_string( 'No' ); ?></span>
 								</label>
 							</div>
 						</div>
 						<div class="questionary-form__item">
 							<span
-								class="questionary-form__item-title questionary-form__item-title--required">Кастрація:</span>
+								class="questionary-form__item-title questionary-form__item-title--required"><?= dovira_translate_string( 'Neutered' ); ?>:</span>
 							<div class="questionary-form__radio-group">
 								<label>
 									<input type="radio" name="castration" value="yes"
 										   class="questionary-form__radio-field"
 										   required>
-									<span>Так</span>
+									<span><?= dovira_translate_string( 'Yes' ); ?></span>
 								</label>
 								<label>
 									<input type="radio" name="castration" value="no"
 										   class="questionary-form__radio-field"
 										   required>
-									<span>Ні</span>
+									<span><?= dovira_translate_string( 'No' ); ?></span>
 								</label>
 							</div>
 						</div>
 						<div class="questionary-form__item questionary-form__item--cat-contact" style="display: none;">
-							<span class="questionary-form__item-title">Контакт із котами, які виходять на вулицю:</span>
+							<span class="questionary-form__item-title"><?= dovira_translate_string( 'Contact with cats that go outside' ); ?>:</span>
 							<div class="questionary-form__radio-group">
 								<label>
 									<input type="radio" name="cat-contact" value="yes"
 										   class="questionary-form__radio-field">
-									<span>Так</span>
+									<span><?= dovira_translate_string( 'Yes' ); ?></span>
 								</label>
 								<label>
 									<input type="radio" name="cat-contact" value="no"
 										   class="questionary-form__radio-field">
-									<span>Ні</span>
+									<span><?= dovira_translate_string( 'No' ); ?></span>
 								</label>
 							</div>
 						</div>
 					</div>
 					<div class="questionary-form__row">
 						<div class="questionary-form__item">
-							<span class="questionary-form__item-title questionary-form__item-title--required">Чи доводилося Вашому улюбленцю раніше бути донором?</span>
+							<span class="questionary-form__item-title questionary-form__item-title--required"><?= dovira_translate_string( 'Has your pet been a donor before?' ); ?></span>
 							<div class="questionary-form__radio-group">
 								<label>
 									<input type="radio" name="donor-before" value="yes"
 										   class="questionary-form__radio-field"
 										   required>
-									<span>Так</span>
+									<span><?= dovira_translate_string( 'Yes' ); ?></span>
 								</label>
 								<label>
 									<input type="radio" name="donor-before" value="no"
 										   class="questionary-form__radio-field"
 										   required>
-									<span>Ні</span>
+									<span><?= dovira_translate_string( 'No' ); ?></span>
 								</label>
 							</div>
 						</div>
 						<div class="questionary-form__item">
-							<span class="questionary-form__item-title questionary-form__item-title--required">Чи переливали Вашому улюбленцю будь-коли кров?</span>
+							<span class="questionary-form__item-title questionary-form__item-title--required"><?= dovira_translate_string( 'Has your pet ever had a blood transfusion?' ); ?></span>
 							<div class="questionary-form__radio-group">
 								<label>
 									<input type="radio" name="blood-take" value="yes"
 										   class="questionary-form__radio-field" required>
-									<span>Так</span>
+									<span><?= dovira_translate_string( 'Yes' ); ?></span>
 								</label>
 								<label>
 									<input type="radio" name="blood-take" value="no"
 										   class="questionary-form__radio-field" required>
-									<span>Ні</span>
+									<span><?= dovira_translate_string( 'No' ); ?></span>
 								</label>
 							</div>
 						</div>
 						<div class="questionary-form__item">
-							<span class="questionary-form__item-title questionary-form__item-title--required">Наявність хронічних захворювань?</span>
+							<span class="questionary-form__item-title questionary-form__item-title--required"><?= dovira_translate_string( 'Any chronic diseases?' ); ?></span>
 							<div class="questionary-form__radio-group">
 								<label>
 									<input type="radio" name="chronic-diseases" value="yes"
 										   class="questionary-form__radio-field"
 										   required>
-									<span>Так</span>
+									<span><?= dovira_translate_string( 'Yes' ); ?></span>
 								</label>
 								<label>
 									<input type="radio" name="chronic-diseases" value="no"
 										   class="questionary-form__radio-field"
 										   required>
-									<span>Ні</span>
+									<span><?= dovira_translate_string( 'No' ); ?></span>
 								</label>
 							</div>
 						</div>
 					</div>
 					<div class="questionary-form__row">
 						<div class="questionary-form__item">
-							<span class="questionary-form__item-title questionary-form__item-title--required">Чи приймає Ваш улюбленець якісь лікувальні засоби зараз?</span>
+							<span class="questionary-form__item-title questionary-form__item-title--required"><?= dovira_translate_string( 'Is your pet taking any medication now?' ); ?></span>
 							<div class="questionary-form__radio-group">
 								<label>
 									<input type="radio" name="pills" value="yes" class="questionary-form__radio-field"
 										   required>
-									<span>Так</span>
+									<span><?= dovira_translate_string( 'Yes' ); ?></span>
 								</label>
 								<label>
 									<input type="radio" name="pills" value="no" class="questionary-form__radio-field"
 										   required>
-									<span>Ні</span>
+									<span><?= dovira_translate_string( 'No' ); ?></span>
 								</label>
 							</div>
 						</div>
 					</div>
-					<button class="button button--black questionary-form__submit" type="submit">Записатись</button>
+					<button class="button button--black questionary-form__submit" type="submit"><?= dovira_translate_string( 'Sign up' ); ?></button>
 				</form>
 				<div class="loader loader--light loader--fixed">
 					<span class="loader__component"></span>

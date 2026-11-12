@@ -77,3 +77,18 @@ add_action( 'init', function () {
 function dovira_translate_string( string $string ): string {
 	return function_exists( 'pll__' ) ? pll__( $string ) : $string;
 }
+
+/**
+ * The Google reCAPTCHA notice under the CF7 forms, in the current language.
+ * The sentence is one string with %1$s / %2$s for the two links, so a
+ * translation can put them where its grammar needs.
+ *
+ * @return string HTML
+ */
+function dovira_recaptcha_disclaimer(): string {
+	return sprintf(
+		dovira_translate_string( 'This site is protected by reCAPTCHA and the Google %1$s and %2$s apply.' ),
+		'<a href="https://policies.google.com/privacy">' . dovira_translate_string( 'Privacy Policy' ) . '</a>',
+		'<a href="https://policies.google.com/terms">' . dovira_translate_string( 'Terms of Service' ) . '</a>'
+	);
+}

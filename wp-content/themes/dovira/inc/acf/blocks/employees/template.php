@@ -113,7 +113,7 @@ endif;
 										'class' => 'employees__photo',
 										'alt'   => $employee->post_title,
 									) ) ?>
-									<span class="employees__link-more">Познайомитись</span>
+									<span class="employees__link-more"><?= dovira_translate_string( 'Get to know' ); ?></span>
 								</div>
 								<span class="heading heading--h6 employees__name"><?= $employee->post_title; ?></span>
 								<span class="employees__position"><?= $position; ?></span>

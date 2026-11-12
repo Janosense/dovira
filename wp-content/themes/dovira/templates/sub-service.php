@@ -11,10 +11,10 @@ global $post; ?>
 	<div class="wrapper">
 		<ul class="breadcrumbs__list">
 			<li class="breadcrumbs__item">
-				<a href="<?= home_url(); ?>" class="breadcrumbs__link">Головна</a>
+				<a href="<?= home_url(); ?>" class="breadcrumbs__link"><?= dovira_translate_string('Home'); ?></a>
 			</li>
 			<li class="breadcrumbs__item">
-				<a href="/services/" class="breadcrumbs__link">Послуги</a>
+				<a href="/services/" class="breadcrumbs__link"><?= dovira_translate_string( 'Services' ); ?></a>
 			</li>
 			<?php if ( ! empty( $post->post_parent ) ) : ?>
 				<li class="breadcrumbs__item">

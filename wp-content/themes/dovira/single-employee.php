@@ -16,10 +16,10 @@
 		<div class="wrapper wrapper--tight">
 			<ul class="breadcrumbs__list">
 				<li class="breadcrumbs__item">
-					<a href="<?= home_url(); ?>" class="breadcrumbs__link">Головна</a>
+					<a href="<?= home_url(); ?>" class="breadcrumbs__link"><?= dovira_translate_string('Home'); ?></a>
 				</li>
 				<li class="breadcrumbs__item">
-					<a href="/team/" class="breadcrumbs__link">Люди, що створюють довіру</a>
+					<a href="/team/" class="breadcrumbs__link"><?= dovira_translate_string('Team'); ?></a>
 				</li>
 				<li class="breadcrumbs__item">
 					<span class="breadcrumbs__current"><?php the_title(); ?></span>
@@ -131,7 +131,7 @@
 						</ul>
 					<?php endif; ?>
 					<?php if ( $is_contact_cta_enabled ) : ?>
-						<a href="/contacts/" class="button button--black">Записатись</a>
+						<a href="/contacts/" class="button button--black"><?= dovira_translate_string( 'Book an appointment' ); ?></a>
 					<?php endif; ?>
 				</div>
 			</div>

@@ -77,7 +77,7 @@ $files_count = dovira_get_acf_field( 'files_count' );
 					endforeach; ?>
 				</div>
 				<?php if ( ! empty( $files ) && !$is_all_files_visible && count( $files ) > $files_count ) : ?>
-					<button class="files__toggle" type="button">Дивитись усі документи</button>
+					<button class="files__toggle" type="button"><?= dovira_translate_string( 'View all documents' ); ?></button>
 				<?php endif; ?>
 			<?php endif; ?>
 			<?php if ( ! empty( $cta ) ) : ?>

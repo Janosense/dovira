@@ -623,14 +623,14 @@ function dovira_add_micro_markup(): void {
 		$micro_markup = [
 			"@context" => "https://schema.org",
 			"@type"    => "VeterinaryCare",
-			"name"     => "Ветеринарна клініка",
+			"name"     => dovira_translate_string( 'Veterinary clinic' ),
 			"url"      => get_home_url(),
 		];
 		if ( ! empty( $contacts ) ) {
 			foreach ( $contacts as $contact ) {
 				$micro_markup['department'][] = [
 					"@type"        => "VeterinaryCare",
-					"name"         => 'Філія ' . $contact['city'],
+					"name"         => dovira_translate_string( 'Branch' ) . ' ' . $contact['city'],
 					"address"      => [
 						"@type"           => "PostalAddress",
 						"addressLocality" => $contact['city'],
@@ -657,13 +657,13 @@ function dovira_add_micro_markup(): void {
 				[
 					'@type'    => 'ListItem',
 					'position' => 1,
-					'name'     => 'Головна',
+					'name'     => dovira_translate_string( 'Home' ),
 					'item'     => 'https://dovira.vet/'
 				],
 				[
 					'@type'    => 'ListItem',
 					'position' => 2,
-					'name'     => 'Послуги',
+					'name'     => dovira_translate_string( 'Services' ),
 					'item'     => 'https://dovira.vet/services/'
 				],
 			]
