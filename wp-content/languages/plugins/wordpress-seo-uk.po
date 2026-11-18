@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Plugins - Yoast SEO &#8211; Advanced SEO with real-time guidance and built-in AI - Stable (latest release) package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2026-09-05 08:36:46+0000\n"
+"PO-Revision-Date: 2026-11-18 06:24:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -10,6 +10,530 @@ msgstr ""
 "X-Generator: GlotPress/4.1.0\n"
 "Language: uk_UA\n"
 "Project-Id-Version: Plugins - Yoast SEO &#8211; Advanced SEO with real-time guidance and built-in AI - Stable (latest release)\n"
+
+#. translators: %s expands to the name of the analysis, e.g. "SEO analysis".
+#: src/abilities/user-interface/seo-data-output-schema.php:135
+msgid "The result of the %s as calculated at the last save in the editor."
+msgstr "Результат %s, обчислений під час останнього збереження в редакторі."
+
+#: src/abilities/user-interface/seo-data-output-schema.php:47
+msgid "Whether search engines are told not to index this term archive. true means noindex (the archive is excluded from search results); false means the archive is forced to be indexed; null means no setting is stored and the taxonomy default applies."
+msgstr "Чи отримують пошукові системи вказівку не індексувати архів цієї групи таксономії. Значення true означає noindex (архів виключається з результатів пошуку); false означає примусову індексацію архіву; null означає, що налаштування не збережено й застосовується початкове значення таксономії."
+
+#: src/abilities/user-interface/seo-data-output-schema.php:43
+msgid "The canonical URL as output on the front end: the custom value when set, otherwise the permalink of the term. Null when nothing is output."
+msgstr "Канонічна URL-адреса, що виводиться на сайті: власне значення, якщо його задано, або постійне посилання групи таксономії. Якщо нічого не виводиться, повертається null."
+
+#: src/abilities/user-interface/seo-data-output-schema.php:39
+msgid "The custom canonical URL as stored for the term. Null when no custom value is set; the rendered companion field carries what is actually output."
+msgstr "Збережена власна канонічна URL-адреса групи таксономії. Якщо власне значення не задано, повертається null; пов’язане поле зі сформованим значенням містить те, що фактично виводиться."
+
+#. translators: %s expands to the name of the SEO field, e.g. "SEO title".
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:169
+msgid "The %s for the term."
+msgstr "%s для групи таксономії."
+
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:142
+msgid "Whether the term is marked as cornerstone content."
+msgstr "Чи позначено групу таксономії як ключовий вміст."
+
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:138
+msgid "The custom canonical URL for the term archive. Use null or an empty string to remove it and fall back to the default canonical."
+msgstr "Власна канонічна URL-адреса архіву групи таксономії. Укажіть null або порожній рядок, щоб видалити її та повернутися до початкової канонічної URL-адреси."
+
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:132
+msgid "The permalink (URL) of the term archive to update."
+msgstr "Постійне посилання (URL) архіву групи таксономії, який потрібно оновити."
+
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:127
+msgid "The ID of the term to update."
+msgstr "ID групи таксономії, яку потрібно оновити."
+
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:146
+msgid "Whether search engines should be told not to index this term archive. true sets noindex (the archive is excluded from search results); false forces the archive to be indexed; null clears the setting and falls back to the taxonomy default."
+msgstr "Чи слід повідомляти пошуковим системам, що архів цієї групи таксономії не потрібно індексувати. Значення true встановлює noindex (архів виключається з результатів пошуку); false примусово вмикає індексацію архіву; null скидає налаштування до початкового значення таксономії."
+
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:82
+msgid "Update the SEO data for a single taxonomy term, such as a category or a tag. Identify the term by term_id or by permalink (URL). Only the fields you provide are changed; a provided empty value clears that field. Only terms the current user is allowed to edit can be updated."
+msgstr "Оновити SEO-дані окремої групи таксономії, наприклад категорії чи позначки. Укажіть групу за term_id або постійним посиланням (URL). Змінюються лише надані вами поля; передане порожнє значення очищує відповідне поле. Можна оновлювати лише групи таксономії, які поточний користувач має право редагувати."
+
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:81
+msgid "Update Term SEO Data"
+msgstr "Оновити SEO-дані групи таксономії"
+
+#: src/abilities/user-interface/abilities/update-author-schema-ability.php:125
+msgid "Only present when a requested setting could not be applied or saved, for example when a social profile is not a valid URL. Meant to be relayed to the user."
+msgstr "З’являється лише тоді, коли не вдалося застосувати або зберегти запитане налаштування, наприклад якщо URL облікового запису в соціальній мережі є недійсною. Призначено для передавання повідомлення користувачеві."
+
+#. translators: %s expands to Yoast SEO.
+#: src/abilities/user-interface/abilities/update-author-schema-ability.php:108
+msgid "Update %s's author schema settings of a user, which provide their pronouns, social profiles and, depending on the active add-ons, other details for the user's Person schema. That schema describes the user as the author of their posts, on their author archive, and as the site itself when the site represents this user. Only the settings you provide are changed; a provided empty string clears that setting. Provide only the user ID to read the current settings without changing anything. These settings are published as personal details about the user: only use values you were given, never guessed, inferred (for example pronouns from a name) or found elsewhere, and confirm them before saving."
+msgstr "Оновити налаштування схеми автора %s для користувача. Вони містять його займенники, облікові записи в соціальних мережах і, залежно від активних доповнень, інші відомості для схеми Person цього користувача. Ця схема описує користувача як автора його записів, на сторінці архіву автора, а також як сам сайт, якщо сайт представляє цього користувача. Змінюються лише надані вами налаштування; переданий порожній рядок очищує відповідне налаштування. Щоб прочитати поточні налаштування без змін, передайте лише ID користувача. Ці налаштування публікуються як особисті відомості про користувача: використовуйте лише значення, які користувач надав безпосередньо, а не здогадані, виведені опосередковано (наприклад, займенники з імені) або знайдені деінде, і підтверджуйте їх перед збереженням."
+
+#. translators: %s expands to the name of a target.
+#: src/abilities/user-interface/abilities/update-archive-and-special-page-seo-settings-ability.php:106
+msgid "The post type of the content type whose archive to update. Required for the %s target, ignored for the others."
+msgstr "Тип запису типу вмісту, архів якого потрібно оновити. Обов’язковий для цілі %s, ігнорується для інших."
+
+#: src/abilities/user-interface/abilities/update-archive-and-special-page-seo-settings-ability.php:100
+msgid "The pages to update."
+msgstr "Сторінки, які потрібно оновити."
+
+#. translators: %s: the name of an ability.
+#: src/abilities/user-interface/abilities/update-archive-and-special-page-seo-settings-ability.php:86
+msgid "Update the SEO settings of the homepage when it shows the latest posts, an archive or a special page. Category, tag and other taxonomy archives are not included; use the %s ability for their individual terms. Only the settings you provide are changed. Only use snippet variables that apply to the pages you update, as the ones that do not are silently removed when the page is rendered."
+msgstr "Оновіть налаштування SEO домашньої сторінки, коли на ній відображаються останні публікації, архів або спеціальна сторінка. Архіви категорій, тегів та інших таксономій не враховуються; для окремих термінів використовуйте функцію %s. Змінюються лише ті налаштування, які ви вказали. Використовуйте лише ті змінні фрагментів, які стосуються сторінок, що оновлюються, оскільки ті, що не стосуються, тихо видаляються під час візуалізації сторінки."
+
+#: src/abilities/user-interface/abilities/update-author-schema-ability.php:105
+msgid "Update Author Schema"
+msgstr "Оновити схему автора"
+
+#: src/abilities/user-interface/abilities/update-author-schema-ability.php:101
+msgid "The ID of the user whose settings to update or read."
+msgstr "ID користувача, налаштування якого потрібно оновити або прочитати."
+
+#: src/abilities/user-interface/abilities/update-archive-and-special-page-seo-settings-ability.php:83
+msgid "Update SEO Settings for Archives and Special Pages"
+msgstr "Оновити налаштування SEO для архівів та спеціальних сторінок"
+
+#: src/abilities/user-interface/abilities/update-archive-and-special-page-seo-settings-ability.php:79
+msgid "Only present when some of the provided settings were not saved, or when the pages are disabled so the saved settings have no effect yet. Meant to be relayed to the user."
+msgstr "З’являється лише в тому випадку, якщо деякі з вказаних налаштувань не були збережені, або якщо сторінки вимкнені, тому збережені налаштування поки що не діють. Призначено для інформування користувача."
+
+#. translators: 1: the name of an ability, 2: the name of an ability.
+#: src/abilities/user-interface/abilities/get-archive-and-special-page-seo-settings-ability.php:76
+msgid "Get the SEO settings of the homepage when it shows the latest posts, the archives and the special pages. Category, tag and other taxonomy archives are not included; use the %1$s ability for their individual terms. A static homepage is not included either, as it is a page whose SEO data is read with the %2$s ability. The title and description templates can contain snippet variables, and are returned as stored rather than as shown on the site."
+msgstr "Отримайте налаштування SEO домашньої сторінки, коли на ній відображаються останні публікації, архіви та спеціальні сторінки. Архіви категорій, тегів та інших таксономій не враховуються; для окремих термінів використовуйте функцію %1$s. Статична домашня сторінка також не враховується, оскільки це сторінка, дані SEO якої зчитуються за допомогою функції %2$s. Шаблони заголовків та описів можуть містити змінні для фрагментів, і вони повертаються у тому вигляді, в якому вони збережені, а не так, як відображаються на сайті."
+
+#: src/abilities/user-interface/abilities/get-term-seo-data-ability.php:107
+msgid "The permalink (URL) of the term archive to retrieve."
+msgstr "Постійне посилання (URL) архіву групи таксономії, дані якої потрібно отримати."
+
+#: src/abilities/user-interface/abilities/get-term-seo-data-ability.php:102
+msgid "The ID of the term to retrieve."
+msgstr "ID групи таксономії, дані якої потрібно отримати."
+
+#: src/abilities/user-interface/abilities/get-term-seo-data-ability.php:70
+msgid "Get the SEO data for a single taxonomy term, such as a category or a tag. Identify the term by term_id or by permalink (URL). Only terms the current user is allowed to edit are returned."
+msgstr "Отримати SEO-дані окремої групи таксономії, наприклад категорії чи позначки. Укажіть групу за term_id або постійним посиланням (URL). Повертаються лише групи таксономії, які поточний користувач має право редагувати."
+
+#: src/abilities/user-interface/abilities/get-term-seo-data-ability.php:69
+msgid "Get Term SEO Data"
+msgstr "Отримати SEO-дані групи таксономії"
+
+#: src/abilities/user-interface/abilities/get-archive-and-special-page-seo-settings-ability.php:73
+msgid "Get SEO Settings for Archives and Special Pages"
+msgstr "Отримати налаштування SEO для архівів та спеціальних сторінок"
+
+#: src/abilities/user-interface/abilities/abstract-archive-and-special-page-seo-settings-ability.php:120
+msgid "Whether these settings are shared by many pages, like all author archives. Shared settings apply to every one of those pages, so their templates must not contain text about one specific page; use snippet variables for what differs between them."
+msgstr "Незалежно від того, чи ці налаштування є спільними для багатьох сторінок, наприклад, для всіх архівів авторів. Спільні налаштування застосовуються до кожної з цих сторінок, тому їхні шаблони не повинні містити текст, що стосується однієї конкретної сторінки; для того, що відрізняється між ними, використовуйте змінні фрагментів."
+
+#: src/abilities/user-interface/abilities/abstract-archive-and-special-page-seo-settings-ability.php:116
+msgid "Whether these pages are in use on the site. Read-only: it can only be changed in the Yoast SEO settings. The settings of disabled pages can still be changed, but have no effect until they are enabled."
+msgstr "Чи використовуються ці сторінки на сайті. Тільки для читання: зміни можна внести лише в налаштуваннях Yoast SEO. Налаштування вимкнених сторінок можна змінювати, але вони не набудуть чинності, доки сторінки не будуть увімкнені."
+
+#. translators: %s expands to the name of a target.
+#: src/abilities/user-interface/abilities/abstract-archive-and-special-page-seo-settings-ability.php:107
+msgid "Only present for the %s target: the name of the content type."
+msgstr "Надається лише для цілі %s: назва типу вмісту."
+
+#. translators: %s expands to the name of a target.
+#: src/abilities/user-interface/abilities/abstract-archive-and-special-page-seo-settings-ability.php:99
+msgid "Only present for the %s target: the post type of the content type."
+msgstr "Надається лише для цілі %s: тип публікації для даного типу вмісту."
+
+#: src/abilities/user-interface/abilities/abstract-archive-and-special-page-seo-settings-ability.php:93
+msgid "The pages these settings belong to."
+msgstr "Сторінки, до яких відносяться ці налаштування."
+
+#. translators: 1: WooCommerce, 2: the ID of a page, 3: the name of an ability.
+#: src/abilities/infrastructure/global-setting-targets/post-type-archive-target.php:169
+msgid "With %1$s active, the product archive takes its SEO data from the Shop page (ID %2$d), so it is set on that page with the %3$s ability instead."
+msgstr "Коли %1$s увімкнено, архів товарів отримує дані для SEO зі сторінки Магазин (ID %2$d), тому налаштування для нього встановлюються на цій сторінці за допомогою функції %3$s."
+
+#: src/abilities/infrastructure/global-setting-targets/global-setting-target-repository.php:110
+msgid "The given target is not valid."
+msgstr "Вказана ціль є недійсною."
+
+#: src/abilities/infrastructure/global-setting-field-map.php:162
+msgid "Whether search engines are told not to index these pages. true hides them from search results; false lets them be shown in search results."
+msgstr "Чи слід заборонити пошуковим системам індексувати ці сторінки. Значення «true» приховує їх у результатах пошуку; значення «false» дозволяє відображати їх у результатах пошуку."
+
+#. translators: %1$s expands to WooCommerce.
+#: src/abilities/infrastructure/global-setting-targets/post-type-archive-target.php:159
+msgid "With %1$s active, the product archive takes its SEO data from the Shop page, but no Shop page is set in the %1$s settings."
+msgstr "Коли %1$s увімкнено, архів товарів отримує дані для SEO зі сторінки «Магазин», але в налаштуваннях %1$s сторінка «Магазин» не вказана."
+
+#. translators: 1: the name of a parameter, 2: the name of an ability.
+#: src/abilities/infrastructure/global-setting-targets/post-type-archive-target.php:130
+msgid "No content type archive with SEO data exists for the given %1$s. The %2$s ability lists the ones that do."
+msgstr "Для вказаних %1$s не існує архіву типів вмісту з даними SEO. У списку можливостей %2$s наведено ті, для яких такі дані є."
+
+#. translators: %s expands to the name of a parameter.
+#: src/abilities/infrastructure/global-setting-targets/post-type-archive-target.php:118
+msgid "Provide the %s of the content type whose archive to update."
+msgstr "Вкажіть %s типу вмісту, архів якого потрібно оновити."
+
+#. translators: 1: the ID of a page, 2: the name of an ability.
+#: src/abilities/infrastructure/global-setting-targets/homepage-target.php:67
+msgid "The homepage of this site is a static page (ID %1$d), so its SEO data is set on that page with the %2$s ability instead."
+msgstr "Домашня сторінка цього сайту є статичною сторінкою (ID %1$d), тому її SEO-дані налаштовуються на цій сторінці за допомогою функції %2$s."
+
+#. translators: %s: the format of a snippet variable.
+#: src/abilities/infrastructure/global-setting-field-map.php:150
+msgid "The meta description template, shown below the title in search results. It can contain snippet variables in the %s format, which are replaced with the values of the page it is shown on. When empty, no meta description is output."
+msgstr "Шаблон метаопису, який відображається під заголовком у результатах пошуку. Він може містити змінні у форматі %s, які замінюються значеннями зі сторінки, на якій він відображається. Якщо поле порожнє, метаопис не відображається."
+
+#: src/abilities/infrastructure/term-identifier-resolver.php:107
+msgid "No term could be found for the given identifier."
+msgstr "За вказаним ідентифікатором не знайдено жодної групи таксономії."
+
+#: src/abilities/infrastructure/term-identifier-resolver.php:51
+msgid "Provide a term_id or a permalink to identify the term."
+msgstr "Укажіть term_id або постійне посилання, щоб визначити групу таксономії."
+
+#: src/abilities/infrastructure/indexable-access-checker.php:38
+msgid "Sorry, you are not allowed to edit this term."
+msgstr "На жаль, вам не дозволено редагувати цю групу таксономії."
+
+#. translators: %s: the format of a snippet variable.
+#: src/abilities/infrastructure/global-setting-field-map.php:134
+msgid "The SEO title template. It can contain snippet variables in the %s format, which are replaced with the values of the page it is shown on. When empty, the default title is used."
+msgstr "Шаблон заголовка для SEO. Він може містити змінні для фрагмента у форматі %s, які замінюються значеннями зі сторінки, на якій він відображається. Якщо поле порожнє, використовується заголовок за замовчуванням."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:246
+msgid "Only users who can edit other users can change them."
+msgstr "Змінювати їх можуть лише користувачі, які мають право редагувати інших користувачів."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:242
+msgid "Author archives are disabled on this site, so the pronouns cannot be changed."
+msgstr "Архіви авторів вимкнено на цьому сайті, тому займенники не можна змінити."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:239
+msgid "The pronouns of the user, like \"she/her\", \"he/him\" or \"they/them\"."
+msgstr "Займенники користувача, наприклад «she/her», «he/him» або «they/them»."
+
+#. translators: %s expands to the name of a setting.
+#: src/abilities/infrastructure/author-schema-field-map.php:223
+msgid "The %s setting was not changed, because only users who can edit other users can change it."
+msgstr "Налаштування %s не змінено, оскільки його можуть змінювати лише користувачі, які мають право редагувати інших користувачів."
+
+#. translators: %s expands to the name of a setting.
+#: src/abilities/infrastructure/author-schema-field-map.php:214
+msgid "The %s setting was not changed, because author archives are disabled on this site."
+msgstr "Налаштування %s не змінено, оскільки архіви авторів вимкнено на цьому сайті."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:196
+msgid "The URL of the Wikipedia page about the user."
+msgstr "URL сторінки Вікіпедії про користувача."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:192
+msgid "The URL of the user's YouTube channel."
+msgstr "URL каналу користувача на YouTube."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:188
+msgid "The X username of the user. A leading @ is removed, and an X profile URL is also accepted and saved as the username. It is also used in the X card meta tags: as the creator of the user's posts, and as the site's X account when the site represents this user."
+msgstr "Ім’я користувача в X. Початковий символ @ видаляється; також можна вказати URL облікового запису в X — його буде прийнято та збережено як ім’я користувача. Це значення також використовується в метатегах картки X: як ім’я автора записів користувача та як обліковий запис сайту в X, якщо сайт представляє цього користувача."
+
+#. translators: 1: the name of a setting, 2: the name of a target.
+#: src/abilities/application/archive-and-special-page-seo-settings-updater.php:143
+msgid "The %1$s setting is not available for %2$s, so it was not saved."
+msgstr "Параметр %1$s недоступний для %2$s, тому його не було збережено."
+
+#: src/abilities/application/archive-and-special-page-seo-settings-updater.php:116
+msgid "The settings were saved, but these pages are disabled on this site, so the settings have no effect until the pages are enabled in the Yoast SEO settings."
+msgstr "Налаштування було збережено, але ці сторінки на цьому сайті вимкнені, тому налаштування не діятимуть, доки ці сторінки не будуть увімкнені в налаштуваннях Yoast SEO."
+
+#: src/abilities/application/archive-and-special-page-seo-settings-updater.php:103
+msgid "Provide at least one setting to change."
+msgstr "Вкажіть хоча б один параметр, який можна змінити."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:184
+msgid "The URL of the user's Tumblr profile."
+msgstr "URL облікового запису користувача в Tumblr."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:180
+msgid "The URL of the user's SoundCloud profile."
+msgstr "URL облікового запису користувача в SoundCloud."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:176
+msgid "The URL of the user's Pinterest profile."
+msgstr "URL облікового запису користувача в Pinterest."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:172
+msgid "The URL of the user's MySpace profile."
+msgstr "URL облікового запису користувача в MySpace."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:168
+msgid "The URL of the user's LinkedIn profile."
+msgstr "URL облікового запису користувача в LinkedIn."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:164
+msgid "The URL of the user's Instagram profile."
+msgstr "URL облікового запису користувача в Instagram."
+
+#: src/abilities/infrastructure/author-schema-field-map.php:160
+msgid "The URL of the user's Facebook profile. It is also used as the article author in the Open Graph meta tags of the user's posts."
+msgstr "URL облікового запису користувача у Facebook. Він також використовується для позначення автора статті в метатегах Open Graph записів користувача."
+
+#: src/abilities/application/term-seo-data-updater.php:116
+msgid "The term SEO data was saved but the indexable could not be rebuilt."
+msgstr "SEO-дані групи таксономії збережено, але не вдалося перебудувати об’єкт індексації."
+
+#: src/abilities/application/term-seo-data-updater.php:108
+msgid "The term SEO data could not be saved."
+msgstr "Не вдалося зберегти SEO-дані групи таксономії."
+
+#: src/abilities/application/author-schema-updater.php:98
+msgid "No user exists with the given ID."
+msgstr "Користувача із зазначеним ID не існує."
+
+#: src/abilities/user-interface/abilities/update-site-representation-ability.php:128
+msgid "Only present when a requested setting could not be applied or saved, for example when Yoast Local SEO requires the site to represent an organization or when the user to represent does not exist. Meant to be relayed to the user."
+msgstr "Показувати лише тоді, коли запитане налаштування не вдалося застосувати або зберегти, наприклад, якщо Yoast Local SEO вимагає, щоб сайт представляв організацію, або якщо користувача, якого має представляти сайт, не існує. Призначено для повідомлення користувачеві."
+
+#. translators: %s expands to Yoast SEO.
+#: src/abilities/user-interface/abilities/update-site-representation-ability.php:111
+msgid "Update %s's site representation settings, which tell search engines whether the site represents an organization or a person, and provide its name, logo, social profiles and, depending on the active add-ons, other details for the site's organization schema. Only the settings you provide are changed; a provided empty value (an empty string, 0 or an empty array) clears that setting, and a provided list replaces the current one. These settings are public facts about who owns the site: only use values the user provided or that come from the site itself, never guessed or found elsewhere, and confirm them with the user before saving."
+msgstr "Оновіть налаштування представлення сайту в %s, які повідомляють пошуковим системам, чи представляє сайт організацію або особу, і надають її назву чи ім’я, логотип, профілі в соціальних мережах та, залежно від активних доповнень, інші відомості для розмітки Schema організації. Змінюються лише вказані вами налаштування; передане порожнє значення (порожній рядок, 0 або порожній масив) очищає відповідне налаштування, а переданий список замінює поточний. Ці налаштування містять загальнодоступні відомості про власника сайту: використовуйте лише значення, надані користувачем або отримані із самого сайту, ніколи не припускайте їх і не шукайте в інших джерелах. Перед збереженням підтвердьте ці відомості в користувача."
+
+#: src/abilities/user-interface/abilities/update-site-representation-ability.php:108
+msgid "Update Site Representation"
+msgstr "Оновити налаштування представлення сайту"
+
+#. translators: %s expands to Yoast SEO
+#: src/abilities/user-interface/abilities/set-xml-sitemap-status-ability.php:97
+msgid "Enable or disable %s's XML sitemap feature. Enabling it serves the sitemap index at /sitemap_index.xml and its sub-sitemaps, and replaces the WordPress core sitemaps; disabling it stops serving them."
+msgstr "Увімкнути або вимкнути функцію XML-мапи сайту в %s. Якщо її увімкнути, за адресою /sitemap_index.xml буде доступний індекс мап сайту та відповідні вкладені мапи замість стандартних мап WordPress; якщо вимкнути — ці мапи більше не надаватимуться."
+
+#: src/abilities/user-interface/abilities/set-xml-sitemap-status-ability.php:86
+msgid "Set XML Sitemap Status"
+msgstr "Установити стан XML-мапи сайту"
+
+#. translators: %s expands to Yoast SEO
+#: src/abilities/user-interface/abilities/set-x-card-status-ability.php:58
+msgid "Enable or disable %s's X card data feature. Enabling it outputs X card meta tags on the site's pages, so X can display a preview with an image and a text excerpt when a link to the site is shared; disabling it stops outputting the tags."
+msgstr "Увімкнути або вимкнути функцію даних карток X у %s. Якщо її увімкнути, на сторінках сайту виводитимуться метатеги карток X, щоб X міг показувати попередній перегляд із зображенням і уривком тексту під час поширення посилання на сайт. Якщо вимкнути, ці метатеги більше не виводитимуться."
+
+#: src/abilities/user-interface/abilities/set-x-card-status-ability.php:47
+msgid "Set X Card Data Status"
+msgstr "Установити стан даних карток X"
+
+#. translators: %s expands to Yoast SEO
+#: src/abilities/user-interface/abilities/set-schema-framework-status-ability.php:58
+msgid "Enable or disable %s's Schema Framework feature. Enabling it outputs a single structured data graph (JSON-LD) on the site's pages, so search engines and language models can consistently read every person, product, organization, and piece of content; disabling it stops outputting the graph."
+msgstr "Увімкнути або вимкнути функцію Schema Framework у %s. Якщо її увімкнути, на сторінках сайту виводитиметься єдиний граф структурованих даних (JSON-LD), щоб пошукові системи й мовні моделі могли послідовно зчитувати відомості про людей, товари, організації та вміст. Якщо вимкнути, граф більше не виводитиметься."
+
+#: src/abilities/user-interface/abilities/set-schema-framework-status-ability.php:47
+msgid "Set Schema Framework Status"
+msgstr "Установити стан Schema Framework"
+
+#. translators: %s expands to Yoast SEO
+#: src/abilities/user-interface/abilities/set-schema-aggregation-status-ability.php:58
+msgid "Enable or disable %s's Schema aggregation endpoint feature. Enabling it serves the site's public structured data as a schema map at /schemamap.xml and through the schema aggregator REST endpoints, so conversational interfaces like NLWeb can query the site's content; disabling it stops serving them."
+msgstr "Увімкнути або вимкнути функцію кінцевої точки агрегації Schema у %s. Якщо її увімкнути, загальнодоступні структуровані дані сайту надаватимуться у вигляді мапи схем за адресою /schemamap.xml і через кінцеві точки REST для агрегації схем, щоб розмовні інтерфейси, як-от NLWeb, могли робити запити до вмісту сайту. Якщо вимкнути, надання цих даних припиниться."
+
+#: src/abilities/user-interface/abilities/set-schema-aggregation-status-ability.php:47
+msgid "Set Schema Aggregation Endpoint Status"
+msgstr "Установити стан кінцевої точки агрегації Schema"
+
+#. translators: %s expands to Yoast SEO
+#: src/abilities/user-interface/abilities/set-open-graph-status-ability.php:58
+msgid "Enable or disable %s's Open Graph data feature. Enabling it outputs Open Graph meta tags on the site's pages, so Facebook and other social media can display a preview with an image and a text excerpt when a link to the site is shared; disabling it stops outputting the tags."
+msgstr "Увімкнути або вимкнути функцію даних Open Graph у %s. Якщо її увімкнути, на сторінках сайту виводитимуться метатеги Open Graph, щоб Facebook та інші соціальні мережі могли показувати попередній перегляд із зображенням і уривком тексту під час поширення посилання на сайт. Якщо вимкнути, ці метатеги більше не виводитимуться."
+
+#: src/abilities/user-interface/abilities/set-open-graph-status-ability.php:47
+msgid "Set Open Graph Data Status"
+msgstr "Установити стан даних Open Graph"
+
+#. translators: %s expands to Yoast SEO
+#: src/abilities/user-interface/abilities/set-llms-txt-status-ability.php:124
+msgid "Enable or disable %s's llms.txt feature. Enabling it generates an llms.txt file for the site and keeps it up to date; disabling it removes the generated file."
+msgstr "Увімкнути або вимкнути функцію llms.txt у %s. Якщо її увімкнути, для сайту створюватиметься файл llms.txt, який підтримуватиметься в актуальному стані; якщо вимкнути — створений функцією файл буде видалено."
+
+#: src/abilities/user-interface/abilities/set-llms-txt-status-ability.php:109
+msgid "Only present when the feature is enabled but the llms.txt file could not be generated. Meant to be relayed to the user."
+msgstr "Показувати лише тоді, коли функцію ввімкнено, але файл llms.txt не вдалося створити. Призначено для повідомлення користувачеві."
+
+#: src/abilities/user-interface/abilities/set-llms-txt-status-ability.php:95
+msgid "Set llms.txt Status"
+msgstr "Установити стан llms.txt"
+
+#. translators: %1$s expands to Yoast SEO, %2$s: the name of the feature.
+#: src/abilities/user-interface/abilities/abstract-set-feature-status-ability.php:151
+msgid "Whether %1$s's %2$s feature is enabled."
+msgstr "Чи ввімкнено функцію %2$s у %1$s."
+
+#. translators: %1$s expands to Yoast SEO, %2$s: the name of the feature.
+#: src/abilities/user-interface/abilities/abstract-set-feature-status-ability.php:136
+msgid "Whether %1$s's %2$s feature should be enabled. true enables it; false disables it."
+msgstr "Чи потрібно ввімкнути функцію %2$s у %1$s. Значення true вмикає її, false — вимикає."
+
+#. translators: %s expands to the name of a setting.
+#: src/abilities/infrastructure/site-representation-field-validators.php:158
+msgid "The %s setting was not changed, because it is not the ID of an image in the media library."
+msgstr "Налаштування %s не було змінено, оскільки вказане значення не є ID зображення з бібліотеки медіа."
+
+#: src/abilities/infrastructure/site-representation-field-validators.php:101
+msgid "The user to represent was not changed, because no user that you can select exists with the given ID."
+msgstr "Користувача, якого представляє сайт, не змінено, оскільки користувача із зазначеним ID, доступного для вибору, не існує."
+
+#. translators: %s expands to Yoast Local SEO.
+#: src/abilities/infrastructure/site-representation-field-validators.php:75
+msgid "The site was not set to represent a person, because %s is active and requires the site to represent an organization."
+msgstr "Сайт не було налаштовано як такий, що представляє особу, оскільки активний плагін %s вимагає, щоб сайт представляв організацію."
+
+#. translators: %s expands to Yoast Local SEO.
+#: src/abilities/infrastructure/site-representation-field-map.php:152
+msgid "%s is active on this site and requires the site to represent an organization, so it always does."
+msgstr "%s активний на цьому сайті та вимагає, щоб сайт представляв організацію, тому він завжди її представляє."
+
+#: src/abilities/infrastructure/site-representation-field-map.php:144
+msgid "Whether the site represents an organization (\"company\") or a person (\"person\")."
+msgstr "Чи представляє сайт організацію (\"company\") або особу (\"person\")."
+
+#: src/abilities/infrastructure/site-representation-field-map.php:130
+msgid "The URLs of the other social profiles of the organization, like Instagram, LinkedIn or YouTube. Only used when company_or_person is \"company\". For a person, the social profiles from the user's profile are used instead."
+msgstr "URL інших профілів організації в соціальних мережах, наприклад Instagram, LinkedIn або YouTube. Використовується лише тоді, коли company_or_person має значення \"company\". Для особи натомість використовуються профілі в соціальних мережах з облікового запису користувача."
+
+#: src/abilities/infrastructure/site-representation-field-map.php:123
+msgid "The X username of the organization, without the @. Only added to the schema when company_or_person is \"company\". It is also used in the X card meta tags: as the site's X account, unless the site represents a person whose profile has an X username, and as the X account of posts whose author has no X username."
+msgstr "Ім’я користувача X для організації, без символу @. Додається до розмітки Schema лише тоді, коли company_or_person має значення \"company\". Також використовується в метатегах карток X: як обліковий запис X сайту, якщо сайт не представляє особу, у профілі якої вказано ім’я користувача X, і як обліковий запис X записів, автори яких не мають імені користувача X."
+
+#: src/abilities/infrastructure/site-representation-field-map.php:119
+msgid "The URL of the Facebook page of the organization. Only used when company_or_person is \"company\". For a person, the Facebook URL from the user's profile is used instead."
+msgstr "URL сторінки організації у Facebook. Використовується лише тоді, коли company_or_person має значення \"company\". Для особи натомість використовується URL Facebook із профілю користувача."
+
+#: src/abilities/infrastructure/site-representation-field-map.php:114
+msgid "The attachment ID of the personal logo or avatar, an image from the media library. 0 when no logo is set, in which case the site logo is used. Only used when company_or_person is \"person\"."
+msgstr "ID вкладення із зображенням особистого логотипа або аватара з бібліотеки медіа. Якщо логотип не задано, значення — 0, і використовується логотип сайту. Використовується лише тоді, коли company_or_person має значення \"person\"."
+
+#: src/abilities/infrastructure/site-representation-field-map.php:108
+msgid "The ID of the user the site represents, whose profile information is used in search results. The person's name is taken from the display name of this user. Unless you can list users, only users with published posts can be set. 0 when no user is set. Only used when company_or_person is \"person\"."
+msgstr "ID користувача, якого представляє сайт і дані профілю якого використовуються в результатах пошуку. Ім’я особи береться з відображуваного імені цього користувача. Якщо ви не можете отримати список користувачів, можна вибрати лише користувачів, які мають опубліковані записи. Якщо користувача не задано, значення — 0. Використовується лише тоді, коли company_or_person має значення \"person\"."
+
+#: src/abilities/infrastructure/site-representation-field-map.php:102
+msgid "The attachment ID of the organization logo, an image from the media library. 0 when no logo is set, in which case the site logo is used. Only used when company_or_person is \"company\"."
+msgstr "ID вкладення із зображенням логотипа організації з бібліотеки медіа. Якщо логотип не задано, значення — 0, і використовується логотип сайту. Використовується лише тоді, коли company_or_person має значення \"company\"."
+
+#: src/abilities/infrastructure/site-representation-field-map.php:97
+msgid "An alternate name of the organization the site represents, like an acronym or a shorter version of its name. Only used when company_or_person is \"company\"."
+msgstr "Альтернативна назва організації, яку представляє сайт, наприклад абревіатура або скорочена назва. Використовується лише тоді, коли company_or_person має значення \"company\"."
+
+#: src/abilities/infrastructure/site-representation-field-map.php:93
+msgid "The name of the organization the site represents. When empty, the site name is used. Only used when company_or_person is \"company\"."
+msgstr "Назва організації, яку представляє сайт. Якщо значення порожнє, використовується назва сайту. Використовується лише тоді, коли company_or_person має значення \"company\"."
+
+#. translators: %s expands to the name of a setting.
+#: src/abilities/application/abstract-fields-updater.php:93
+msgid "The %s setting could not be saved as provided, so its current value is returned."
+msgstr "Налаштування %s не вдалося зберегти із зазначеним значенням, тому повертається його поточне значення."
+
+#: src/abilities/application/abstract-fields-updater.php:62
+msgid "No other settings were saved."
+msgstr "Інші налаштування не було збережено."
+
+#: src/abilities/application/abstract-fields-updater.php:62
+msgid "The other settings were saved."
+msgstr "Інші налаштування збережено."
+
+#: src/abilities/application/llms-txt-status-updater.php:129
+msgid "The llms.txt feature is enabled, but the file could not be generated or updated, for unknown reasons."
+msgstr "Функцію llms.txt увімкнено, але файл не вдалося створити або оновити з невідомих причин."
+
+#: src/abilities/application/llms-txt-status-updater.php:127
+msgid "The llms.txt feature is enabled, but the file could not be generated or updated: the web server's filesystem permissions do not allow writing it."
+msgstr "Функцію llms.txt увімкнено, але файл не вдалося створити або оновити: дозволи файлової системи вебсервера не дають змоги записати його."
+
+#. translators: %1$s expands to Yoast SEO
+#: src/abilities/application/llms-txt-status-updater.php:123
+msgid "The llms.txt feature is enabled, but the file could not be generated or updated: an llms.txt file already exists that was not created by %1$s or has been edited manually, and it will not be overwritten. Delete it manually to let %1$s generate the file, or disable the %1$s feature."
+msgstr "Функцію llms.txt увімкнено, але файл не вдалося створити або оновити: файл llms.txt уже існує, його не було створено за допомогою %1$s або його відредаговано вручну, тому його не буде перезаписано. Видаліть його вручну, щоб дозволити %1$s створити файл, або вимкніть функцію %1$s."
+
+#: src/abilities/application/feature-status-updater.php:56
+msgid "The feature status could not be saved."
+msgstr "Не вдалося зберегти стан функції."
+
+#: src/abilities/application/feature-status-updater.php:46
+msgid "The enabled status is required and must be a boolean."
+msgstr "Стан увімкнення є обов’язковим і повинен бути логічним значенням."
+
+#: admin/class-premium-upsell-admin-block.php:164
+#: src/presenters/admin/sidebar-presenter.php:86 js/dist/ai-consent.js:2
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/block-editor.js:665 js/dist/bulk-editor-page.js:2
+#: js/dist/classic-editor.js:2 js/dist/classic-editor.js:596
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
+msgid "Bulk AI-generated alt text for product images"
+msgstr "Масове створення альтернативного тексту зображень товарів за допомогою ШІ"
+
+#. translators: %s expands to the name of the SEO field, e.g. "SEO title".
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:183
+msgid "The %s for the post."
+msgstr "%s для запису."
+
+#. translators: %s expands to "Yoast AI Generate".
+#: src/abilities/user-interface/ai-generate-upsell.php:101
+msgid "A hint about %s to relay to the user. Only present when a title or description field was updated on a site without Yoast SEO Premium. Meant to be assisting users that seek SEO-optimised titles and descriptions."
+msgstr "Підказка щодо %s, яку слід передати користувачеві. З’являється лише у разі оновлення поля заголовка або опису на сайті, де не встановлено Yoast SEO Premium. Призначена для допомоги користувачам, які прагнуть створити заголовки та описи, оптимізовані для SEO."
+
+#. translators: %1$s expands to "Yoast AI Generate", %2$s expands to a URL.
+#: src/abilities/user-interface/ai-generate-upsell.php:75
+msgid "%1$s can write SEO-optimised titles and descriptions, more details here: %2$s"
+msgstr "%1$s може створювати заголовки та описи, оптимізовані для SEO; детальніше див. тут: %2$s"
+
+#. translators: %s expands to Yoast SEO
+#: src/abilities/user-interface/ability-categories-integration.php:45
+msgid "Abilities for %s data and operations."
+msgstr "Можливості щодо даних та операцій %s."
+
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:152
+msgid "Whether search engines should be told not to show a snippet of this post in the search results."
+msgstr "Чи слід повідомляти пошуковим системам, щоб вони не відображали фрагмент цього допису в результатах пошуку."
+
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:148
+msgid "Whether search engines should be told not to show a cached copy of this post."
+msgstr "Чи слід вказати пошуковим системам не показувати кешовану копію цього запису."
+
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:144
+msgid "Whether search engines should be told not to index the images on this post."
+msgstr "Чи слід вказати пошуковим системам не індексувати зображення в цьому записі."
+
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:140
+msgid "Whether search engines should be told not to follow the links on this post."
+msgstr "Чи слід вказати пошуковим системам не переходити за посиланнями в цьому записі."
+
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:132
+msgid "Whether the post is marked as cornerstone content."
+msgstr "Чи позначено публікацію, як ключовий вміст."
+
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:128
+msgid "The custom canonical URL for the post. Use null or an empty string to remove it and fall back to the default canonical."
+msgstr "Налаштований канонічний URL-адресу публікації. Щоб видалити його та використовувати канонічний URL-адресу за замовчуванням, вкажіть значення null або порожній рядок."
+
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:105
+msgid "The Schema.org article type stored for the post. Null means no override is set and the default for the post type applies."
+msgstr "Тип статті Schema.org, збережений для запису. Значення null означає, що спеціальне налаштування не встановлено та застосовується початкове значення для цього типу запису."
+
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:101
+msgid "The Schema.org page type stored for the post. Null means no override is set and the default for the post type applies."
+msgstr "Тип сторінки Schema.org, збережений для запису. Значення null означає, що перевизначення не встановлено та застосовується початкове значення для цього типу запису."
+
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:80
+msgid "The canonical URL as output on the front end: the custom value when set, otherwise the permalink of the post. Null when nothing is output."
+msgstr "Канонічна URL-адреса, що виводиться на фронтенді: це або власне значення (якщо воно задане), або постійне посилання (пермалінк) на запис. Повертає null, якщо нічого не виводиться."
+
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:76
+msgid "The custom canonical URL as stored for the post. Null when no custom value is set; the rendered companion field carries what is actually output."
+msgstr "Налаштований канонічний URL-адресу, який зберігається для запису. Має значення null, якщо налаштованого значення не вказано; у відображеному супутньому полі міститься те, що фактично виводиться."
+
+#. translators: %s expands to the name of the SEO field, e.g. "SEO title".
+#: src/abilities/user-interface/seo-data-output-schema.php:98
+msgid "The custom %s as stored, which may contain unexpanded snippet variables. Null when no custom value is set; the rendered companion field carries what is actually output."
+msgstr "Власне значення %s у тому вигляді, в якому воно збережено, яке може містити нерозгорнуті змінні фрагментів. Має значення null, якщо власне значення не задано; у відтвореному супутньому полі міститься те, що фактично виводиться."
 
 #: src/bulk-editor/user-interface/posts-overview-bulk-actions-integration.php:110
 msgid "Bulk edit"
@@ -21,101 +545,110 @@ msgstr "Масове редагування"
 msgid "Yoast SEO could not build the indexable for %1$s: %2$s"
 msgstr "Yoast SEO не зміг створити індексований елемент для %1$s: %2$s"
 
-#: src/abilities/user-interface/abilities-integration.php:561
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:109
+#: src/abilities/user-interface/seo-data-output-schema.php:80
 msgid "inclusive language analysis"
 msgstr "аналіз інклюзивної мови"
 
-#: src/abilities/user-interface/abilities-integration.php:560
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:108
+#: src/abilities/user-interface/seo-data-output-schema.php:79
 msgid "readability analysis"
 msgstr "аналіз читабельності"
 
-#: src/abilities/user-interface/abilities-integration.php:552
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:93
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:94
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:155
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:149
+#: src/abilities/user-interface/seo-data-output-schema.php:72
+#: src/abilities/user-interface/seo-data-output-schema.php:73
 msgid "Open Graph description"
 msgstr "Опис Open Graph"
 
-#: src/abilities/user-interface/abilities-integration.php:550
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:91
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:92
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:154
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:148
+#: src/abilities/user-interface/seo-data-output-schema.php:70
+#: src/abilities/user-interface/seo-data-output-schema.php:71
 msgid "Open Graph title"
 msgstr "Заголовок Open Graph"
 
-#: src/abilities/user-interface/abilities-integration.php:543
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:85
 msgid "Whether search engines are told not to index this post. true means noindex (the post is excluded from search results); false means the post is forced to be indexed; null means no setting is stored and the post-type default applies."
 msgstr "Чи слід заборонити пошуковим системам індексувати цей запис. Значення «true» означає «noindex» (допис виключається з результатів пошуку); значення «false» означає, що запис обов’язково індексується; значення «null» означає, що налаштування не збережено та застосовується значення за замовчуванням для цього типу запису."
 
-#: src/abilities/user-interface/abilities-integration.php:539
-msgid "canonical URL"
-msgstr "канонічний URL"
-
-#. translators: %s expands to the name of the SEO field, e.g. "SEO title".
-#: src/abilities/user-interface/abilities-integration.php:519
-msgid "The %s as output on the front end: the global default template applied when no custom value is set, with replacement variables expanded. Null when nothing is output."
-msgstr "Значення %s, що виводиться на інтерфейсі користувача: глобальний шаблон за замовчуванням, який застосовується, коли не вказано власного значення, із розгорнутими змінними-замінами. Має значення null, якщо нічого не виводиться."
-
 #. translators: %s expands to the name of the analysis, e.g. "SEO analysis".
-#: src/abilities/user-interface/abilities-integration.php:507
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:31
 msgid "The result of the %s that ran on the post when it was last saved."
 msgstr "Результат виконання %s, яке було запущено під час останнього збереження запису."
 
-#: src/abilities/user-interface/abilities-integration.php:448
-msgid "The Schema.org article type for the post. Must be one of the supported article types. Use null to clear it and fall back to the default."
-msgstr "Тип статті Schema.org для публікації. Має бути одним із підтримуваних типів статей. Використовуйте null, щоб очистити його та повернутися до значення за замовчуванням."
-
-#: src/abilities/user-interface/abilities-integration.php:444
-msgid "The Schema.org page type for the post. Must be one of the supported page types. Use null to clear it and fall back to the default."
-msgstr "Тип сторінки Schema.org для запису. Повинен відповідати одному з підтримуваних типів сторінок. Вкажіть значення null, щоб очистити це поле та використовувати значення за замовчуванням."
-
-#: src/abilities/user-interface/abilities-integration.php:432
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:136
 msgid "Whether search engines should be told not to index this post. true sets noindex (the post is excluded from search results); false forces the post to be indexed; null clears the setting and falls back to the post-type default."
 msgstr "Чи слід вказати пошуковим системам не індексувати цей запис. Значення true встановлює атрибут noindex (запис виключається з результатів пошуку); значення false примушує індексувати запис; значення null скидає налаштування та повертає значення за замовчуванням для типу запису."
 
-#: src/abilities/user-interface/abilities-integration.php:418
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:164
+msgid "The Schema.org article type for the post. Must be one of the supported article types. Use null or an empty string to clear it and fall back to the default."
+msgstr "Тип статті за Schema.org для цього запису. Повинен відповідати одному з підтримуваних типів статей. Щоб очистити це поле та використовувати значення за замовчуванням, вкажіть нуль або порожній рядок."
+
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:160
+msgid "The Schema.org page type for the post. Must be one of the supported page types. Use null or an empty string to clear it and fall back to the default."
+msgstr "Тип сторінки Schema.org для запису. Повинен відповідати одному з підтримуваних типів сторінок. Щоб скинути це значення та використовувати значення за замовчуванням, вкажіть null або порожній рядок."
+
+#. translators: %s expands to the name of the SEO field, e.g. "SEO title".
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:43
+#: src/abilities/user-interface/seo-data-output-schema.php:116
+msgid "The %s as output on the front end: the global default template applied when no custom value is set, with snippet variables expanded. Null when nothing is output."
+msgstr "Значення %s, що виводиться на інтерфейсі користувача: глобальний шаблон за замовчуванням, який застосовується, коли не вказано власного значення, із розгорнутими змінними-замінами. Має значення null, якщо нічого не виводиться."
+
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:117
 msgid "The ID of the post to update."
 msgstr "ID запису, який потрібно оновити."
 
-#: src/abilities/user-interface/abilities-integration.php:396
+#: src/abilities/user-interface/abilities/get-post-seo-data-ability.php:107
 msgid "The page of title-search results to return, 1-based and defaulting to 1. Matches are ordered most recently modified first, so request a later page to reach older matches. An empty result means there are no further pages. Only applies to a title search."
 msgstr "Номер сторінки результатів пошуку за назвою, що має бути повернута; нумерація починається з 1, за замовчуванням — 1. Результати сортуються за датою останнього оновлення: найновіші відображаються першими, тому для перегляду старіших результатів слід запитувати наступну сторінку. Порожній результат означає, що подальших сторінок немає. Застосовується лише до пошуку за назвою."
 
-#: src/abilities/user-interface/abilities-integration.php:392
+#: src/abilities/user-interface/abilities/get-post-seo-data-ability.php:103
 msgid "Keywords to search for in post titles. Provide a comma-separated list to search for several titles at once; each value is matched as a whole phrase against the post title, and a post matching any value is returned. At most 10 phrases are used per request; any beyond the first 10 are ignored. Results are paginated to 10 entities per page; see the page parameter."
 msgstr "Ключові слова для пошуку в заголовках записів. Вкажіть список, розділений комами, щоб шукати за кількома заголовками одночасно; кожне значення порівнюється з заголовком записів, як цілісна фраза, і повертаються публікації, що відповідають будь-якому з цих значень. У кожному запиті використовується не більше 10 фраз; усі фрази, що виходять за межі перших 10, ігноруються. Результати розбиваються на сторінки по 10 записів на сторінку; див. параметр «page»."
 
-#: src/abilities/user-interface/abilities-integration.php:423
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:122
 msgid "The permalink (URL) of the post to update."
 msgstr "Постійне посилання (URL) на запис для оновлення."
 
-#: src/abilities/user-interface/abilities-integration.php:388
+#: src/abilities/user-interface/abilities/get-post-seo-data-ability.php:99
 msgid "The permalink (URL) of the post to retrieve."
 msgstr "Постійне посилання (URL) на запис, який потрібно отримати."
 
-#: src/abilities/user-interface/abilities-integration.php:383
+#: src/abilities/user-interface/abilities/get-post-seo-data-ability.php:94
 msgid "The ID of the post to retrieve."
 msgstr "ID запису, який потрібно отримати."
 
-#: src/abilities/user-interface/abilities-integration.php:264
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:72
 msgid "Update the SEO data for a single post. Identify the post by post_id or by permalink (URL). Only the fields you provide are changed; a provided empty value clears that field. Only posts the current user is allowed to edit can be updated."
 msgstr "Оновити дані SEO для окремого запису. Вкажіть запис за ідентифікатором post_id або постійним посиланням (URL). Змінюються лише ті поля, які ви вкажете; якщо вказати порожнє значення, це поле буде очищено. Оновити можна лише ті записи, які поточний користувач має право редагувати."
 
-#: src/abilities/user-interface/abilities-integration.php:263
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:71
 msgid "Update Post SEO Data"
 msgstr "Оновлення даних SEO Запису"
 
-#: src/abilities/user-interface/abilities-integration.php:243
+#: src/abilities/user-interface/abilities/get-post-seo-data-ability.php:59
 msgid "Get the SEO data for a post. Identify the post by post_id, by permalink (URL), or by title keywords; the title may be a comma-separated list and returns the SEO data for every post matching any of the values, paginated most recently modified first (use the page parameter to reach older matches). At least one identifier is required. Only posts the current user is allowed to edit are returned."
 msgstr "Отримати дані SEO для публікації. Ідентифікуйте запис за post_id, постійним посиланням (URL) або ключовими словами у заголовку; заголовок може бути списком, розділеним комами, і функція повертає дані SEO для кожної записи, що відповідає будь-якому з цих значень, з сортуванням за датою останнього оновлення (спочатку відображаються найновіші записи; для перегляду старіших записів використовуйте параметр «page»). Необхідно вказати принаймні один ідентифікатор. Повертаються лише ті записи, які поточний користувач має право редагувати."
 
-#: src/abilities/user-interface/abilities-integration.php:242
+#: src/abilities/user-interface/abilities/get-post-seo-data-ability.php:58
 msgid "Get Post SEO Data"
 msgstr "Отримати дані про SEO Записи"
 
-#: src/abilities/infrastructure/post-identifier-resolver.php:185
+#: src/abilities/infrastructure/post-identifier-resolver.php:205
 msgid "No post could be found for the given identifier."
 msgstr "Не вдалося знайти запис для вказаного ідентифікатора."
 
-#: src/abilities/infrastructure/post-identifier-resolver.php:95
+#: src/abilities/infrastructure/post-identifier-resolver.php:106
 msgid "Provide a post_id, a permalink, or title keywords to identify the post."
 msgstr "Вкажіть post_id, постійне посилання або ключові слова з заголовка, щоб ідентифікувати запис."
 
-#: src/abilities/infrastructure/post-identifier-resolver.php:59
+#: src/abilities/infrastructure/post-identifier-resolver.php:70
 msgid "Provide a post_id or a permalink to identify the post."
 msgstr "Вкажіть post_id або постійне посилання для ідентифікації запису."
 
@@ -123,7 +656,8 @@ msgstr "Вкажіть post_id або постійне посилання для
 msgid "The post SEO data was saved but the indexable could not be rebuilt."
 msgstr "Запис дані SEO було збережено, але не вдалося відновити індекс."
 
-#: src/abilities/infrastructure/post-access-checker.php:44
+#: src/abilities/infrastructure/indexable-access-checker.php:45
+#: src/abilities/infrastructure/post-access-checker.php:47
 msgid "Sorry, you are not allowed to edit this post."
 msgstr "На жаль, вам не дозволено редагувати цей запис."
 
@@ -131,51 +665,47 @@ msgstr "На жаль, вам не дозволено редагувати це�
 msgid "Every 90 days"
 msgstr "Кожні 90 днів"
 
-#: src/abilities/user-interface/abilities-integration.php:363
+#: src/abilities/user-interface/abilities/abstract-score-ability.php:207
 msgid "A human-readable label for the score."
 msgstr "Зрозуміла для людини мітка оцінки."
 
-#: src/abilities/user-interface/abilities-integration.php:359
+#: src/abilities/user-interface/abilities/abstract-score-ability.php:203
 msgid "The score slug."
 msgstr "Частина посилання оцінки."
 
-#: src/abilities/user-interface/abilities-integration.php:354
+#: src/abilities/user-interface/abilities/abstract-score-ability.php:198
 msgid "The post title."
 msgstr "Заголовок запису."
 
-#: src/abilities/user-interface/abilities-integration.php:305
+#: src/abilities/user-interface/abilities/abstract-score-ability.php:140
 msgid "The number of recently modified posts to retrieve scores for. Defaults to 10."
 msgstr "Кількість нещодавно змінених публікацій, за якими потрібно отримати оцінки. За замовчуванням - 10."
 
-#: src/abilities/user-interface/abilities-integration.php:224
+#: src/abilities/user-interface/abilities/get-inclusive-language-scores-ability.php:47
 msgid "Get the inclusive language scores for the most recently modified posts."
 msgstr "Перегляньте показники щодо інклюзивної мови для останніх оновлених записів."
 
-#: src/abilities/user-interface/abilities-integration.php:223
+#: src/abilities/user-interface/abilities/get-inclusive-language-scores-ability.php:38
 msgid "Get Inclusive Language Scores"
 msgstr "Отримати оцінки щодо інклюзивності мови"
 
-#: src/abilities/user-interface/abilities-integration.php:205
+#: src/abilities/user-interface/abilities/get-readability-scores-ability.php:47
 msgid "Get the readability scores for the most recently modified posts."
 msgstr "Отримати показники читабельності для останніх оновлених записів."
 
-#: src/abilities/user-interface/abilities-integration.php:204
+#: src/abilities/user-interface/abilities/get-readability-scores-ability.php:38
 msgid "Get Readability Scores"
 msgstr "Отримати показники читабельності"
 
-#: src/abilities/user-interface/ability-categories-integration.php:44
-msgid "SEO analysis capabilities provided by Yoast SEO."
-msgstr "Функції SEO-аналізу, що надаються плагіном Yoast SEO."
-
-#: src/abilities/user-interface/abilities-integration.php:186
+#: src/abilities/user-interface/abilities/get-seo-scores-ability.php:47
 msgid "Get the SEO scores for the most recently modified posts."
 msgstr "Отримайте показники SEO для записів, які були оновлені нещодавно."
 
-#: src/abilities/user-interface/abilities-integration.php:178
+#: src/abilities/user-interface/abilities/get-seo-scores-ability.php:70
 msgid "The focus keyphrase for the post, or null if not set."
 msgstr "Ключова фраза для запису або нуль, якщо вона не вказана."
 
-#: src/abilities/user-interface/abilities-integration.php:185
+#: src/abilities/user-interface/abilities/get-seo-scores-ability.php:38
 msgid "Get SEO Scores"
 msgstr "Отримати оцінки SEO"
 
@@ -220,11 +750,6 @@ msgstr "%1$sУзгоджуючи свій контент із пошуковим
 msgid "Generic titles and descriptions make your results unclear in search. Templates ensure every %s has a clear, click-worthy snippet automatically. Go to Search appearance, choose your post type, and set default title and meta description patterns."
 msgstr "Загальні заголовки та описи роблять результати пошуку нечіткими. Шаблони гарантують, що кожен %s автоматично отримає чіткий фрагмент, який спонукає до натискання. Перейдіть у розділ «Вигляд у пошуку», виберіть тип публікації та встановіть шаблони заголовків і метаописів за замовчуванням."
 
-#. translators: %1$s expands to the post type label this task is about
-#: src/task-list/application/tasks/improve-content-seo.php:110
-msgid "Improve the SEO of your recent content: %1$s"
-msgstr "Покращіть SEO останнього контенту: %1$s"
-
 #. translators: %1$s expands to an opening p tag, %2$s and %4$s expand to a
 #. closing p tag, %3$s expands to an opening p tag and opening strong tag, %5$s
 #. expands to a closing strong tag, %6$s expands to an opening strong tag, %7$s
@@ -233,16 +758,21 @@ msgstr "Покращіть SEO останнього контенту: %1$s"
 msgid "%1$sChecking your recent content's readability ensures it stays clear and easy to follow, improving your user experience. Follow the feedback to refine your sentence structure and word choice and maintain a high standard of engagement and comprehension.%2$s%3$sPro tip%5$s: Use %6$sAI Optimize%7$s to automatically simplify complex sentences and improve the flow of your writing.%4$s"
 msgstr "%1$sПеревірка читабельності вашого останнього контенту гарантує, що він є зрозумілими та легкими для сприйняття, що покращує користувацький досвід. Дотримуйтесь рекомендацій, щоб удосконалити структуру речень та вибір слів, а також підтримувати високий рівень зацікавленості та зрозумілості.%2$s%3$sПорада від профі%5$s: скористайтеся функцією %6$sAI Optimize%7$s, щоб автоматично спростити складні речення та поліпшити стиль письма.%4$s"
 
-#. translators: %1$s and %3$s expands to an opening p tag, %2$s and %5$s expand
-#. to a closing p tag and %4$s expands to Yoast
-#: src/task-list/application/tasks/create-new-content.php:111
-msgid "%1$sLong gaps without new content slow down your traffic growth. Publishing regularly gives search engines and visitors a reason to return.%2$s%3$sPlan a topic, write your post, and use the %4$s SEO and Readability Analyses to refine it before publishing.%5$s"
-msgstr "%1$sТривалі перерви без оновлення контенту уповільнюють зростання відвідуваності. Регулярні публікації дають пошуковим системам і відвідувачам привід повернутися.%2$s%3$sСплануйте тему, напишіть допис і скористайтеся %4$s аналізом SEO та читабельності, щоб доопрацювати його перед публікацією.%5$s"
+#. translators: %1$s expands to the post type label this task is about
+#: src/task-list/application/tasks/improve-content-seo.php:110
+msgid "Improve the SEO of your recent content: %1$s"
+msgstr "Покращіть SEO останнього контенту: %1$s"
 
 #. translators: %1$s expands to the post type label this task is about
 #: src/task-list/application/tasks/improve-content-readability.php:109
 msgid "Improve the readability of your recent content: %1$s"
 msgstr "Покращіть читабельність ваших останніх публікацій: %1$s"
+
+#. translators: %1$s and %3$s expands to an opening p tag, %2$s and %5$s expand
+#. to a closing p tag and %4$s expands to Yoast
+#: src/task-list/application/tasks/create-new-content.php:111
+msgid "%1$sLong gaps without new content slow down your traffic growth. Publishing regularly gives search engines and visitors a reason to return.%2$s%3$sPlan a topic, write your post, and use the %4$s SEO and Readability Analyses to refine it before publishing.%5$s"
+msgstr "%1$sТривалі перерви без оновлення контенту уповільнюють зростання відвідуваності. Регулярні публікації дають пошуковим системам і відвідувачам привід повернутися.%2$s%3$sСплануйте тему, напишіть допис і скористайтеся %4$s аналізом SEO та читабельності, щоб доопрацювати його перед публікацією.%5$s"
 
 #: src/task-list/application/tasks/child-tasks/improve-content-readability-child.php:57
 msgid "Your content is readable but could be clearer. Consider simplifying a few sentences to improve the overall flow."
@@ -315,27 +845,23 @@ msgstr "Не вдалося видалити запис \"Привіт, світ
 msgid "Without llms.txt, AI platforms may not know how to treat your content. Enabling it helps communicate your preferences in a clearer way to AI tools."
 msgstr "Без файлу llms.txt платформи ШІ можуть не знати, як обробляти ваш контент. Його публікація допомагає чіткіше донести ваші уподобання до інструментів ШІ."
 
-#: src/presenters/admin/sidebar-presenter.php:77
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:77 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "Optimize your site faster, smarter, and with more confidence."
 msgstr "Оптимізуйте свій сайш швидше, розумніше та з більшою впевненістю."
 
-#: src/presenters/admin/sidebar-presenter.php:77
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:77 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "Help ready-to-buy shoppers and search engines find your product."
 msgstr "Допоможіть готовим купувати покупцям та пошуковим системам знайти ваш товар."
 
-#: src/presenters/admin/sidebar-presenter.php:72
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:72 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "Spend less time on SEO tasks!"
 msgstr "Витрачайте менше часу на SEO-завдання!"
 
-#: src/presenters/admin/sidebar-presenter.php:72
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:72 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "Grow your store's visibility!"
 msgstr "Підвищіть видимість вашого магазину!"
 
@@ -347,95 +873,76 @@ msgstr "Створити новий контент"
 msgid "Create new post"
 msgstr "Створити нову публікацію"
 
-#: src/presenters/admin/sidebar-presenter.php:115
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:115 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "Less friction. Faster publishing."
 msgstr "Менше протиріч. Швидше публікування"
 
-#: src/presenters/admin/sidebar-presenter.php:115
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:115 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "Less friction. Smarter optimization."
 msgstr "Менше протиріч. Розумніша оптимізація."
 
 #: src/presenters/admin/sidebar-presenter.php:92 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Optimize pages for multiple keywords with guidance"
 msgstr "Оптимізуйте сторінки для декількох ключових слів за допомогою підказок"
 
 #: src/presenters/admin/sidebar-presenter.php:91 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Manage redirects with ease and without extra plugins"
 msgstr "З легкістю керуйте перенаправленнями без додаткових плагінів"
 
 #: src/presenters/admin/sidebar-presenter.php:90 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Apply AI suggestions to improve content in 1 click"
 msgstr "Застосовуйте пропозиції ШІ для покращення контенту одним натисканням"
 
 #: src/presenters/admin/sidebar-presenter.php:89 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Create optimized SEO titles & meta descriptions in seconds"
 msgstr "Створюйте оптимізовані заголовки SEO та метаописи за лічені секунди"
 
-#: src/presenters/admin/sidebar-presenter.php:86 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
-msgid "Receive clear SEO and readability guidance to optimize your products"
-msgstr "Отримайте чіткі рекомендації щодо SEO та читабельності, щоб оптимізувати свої товари"
-
 #: src/presenters/admin/sidebar-presenter.php:85 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Create optimized SEO titles & meta descriptions with AI"
 msgstr "Створюйте оптимізовані заголовки SEO та метаописи за допомогою ШІ"
 
 #: src/presenters/admin/sidebar-presenter.php:84 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Make sure search engines show the right version of your product page"
 msgstr "Переконайтеся, що пошукові системи відображають правильну версію вашої сторінки товарів"
 
 #: src/presenters/admin/sidebar-presenter.php:83 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Add product details to help your listings stand out"
 msgstr "Додайте детальну інформацію про товар, щоб ваші пропозиції виділялися серед інших"
 
@@ -512,7 +1019,7 @@ msgid "Your recent posts are using default %1$s, which can make them easy to ove
 msgstr "Ваші нещодавні дописи за замовчуванням викорстовують %1$s, через що їх легко пропустити в результатах пошуку.  Оновіть їх вручну або %2$sдізнайтеся, як %3$sYoast AI Generate%4$s може вдосконалити їх для вас.%5$s"
 
 #: src/alerts/application/default-seo-data/default-seo-data-alert.php:182
-#: js/dist/bulk-editor-page.js:8 js/dist/bulk-editor-page.js:20
+#: js/dist/bulk-editor-page.js:8 js/dist/bulk-editor-page.js:24
 msgid "SEO titles"
 msgstr "Заголовки SEO"
 
@@ -529,9 +1036,8 @@ msgstr "метаописи"
 msgid "Google Docs add-on (1 seat)"
 msgstr "Доповнення Google Docs (1 місце)"
 
-#: src/presenters/admin/sidebar-presenter.php:104
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:104 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "Buy now for 30% off"
 msgstr "Купуйте зараз із знижкою 30%"
 
@@ -543,7 +1049,7 @@ msgstr "Купуйте зараз із знижкою 30%"
 msgid "An existing llms.txt file wasn't created by Yoast or has been edited manually. Yoast won't overwrite it. %1$sDelete it manually%2$s or turn off this feature."
 msgstr "Існуючий файл llms.txt не був створений Yoast або був відредагований вручну. Yoast не буде його перезаписувати. %1$sВидаліть його вручну%2$s або вимкніть цю функцію."
 
-#: admin/class-premium-upsell-admin-block.php:213 js/dist/general-page.js:7
+#: admin/class-premium-upsell-admin-block.php:214 js/dist/general-page.js:7
 #: js/dist/new-settings.js:7
 msgid "Get 30% off now!"
 msgstr "Отримайте знижку 30% зараз!"
@@ -568,9 +1074,8 @@ msgstr "%1$s30%% ЗНИЖКА - Чорна п'ятниця %2$s"
 msgid "Upgrade"
 msgstr "Оновити"
 
-#: src/presenters/admin/sidebar-presenter.php:122
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:122 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "30-day money back guarantee"
 msgstr "30-денна гарантія повернення грошей"
 
@@ -580,69 +1085,62 @@ msgstr "30-денна гарантія повернення грошей"
 msgid "%1$s%2$s %3$s"
 msgstr "%1$s%2$s %3$s"
 
-#: admin/class-premium-upsell-admin-block.php:163
-#: js/dist/ai-content-planner.js:237 js/dist/block-editor.js:237
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: admin/class-premium-upsell-admin-block.php:163 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "Boost visibility for your products, from 10 or 10,000+"
 msgstr "Підвищіть видимість своїх продуктів, від 10 до 10 000+"
 
 #: admin/class-premium-upsell-admin-block.php:159 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Access to friendly help when you need it, day or night"
 msgstr "Доступ до дружньої допомоги, коли вона вам потрібна, вдень чи вночі"
 
 #: admin/class-premium-upsell-admin-block.php:158 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Internal links and redirect management, easy"
 msgstr "Просте керування внутрішніми посиланнями та перенаправленнями"
 
 #: admin/class-premium-upsell-admin-block.php:157 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Easy Local SEO. Show up in Google Maps results"
 msgstr "Просте локальне SEO. Відображайтеся в результатах пошуку на Google Maps"
 
 #: admin/class-premium-upsell-admin-block.php:156 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Built to get found by search, AI, and real users"
 msgstr "Створено для пошукових систем, штучного інтелекту та реальних користувачів"
 
 #: admin/class-premium-upsell-admin-block.php:155 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Make your articles visible, be seen in Google News"
 msgstr "Зробіть свої статті видимими, щоб їх можна було побачити в Google News"
 
 #: admin/class-premium-upsell-admin-block.php:154 js/dist/ai-consent.js:2
-#: js/dist/ai-content-planner.js:237 js/dist/ai-generator.js:2
-#: js/dist/block-editor.js:237 js/dist/bulk-editor-page.js:2
-#: js/dist/classic-editor.js:2 js/dist/editor-modules.js:116
-#: js/dist/externals-components.js:26 js/dist/general-page.js:5
-#: js/dist/integrations-page.js:57 js/dist/new-settings.js:5
-#: js/dist/redirects.js:2 js/dist/support.js:5
+#: js/dist/ai-generator.js:2 js/dist/block-editor.js:19
+#: js/dist/bulk-editor-page.js:2 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/externals-components.js:105
+#: js/dist/general-page.js:5 js/dist/integrations-page.js:58
+#: js/dist/new-settings.js:5 js/dist/redirects.js:2 js/dist/support.js:5
 msgid "Generate SEO optimized metadata in seconds with AI"
 msgstr "Генеруйте SEO-оптимізовані метадані за лічені секунди за допомогою ШІ"
 
@@ -720,7 +1218,7 @@ msgid "Not analyzed"
 msgstr "Не проаналізовано"
 
 #. translators: %s: Yoast SEO.
-#: wp-seo-main.php:566
+#: wp-seo-main.php:540
 msgid "%s activation failed"
 msgstr "Не вдалося активувати %s"
 
@@ -729,9 +1227,8 @@ msgstr "Не вдалося активувати %s"
 msgid "%s is unable to create database tables"
 msgstr "%s не вдається створити таблиці бази даних"
 
-#: src/presenters/admin/sidebar-presenter.php:107
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:107 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "Buy now"
 msgstr "Придбати зараз"
 
@@ -752,10 +1249,6 @@ msgstr "На вашому сайті встановлена версія Yoast S
 #: src/user-meta/framework/custom-meta/noindex-author.php:108
 msgid "Do not allow search engines to show this author's archives in search results."
 msgstr "Не дозволяйте пошуковим системам показувати архіви цього автора в результатах пошуку."
-
-#: admin/menu/class-base-menu.php:257 admin/menu/class-base-menu.php:260
-msgid "Upgrades"
-msgstr "Оновлення"
 
 #: blocks/dynamic-blocks/breadcrumbs/block.json
 msgctxt "block keyword"
@@ -836,20 +1329,19 @@ msgctxt "block keyword"
 msgid "How-to"
 msgstr "Інструкція"
 
-#: admin/class-admin.php:315
 #: src/user-meta/framework/additional-contactmethods/x.php:28
 msgid "X username (without @)"
 msgstr "X Ім'я користувача (без @)"
 
-#: src/abilities/user-interface/abilities-integration.php:554
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:95
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:96
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:156
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:150
+#: src/abilities/user-interface/seo-data-output-schema.php:74
+#: src/abilities/user-interface/seo-data-output-schema.php:75
 #: js/dist/externals/socialMetadataForms.js:23
-msgid "Twitter title"
-msgstr "Заголовок Twitter"
-
-#: src/abilities/user-interface/abilities-integration.php:556
-#: js/dist/externals/socialMetadataForms.js:23
-msgid "Twitter description"
-msgstr "Опис Twitter"
+msgid "X title"
+msgstr "Заголовок на X"
 
 #. translators: 1: PHP class name, 2: PHP variable name
 #: inc/class-yoast-dynamic-rewrites.php:67
@@ -860,8 +1352,8 @@ msgstr "Клас %1$s не можна створювати до того, як �
 #. translators: %s expands to Yoast SEO Premium
 #. translators: %s expands to product name: "Yoast WooCommerce SEO" or "Yoast
 #. SEO Premium"
-#: admin/class-premium-upsell-admin-block.php:219
-#: admin/class-premium-upsell-admin-block.php:221 js/dist/general-page.js:7
+#: admin/class-premium-upsell-admin-block.php:220
+#: admin/class-premium-upsell-admin-block.php:222 js/dist/general-page.js:7
 #: js/dist/new-settings.js:7
 msgid "Explore %s now!"
 msgstr "Досліджуйте %s зараз!"
@@ -880,21 +1372,20 @@ msgstr "Зараз інтерфейс %1$s недоступний в бета-в
 msgid "Compatibility issue: Yoast SEO is incompatible with the beta WooCommerce product editor."
 msgstr "Проблема сумісності: Yoast SEO несумісний з бета-версією редактора продуктів WooCommerce."
 
-#: admin/class-premium-upsell-admin-block.php:89 js/dist/block-editor.js:583
-#: js/dist/classic-editor.js:483 js/dist/general-page.js:8
+#: admin/class-premium-upsell-admin-block.php:89 js/dist/block-editor.js:665
+#: js/dist/classic-editor.js:596 js/dist/general-page.js:8
 #: js/dist/new-settings.js:8
 msgid "BLACK FRIDAY"
 msgstr "ЧОРНА П'ЯТНИЦЯ"
 
-#: admin/class-premium-upsell-admin-block.php:90
-#: admin/menu/class-base-menu.php:260 js/dist/block-editor.js:583
-#: js/dist/classic-editor.js:483 js/dist/general-page.js:8
+#: admin/class-premium-upsell-admin-block.php:90 js/dist/block-editor.js:665
+#: js/dist/classic-editor.js:596 js/dist/general-page.js:8
 #: js/dist/new-settings.js:8
 msgid "30% OFF"
 msgstr "Знижка 30%"
 
 #: admin/views/class-yoast-feature-toggles.php:202 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:523
+#: js/dist/new-settings.js:524
 msgid "AI title & description generator"
 msgstr "Генератор заголовків та описів ШІ"
 
@@ -951,7 +1442,7 @@ msgid "Support"
 msgstr "Підтримка"
 
 #: src/integrations/admin/crawl-settings-integration.php:163
-#: js/dist/new-settings.js:28 js/dist/new-settings.js:268
+#: js/dist/new-settings.js:28 js/dist/new-settings.js:269
 msgid "Prevent Google AdsBot from crawling"
 msgstr "Запобігти скануванню Google AdsBot"
 
@@ -1018,14 +1509,14 @@ msgstr "Схоже, ви увімкнули медіа-сторінки. Ми р
 
 #. translators: CTA to finish the first time configuration. %s: Either
 #. first-time SEO configuration or SEO configuration.
-#: admin/class-admin.php:235
+#: admin/class-admin.php:223
 msgid "Finish your %s"
 msgstr "Завершіть %s"
 
 #: inc/class-wpseo-rank.php:156 inc/class-wpseo-rank.php:245
-#: js/dist/block-editor.js:583 js/dist/editor-modules.js:115
-#: js/dist/editor-modules.js:398 js/dist/externals-components.js:84
-#: js/dist/externals-components.js:384
+#: js/dist/block-editor.js:666 js/dist/editor-modules.js:194
+#: js/dist/editor-modules.js:477 js/dist/externals-components.js:163
+#: js/dist/externals-components.js:463
 #: js/dist/frontend-inspector-resources.js:1
 msgid "Potentially non-inclusive"
 msgstr "Потенційно неінклюзивний"
@@ -1131,24 +1622,21 @@ msgstr[0] "Очищено %1$d запис."
 msgstr[1] "Очищено %1$d записи."
 msgstr[2] ""
 
-#: src/presenters/admin/sidebar-presenter.php:21
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/block-editor.js:542 js/dist/classic-editor.js:232
-#: js/dist/editor-modules.js:111 js/dist/externals-components.js:80
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:21 js/dist/block-editor.js:379
+#: js/dist/classic-editor.js:310 js/dist/editor-modules.js:190
+#: js/dist/externals-components.js:159 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "BLACK FRIDAY | 30% OFF"
 msgstr "ЧОРНА П'ЯТНИЦЯ | 30% ЗНИЖКА"
 
-#: admin/views/class-yoast-feature-toggles.php:206
-#: js/dist/ai-content-planner.js:97 js/dist/ai-content-planner.js:275
-#: js/dist/ai-content-planner.js:296 js/dist/ai-generator.js:55
-#: js/dist/block-editor.js:97 js/dist/block-editor.js:244
-#: js/dist/block-editor.js:265 js/dist/bulk-editor-page.js:5
-#: js/dist/editor-modules.js:166 js/dist/externals-components.js:76
+#: admin/views/class-yoast-feature-toggles.php:206 js/dist/ai-generator.js:55
+#: js/dist/block-editor.js:69 js/dist/block-editor.js:722
+#: js/dist/block-editor.js:743 js/dist/bulk-editor-page.js:5
+#: js/dist/editor-modules.js:245 js/dist/externals-components.js:155
 #: js/dist/general-page.js:8 js/dist/general-page.js:21
-#: js/dist/integrations-page.js:3 js/dist/integrations-page.js:6
-#: js/dist/integrations-page.js:18 js/dist/integrations-page.js:51
-#: js/dist/integrations-page.js:57 js/dist/introductions.js:10
+#: js/dist/integrations-page.js:2 js/dist/integrations-page.js:52
+#: js/dist/integrations-page.js:58 js/dist/integrations-page.js:63
+#: js/dist/integrations-page.js:71 js/dist/introductions.js:10
 #: js/dist/new-settings.js:53 js/dist/plans.js:3 js/dist/plans.js:7
 msgid "Learn more"
 msgstr "Дізнатись більше"
@@ -1175,7 +1663,7 @@ msgid "%1$s attempted to load the class %2$s but it could not be found."
 msgstr "%1$s намагався завантажити клас %2$s, але не знайшов його."
 
 #: src/integrations/admin/crawl-settings-integration.php:189
-#: js/dist/new-settings.js:268
+#: js/dist/new-settings.js:269
 msgid "Remove unused resources"
 msgstr "Видалити невикористані ресурси"
 
@@ -1192,12 +1680,12 @@ msgid "The inclusive language analysis offers suggestions to write more inclusiv
 msgstr "Інклюзивний мовний аналіз робить пропозиції щодо написання більш інклюзивної копії."
 
 #: admin/views/class-yoast-feature-toggles.php:87 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:523
+#: js/dist/new-settings.js:524
 msgid "Inclusive language analysis"
 msgstr "Аналіз інклюзивної мови"
 
 #: admin/metabox/class-metabox-section-inclusive-language.php:30
-#: js/dist/externals-components.js:386
+#: js/dist/externals-components.js:465
 msgid "Inclusive language"
 msgstr "Інклюзивна мова"
 
@@ -1217,7 +1705,7 @@ msgstr "Видаляє розділ інклюзивного мовного ан
 msgid "Front-end SEO inspector"
 msgstr "Фронт-енд SEO-інспектор"
 
-#: admin/class-yoast-form.php:931
+#: admin/class-yoast-form.php:874
 msgid "Unlock with Premium!"
 msgstr "Розблокувати з Преміум!"
 
@@ -1241,17 +1729,17 @@ msgid "Search cleanup settings"
 msgstr "Налаштування очищення пошуку"
 
 #: src/integrations/admin/crawl-settings-integration.php:155
-#: js/dist/new-settings.js:28 js/dist/new-settings.js:269
+#: js/dist/new-settings.js:28 js/dist/new-settings.js:270
 msgid "Filter searches with common spam patterns"
 msgstr "Фільтруйте пошук за типовими шаблонами спаму"
 
 #: src/integrations/admin/crawl-settings-integration.php:154
-#: js/dist/new-settings.js:28 js/dist/new-settings.js:269
+#: js/dist/new-settings.js:28 js/dist/new-settings.js:270
 msgid "Filter searches with emojis and other special characters"
 msgstr "Фільтруйте пошук за допомогою емодзі та інших спеціальних символів"
 
 #: src/integrations/admin/crawl-settings-integration.php:153
-#: js/dist/new-settings.js:28 js/dist/new-settings.js:269
+#: js/dist/new-settings.js:28 js/dist/new-settings.js:270
 msgid "Filter search terms"
 msgstr "Фільтрувати терміни пошуку"
 
@@ -1267,12 +1755,12 @@ msgstr "Параметри URL-адреси відстеження кампан�
 msgid "Find out how IndexNow can help your site."
 msgstr "Дізнайтеся як IndexNow може допомогти вашому сайту."
 
-#: admin/views/class-yoast-feature-toggles.php:194 js/dist/new-settings.js:526
+#: admin/views/class-yoast-feature-toggles.php:194 js/dist/new-settings.js:527
 msgid "Automatically ping search engines like Bing and Yandex whenever you publish, update or delete a post."
 msgstr "Автоматично перевіряйте запит пошукових систем, таких як Bing і Yandex, коли ви публікуєте, оновлюєте чи видаляєте допис."
 
 #: admin/views/class-yoast-feature-toggles.php:191 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:526
+#: js/dist/new-settings.js:527
 msgid "IndexNow"
 msgstr "IndexNow"
 
@@ -1359,7 +1847,7 @@ msgid "Feed crawl settings"
 msgstr "Налаштування обходу стрічки"
 
 #: src/integrations/admin/crawl-settings-integration.php:143
-#: js/dist/new-settings.js:28 js/dist/new-settings.js:268
+#: js/dist/new-settings.js:28 js/dist/new-settings.js:269
 msgid "Pingback HTTP header"
 msgstr "Автоматичне сповіщення заголовка HTTP"
 
@@ -1485,7 +1973,7 @@ msgstr "Запис у блозі"
 #. translators: 1: Yoast WooCommerce SEO
 #. translators: %s: Yoast WooCommerce SEO
 #: src/integrations/admin/workouts-integration.php:315
-#: js/dist/integrations-page.js:11 js/dist/new-settings.js:50
+#: js/dist/integrations-page.js:23 js/dist/new-settings.js:50
 msgid "Activate %s"
 msgstr "Активувати %s"
 
@@ -1656,7 +2144,7 @@ msgid "Find out how Insights can help you improve your content."
 msgstr "Дізнайтеся, як Інсайти можуть допомогти покращити ваш вміст."
 
 #: admin/views/class-yoast-feature-toggles.php:121 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:523
+#: js/dist/new-settings.js:524
 msgid "Link suggestions"
 msgstr "Посилання пропозицій"
 
@@ -1664,9 +2152,9 @@ msgstr "Посилання пропозицій"
 msgid "Find relevant data about your content right in the Insights section in the Yoast SEO metabox. You’ll see what words you use most often and if they’re a match with your keywords! "
 msgstr "Знайдіть відповідні дані про ваш вміст у розділі Інсайти в метабоксі Yoast SEO. Ви побачите, які слова ви використовуєте найчастіше і чи збігаються вони з ключовими словами! "
 
-#: admin/views/class-yoast-feature-toggles.php:112 js/dist/block-editor.js:542
-#: js/dist/block-editor.js:599 js/dist/classic-editor.js:232
-#: js/dist/new-settings.js:28 js/dist/new-settings.js:523
+#: admin/views/class-yoast-feature-toggles.php:112 js/dist/block-editor.js:379
+#: js/dist/block-editor.js:682 js/dist/classic-editor.js:310
+#: js/dist/new-settings.js:28 js/dist/new-settings.js:524
 msgid "Insights"
 msgstr "Статистика"
 
@@ -1723,7 +2211,7 @@ msgid "Addon activated."
 msgstr "Застосунок активовано."
 
 #. translators: %s expands to Yoast SEO Premium.
-#: admin/class-admin.php:248
+#: admin/class-admin.php:236
 msgid "Required by %s"
 msgstr "Обов'язково для %s"
 
@@ -1739,9 +2227,9 @@ msgstr "Автоматичні оновлення вимкнені на осно
 
 #: src/presenters/admin/badge-presenter.php:80
 #: src/presenters/admin/badge-presenter.php:87
-#: js/dist/externals-components.js:386 js/dist/externals/componentsNew.js:563
-#: js/dist/integrations-page.js:3 js/dist/integrations-page.js:6
-#: js/dist/integrations-page.js:18 js/dist/new-settings.js:589
+#: js/dist/externals-components.js:465 js/dist/externals/componentsNew.js:563
+#: js/dist/integrations-page.js:2 js/dist/integrations-page.js:63
+#: js/dist/integrations-page.js:71 js/dist/new-settings.js:590
 msgid "New"
 msgstr "Нове"
 
@@ -1758,7 +2246,7 @@ msgstr "Таксономію не знайдено."
 msgid "The post could not be found."
 msgstr "Допис не знайдено."
 
-#: admin/class-yoast-form.php:1066 js/dist/general-page.js:55
+#: admin/class-yoast-form.php:1009 js/dist/general-page.js:55
 msgid "This feature has been disabled since subsites never send tracking data."
 msgstr "Цю можливість було вимкнено, оскільки підсайти ніколи не надсилають дані про стеження."
 
@@ -1772,7 +2260,7 @@ msgstr "Ми помітили, що ви встановили WPML. Щоб пе�
 msgid "Because of a change in your category base setting, some of your SEO data needs to be reprocessed."
 msgstr "У зв'язку із зміною налаштувань вашої основної категорії, деякі ваші дані SEO мають бути опрацьовано ще раз."
 
-#: admin/views/class-yoast-feature-toggles.php:185 js/dist/new-settings.js:526
+#: admin/views/class-yoast-feature-toggles.php:185 js/dist/new-settings.js:527
 msgid "This adds an author byline and reading time estimate to the article’s snippet when shared on Slack."
 msgstr "Це додає авторський підпис і приблизний час читання до фрагмента статті, коли він публікується в Slack."
 
@@ -1824,17 +2312,13 @@ msgstr "Інтеграція %s надає пропозиції та розум�
 msgid "This tab allows you to selectively disable %1$s integrations with third-party products for all sites in the network. By default all integrations are enabled, which allows site admins to choose for themselves if they want to toggle an integration on or off for their site. When you disable an integration here, site admins will not be able to use that integration at all."
 msgstr "Ця вкладка дозволяє вибірково вимкнути інтеграцію %1$s s зі сторонніми продуктами для всіх вебсайтів у мережі. За замовчуванням усі можливості ввімкнені, що дозволяє адміністраторам сайтів самостійно вибирати, чи вони хочуть ввімкнути інтеграцію для свого сайту чи вимкнути її."
 
-#: admin/class-admin.php:259
+#: admin/class-admin.php:247
 msgid "Activate your subscription"
 msgstr "Активуйте свою підписку"
 
 #: src/presenters/admin/indexing-error-presenter.php:64
 msgid "Oops, something has gone wrong and we couldn't complete the optimization of your SEO data. Please click the button again to re-start the process. "
 msgstr "Йой, щось пішло не так, і ми не змогли завершити оптимізацію ваших даних SEO. Будь ласка, натисніть на кнопку, щоб почати спочатку."
-
-#: src/presenters/admin/indexing-list-item-presenter.php:40
-msgid "You can speed up your site and get insight into your internal linking structure by letting us perform a few optimizations to the way SEO data is stored. If you have a lot of content it might take a while, but trust us, it's worth it."
-msgstr "Ви можете пришвидшити роботу свого сайту та отримати уявлення про свою внутрішню структуру посилань, дозволивши нам виконати кілька оптимізацій способу зберігання даних SEO. Якщо у вас багато вмісту, це може зайняти деякий час, але повірте нам, воно того варте."
 
 #: src/presenters/admin/indexing-list-item-presenter.php:42
 msgid "Learn more about the benefits of optimized SEO data."
@@ -1848,6 +2332,10 @@ msgstr "Розпочати оптимізацію даних SEO"
 #: src/integrations/watchers/indexable-homeurl-watcher.php:97
 msgid "All permalinks were successfully reset"
 msgstr "Усі постійні посилання успішно скинуто"
+
+#: src/presenters/admin/indexing-list-item-presenter.php:40
+msgid "You can speed up your site and get insight into your internal linking structure by letting us perform a few optimizations to the way SEO data is stored. If you have a lot of content it might take a while, but trust us, it's worth it."
+msgstr "Ви можете пришвидшити роботу свого сайту та отримати уявлення про свою внутрішню структуру посилань, дозволивши нам виконати кілька оптимізацій способу зберігання даних SEO. Якщо у вас багато вмісту, це може зайняти деякий час, але повірте нам, воно того варте."
 
 #: src/presenters/admin/indexing-notification-presenter.php:96
 msgid "You can speed up your site and get insight into your internal linking structure by letting us perform a few optimizations to the way SEO data is stored."
@@ -1868,6 +2356,12 @@ msgstr "Якщо проблема не зникне, будь ласка, зве
 msgid "Optimize SEO Data"
 msgstr "Оптимізація даних SEO"
 
+#. translators: %1$s: expands to an opening anchor tag, %2$s: expands to a
+#. closing anchor tag
+#: admin/views/class-yoast-feature-toggles.php:237
+msgid "Disabling Yoast SEO's XML sitemaps will not disable WordPress' core sitemaps. In some cases, this %1$s may result in SEO errors on your site%2$s. These may be reported in Google Search Console and other tools."
+msgstr "Вимкнення XML-файлів карт сайту Yoast SEO не призведе до відключення основних карт сайту WordPress. У деяких випадках це %1$s може спричинити помилки в роботі SEO на вашому сайті%2$s. Про них можна повідомити в пошуковій консолі Google та інших інструментах."
+
 #: inc/class-addon-manager.php:881
 msgid "Need support?"
 msgstr "Потрібна допомога?"
@@ -1876,12 +2370,6 @@ msgstr "Потрібна допомога?"
 #: inc/class-addon-manager.php:887
 msgid "If you still need support and have an active subscription for this product, please email %s."
 msgstr "Якщо вам все ще потрібна підтримка, і у вас є активна підписка на цей продукт, будь ласка, напишіть на %s."
-
-#. translators: %1$s: expands to an opening anchor tag, %2$s: expands to a
-#. closing anchor tag
-#: admin/views/class-yoast-feature-toggles.php:237
-msgid "Disabling Yoast SEO's XML sitemaps will not disable WordPress' core sitemaps. In some cases, this %1$s may result in SEO errors on your site%2$s. These may be reported in Google Search Console and other tools."
-msgstr "Вимкнення XML-файлів карт сайту Yoast SEO не призведе до відключення основних карт сайту WordPress. У деяких випадках це %1$s може спричинити помилки в роботі SEO на вашому сайті%2$s. Про них можна повідомити в пошуковій консолі Google та інших інструментах."
 
 #. translators: 1: expands to <a> that refers to the help page, 2: </a> closing
 #. tag.
@@ -1946,8 +2434,8 @@ msgstr "Сторінка оформлення замовлення"
 msgid "Search Results Page"
 msgstr "Сторінка результатів пошуку"
 
-#: src/config/schema-types.php:64 js/dist/block-editor.js:578
-#: js/dist/classic-editor.js:478
+#: src/config/schema-types.php:64 js/dist/block-editor.js:660
+#: js/dist/classic-editor.js:591
 msgid "Item Page"
 msgstr "Сторінка товару"
 
@@ -1981,7 +2469,7 @@ msgstr "Сторінка профілю"
 
 #: admin/views/class-yoast-feature-toggles.php:161
 #: admin/views/class-yoast-feature-toggles.php:162 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:522
+#: js/dist/new-settings.js:523
 msgid "Usage tracking"
 msgstr "Відстеження користування"
 
@@ -2184,13 +2672,8 @@ msgstr "%1$sЦе було повідомлено плагіном %2$s%3$s"
 msgid "The browser you are currently using is unfortunately rather dated. Since we strive to give you the best experience possible, we no longer support this browser. Instead, please use %1$sFirefox%4$s, %2$sChrome%4$s or %3$sMicrosoft Edge%4$s."
 msgstr "Браузер, яким ви користуєтесь, на жаль, застарів. Попри наше бажання надавати найкращі послуги, ми не підтримуємо більше цей браузер. Натомість, будь ласка, використовуйте %1$sFirefox%4$s, %2$sChrome%4$s або %3$sMicrosoft Edge%4$s."
 
-#: admin/metabox/class-metabox.php:191
-msgid "If you want to apply advanced <code>meta</code> robots settings for this page, please define them in the following field."
-msgstr "Якщо ви хочете застосувати розширені налаштування роботів <code>meta</code> для цієї сторінки, будь ласка, зазначте їх в цьому полі."
-
-#: src/presenters/admin/sidebar-presenter.php:137
-#: js/dist/ai-content-planner.js:134 js/dist/block-editor.js:134
-#: js/dist/general-page.js:2 js/dist/new-settings.js:2 js/dist/support.js:2
+#: src/presenters/admin/sidebar-presenter.php:137 js/dist/general-page.js:2
+#: js/dist/new-settings.js:2 js/dist/support.js:2
 msgid "Learn SEO"
 msgstr "Вивчайте SEO"
 
@@ -2206,17 +2689,15 @@ msgstr "Ваші %1$s налаштування:"
 
 #. translators: %1$s expands to Yoast SEO academy, which is a clickable link.
 #. translators: %1$s expands to "Yoast SEO" academy, which is a clickable link.
-#: src/presenters/admin/sidebar-presenter.php:145
-#: js/dist/ai-content-planner.js:134 js/dist/block-editor.js:134
-#: js/dist/general-page.js:2 js/dist/new-settings.js:2 js/dist/support.js:2
+#: src/presenters/admin/sidebar-presenter.php:145 js/dist/general-page.js:2
+#: js/dist/new-settings.js:2 js/dist/support.js:2
 msgid "Want to learn SEO from Team Yoast? Check out our %1$s!"
 msgstr "Бажаєте вивчати SEO разом з Командою Yoast? Дивіться нашу %1$s!"
 
 #. translators: %1$s expands to Yoast SEO academy
 #. translators: %1$s expands to "Yoast SEO academy".
-#: src/presenters/admin/sidebar-presenter.php:154
-#: js/dist/ai-content-planner.js:135 js/dist/block-editor.js:135
-#: js/dist/general-page.js:3 js/dist/new-settings.js:3 js/dist/support.js:3
+#: src/presenters/admin/sidebar-presenter.php:154 js/dist/general-page.js:3
+#: js/dist/new-settings.js:3 js/dist/support.js:3
 msgid "Check out %1$s"
 msgstr "Дивіться %1$s"
 
@@ -2225,16 +2706,15 @@ msgstr "Дивіться %1$s"
 msgid "Import settings from another %1$s installation by pasting them here and clicking \"%2$s\"."
 msgstr "Імпортувати налаштування з іншого середовища %1$s, вставивши їх сюди й натиснувши \"%2$s\"."
 
-#: src/presenters/admin/sidebar-presenter.php:147
-#: js/dist/ai-content-planner.js:134 js/dist/block-editor.js:134
-#: js/dist/general-page.js:2 js/dist/new-settings.js:2 js/dist/support.js:2
+#: src/presenters/admin/sidebar-presenter.php:147 js/dist/general-page.js:2
+#: js/dist/new-settings.js:2 js/dist/support.js:2
 msgid "We have both free and premium online courses to learn everything you need to know about SEO."
 msgstr "Ми пропонуємо як безкоштовні, так і преміум онлайн курси для вивчення всього, що необхідно знати про SEO."
 
-#: admin/metabox/class-metabox.php:440 js/dist/block-editor.js:624
+#: admin/metabox/class-metabox.php:383 js/dist/block-editor.js:707
 #: js/dist/new-settings.js:21 js/dist/new-settings.js:31
 #: js/dist/new-settings.js:35 js/dist/new-settings.js:40
-#: js/dist/new-settings.js:92 js/dist/new-settings.js:409
+#: js/dist/new-settings.js:92 js/dist/new-settings.js:410
 msgid "Schema"
 msgstr "Schema"
 
@@ -2296,7 +2776,7 @@ msgid "No Focus Keyphrase"
 msgstr "Немає фокусної ключової фрази"
 
 #. translators: %s: expends to Yoast SEO
-#: admin/class-admin.php:354
+#: admin/class-admin.php:313
 msgid "%s video tutorial"
 msgstr "Навчальні відео %s"
 
@@ -2314,7 +2794,7 @@ msgstr "Робота Google API для перевірки помилок при�
 
 #: src/integrations/admin/first-time-configuration-integration.php:480
 #: src/integrations/admin/first-time-configuration-integration.php:493
-#: js/dist/new-settings.js:539
+#: js/dist/new-settings.js:540
 msgid "Organization"
 msgstr "Організація"
 
@@ -2324,22 +2804,18 @@ msgstr "Організація"
 msgid "You have previously set your site to represent a person. We’ve improved our functionality around Schema and the Knowledge Graph, so you should go in and %1$scomplete those settings%2$s."
 msgstr "Раніше ви встановили, що ваш сайт буде представляти інтереси конкретної особи. Ми покращили нашу функціональність по відношенню до Schema та Knowledge Graph, тому вам необхідно ввійти та %1$s заповнити ці налаштування %2$s."
 
-#: admin/class-admin.php:317
 #: src/user-meta/framework/additional-contactmethods/wikipedia.php:28
 msgid "(if one exists)"
 msgstr "(якщо існує)"
 
-#: admin/class-admin.php:314
 #: src/user-meta/framework/additional-contactmethods/tumblr.php:28
 msgid "Tumblr profile URL"
 msgstr "Посилання на профіль Tumblr"
 
-#: admin/class-admin.php:313
 #: src/user-meta/framework/additional-contactmethods/soundcloud.php:28
 msgid "SoundCloud profile URL"
 msgstr "Посилання на профіль SoundCloud"
 
-#: admin/class-admin.php:311
 #: src/user-meta/framework/additional-contactmethods/myspace.php:28
 msgid "MySpace profile URL"
 msgstr "Посилання на профіль MySpace"
@@ -2348,27 +2824,22 @@ msgstr "Посилання на профіль MySpace"
 msgid "Uncategorized"
 msgstr "Без категорії"
 
-#: admin/class-admin.php:317
 #: src/user-meta/framework/additional-contactmethods/wikipedia.php:28
 msgid "Wikipedia page about you"
 msgstr "Сторінка Wikipedia про тебе"
 
-#: admin/class-admin.php:316
 #: src/user-meta/framework/additional-contactmethods/youtube.php:28
 msgid "YouTube profile URL"
 msgstr "Посилання на профіль в YouTube"
 
-#: admin/class-admin.php:312
 #: src/user-meta/framework/additional-contactmethods/pinterest.php:28
 msgid "Pinterest profile URL"
 msgstr "Посилання на профіль Pinterest"
 
-#: admin/class-admin.php:310
 #: src/user-meta/framework/additional-contactmethods/linkedin.php:28
 msgid "LinkedIn profile URL"
 msgstr "Посилання на профіль LinkedIn"
 
-#: admin/class-admin.php:309
 #: src/user-meta/framework/additional-contactmethods/instagram.php:28
 msgid "Instagram profile URL"
 msgstr "Посилання на профіль Instagram"
@@ -2387,7 +2858,7 @@ msgstr "Вихідні внутрішні посилання"
 msgid "Received internal links"
 msgstr "Отримані внутрішні посилання"
 
-#: admin/class-meta-columns.php:132 js/dist/block-editor.js:399
+#: admin/class-meta-columns.php:132 js/dist/block-editor.js:158
 #: js/dist/classic-editor.js:89 js/dist/wincher-dashboard-widget.js:130
 msgid "Keyphrase"
 msgstr "Ключова фраза"
@@ -2457,8 +2928,8 @@ msgstr "ПОПЕРЕДЖЕННЯ:"
 #. translators: %s expands to Yoast SEO Premium
 #. translators: %s expands to product name: "Yoast WooCommerce SEO" or "Yoast
 #. SEO Premium"
-#: admin/class-premium-upsell-admin-block.php:181
-#: admin/class-premium-upsell-admin-block.php:192 js/dist/general-page.js:6
+#: admin/class-premium-upsell-admin-block.php:182
+#: admin/class-premium-upsell-admin-block.php:193 js/dist/general-page.js:6
 #: js/dist/new-settings.js:6
 msgid "Upgrade to %s"
 msgstr "Оновити до %s"
@@ -2501,15 +2972,16 @@ msgstr "%s - необхідний аргумент для включення а�
 msgid "Focus keyphrase not set."
 msgstr "Фокусне ключове слово не встановлено."
 
-#: admin/class-yoast-form.php:1062 js/dist/general-page.js:55
+#: admin/class-yoast-form.php:1005 js/dist/general-page.js:55
 msgid "This feature has been disabled by the network admin."
 msgstr "Ця можливість відключена адміністратором мережі."
 
 #. translators: %s expands to Yoast SEO Premium
+#. translators: %s expands to Yoast WooCommerce SEO.
 #. translators: WooCommerce SEO
 #: admin/class-premium-popup.php:81
-#: admin/watchers/class-slug-change-watcher.php:228
-#: js/dist/externals-components.js:359
+#: admin/watchers/class-slug-change-watcher.php:228 js/dist/block-editor.js:666
+#: js/dist/classic-editor.js:597 js/dist/externals-components.js:438
 msgid "Get %s"
 msgstr "Отримайте %s"
 
@@ -2533,7 +3005,7 @@ msgstr[2] "Є нових сповіщень."
 #. translators: %d expands to the number of day/days.
 #. translators: %d expands to the number of days.
 #: src/integrations/blocks/structured-data-blocks.php:132
-#: js/dist/block-editor.js:378 js/dist/classic-editor.js:68
+#: js/dist/block-editor.js:137 js/dist/classic-editor.js:68
 #: js/dist/how-to-block.js:2 js/dist/how-to-block.js:8
 #: js/dist/wincher-dashboard-widget.js:72
 msgid "%d day"
@@ -2662,7 +3134,7 @@ msgid "Parent title"
 msgstr "Назва предка"
 
 #: inc/class-wpseo-replace-vars.php:1475 js/dist/externals-redux.js:1
-#: js/dist/new-settings.js:28 js/dist/new-settings.js:519
+#: js/dist/new-settings.js:28 js/dist/new-settings.js:520
 msgid "Tagline"
 msgstr "Ключова фраза"
 
@@ -2892,13 +3364,13 @@ msgstr "Це імпортує метадані типу заголовка SEO �
 msgid "Help on: %s"
 msgstr "Довідка по: %s"
 
-#: admin/class-yoast-form.php:959 admin/class-yoast-form.php:999
+#: admin/class-yoast-form.php:902 admin/class-yoast-form.php:942
 #: admin/views/class-yoast-feature-toggles.php:156
 #: js/dist/externals/componentsNew.js:532
 msgid "Off"
 msgstr "Вимк."
 
-#: admin/class-yoast-form.php:958 admin/class-yoast-form.php:998
+#: admin/class-yoast-form.php:901 admin/class-yoast-form.php:941
 #: js/dist/externals/componentsNew.js:532
 msgid "On"
 msgstr "Увімк."
@@ -2921,24 +3393,9 @@ msgstr "Увімкнути XML-карти сайту, яка генерує %s."
 msgid "Read why XML Sitemaps are important for your site."
 msgstr "Прочитайте, чому файли XML Sitemap важливі для вашого сайту."
 
-#. translators: %1$s expands to the post type name.
-#: admin/metabox/class-metabox.php:186
-msgid "Should search engines follow links on this %1$s?"
-msgstr "Чи повинні пошукові системи стежити за посиланнями на цьому %1$s?"
-
-#. translators: %1$s expands to Yes or No,  %2$s expands to the post type name.
-#: admin/metabox/class-metabox.php:181
-msgid "Default for %2$s, currently: %1$s"
-msgstr "За умовчанням для %2$s, наразі: %1$s"
-
-#. translators: %s expands to the post type name.
-#: admin/metabox/class-metabox.php:176
-msgid "Allow search engines to show this %s in search results?"
-msgstr "Дозволити пошуковим системам показувати цей %s у результатах пошуку?"
-
 #. translators: %s expands to an indexable object's name, like a post type or
 #. taxonomy
-#: admin/class-yoast-form.php:969
+#: admin/class-yoast-form.php:912
 msgid "Show %s in search results?"
 msgstr "Показати %s у результатах пошуку?"
 
@@ -2955,7 +3412,7 @@ msgstr "Лічильник текстових посилань допомага�
 msgid "Learn how the SEO analysis can help you rank."
 msgstr "Дізнайтеся, як аналіз SEO може допомогти вам оцінити."
 
-#: admin/views/class-yoast-feature-toggles.php:81 js/dist/new-settings.js:523
+#: admin/views/class-yoast-feature-toggles.php:81 js/dist/new-settings.js:524
 msgid "The readability analysis offers suggestions to improve the structure and style of your text."
 msgstr "Аналіз читабельності пропонує пропозиції щодо вдосконалення структури та стилю вашого тексту."
 
@@ -2975,10 +3432,11 @@ msgid "%s integration"
 msgstr "%s інтеграція"
 
 #: admin/views/class-yoast-feature-toggles.php:71
-#: src/abilities/user-interface/abilities-integration.php:559
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:107
+#: src/abilities/user-interface/seo-data-output-schema.php:78
 #: src/task-list/application/tasks/child-tasks/improve-content-seo-child.php:64
-#: js/dist/externals-components.js:366 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:523
+#: js/dist/externals-components.js:445 js/dist/new-settings.js:28
+#: js/dist/new-settings.js:524
 msgid "SEO analysis"
 msgstr "SEO аналіз"
 
@@ -3062,41 +3520,38 @@ msgstr "Старий майстер конфігурації"
 
 #. translators: Hidden accessibility text.
 #: admin/class-admin-utils.php:79 admin/class-premium-popup.php:83
-#: admin/class-premium-upsell-admin-block.php:76 admin/class-yoast-form.php:933
+#: admin/class-premium-upsell-admin-block.php:76 admin/class-yoast-form.php:876
 #: admin/watchers/class-slug-change-watcher.php:230
 #: src/integrations/admin/workouts-integration.php:215
 #: src/integrations/admin/workouts-integration.php:245
 #: src/presenters/admin/help-link-presenter.php:76
 #: src/presenters/admin/sidebar-presenter.php:159 js/dist/academy.js:12
-#: js/dist/ai-consent.js:2 js/dist/ai-content-planner.js:85
-#: js/dist/ai-content-planner.js:97 js/dist/ai-content-planner.js:136
-#: js/dist/ai-content-planner.js:275 js/dist/ai-content-planner.js:280
-#: js/dist/ai-content-planner.js:292 js/dist/ai-generator.js:2
-#: js/dist/ai-generator.js:55 js/dist/ai-generator.js:67
-#: js/dist/ai-generator.js:282 js/dist/block-editor.js:85
-#: js/dist/block-editor.js:97 js/dist/block-editor.js:136
-#: js/dist/block-editor.js:244 js/dist/block-editor.js:249
-#: js/dist/block-editor.js:261 js/dist/block-editor.js:584
-#: js/dist/block-editor.js:585 js/dist/bulk-editor-page.js:2
+#: js/dist/ai-consent.js:2 js/dist/ai-generator.js:2 js/dist/ai-generator.js:55
+#: js/dist/ai-generator.js:67 js/dist/ai-generator.js:282
+#: js/dist/block-editor.js:19 js/dist/block-editor.js:69
+#: js/dist/block-editor.js:667 js/dist/block-editor.js:668
+#: js/dist/block-editor.js:722 js/dist/block-editor.js:727
+#: js/dist/block-editor.js:739 js/dist/bulk-editor-page.js:2
 #: js/dist/bulk-editor-page.js:5 js/dist/bulk-editor-page.js:6
-#: js/dist/bulk-editor-page.js:15 js/dist/classic-editor.js:2
-#: js/dist/editor-modules.js:116 js/dist/editor-modules.js:166
-#: js/dist/editor-modules.js:181 js/dist/editor-modules.js:396
-#: js/dist/externals-components.js:21 js/dist/externals-components.js:25
-#: js/dist/externals-components.js:26 js/dist/externals-components.js:76
-#: js/dist/externals-components.js:124 js/dist/externals-components.js:339
+#: js/dist/bulk-editor-page.js:15 js/dist/bulk-editor-page.js:22
+#: js/dist/bulk-editor-page.js:23 js/dist/classic-editor.js:2
+#: js/dist/editor-modules.js:195 js/dist/editor-modules.js:245
+#: js/dist/editor-modules.js:260 js/dist/editor-modules.js:475
+#: js/dist/externals-components.js:100 js/dist/externals-components.js:104
+#: js/dist/externals-components.js:105 js/dist/externals-components.js:155
+#: js/dist/externals-components.js:203 js/dist/externals-components.js:418
 #: js/dist/externals/componentsNew.js:675 js/dist/externals/helpers.js:11
 #: js/dist/externals/relatedKeyphraseSuggestions.js:3
 #: js/dist/externals/relatedKeyphraseSuggestions.js:7 js/dist/general-page.js:4
 #: js/dist/general-page.js:5 js/dist/general-page.js:8
 #: js/dist/general-page.js:22 js/dist/general-page.js:59
-#: js/dist/installation-success.js:5 js/dist/integrations-page.js:3
-#: js/dist/integrations-page.js:4 js/dist/integrations-page.js:5
-#: js/dist/integrations-page.js:6 js/dist/integrations-page.js:7
-#: js/dist/integrations-page.js:8 js/dist/integrations-page.js:13
-#: js/dist/integrations-page.js:18 js/dist/integrations-page.js:19
-#: js/dist/integrations-page.js:20 js/dist/integrations-page.js:52
-#: js/dist/integrations-page.js:57 js/dist/introductions.js:5
+#: js/dist/installation-success.js:5 js/dist/integrations-page.js:2
+#: js/dist/integrations-page.js:3 js/dist/integrations-page.js:5
+#: js/dist/integrations-page.js:25 js/dist/integrations-page.js:53
+#: js/dist/integrations-page.js:58 js/dist/integrations-page.js:63
+#: js/dist/integrations-page.js:64 js/dist/integrations-page.js:65
+#: js/dist/integrations-page.js:71 js/dist/integrations-page.js:72
+#: js/dist/integrations-page.js:73 js/dist/introductions.js:5
 #: js/dist/introductions.js:10 js/dist/introductions.js:11
 #: js/dist/new-settings.js:4 js/dist/new-settings.js:5
 #: js/dist/new-settings.js:8 js/dist/plans.js:2 js/dist/redirects.js:2
@@ -3155,7 +3610,7 @@ msgid "Request method %1$s is not valid."
 msgstr "Запит методу %1$s недійсний."
 
 #: admin/views/class-yoast-feature-toggles.php:104 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:523
+#: js/dist/new-settings.js:524
 msgid "Text link counter"
 msgstr "Лічильник текстових посилань"
 
@@ -3172,20 +3627,19 @@ msgstr "Оцінка читабельності"
 
 #: admin/filters/class-cornerstone-filter.php:87
 #: admin/views/class-yoast-feature-toggles.php:96
-#: js/dist/externals-components.js:20 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:523
+#: js/dist/externals-components.js:99 js/dist/new-settings.js:28
+#: js/dist/new-settings.js:524
 msgid "Cornerstone content"
 msgstr "Ключовий вміст"
 
 #: admin/class-yoast-form.php:149 admin/class-yoast-form.php:154
-#: js/dist/bulk-editor-page.js:19 js/dist/general-page.js:45
+#: js/dist/bulk-editor-page.js:23 js/dist/general-page.js:45
 #: js/dist/new-settings.js:9
 msgid "Save changes"
 msgstr "Зберегти зміни"
 
-#: src/presenters/admin/sidebar-presenter.php:127
-#: js/dist/ai-content-planner.js:75 js/dist/block-editor.js:75
-#: js/dist/general-page.js:5 js/dist/new-settings.js:5 js/dist/support.js:5
+#: src/presenters/admin/sidebar-presenter.php:127 js/dist/general-page.js:5
+#: js/dist/new-settings.js:5 js/dist/support.js:5
 msgid "24/7 support"
 msgstr "Підтримка 24/7"
 
@@ -3200,7 +3654,7 @@ msgstr "1 рік безкоштовних оновлень та розширен
 msgid "The plugin %2$s changes your site's output and in doing that differentiates between search engines and normal users, a process that's called cloaking. We highly recommend that you disable it."
 msgstr "Плагін %2$s змінює вихід вашого сайту, і це робить різницю між пошуковими системами та звичайними користувачами, процес, який називається маскуванням. Ми настійно рекомендуємо вимкнути його."
 
-#: admin/class-admin.php:355
+#: admin/class-admin.php:314
 msgid "Scroll to see the table content."
 msgstr "Розгорніть, щоб побачити вміст таблиці."
 
@@ -3208,7 +3662,7 @@ msgstr "Розгорніть, щоб побачити вміст таблиці.
 msgid "Save all"
 msgstr "Зберегти все"
 
-#: admin/class-bulk-editor-list-table.php:926 js/dist/bulk-editor-page.js:19
+#: admin/class-bulk-editor-list-table.php:926 js/dist/bulk-editor-page.js:20
 msgid "Save"
 msgstr "Зберегти"
 
@@ -3248,7 +3702,7 @@ msgstr "Не показуйте мені більше це повідомлен�
 #. translators: %1$s: '%%term_title%%' variable used in titles and meta's
 #. template that's not compatible with the given template, %2$s: expands to
 #. 'HelpScout beacon'
-#: admin/class-admin.php:349
+#: admin/class-admin.php:308
 msgid "Warning: the variable %1$s cannot be used in this template. See the %2$s for more info."
 msgstr "Попередження: змінна %1$s не може бути використана в цьому шаблоні. Перегляньте %2$s для отримання додаткової інформації."
 
@@ -3271,7 +3725,7 @@ msgid "The %1$s admin bar menu contains useful links to third-party tools for an
 msgstr "Меню адміністрування панелі керування %1$s містить корисні посилання на сторонні інструменти для аналізу сторінок та полегшує перевірку наявності нових сповіщень."
 
 #: admin/views/class-yoast-feature-toggles.php:143 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:526 js/dist/new-settings.js:529
+#: js/dist/new-settings.js:527 js/dist/new-settings.js:530
 msgid "Admin bar menu"
 msgstr "Меню в панелі адміністратора"
 
@@ -3279,17 +3733,21 @@ msgstr "Меню в панелі адміністратора"
 msgid "Features"
 msgstr "Можливості"
 
-#: admin/metabox/class-metabox.php:172
-#: src/abilities/user-interface/abilities-integration.php:534
-#: js/dist/bulk-editor-page.js:20
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:69
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:70
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:124
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:134
+#: src/abilities/user-interface/seo-data-output-schema.php:64
+#: src/abilities/user-interface/seo-data-output-schema.php:65
+#: js/dist/bulk-editor-page.js:24
 #: js/dist/externals/replacementVariableEditor.js:71
 #: js/dist/externals/searchMetadataPreviews.js:102 js/dist/new-settings.js:18
 #: js/dist/new-settings.js:24 js/dist/new-settings.js:28
 #: js/dist/new-settings.js:31 js/dist/new-settings.js:35
 #: js/dist/new-settings.js:88 js/dist/new-settings.js:108
 #: js/dist/new-settings.js:157 js/dist/new-settings.js:204
-#: js/dist/new-settings.js:309 js/dist/new-settings.js:336
-#: js/dist/new-settings.js:351 js/dist/new-settings.js:409
+#: js/dist/new-settings.js:310 js/dist/new-settings.js:337
+#: js/dist/new-settings.js:352 js/dist/new-settings.js:410
 msgid "SEO title"
 msgstr "SEO-заголовок"
 
@@ -3325,16 +3783,6 @@ msgstr "Довге тире"
 msgid "En dash"
 msgstr "Коротке тире"
 
-#: admin/metabox/class-metabox.php:183 admin/metabox/class-metabox.php:188
-#: js/dist/block-editor.js:544 js/dist/classic-editor.js:234
-msgid "No"
-msgstr "Ні"
-
-#: admin/metabox/class-metabox.php:182 admin/metabox/class-metabox.php:187
-#: js/dist/block-editor.js:544 js/dist/classic-editor.js:234
-msgid "Yes"
-msgstr "Так"
-
 #: inc/options/class-wpseo-option-titles.php:972
 msgid "Small tilde"
 msgstr "Мала тильда"
@@ -3364,7 +3812,7 @@ msgstr "Редагувати &#8220;%s&#8221;"
 msgid "Premium"
 msgstr "Преміум"
 
-#: admin/class-admin.php:266
+#: admin/class-admin.php:254
 msgid "Get Premium"
 msgstr "Перейти до Преміум аккаунта"
 
@@ -3405,17 +3853,17 @@ msgstr "Читабельність"
 #: inc/class-wpseo-rank.php:208 inc/class-wpseo-rank.php:240
 #: src/task-list/application/tasks/child-tasks/improve-content-readability-child.php:52
 #: src/task-list/application/tasks/child-tasks/improve-content-seo-child.php:52
-#: js/dist/block-editor.js:583 js/dist/bulk-editor-page.js:8
-#: js/dist/editor-modules.js:115 js/dist/editor-modules.js:398
-#: js/dist/externals-components.js:84 js/dist/externals/analysis.js:410
+#: js/dist/block-editor.js:666 js/dist/bulk-editor-page.js:8
+#: js/dist/editor-modules.js:194 js/dist/editor-modules.js:477
+#: js/dist/externals-components.js:163 js/dist/externals/analysis.js:481
 #: js/dist/externals/dashboardFrontend.js:4
 #: js/dist/frontend-inspector-resources.js:1
 msgid "Needs improvement"
 msgstr "Можна краще"
 
 #: admin/views/class-yoast-feature-toggles.php:79
-#: js/dist/externals-components.js:358 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:523
+#: js/dist/externals-components.js:437 js/dist/new-settings.js:28
+#: js/dist/new-settings.js:524
 msgid "Readability analysis"
 msgstr "Аналіз читабельності"
 
@@ -3445,8 +3893,8 @@ msgstr "Мета опис не вказано."
 
 #: inc/class-wpseo-rank.php:138
 #: src/abilities/application/score-retriever.php:140
-#: js/dist/block-editor.js:583 js/dist/editor-modules.js:115
-#: js/dist/editor-modules.js:398 js/dist/externals-components.js:84
+#: js/dist/block-editor.js:666 js/dist/editor-modules.js:194
+#: js/dist/editor-modules.js:477 js/dist/externals-components.js:163
 #: js/dist/frontend-inspector-resources.js:1
 msgid "Not available"
 msgstr "Недоступно"
@@ -3460,7 +3908,7 @@ msgid "Good job! We could detect no serious SEO problems."
 msgstr "Гарна робота! Ми не змогли виявити жодних серйозних SEO проблем."
 
 #: admin/views/partial-notifications-errors.php:20
-#: js/dist/editor-modules.js:115 js/dist/externals-components.js:84
+#: js/dist/editor-modules.js:194 js/dist/externals-components.js:163
 #: js/dist/externals/analysisReport.js:38 js/dist/general-page.js:29
 msgid "Problems"
 msgstr "Проблеми"
@@ -3525,8 +3973,8 @@ msgid "Make %1$s primary %2$s"
 msgstr "Зробити %1$s основним %2$s"
 
 #: admin/pages/network.php:20 admin/views/tabs/network/integrations.php:22
-#: src/integrations/admin/integrations-page.php:145
-#: js/dist/integrations-page.js:75
+#: src/integrations/admin/integrations-page.php:156
+#: js/dist/integrations-page.js:79
 msgid "Integrations"
 msgstr "Інтеграції"
 
@@ -3573,9 +4021,9 @@ msgstr "Команда Yoast"
 #: inc/class-wpseo-rank.php:218 inc/class-wpseo-rank.php:250
 #: src/task-list/application/tasks/child-tasks/improve-content-readability-child.php:50
 #: src/task-list/application/tasks/child-tasks/improve-content-seo-child.php:50
-#: js/dist/block-editor.js:583 js/dist/editor-modules.js:115
-#: js/dist/editor-modules.js:398 js/dist/externals-components.js:84
-#: js/dist/externals/analysis.js:410 js/dist/externals/dashboardFrontend.js:4
+#: js/dist/block-editor.js:666 js/dist/editor-modules.js:194
+#: js/dist/editor-modules.js:477 js/dist/externals-components.js:163
+#: js/dist/externals/analysis.js:481 js/dist/externals/dashboardFrontend.js:4
 #: js/dist/frontend-inspector-resources.js:1
 msgid "Good"
 msgstr "Добре"
@@ -3608,7 +4056,7 @@ msgid "You searched for %s"
 msgstr "Ви шукали %s"
 
 #. translators: %s expands to the name of a post type (plural).
-#: inc/class-upgrade.php:1555 inc/options/class-wpseo-option-titles.php:309
+#: inc/class-upgrade.php:1574 inc/options/class-wpseo-option-titles.php:309
 msgid "%s Archive"
 msgstr "%s Архів"
 
@@ -3619,11 +4067,11 @@ msgstr "Аналізувати сторінку"
 #. translators: %1$s expands to Yoast SEO, %2$s / %3$s: links to the
 #. installation manual in the Readme for the Yoast SEO code repository on
 #. GitHub
-#: wp-seo-main.php:526
+#: wp-seo-main.php:525
 msgid "The %1$s plugin installation is incomplete. Please refer to %2$sinstallation instructions%3$s."
 msgstr "Встановлення плагіну %1$s є невдалим. Будь ласка, зверніться до %2$sінструкції по встановленню%3$s."
 
-#: wp-seo-main.php:502
+#: wp-seo-main.php:501
 msgid "The Standard PHP Library (SPL) extension seem to be unavailable. Please ask your web host to enable it."
 msgstr "Здається відсутнє розширення стандартної бібліотеки PHP (SPL). Попросіть свого надавача веб-хостингу активувати його."
 
@@ -3652,8 +4100,7 @@ msgstr "Налаштування блогу за умовчанням має м�
 
 #. Plugin Name of the plugin
 #: wp-seo.php admin/capabilities/class-capability-manager-integration.php:74
-#: src/abilities/user-interface/ability-categories-integration.php:43
-#: src/presenters/meta-description-presenter.php:36 js/dist/block-editor.js:662
+#: src/presenters/meta-description-presenter.php:36 js/dist/block-editor.js:743
 msgid "Yoast SEO"
 msgstr "Yoast SEO"
 
@@ -3676,8 +4123,8 @@ msgid "Facebook Debugger"
 msgstr "Налагоджувач Facebook"
 
 #: admin/pages/tools.php:42
-#: src/bulk-editor/user-interface/bulk-editor-integration.php:227
-#: js/dist/bulk-editor-page.js:21
+#: src/bulk-editor/user-interface/bulk-editor-integration.php:269
+#: js/dist/bulk-editor-page.js:25
 msgid "Bulk editor"
 msgstr "Груповий редактор"
 
@@ -3744,7 +4191,7 @@ msgid "Meta description to use for Author page"
 msgstr "Мета опис для сторінки автора"
 
 #. translators: %s expands to the variable used for term title.
-#: inc/class-upgrade.php:1558 inc/options/class-wpseo-option-titles.php:345
+#: inc/class-upgrade.php:1577 inc/options/class-wpseo-option-titles.php:345
 #: src/editors/framework/seo/terms/title-data-provider.php:27
 msgid "%s Archives"
 msgstr "%s Архіви"
@@ -3939,17 +4386,6 @@ msgstr "Подяки"
 msgid "Import settings"
 msgstr "Налаштування імпорту"
 
-#. Translators: %s: expands to Yoast SEO Premium
-#: admin/google_search_console/views/gsc-redirect-nopremium.php:15
-msgid "Creating redirects is a %s feature"
-msgstr "Створення перенаправлення це функція %s"
-
-#. Translators: %1$s: expands to 'Yoast SEO Premium', %2$s: links to Yoast SEO
-#. Premium plugin page.
-#: admin/google_search_console/views/gsc-redirect-nopremium.php:22
-msgid "To be able to create a redirect and fix this issue, you need %1$s. You can buy the plugin, including one year of support and updates, on %2$s."
-msgstr "Щоб мати можливість створити перенаправлення і виправити дану проблему, потрібен %1$s. Ви можете купити плагін, включаючи один рік підтримки та оновлень, на %2$s."
-
 #: admin/views/tabs/network/general.php:37
 #: admin/views/tabs/network/general.php:43
 msgid "New sites in the network inherit their SEO settings from this site"
@@ -4024,9 +4460,8 @@ msgstr "Ранг краще локально та на Картах Google, не
 msgid "Are you in Google News? Increase your traffic from Google News by optimizing for it!"
 msgstr "Ви в Новинах Google? Збільште трафік з Новин Google, оптимізуючи його!"
 
-#: inc/class-wpseo-replace-vars.php:1471 js/dist/ai-content-planner.js:276
-#: js/dist/ai-content-planner.js:277 js/dist/block-editor.js:245
-#: js/dist/block-editor.js:246 js/dist/bulk-editor-page.js:19
+#: inc/class-wpseo-replace-vars.php:1471 js/dist/block-editor.js:723
+#: js/dist/block-editor.js:724 js/dist/bulk-editor-page.js:20
 #: js/dist/externals-redux.js:1
 msgid "Title"
 msgstr "Заголовок"
@@ -4053,48 +4488,13 @@ msgid "Optimize your videos to show them off in search results and get more clic
 msgstr "Оптимізуйте свої відео, щоб показати їх у результатах пошуку і отримати більше кліків!"
 
 #: src/integrations/admin/first-time-configuration-integration.php:485
-#: js/dist/new-settings.js:539
+#: js/dist/new-settings.js:540
 msgid "Person"
 msgstr "Приватна особа"
 
 #: admin/views/tabs/network/general.php:54
 msgid "Privacy sensitive (FB admins and such), theme specific (title rewrite) and a few very site specific settings will not be imported to new sites."
 msgstr "Таємні дані (адміни FB, тощо), особливості теми (перепис назв) і кілька конкретних налаштувань сайту не будуть імпортовані до нових блогів."
-
-#: admin/google_search_console/views/gsc-redirect-nopremium.php:27
-#: js/dist/ai-consent.js:6 js/dist/ai-content-planner.js:4
-#: js/dist/ai-content-planner.js:133 js/dist/ai-content-planner.js:268
-#: js/dist/ai-content-planner.js:275 js/dist/ai-content-planner.js:278
-#: js/dist/ai-content-planner.js:280 js/dist/ai-content-planner.js:288
-#: js/dist/ai-content-planner.js:292 js/dist/ai-content-planner.js:293
-#: js/dist/ai-generator.js:6 js/dist/ai-generator.js:48
-#: js/dist/ai-generator.js:53 js/dist/ai-generator.js:61
-#: js/dist/ai-generator.js:67 js/dist/ai-generator.js:278
-#: js/dist/ai-generator.js:280 js/dist/ai-generator.js:282
-#: js/dist/block-editor.js:4 js/dist/block-editor.js:133
-#: js/dist/block-editor.js:244 js/dist/block-editor.js:247
-#: js/dist/block-editor.js:249 js/dist/block-editor.js:257
-#: js/dist/block-editor.js:261 js/dist/block-editor.js:262
-#: js/dist/block-editor.js:296 js/dist/bulk-editor-page.js:3
-#: js/dist/bulk-editor-page.js:5 js/dist/editor-modules.js:116
-#: js/dist/editor-modules.js:132 js/dist/editor-modules.js:159
-#: js/dist/editor-modules.js:164 js/dist/editor-modules.js:169
-#: js/dist/editor-modules.js:175 js/dist/editor-modules.js:181
-#: js/dist/editor-modules.js:392 js/dist/editor-modules.js:394
-#: js/dist/editor-modules.js:396 js/dist/externals-components.js:25
-#: js/dist/externals-components.js:69 js/dist/externals-components.js:74
-#: js/dist/externals-components.js:79 js/dist/externals-components.js:120
-#: js/dist/externals-components.js:124 js/dist/externals-components.js:335
-#: js/dist/externals-components.js:337 js/dist/externals-components.js:339
-#: js/dist/externals/aiFrontend.js:190 js/dist/externals/aiFrontend.js:195
-#: js/dist/externals/componentsNew.js:626
-#: js/dist/externals/dashboardFrontend.js:6 js/dist/general-page.js:8
-#: js/dist/general-page.js:29 js/dist/integrations-page.js:57
-#: js/dist/introductions.js:5 js/dist/introductions.js:9
-#: js/dist/introductions.js:10 js/dist/new-settings.js:8
-#: js/dist/new-settings.js:38
-msgid "Close"
-msgstr "Закрити"
 
 #: admin/class-meta-columns.php:273
 msgid "All SEO Scores"
@@ -4126,9 +4526,9 @@ msgstr "Деактивувати %s"
 #: inc/class-wpseo-rank.php:213
 #: src/task-list/application/tasks/child-tasks/improve-content-readability-child.php:51
 #: src/task-list/application/tasks/child-tasks/improve-content-seo-child.php:51
-#: js/dist/block-editor.js:583 js/dist/editor-modules.js:115
-#: js/dist/editor-modules.js:398 js/dist/externals-components.js:84
-#: js/dist/externals/analysis.js:410 js/dist/externals/dashboardFrontend.js:4
+#: js/dist/block-editor.js:666 js/dist/editor-modules.js:194
+#: js/dist/editor-modules.js:477 js/dist/externals-components.js:163
+#: js/dist/externals/analysis.js:481 js/dist/externals/dashboardFrontend.js:4
 #: js/dist/frontend-inspector-resources.js:1
 msgid "OK"
 msgstr "OK"
@@ -4149,14 +4549,24 @@ msgstr "Як %1$s, так і %2$s створюють вихідні дані Ope
 msgid "%s Posts Overview"
 msgstr "Огляд публікацій %s"
 
-#: admin/class-admin.php:224 src/integrations/settings-integration.php:380
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:97
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:98
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:157
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:151
+#: src/abilities/user-interface/seo-data-output-schema.php:76
+#: src/abilities/user-interface/seo-data-output-schema.php:77
+#: js/dist/externals/socialMetadataForms.js:23
+msgid "X description"
+msgstr "Опис Х"
+
+#: admin/class-admin.php:212 src/integrations/settings-integration.php:382
 #: src/presenters/meta-description-presenter.php:37 js/dist/how-to-block.js:7
 msgid "Settings"
 msgstr "Налаштування"
 
-#: admin/class-bulk-editor-list-table.php:849 js/dist/bulk-editor-page.js:19
-#: js/dist/externals/dashboardFrontend.js:4 js/dist/general-page.js:44
-#: js/dist/general-page.js:59
+#: admin/class-bulk-editor-list-table.php:849 js/dist/bulk-editor-page.js:20
+#: js/dist/bulk-editor-page.js:22 js/dist/externals/dashboardFrontend.js:4
+#: js/dist/general-page.js:44 js/dist/general-page.js:59
 msgid "Edit"
 msgstr "Редагувати"
 
@@ -4194,7 +4604,7 @@ msgstr "Ви не можете редагувати %s, бо це не ваше.
 msgid "%1$s detected you are using version %2$s of %3$s, please update to the latest version to prevent compatibility issues."
 msgstr "%1$s визначено використання версії %2$s з %3$s. Будь ласка, оновіть до останньої версії, щоб запобігти проблем зі сумісністю."
 
-#: admin/metabox/class-metabox.php:423
+#: admin/metabox/class-metabox.php:366
 #: admin/taxonomy/class-taxonomy-metabox.php:141
 #: inc/class-wpseo-admin-bar-menu.php:790
 #: src/services/health-check/report-builder.php:168
@@ -4205,15 +4615,14 @@ msgstr "SEO"
 msgid "Edit Files"
 msgstr "Редагувати файли"
 
-#: admin/class-admin.php:182
+#: admin/class-admin.php:170
 msgid "Posts"
 msgstr "Записи"
 
-#: admin/menu/class-admin-menu.php:96 js/dist/new-settings.js:529
+#: admin/menu/class-admin-menu.php:96 js/dist/new-settings.js:530
 msgid "Tools"
 msgstr "Інструменти"
 
-#: admin/class-admin.php:308
 #: src/user-meta/framework/additional-contactmethods/facebook.php:28
 msgid "Facebook profile URL"
 msgstr "Посилання на профіль у Facebook"
@@ -4269,17 +4678,9 @@ msgstr "Налаштування успішно імпортовані."
 msgid "Post is set to noindex."
 msgstr "Запис переключено в noindex."
 
-#: admin/metabox/class-metabox.php:209
-msgid "The URL that this page should redirect to."
-msgstr "Лінк цієї сторінки має перенаправлятися також."
-
 #: inc/class-wpseo-replace-vars.php:1524
 msgid "Focus keyword"
 msgstr "Ключовики"
-
-#: admin/metabox/class-metabox.php:178
-msgid "Warning: even though you can set the meta robots setting here, the entire site is set to noindex in the sitewide privacy settings, so these settings won't have an effect."
-msgstr "Увага: навіть якщо ви можете налаштувати мета індекс роботів тут, а весь сайт переключено на noindex в налаштуваннях конфіденційності, то ці параметри не матимуть сили."
 
 #: admin/import/class-import-settings.php:85
 msgid "Settings could not be imported:"
@@ -4293,34 +4694,10 @@ msgstr "Просто ще один сайт на WordPress"
 msgid "You have used HTML in your value which is not allowed."
 msgstr "У цьому полі не можна використовувати HTML-теги."
 
-#: admin/metabox/class-metabox.php:193 js/dist/block-editor.js:548
-#: js/dist/classic-editor.js:238
-msgid "No Archive"
-msgstr "Не архівувати"
-
-#: admin/metabox/class-metabox.php:192 js/dist/block-editor.js:548
-#: js/dist/classic-editor.js:238
-msgid "No Image Index"
-msgstr "Не індексувати зображення"
-
-#: admin/metabox/class-metabox.php:448
+#: admin/metabox/class-metabox.php:391
 #: admin/taxonomy/class-taxonomy-metabox.php:159 js/dist/new-settings.js:35
 msgid "Social"
 msgstr "Соціальні мережі"
-
-#: admin/metabox/class-metabox.php:190 js/dist/block-editor.js:548
-#: js/dist/classic-editor.js:238
-msgid "Meta robots advanced"
-msgstr "Meta robots просунуті"
-
-#: admin/metabox/class-metabox.php:208
-msgid "301 Redirect"
-msgstr "301 Перенаправлення"
-
-#. translators: 1: link open tag; 2: link close tag.
-#: admin/metabox/class-metabox.php:203
-msgid "The canonical URL that this page should point to. Leave empty to default to permalink. %1$sCross domain canonical%2$s supported too."
-msgstr "Канонічний URL, на який повинна вказувати ця сторінка. Якщо залишити порожнім, це буде посилання за замовчуванням. Також підтримуються %1$sпосилання на інші домени%2$s."
 
 #: src/presenters/admin/search-engines-discouraged-presenter.php:33
 msgid "Huge SEO Issue: You're blocking access to robots."
@@ -4334,46 +4711,32 @@ msgstr "Заголовок сторінки WP"
 msgid "Post Status"
 msgstr "Статус запису"
 
-#: admin/metabox/class-metabox.php:173 js/dist/ai-content-planner.js:276
-#: js/dist/ai-content-planner.js:277 js/dist/block-editor.js:245
-#: js/dist/block-editor.js:246 js/dist/bulk-editor-page.js:20
-#: js/dist/externals/replacementVariableEditor.js:71
-#: js/dist/externals/searchMetadataPreviews.js:102 js/dist/new-settings.js:18
-#: js/dist/new-settings.js:24 js/dist/new-settings.js:31
-#: js/dist/new-settings.js:35 js/dist/new-settings.js:88
-#: js/dist/new-settings.js:108 js/dist/new-settings.js:157
-#: js/dist/new-settings.js:204 js/dist/new-settings.js:309
-#: js/dist/new-settings.js:336 js/dist/new-settings.js:351
-#: js/dist/new-settings.js:409
-msgid "Meta description"
-msgstr "Мета-опис"
-
 #: admin/views/class-yoast-feature-toggles.php:132 js/dist/new-settings.js:28
-#: js/dist/new-settings.js:523 js/dist/new-settings.js:526
+#: js/dist/new-settings.js:524 js/dist/new-settings.js:527
 msgid "XML sitemaps"
 msgstr "XML Карта сайту"
 
-#: src/abilities/user-interface/abilities-integration.php:536
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:71
+#: src/abilities/user-interface/abilities/abstract-post-seo-data-ability.php:72
+#: src/abilities/user-interface/abilities/update-post-seo-data-ability.php:125
+#: src/abilities/user-interface/abilities/update-term-seo-data-ability.php:135
+#: src/abilities/user-interface/seo-data-output-schema.php:66
+#: src/abilities/user-interface/seo-data-output-schema.php:67
 #: js/dist/new-settings.js:28
 msgid "meta description"
 msgstr "мета-опис"
 
 #: admin/menu/class-network-admin-menu.php:56 admin/pages/network.php:18
 #: src/general/user-interface/general-page-integration.php:213
-#: js/dist/new-settings.js:589
+#: js/dist/new-settings.js:590
 msgid "General"
 msgstr "Загальне"
-
-#: admin/metabox/class-metabox.php:199 js/dist/block-editor.js:550
-#: js/dist/classic-editor.js:240
-msgid "Canonical URL"
-msgstr "Канонічний URL"
 
 #: admin/menu/class-admin-menu.php:92
 msgid "Search Console"
 msgstr "Search Console"
 
-#: admin/class-admin.php:229 js/dist/externals-components.js:386
+#: admin/class-admin.php:217 js/dist/externals-components.js:465
 msgid "FAQ"
 msgstr "FAQ"
 
@@ -4381,7 +4744,7 @@ msgstr "FAQ"
 msgid "Preview"
 msgstr "Попередній перегляд"
 
-#: admin/class-bulk-editor-list-table.php:871 js/dist/block-editor.js:378
+#: admin/class-bulk-editor-list-table.php:871 js/dist/block-editor.js:137
 #: js/dist/classic-editor.js:68 js/dist/externals/dashboardFrontend.js:5
 #: js/dist/wincher-dashboard-widget.js:125
 msgid "View"
@@ -4391,22 +4754,8 @@ msgstr "Дивитися"
 msgid "SEO Title"
 msgstr "SEO-заголовок"
 
-#: admin/metabox/class-metabox.php:194 js/dist/block-editor.js:548
-#: js/dist/classic-editor.js:238
-msgid "No Snippet"
-msgstr "Без сніппету"
-
-#: admin/metabox/class-metabox.php:196 js/dist/block-editor.js:549
-#: js/dist/classic-editor.js:239
-msgid "Breadcrumbs Title"
-msgstr "Заголовок для навігаційних стежок"
-
-#: admin/metabox/class-metabox.php:197
-msgid "Title to use for this page in breadcrumb paths"
-msgstr "Назва для цієї сторінки щоб використовувати в навігаційній стежкі"
-
 #: admin/class-yoast-network-admin.php:43 src/config/schema-types.php:163
-#: src/integrations/settings-integration.php:645 js/dist/new-settings.js:9
-#: js/dist/new-settings.js:591
+#: src/integrations/settings-integration.php:647 js/dist/new-settings.js:9
+#: js/dist/new-settings.js:592
 msgid "None"
 msgstr "Немає"

@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Plugins - Loco Translate - Stable (latest release) package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2026-09-07 11:10:22+0000\n"
+"PO-Revision-Date: 2026-10-15 14:37:17+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -10,6 +10,10 @@ msgstr ""
 "X-Generator: GlotPress/4.1.0\n"
 "Language: uk_UA\n"
 "Project-Id-Version: Plugins - Loco Translate - Stable (latest release)\n"
+
+#: tpl/admin/config/settings.php:31
+msgid "Skip source files larger than:"
+msgstr "Пропускати вихідні файли більше, ніж:"
 
 #: src/js/Strings.php:17 tpl/admin/config/apis.php:146
 msgid "No API key"
@@ -28,7 +32,7 @@ msgstr "Замість цього скопіюйте %s"
 msgid "System"
 msgstr "Система"
 
-#: src/admin/DebugController.php:929
+#: src/admin/DebugController.php:941
 msgid "String debugger"
 msgstr "Налагоджувач рядків"
 
@@ -44,7 +48,7 @@ msgstr "Ви створюєте переклад з POT-файлу"
 msgid "You can copy an existing PO file (recommended), or extract directly from source (advanced)"
 msgstr "Ви можете скопіювати існуючий PO-файл (рекомендовано) або витягти безпосередньо з джерела (розширені можливості)"
 
-#: src/admin/bundle/ViewController.php:152
+#: src/admin/bundle/ViewController.php:154
 msgid "Custom translations may not work without System translations installed"
 msgstr "Користувацькі переклади можуть не працювати без встановлених системних перекладів"
 
@@ -85,13 +89,13 @@ msgid "No formatting errors detected"
 msgstr "Помилок форматування не виявлено"
 
 #. Translators: Button that validates current translation formatting
-#: src/admin/file/EditController.php:226
+#: src/admin/file/EditController.php:227
 msgctxt "Editor"
 msgid "Check"
 msgstr "Перевірити"
 
 #. translators: %u is a number of files which were successfully deleted
-#: src/admin/file/DeleteController.php:59
+#: src/admin/file/DeleteController.php:60
 msgid "%u file deleted"
 msgid_plural "%u files deleted"
 msgstr[0] "%u файл видалено"
@@ -128,7 +132,7 @@ msgstr "Виявлено початковий шлях домену \"мови"
 #. Translators: %s will be replaced with a relative path like "/languages"
 #: src/admin/bundle/SetupController.php:258
 msgid "The domain path is declared by the author as \"%s\""
-msgstr "Доменний шлях визначений автором як \"%s\"."
+msgstr "Шлях до домену вказано автором як \"%s\""
 
 #: src/js/Strings.php:186
 msgid "Possible syntax error in string formatting"
@@ -203,7 +207,7 @@ msgstr[1] "%s слова"
 msgstr[2] "%s слів"
 
 #. translators: %s is the quantity of files which were successfully moved
-#: src/admin/file/MoveController.php:98
+#: src/admin/file/MoveController.php:102
 msgid "%s file moved"
 msgid_plural "%s files moved"
 msgstr[0] "%s файл переміщено"
@@ -272,7 +276,7 @@ msgstr "Інформація та навчальні посібники"
 msgid "Need a human?"
 msgstr "Потрібна людина?"
 
-#: src/ajax/UploadController.php:70
+#: src/ajax/UploadController.php:72
 msgid "Your file is identical to the existing one"
 msgstr "Ваш файл ідентичний до існуючого"
 
@@ -284,12 +288,12 @@ msgstr "Завантажте файл перекладу"
 msgid "Upload"
 msgstr "Завантажити"
 
-#: src/admin/bundle/ViewController.php:107
+#: src/admin/bundle/ViewController.php:109
 msgid "Upload PO"
 msgstr "Завантажити PO"
 
 #. Translators: %s will be replaced with the name of a missing POT file
-#: src/ajax/SyncController.php:55
+#: src/ajax/SyncController.php:56
 msgid "Falling back to source extraction because %s is missing"
 msgstr "Повернення до вихідного джерела, оскільки %s відсутній"
 
@@ -328,7 +332,7 @@ msgid "Suggest translation"
 msgstr "Пропонований переклад"
 
 #. Translators: Button that opens window for auto-translating
-#: src/admin/file/EditController.php:224
+#: src/admin/file/EditController.php:225
 msgctxt "Editor"
 msgid "Auto"
 msgstr "АвтоПереклад"
@@ -354,7 +358,7 @@ msgid "API key"
 msgstr "Ключ API"
 
 #: tpl/admin/config/apis.php:157 tpl/admin/config/apis.php:161
-#: tpl/admin/config/settings.php:247
+#: tpl/admin/config/settings.php:256
 msgid "Important"
 msgstr "Важливо"
 
@@ -462,11 +466,11 @@ msgstr[0] "Наступний файл буде переміщено/перей�
 msgstr[1] "Наступні файли буде переміщено/перейменовано до нового розташування:"
 msgstr[2] "Наступні файли буде переміщено/перейменовано до нового розташування:"
 
-#: src/fs/FileWriter.php:320
+#: src/fs/FileWriter.php:322
 msgid "Modification of POT (template) files is disallowed by the plugin settings"
 msgstr "Зміна файлів POT (шаблону) заборонена налаштуваннями плагіна"
 
-#: src/admin/file/EditController.php:181
+#: src/admin/file/EditController.php:182
 msgid "This is NOT a translation file. Manual editing of source strings is not recommended."
 msgstr "Це НЕ файл перекладу. Ручне редагувння вихідних рядків не рекомендується."
 
@@ -487,7 +491,7 @@ msgid "Enable Ajax file uploads"
 msgstr "Увімкнути завантаження файлів Ajax"
 
 #. translators: Page title where %s is the name of a file to be moved
-#: src/admin/file/MoveController.php:122 src/admin/file/MoveController.php:151
+#: src/admin/file/MoveController.php:126 src/admin/file/MoveController.php:155
 msgid "Move %s"
 msgstr "Перемістити %s"
 
@@ -495,24 +499,24 @@ msgstr "Перемістити %s"
 msgid "Move files"
 msgstr "Перемістити файли"
 
-#: src/ajax/FsConnectController.php:160
+#: src/ajax/FsConnectController.php:152
 msgid "This move operation requires permission"
 msgstr "Ця операція переміщення потребує дозволу"
 
-#: src/fs/FileWriter.php:241
+#: src/fs/FileWriter.php:242
 msgid "Parent directory isn't writable"
 msgstr "Батьківська директорія не доступна для запису"
 
-#: src/ajax/FsConnectController.php:127
+#: src/ajax/FsConnectController.php:119
 msgid "This directory is managed by WordPress. Removed files may be restored during updates"
 msgstr "Ця директорія управляється за допомогою WordPress. Видалені файли можуть бути відновлені під час оновлення"
 
-#: src/admin/file/BaseController.php:125
+#: src/admin/file/BaseController.php:124
 msgid "Relocate"
 msgstr "Перемістити"
 
 #. translators: %s is the quantity of files which failed to be moved
-#: src/admin/file/MoveController.php:103
+#: src/admin/file/MoveController.php:107
 msgid "%s file could not be moved"
 msgid_plural "%s files could not be moved"
 msgstr[0] "Файл %s не вдалося перемістити"
@@ -527,7 +531,7 @@ msgstr "Доступ до цього файлу заблоковано з мір
 msgid "File access disallowed"
 msgstr "Доступ до файлу заборонено"
 
-#: src/admin/bundle/ViewController.php:116
+#: src/admin/bundle/ViewController.php:118
 msgid "View template"
 msgstr "Переглянути шаблон"
 
@@ -654,16 +658,16 @@ msgstr "Немає попередніх редакцій файлів"
 msgid "Files found"
 msgstr "Файлів знайдено"
 
-#: src/admin/config/SettingsController.php:159
+#: src/admin/config/SettingsController.php:160
 #: tpl/admin/config/settings.php:210
 msgid "Disallow"
 msgstr "Заборонити"
 
-#: src/admin/config/SettingsController.php:158
+#: src/admin/config/SettingsController.php:159
 msgid "Allow (with warning)"
 msgstr "Дозволити (із попередженням)"
 
-#: src/admin/config/SettingsController.php:157
+#: src/admin/config/SettingsController.php:158
 #: tpl/admin/config/settings.php:212
 msgid "Allow"
 msgstr "Дозволити"
@@ -693,71 +697,71 @@ msgstr "Мови &lsaquo; Loco"
 msgid "Languages"
 msgstr "Мови"
 
-#: src/fs/FileWriter.php:304
+#: src/fs/FileWriter.php:305
 msgid "Modification of installed files is disallowed by the plugin settings"
 msgstr "Зміна встановлених файлів заборонена налаштуваннями плагіна"
 
 #. translators: Where %s is a file name
-#: src/ajax/DiffController.php:47
+#: src/ajax/DiffController.php:42
 msgid "Revisions are identical, you can delete %s"
 msgstr "Редакції ідентичні, ви можете видалити %s"
 
 #. translators: Where %s is the name of the invalid POT file
-#: src/admin/file/EditController.php:138 src/ajax/SyncController.php:72
+#: src/admin/file/EditController.php:139 src/ajax/SyncController.php:74
 msgid "Translation template is invalid (%s)"
 msgstr "Шаблон перекладу невірний (%s)"
 
 #. translators: %s is a file name to be rolled back to a previous version.
 #. translators: Page title where %s refers to a file name
-#: src/admin/file/DiffController.php:59 src/admin/file/DiffController.php:78
+#: src/admin/file/DiffController.php:74 src/admin/file/DiffController.php:91
 msgid "Restore %s"
 msgstr "Відновити %s"
 
-#: src/admin/file/DiffController.php:35
+#: src/admin/file/DiffController.php:56
 msgid "File restored"
 msgstr "Файл відновлено"
 
-#: src/admin/file/BaseController.php:124 tpl/admin/file/diff.php:31
+#: src/admin/file/BaseController.php:123 tpl/admin/file/diff.php:31
 msgid "Restore"
 msgstr "Відновити"
 
-#: src/admin/bundle/LocaleController.php:155
+#: src/admin/bundle/LocaleController.php:158
 msgid "See all core translations"
 msgstr "Переглянути всі основні переклади"
 
-#: src/admin/bundle/LocaleController.php:148
-#: src/admin/file/EditController.php:132 src/admin/file/EditController.php:183
+#: src/admin/bundle/LocaleController.php:151
+#: src/admin/file/EditController.php:133 src/admin/file/EditController.php:184
 #: tpl/admin/common/inc-fsconn.php:16 tpl/admin/common/inc-fsconn.php:41
 #: tpl/admin/config/apis.php:171 tpl/admin/config/prefs.php:45
-#: tpl/admin/config/settings.php:261 tpl/admin/errors/no-backups.php:22
+#: tpl/admin/config/settings.php:270 tpl/admin/errors/no-backups.php:22
 msgid "Documentation"
 msgstr "Документація"
 
-#: src/admin/bundle/LocaleController.php:147
+#: src/admin/bundle/LocaleController.php:150
 msgid "No core translation files are installed for this language"
 msgstr "Для цієї мови не встановлені основні файли перекладу"
 
-#: src/ajax/FsConnectController.php:130
+#: src/ajax/FsConnectController.php:122
 msgid "Changes to this file may be overwritten or deleted when you update WordPress"
 msgstr "Зміни в цьому файлі можуть бути перезаписані або видалені при оновленні WordPress"
 
-#: src/ajax/FsConnectController.php:124
+#: src/ajax/FsConnectController.php:116
 msgid "This directory is managed by WordPress, be careful what you delete"
 msgstr "Ця директорія управляється WordPress, будьте обережні при видаленні"
 
-#: src/ajax/FsConnectController.php:121
+#: src/ajax/FsConnectController.php:113
 msgid "This file may be overwritten or deleted when you update WordPress"
 msgstr "Цей файл може бути перезаписаний або видалений при оновленні WordPress"
 
-#: src/ajax/FsConnectController.php:163
+#: src/ajax/FsConnectController.php:155
 msgid "Saving this file requires permission"
 msgstr "Збереження цього файлу потребує дозволу"
 
-#: src/ajax/FsConnectController.php:157
+#: src/ajax/FsConnectController.php:149
 msgid "Deleting this file requires permission"
 msgstr "Видалення цього файлу потребує дозволу"
 
-#: src/ajax/FsConnectController.php:154
+#: src/ajax/FsConnectController.php:146
 msgid "Creating this file requires permission"
 msgstr "Створення цього файлу потребує дозволу"
 
@@ -816,7 +820,7 @@ msgstr "0, 5, 6"
 
 #. Translators: (1) Number of files (2) Maximum size of file that will be
 #. included (3) Size of the largest encountered
-#: src/ajax/SyncController.php:99
+#: src/ajax/SyncController.php:101
 msgid "%1$s file has been skipped because it's %3$s. (Max is %2$s). Check all strings are present before saving."
 msgid_plural "%1$s files over %2$s have been skipped. (Largest is %3$s). Check all strings are present before saving."
 msgstr[0] "%1$s файл пропущено, оскільки його розмір %3$s (макс. %2$s). Перед збереженням перевірте наявність всіх рядків."
@@ -852,7 +856,7 @@ msgstr "Коментарі"
 msgid "Copy"
 msgstr "Копіювати"
 
-#: src/admin/bundle/ViewController.php:133
+#: src/admin/bundle/ViewController.php:135
 #: src/admin/init/InitPoController.php:229 tpl/admin/init/init-pot.php:40
 msgid "Create template"
 msgstr "Створити шаблон"
@@ -861,7 +865,7 @@ msgstr "Створити шаблон"
 msgid "Edit"
 msgstr "Редагувати"
 
-#: src/admin/file/BaseController.php:121
+#: src/admin/file/BaseController.php:120
 msgid "Editor"
 msgstr "Редактор"
 
@@ -874,7 +878,7 @@ msgstr "Помилка"
 msgid "Filter..."
 msgstr "Фільтр..."
 
-#: src/admin/file/EditController.php:216 src/ajax/ApisController.php:36
+#: src/admin/file/EditController.php:217 src/ajax/ApisController.php:36
 #: tpl/admin/bundle/conf.php:147
 msgid "Help"
 msgstr "Допомога"
@@ -895,11 +899,11 @@ msgstr "Мова"
 msgid "No language selected"
 msgstr "Не вибрано мову"
 
-#: src/admin/file/BaseController.php:122
+#: src/admin/file/BaseController.php:121
 msgid "Source"
 msgstr "Джерело"
 
-#: src/admin/bundle/LocaleController.php:159 src/admin/Navigation.php:27
+#: src/admin/bundle/LocaleController.php:162 src/admin/Navigation.php:27
 #: src/mvc/AdminRouter.php:36
 msgid "Themes"
 msgstr "Теми"
@@ -941,11 +945,11 @@ msgstr "Версія %s"
 msgid "https://localise.biz/wordpress/plugin"
 msgstr "https://localise.biz/wordpress/plugin"
 
-#: src/admin/bundle/LocaleController.php:165 tpl/admin/root.php:58
+#: src/admin/bundle/LocaleController.php:168 tpl/admin/root.php:58
 msgid "See all plugins"
 msgstr "Переглянути всі плагіни"
 
-#: src/admin/bundle/LocaleController.php:160 tpl/admin/root.php:43
+#: src/admin/bundle/LocaleController.php:163 tpl/admin/root.php:43
 msgid "See all themes"
 msgstr "Переглянути всі теми"
 
@@ -1030,7 +1034,7 @@ msgstr "Виберіть розміщення"
 msgid "Custom language"
 msgstr "Користувацька мова"
 
-#: src/admin/bundle/LocaleController.php:134
+#: src/admin/bundle/LocaleController.php:137
 #: src/admin/list/LocalesController.php:35 tpl/admin/init/init-po.php:45
 msgid "Installed languages"
 msgstr "Встановлені мови"
@@ -1317,7 +1321,7 @@ msgstr "Вкладка Додатково"
 msgid "You can make changes in the Advanced tab if you need to override the current settings"
 msgstr "Ви можете внести зміни на вкладці Додатково, якщо потрібно змінити поточні налаштування"
 
-#: src/admin/bundle/LocaleController.php:164 src/admin/Navigation.php:30
+#: src/admin/bundle/LocaleController.php:167 src/admin/Navigation.php:30
 #: src/mvc/AdminRouter.php:41
 msgid "Plugins"
 msgstr "Плагіни"
@@ -1333,9 +1337,9 @@ msgstr "Плагін не знайдено: %s"
 msgid "Plugin translations &lsaquo; Loco"
 msgstr "Переклади плагінів &lsaquo; Loco"
 
-#: src/admin/bundle/ViewController.php:99 src/admin/file/BaseController.php:145
-#: src/admin/init/InitPoController.php:27
-#: src/admin/init/InitPoController.php:133
+#: src/admin/bundle/ViewController.php:101
+#: src/admin/file/BaseController.php:144 src/admin/init/InitPoController.php:27
+#: src/admin/init/InitPoController.php:132
 msgid "New language"
 msgstr "Нова мова"
 
@@ -1353,12 +1357,12 @@ msgstr "Новий шаблон"
 msgid "New template file"
 msgstr "Новий шаблон файлу"
 
-#: src/admin/init/InitPoController.php:130
+#: src/admin/init/InitPoController.php:129
 msgid "Initializing new translations in unknown set"
 msgstr "Ініціалізація нових перекладів у невідомому наборі"
 
 #. translators: %s refers to the slug/handle of a theme or plugin
-#: src/admin/init/InitPoController.php:126
+#: src/admin/init/InitPoController.php:125
 msgid "Initializing new translations in \"%s\""
 msgstr "Ініціалізація нових перекладів у \"%s\""
 
@@ -1474,31 +1478,31 @@ msgstr "Заблоковано"
 msgid "Pending"
 msgstr "В очікуванні"
 
-#: src/admin/file/BaseController.php:126 tpl/admin/bundle/inc-po-table.php:66
+#: src/admin/file/BaseController.php:125 tpl/admin/bundle/inc-po-table.php:66
 #: tpl/admin/bundle/locale.php:75 tpl/admin/file/diff.php:32
 msgid "Delete"
 msgstr "Видалити"
 
 #. translators: Page title where %s is the name of a file to be deleted
-#: src/admin/file/DeleteController.php:79
-#: src/admin/file/DeleteController.php:98
+#: src/admin/file/DeleteController.php:82
+#: src/admin/file/DeleteController.php:99
 msgid "Delete %s"
 msgstr "Видалити %s"
 
 #. translators: %s refers to a file name, for which a delete operation failed.
-#: src/fs/FileWriter.php:193
+#: src/fs/FileWriter.php:194
 msgid "Failed to delete %s"
 msgstr "Не вдалося видалити %s"
 
-#: src/ajax/MsginitController.php:75
+#: src/ajax/MsginitController.php:72
 msgid "MO file exists for this language already. Delete it first"
 msgstr "Файл MO вже існує для цієї мови. Спочатку видаліть його"
 
-#: src/admin/file/DiffController.php:45
+#: src/admin/file/DiffController.php:63
 msgid "File deleted"
 msgstr "Файл видалено"
 
-#: src/admin/bundle/ViewController.php:124
+#: src/admin/bundle/ViewController.php:126
 msgid "Edit template"
 msgstr "Редагувати шаблон"
 
@@ -1545,7 +1549,7 @@ msgstr "Loco Translate %s"
 msgid "Warning"
 msgstr "Увага"
 
-#: src/admin/file/BaseController.php:123 tpl/admin/bundle/inc-po-table.php:25
+#: src/admin/file/BaseController.php:122 tpl/admin/bundle/inc-po-table.php:25
 #: tpl/admin/bundle/locale.php:43
 msgid "File info"
 msgstr "Інформація файлу"
@@ -1629,7 +1633,7 @@ msgid "Page not found"
 msgstr "Сторінку не знайдено"
 
 #. Translators: button for adding a new string when manually editing a POT file
-#: src/admin/file/EditController.php:213
+#: src/admin/file/EditController.php:214
 msgctxt "Editor"
 msgid "Add"
 msgstr "Додати"
@@ -1643,12 +1647,12 @@ msgid "Add set"
 msgstr "Додати набір"
 
 #. translators: %s refers to the name of a POT file
-#: src/admin/file/EditController.php:131
+#: src/admin/file/EditController.php:132
 msgid "Translations don't match template. Run sync to update from %s"
 msgstr "Переклади не відповідають шаблону. Запустіть синхронізацію для оновлення з %s"
 
 #. Translators: Button that runs in-editor sync/operation
-#: src/admin/file/EditController.php:220
+#: src/admin/file/EditController.php:221
 msgctxt "Editor"
 msgid "Sync"
 msgstr "Синхронізація"
@@ -1674,11 +1678,11 @@ msgstr "Цей файл відсутній або сервер не має до�
 msgid "This page was expecting a file, but the path is actually a directory"
 msgstr "Сторінка очікувала отримати файл, але шлях насправді є директорія"
 
-#: tpl/admin/config/settings.php:232
+#: tpl/admin/config/settings.php:241
 msgid "Allow full access to these roles"
 msgstr "Дозволити повний доступ для ролей"
 
-#: tpl/admin/config/settings.php:226
+#: tpl/admin/config/settings.php:235
 msgid "Grant access to roles"
 msgstr "Надати доступ для ролей"
 
@@ -1708,13 +1712,13 @@ msgid "Folder"
 msgstr "Папка"
 
 #. Translators: button for removing a string when manually editing a POT file
-#: src/admin/file/EditController.php:215
+#: src/admin/file/EditController.php:216
 msgctxt "Editor"
 msgid "Remove"
 msgstr "Видалити"
 
 #. Translators: Button that reloads current screen
-#: src/admin/file/EditController.php:222
+#: src/admin/file/EditController.php:223
 msgctxt "Editor"
 msgid "Revert"
 msgstr "Повернути"
@@ -1729,12 +1733,12 @@ msgid "%s ago"
 msgstr "%s тому"
 
 #. Translators: Button that saves translations to disk
-#: src/admin/file/EditController.php:218
+#: src/admin/file/EditController.php:219
 msgctxt "Editor"
 msgid "Save"
 msgstr "Зберегти"
 
-#: src/fs/FileWriter.php:245
+#: src/fs/FileWriter.php:246
 msgid "Failed to save file"
 msgstr "Не вдалося зберегти файл"
 
@@ -1752,7 +1756,7 @@ msgstr "Файл PO збережено, але не вдалося скомпі�
 
 #. translators: %s refers to a directory where a backup file could not be
 #. created due to file permissions
-#: src/fs/Revisions.php:222
+#: src/fs/Revisions.php:201
 msgid "Failed to create backup file in \"%s\". Check file permissions or disable backups"
 msgstr "Не вдалося створити файл резервної копії в \"%s\". Перевірте права доступу до файлу або вимкніть створення резервних копій"
 
@@ -1793,7 +1797,7 @@ msgstr "Перейти до ядра WordPress"
 msgid "\"Hello Dolly\" is part of the WordPress core"
 msgstr "\"Hello Dolly\" є частиною ядра WordPress"
 
-#: src/admin/bundle/LocaleController.php:154 src/package/Core.php:85
+#: src/admin/bundle/LocaleController.php:157 src/package/Core.php:85
 msgid "WordPress Core"
 msgstr "Ядро WordPress"
 
@@ -1827,7 +1831,7 @@ msgid "Help & support"
 msgstr "Допомога та підтримка"
 
 #. Translators: Button for downloading a PO, MO or POT file
-#: src/admin/file/EditController.php:228
+#: src/admin/file/EditController.php:229
 msgctxt "Editor"
 msgid "Download"
 msgstr "Завантажити"
@@ -1860,7 +1864,7 @@ msgstr "Системний"
 
 #. translators: %s refers to a directory name which was expected to be an
 #. ordinary file
-#: src/fs/FileWriter.php:210
+#: src/fs/FileWriter.php:211
 msgid "\"%s\" is a directory, not a file"
 msgstr "\"%s\" це директорія, а не файл"
 
@@ -1873,19 +1877,19 @@ msgstr "Відмова від копіювання існуючого файлу
 msgid "Failed to chmod %s"
 msgstr "Не вдалося змінити права в %s"
 
-#: src/fs/FileWriter.php:281
+#: src/fs/FileWriter.php:282
 msgid "Failed to create directory"
 msgstr "Не вдалося створити директорію"
 
-#: src/fs/FileWriter.php:299
+#: src/fs/FileWriter.php:300
 msgid "File modification is disallowed by your WordPress config"
 msgstr "Зміна файлу заборонена вашими налаштуваннями WordPress"
 
-#: src/fs/FileWriter.php:289
+#: src/fs/FileWriter.php:290
 msgid "Failed to build directory path"
 msgstr "Не вдалося створити шлях до директорії"
 
-#: src/fs/FileWriter.php:235
+#: src/fs/FileWriter.php:236
 msgid "Permission denied to update file"
 msgstr "Оновлення файлу заборонено"
 
@@ -1904,7 +1908,7 @@ msgstr "веб-сервер"
 
 #. translators: %s refers to the name of a new file to be created, but which
 #. already existed
-#: src/api/WordPressFileSystem.php:87
+#: src/api/WordPressFileSystem.php:78
 msgid "%s already exists in this folder"
 msgstr "%s вже існує в цій папці"
 
@@ -1912,7 +1916,7 @@ msgstr "%s вже існує в цій папці"
 msgid "Template file created"
 msgstr "Файл шаблону створено"
 
-#: src/ajax/FsConnectController.php:117
+#: src/ajax/FsConnectController.php:109
 msgid "Connected to remote file system"
 msgstr "Підключено до віддаленої файлової системи"
 
@@ -1920,28 +1924,28 @@ msgstr "Підключено до віддаленої файлової сист
 msgid "Template file already exists"
 msgstr "Файл шаблону вже існує"
 
-#: src/admin/file/InfoController.php:181
+#: src/admin/file/InfoController.php:182
 msgid "File does not have a valid header"
 msgstr "Файл не має дійсного заголовка"
 
 #. Translators: Button that toggles invisible characters
-#: src/admin/file/EditController.php:232
+#: src/admin/file/EditController.php:233
 msgctxt "Editor"
 msgid "Toggle invisibles"
 msgstr "Невидимі символи"
 
 #. Translators: Button that toggles between "code" and regular text editing
 #. modes
-#: src/admin/file/EditController.php:234
+#: src/admin/file/EditController.php:235
 msgctxt "Editor"
 msgid "Toggle code view"
 msgstr "Перемкнути на перегляд коду"
 
-#: src/admin/config/SettingsController.php:123
+#: src/admin/config/SettingsController.php:124
 msgid "Super Admin"
 msgstr "Супер Адмін"
 
-#: src/admin/config/DebugController.php:55
+#: src/admin/config/DebugController.php:57
 msgid "System diagnostics"
 msgstr "Діагностика системи"
 
@@ -2026,7 +2030,7 @@ msgstr "OK"
 
 #: src/admin/config/ApisController.php:69
 #: src/admin/config/PrefsController.php:42
-#: src/admin/config/SettingsController.php:168
+#: src/admin/config/SettingsController.php:169
 #: src/admin/config/VersionController.php:22 src/mvc/AdminRouter.php:58
 #: tpl/admin/help/tab-config.php:2
 msgid "Plugin settings"
@@ -2086,7 +2090,7 @@ msgstr[2] "%s файлів не відповідають відомому наб
 
 #. translators: Warning that deleting a file will also delete others. %s
 #. indicates that quantity.
-#: src/admin/file/DeleteController.php:104
+#: src/admin/file/DeleteController.php:105
 msgid "%s dependent file will also be deleted"
 msgid_plural "%s dependent files will also be deleted"
 msgstr[0] "%s залежний файл також буде видалений"
@@ -2119,7 +2123,7 @@ msgstr "Не вдалося скопіювати %1$s в %2$s"
 
 #. translators: Warning that the language in the file header (1) does not match
 #. the file name (2)
-#: src/admin/file/InfoController.php:189
+#: src/admin/file/InfoController.php:190
 msgid "Language header is \"%1$s\" but file name contains \"%2$s\""
 msgstr "Заголовок мови \"%1$s\", але ім'я файлу містить \"%2$s\""
 
@@ -2133,7 +2137,7 @@ msgid "Tim Whitlock"
 msgstr "Tim Whitlock"
 
 #. Translators: Placeholder text for text filter above editor
-#: src/admin/file/EditController.php:230
+#: src/admin/file/EditController.php:231
 msgid "Filter translations"
 msgstr "Фільтр перекладів"
 
@@ -2144,7 +2148,7 @@ msgid "Template file"
 msgstr "Файл шаблону"
 
 #: tpl/admin/config/apis.php:170 tpl/admin/config/prefs.php:44
-#: tpl/admin/config/settings.php:260
+#: tpl/admin/config/settings.php:269
 msgid "Save settings"
 msgstr "Зберегти налаштування"
 
@@ -2192,7 +2196,7 @@ msgid "https://wordpress.org/plugins/loco-translate/"
 msgstr "https://uk.wordpress.org/plugins/loco-translate/"
 
 #. translators: Success notice where %s is a file extension, e.g. "PO"
-#: src/admin/file/HeadController.php:91 src/gettext/Compiler.php:287
+#: src/admin/file/HeadController.php:94 src/gettext/Compiler.php:287
 msgid "%s file saved"
 msgstr "файл %s збережено"
 
@@ -2220,7 +2224,7 @@ msgctxt "Modified time"
 msgid "Updated"
 msgstr "Обновлено"
 
-#: src/admin/file/EditController.php:182 src/mvc/AdminRouter.php:59
+#: src/admin/file/EditController.php:183 src/mvc/AdminRouter.php:59
 #: src/mvc/AdminRouter.php:64 tpl/admin/common/inc-fsconn.php:18
 #: tpl/admin/common/inc-fsconn.php:43 tpl/admin/errors/no-backups.php:24
 #: tpl/ajax/modal-apis-empty.php:15
@@ -2233,7 +2237,7 @@ msgstr "Невідома помилка"
 
 #: src/admin/config/ApisController.php:53
 #: src/admin/config/PrefsController.php:26
-#: src/admin/config/SettingsController.php:103
+#: src/admin/config/SettingsController.php:104
 msgid "Settings saved"
 msgstr "Налаштування збережено"
 
