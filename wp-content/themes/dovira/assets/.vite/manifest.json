@@ -1,15 +1,15 @@
 {
   "source/admin.js": {
-    "file": "admin.CfNJ0pzn.js",
+    "file": "admin.xIUNqCTQ.js",
     "name": "admin",
     "src": "source/admin.js",
     "isEntry": true,
     "css": [
-      "admin.CcxqFhr-.css"
+      "admin.DXZ8jC2_.css"
     ]
   },
   "source/main.js": {
-    "file": "main.J6OraxsB.js",
+    "file": "main.Dla8iKfm.js",
     "name": "main",
     "src": "source/main.js",
     "isEntry": true,
@@ -31,7 +31,7 @@
       "source/scripts/features/city-popup/city-popup.js"
     ],
     "css": [
-      "main.DV1RGunL.css"
+      "main.DNz1CFyd.css"
     ]
   },
   "source/scripts/features/city-popup/city-popup.js": {

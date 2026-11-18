@@ -1,0 +1,17 @@
+.cta__wrapper {
+  border-radius: 8px;
+}
+
+.cta__wrapper--with-bg {
+  padding-top: 28px;
+  padding-bottom: 28px;
+
+  @media (min-width: 1024px) {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+}
+
+.cta__wrapper .section__cta-holder:first-child {
+  padding-top: 0!important;
+}

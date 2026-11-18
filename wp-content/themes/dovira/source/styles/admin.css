@@ -40,6 +40,7 @@
 @import "@styles/blocks/contacts-simple.css";
 @import "@styles/blocks/vacancies.css";
 @import "@styles/blocks/seo-text.css";
+@import "@styles/blocks/cta.css";
 
 div.acf-block-preview {
   max-width: none!important;
