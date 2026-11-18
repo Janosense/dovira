@@ -1,0 +1,20 @@
+{
+  "apiVersion": 3,
+	"name": "acf/cta",
+	"title": "CTA",
+	"description": "",
+	"category": "",
+	"icon": "text",
+	"keywords": [
+		"cta",
+		"dovira"
+	],
+	"supports": {
+		"align": false,
+		"anchor": true
+	},
+	"acf": {
+		"mode": "preview",
+		"renderTemplate": "template.php"
+	}
+}

@@ -396,6 +396,7 @@ function dovira_allowed_block_types( bool|array $allowed_blocks, WP_Block_Editor
 			'acf/accordion',
 			'acf/contacts',
 			'acf/contacts-simple',
+			'acf/cta',
 			'acf/custom-html',
 			'acf/employees',
 			'acf/entities-grid',

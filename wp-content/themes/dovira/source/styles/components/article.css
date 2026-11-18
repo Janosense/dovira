@@ -53,7 +53,7 @@
       color: var(--color-violet-light);
     }
 
-    p {
+    p:not(.caption)  {
       margin: 0 0 12px;
 
       &:last-child {
@@ -78,7 +78,7 @@
     }
   }
 
-  h2 {
+  h2:not(.heading)  {
     margin-top: 40px!important;
     font-size: 28px!important;
 
@@ -91,7 +91,7 @@
     }
   }
 
-  h3 {
+  h3:not(.heading) {
     margin-top: 40px!important;
     font-size: 20px!important;
 
@@ -115,7 +115,7 @@
     border-radius: 12px;
   }
 
-  a {
+  a:not(.button) {
     color: var(--color-violet-light);
   }
 }
