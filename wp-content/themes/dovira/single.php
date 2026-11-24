@@ -22,11 +22,11 @@
 				<div class="wrapper wrapper--tight article__wrapper">
 					<div class="article__meta"><?php the_date( 'd.m.Y' ) ?></div>
 					<h1 class="heading heading--h2"><?php the_title(); ?></h1>
-					<?php if ( ! empty( get_the_excerpt() ) ) : ?>
-						<div class="article__excerpt">
-							<?php the_excerpt(); ?>
-						</div>
-					<?php endif; ?>
+<!--					--><?php //if ( ! empty( get_the_excerpt() ) ) : ?>
+<!--						<div class="article__excerpt">-->
+<!--							--><?php //the_excerpt(); ?>
+<!--						</div>-->
+<!--					--><?php //endif; ?>
 					<?php the_post_thumbnail( 'full', [
 						'class' => 'article__thumbnail',
 						'alt' => get_the_title(),
