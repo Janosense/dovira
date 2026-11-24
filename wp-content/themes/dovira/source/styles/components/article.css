@@ -14,6 +14,18 @@
   }
 }
 
+.article__heading {
+  margin-bottom: 20px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 24px;
+  }
+
+  @media (min-width: 1280px) {
+    margin-bottom: 32px;
+  }
+}
+
 .article__meta {
   padding: 40px 0 12px;
   color: var(--color-gray)
@@ -32,6 +44,11 @@
   display: block;
   width: 100%;
   height: auto;
+  border-radius: 8px;
+
+  @media (min-width: 1024px) {
+    border-radius: 12px;
+  }
 }
 
 .article__content {
@@ -112,7 +129,11 @@
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 12px;
+    border-radius: 8px;
+
+    @media (min-width: 1024px) {
+      border-radius: 12px;
+    }
   }
 
   a:not(.button) {
