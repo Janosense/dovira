@@ -23,7 +23,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-// The three rows of docs/DATA-MODEL.md → "Plugin ga-telegram-bridge": what the
+// The three rows of docs/DATA-MODEL.md → gatb_settings, gatb_state, gatb_log: what the
 // administrator configured, what the plugin remembers about the days it has
 // sent, and the log of its last runs.
 delete_option( 'gatb_settings' );

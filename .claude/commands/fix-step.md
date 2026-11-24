@@ -33,7 +33,7 @@ reported failure, even of behaviour an earlier step promised: its task
 branch is what the user runs (step 1 checks that the cause is in its
 changes). Otherwise the failure belongs to the closed step whose guide or
 Verification (manual) promised the behaviour — named by the report (or by
-the guide `docs/features/{feature}/verification/sprint-{N}-step-{M}.md` it
+the guide `docs/features/{feature}/verification/sprint-{N}/step-{M}.md` it
 followed), else matched against the closed sections' guides of that
 feature: exactly one candidate → name it and continue; none or several →
 STOP and ask which step. Never pick a step yourself.
@@ -93,17 +93,20 @@ step 5 — no new diagnosis.
      close of the step that promised it.
    - **Outside the step** (see preconditions) → name the right path and stop.
 
-2. **Mini-plan** in the chat, not in the plan file (plain language if root
-   `CLAUDE.md` → Project profile says `user-verified`):
+2. **Mini-plan** in the chat, not in the plan file (plain language —
+   CLAUDE.md → Project profile → Verification):
    ```
    ## Fix — Sprint {N}, Step {M}: {title}   (before the close | after the close)
-   - Failure: {the user's report, in one line}
+   - Failure: {the user's report, in one sentence}
    - Cause: {file:line — what is wrong and why the step's tests missed it}
    - Tasks (ordered, each → one commit):
      1. regression test that reproduces the failure + the fix → `fix: …`
         (the test is seen red before the fix, committed green with it)
-     2. this step's guide gains the failed item as an explicit check → `docs: …`
-     (+ docs task if a doc describes the changed behaviour)
+     2. this step's guide gains a fix note under the failed item (the
+        guide's Contract in `docs/CONTRACTS.md`) → `docs: …`
+     (+ one `{file} → {record}` task per `docs/CONTRACTS.md` → Write-index
+     trigger the fix fires; the cause was a decision → a `docs/DECISIONS.md`
+     entry in the shape of its Contract, with `Superseded by:` on the old one)
    - Files:
    - Branch: `{task branch}` | `fix/{feature}-sprint-{N}-step-{M}` ← `{base}`   (after the close: the base of the plan's `### Branch`, or `main` once the sprint branch is merged into it; `-2`, `-3`… if the name exists)
    - Touches shared code: no | yes — {consuming features}
@@ -130,38 +133,46 @@ step 5 — no new diagnosis.
 
 4. **Execute — scope frozen to the approved tasks.** Every commit goes to
    the branch of step 3. One task → check command (`docs/TECH-STACK.md` →
-   Check command) exit 0 → conventional commit (`fix:` / `docs:`). Docs
-   that describe the changed code are updated in the same commit. Tick the
+   Check command) exit 0 → conventional commit (`fix:` / `docs:`); one run
+   per commit, none of its parts separately, and none for a commit that
+   changes only `docs/**` and `*.md`. Docs that describe the changed code
+   are updated in the same commit. Tick the
    subsection's checkboxes as tasks complete. Anything the diagnosis
    missed — a second cause, a needed dependency, a mismatch — stop, describe
-   it and wait; a fix never grows silently. Record the user's decision in
+   it (plain language — CLAUDE.md → Project profile → Verification) and
+   wait; a fix never grows silently. Record the user's decision in
    the subsection (`- Mid-step: {problem} → {decision}`): a change the user
    explicitly approves edits the subsection's tasks (each marked
    `(mid-step)`); work left out of the fix → continue with the approved
    tasks; a reply that approves nothing specific → ask again.
 
-5. **Finish.** Run the check command once more (exit 0).
+5. **Finish.** The last task's run is the proof; nothing is run again.
    - **Before the close:** mark the section
      `(status: implemented, awaiting verification)`, commit the plan file on
      the task branch, and end with the line below. The WORKLOG entry, the
      step's tick and the merge are `/close-step`'s job.
 
-     > Fix for Step {M} committed on `{task branch}`. Verify again by `docs/features/{feature}/verification/sprint-{N}-step-{M}.md` — the failed item is now an explicit check. Every item holds → `/close-step`.
+     > Fix for Step {M} committed on `{task branch}`. Verify again by `docs/features/{feature}/verification/sprint-{N}/step-{M}.md` — the failed item is now an explicit check. Every item holds → `/close-step`.
 
    - **After the close:** Read `.claude/commands/close-step.md`, step 2
-     (**Docs self-check**), and apply it to this fix; add an entry at the
-     TOP of `docs/WORKLOG.md` titled
-     `## {date} — [{feature}] Sprint {N} Step {M} — fix: {what failed}`
-     (cause, what changed, open questions); commit. Merge the fix branch
-     into its base with `--no-ff` (`merge: fix sprint {N} step {M}`), run
-     the check command on the base (exit 0), delete the fix branch, check
-     out the branch that was checked out before and restore the stash. A
+     (**Docs self-check**), and apply it to this fix — a second fix on the
+     same step is a `repeat` entry in `docs/INCIDENTS.md`; then step 3
+     (**Worklog**): the entry titled
+     `## {date} — [{feature}] Sprint {N} Step {M} — fix: {what failed}` in
+     the shape of the WORKLOG Contract, and `## Open` replaced; commit. Merge the fix branch
+     into its base with `--no-ff` (`merge: fix sprint {N} step {M}`); then
+     `git diff --quiet {fix branch} {base}`: empty → no check run,
+     otherwise run the check command on the base (exit 0). Delete the fix
+     branch, check out the branch that was checked out before and restore
+     the stash. A
      conflict limited to entries added at the TOP of `docs/WORKLOG.md` is
      resolved by keeping both, newest on top; any other conflict →
      `git merge --abort`, report the conflicting files, STOP. The check
      command failing after the merge → report it and STOP, keeping the fix
      branch (the repair goes through `/adhoc` on the base). The next
-     `/fix-step` resumes at the merge (**Interrupted fix**). End with the
-     cause, the commits, the branch merged into, and:
+     `/fix-step` resumes at the merge (**Interrupted fix**). End, in plain
+     language (CLAUDE.md → Project profile → Verification), with the cause
+     as the user sees it and the branch merged into — no file or commit
+     list, `git log` holds them — and:
 
-     > Fix for Step {M} merged into `{base}`. Verify it by `docs/features/{feature}/verification/sprint-{N}-step-{M}.md` — the failed item is now an explicit check. Still failing → `/fix-step <what failed>` again.
+     > Fix for Step {M} merged into `{base}`. Verify it by `docs/features/{feature}/verification/sprint-{N}/step-{M}.md` — the failed item is now an explicit check. Still failing → `/fix-step <what failed>` again.

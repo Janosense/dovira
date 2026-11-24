@@ -1,278 +1,71 @@
 # Tech stack — Dovira
 
+<!-- playbook: v3.0.4. State document, read whole before writing code; a
+     sentence or row that stops being true is edited or removed. Exact
+     versions are the lockfiles and plugin headers. Shape, triggers and what
+     does not belong here: docs/CONTRACTS.md → `### docs/TECH-STACK.md`. -->
+
 ## Stack
-<!-- Adoption: versions below are read from the installed code (plugin headers,
-     composer.lock, package-lock.json) on 2026-09-08 — verified, not pinned. -->
-| Layer | Choice | Version | Why (link DECISIONS.md if non-obvious) |
-|---|---|---|---|
-| Platform | WordPress core (classic theme, no block theme) | 7.1 | client-editable site; the whole repo is the WP root |
-| Language / runtime | PHP (DDEV image; production per host) | 8.3 (local) | theme uses PHP 8 syntax (`mixed`, union types, `str_contains`) |
-| DB | MariaDB (DDEV) | 10.11 (local) | WP default; snapshot `mysql.sql` committed at repo root |
-| Web server | nginx-fpm (DDEV) | — | — |
-| Theme | `dovira` — custom classic theme from the Syndicode starter | 1.1.2026 | all the site's own code lives here (feature `core`) |
-| Custom plugin | `ga-telegram-bridge` — standalone plugin in its own code area, zero runtime dependencies, own `CLAUDE.md` | 0.1.0 | daily GA4 → Telegram report; must run on any WP site — DECISIONS "A standalone plugin in a new code area" |
-| Fields & blocks | ACF Pro + StoutLogic ACF Builder | 6.8.8 / 1.12.0 | field groups and 21 blocks defined in PHP, version-controlled (invariant 6) |
-| i18n | Polylang | 3.9.1 | uk/ru content; ACF options per language via `inc/polylang.php` |
-| Forms | Contact Form 7 | 6.1.6 | contact / franchise / vacancy forms → CPT records via hooks |
-| SEO | Yoast SEO | 27.7 | meta + `wp_yoast_indexable`; one-off import tooling in `temp-data/` |
-| Other plugins | Cyr2Lat 7.0.2 (Latin slugs), Simple Custom Post Order 2.7.2, Enable Media Replace 4.1.9, Akismet 5.7, Loco Translate 2.8.5 | — | — |
-| MCP transport | `mcp-adapter` — the official WordPress MCP Adapter (WordPress AI Team), committed under `wp-content/plugins/mcp-adapter/`, activated by hand per install; serves the `dovira/*` abilities of feature `content-mcp` on `/wp-json/mcp/dovira` | 0.7.1 (verified 2026-11-05 — WordPress.org, released 2026-10-16, requires WP 6.9 / PHP 7.4, tested up to 7.1.4; core here 7.1.4; running on `dev.dovira.vet`, `dovira.vet` and `kyiv.dovira.vet` — the productions taken through `PRODUCTION-CHECKLIST.md` at content-mcp Sprint 2 Step 3, 2026-11-05) | DECISIONS 2026-11-05 — "The content connector is the official MCP Adapter serving Dovira abilities registered by a theme feature"; the Abilities API itself is WordPress core (6.9+) |
-| PHP deps (theme `composer.json`) | vlucas/phpdotenv 5.6.3, anthropic-ai/sdk 0.25.0, guzzlehttp/guzzle 7.11.0; dev: roave/security-advisories | — | `.env` loading; CLI translation; `vendor/` is committed |
-| Front-end build | Vite + PostCSS (preset-env stage 1, assets, prefix-selector, replace) + LightningCSS | 5.4.19 / 8.4.49 / 1.28.2 | `source/` → hashed `assets/` with manifest; `assets/` is committed |
-| Front-end libs | Swiper 11.2.1, Fancybox (`@fancyapps/ui`) 5.0.36, iMask 7.6.1; vanilla ES modules, no framework | — | dynamic `import()` per module in `scripts/app.js` |
-| Fonts | Google Fonts (Inter, Oswald, Raleway) + self-hosted Open Sans | — | — |
-| Testing & QA | **Plugin:** PHPUnit + Brain\Monkey (unit tests, no WP bootstrap), PHPCS + WPCS, PHPStan + phpstan-wordpress, all dev-only in the plugin's `composer.json`, whose `vendor/` is gitignored. **Theme:** PHPUnit + Brain\Monkey only, in the separate dev-only Composer project `wp-content/themes/dovira/tests/`, whose `vendor/` is gitignored and whose lock is uncommitted, never in the theme's own `composer.json` | plugin 12.5.34 + 2.7.0 / 3.13.6 + 3.4.1 / 2.2.13 + 2.0.4; theme 12.5.35 + 2.7.0 | DECISIONS "Testing tooling and the project check command", "The theme gets PHPUnit + Brain\Monkey, run by the check command", "The theme's test tooling is its own Composer project in `tests/`"; no PHPCS/PHPStan for the theme; the theme's JS tests are the next row |
-| JS unit tests (theme) | Vitest, `node` environment (no DOM library), tests in `wp-content/themes/dovira/tests/js/`, config `vitest.config.js` (`expect.requireAssertions`), `npm test`; run by the check command | 3.2.7 (on the theme's Vite 5.4.19) | DECISIONS "The theme gets Vitest for the unit tests of its JavaScript, run by the check command" (feature `city-popup`, installed by its Sprint 1 Step 1) |
-| Local env | DDEV | — | `.ddev/config.yaml`; `wp-config.php` DDEV-generated |
-| CI/CD | GitHub Actions → FTP (dev only) | FTP-Deploy-Action 4.3.5 | production deploys are manual (ARCHITECTURE.md → Environments) |
-| CLI | WP-CLI (`wp dovira …` commands in `inc/cli/`) | — | translation and bundle transfer |
+| Layer | Choice | Major version |
+|---|---|---|
+| Platform | WordPress core, classic theme (the repo is the WordPress root) | 7 |
+| Language | PHP (8.3 in DDEV; the check script needs ≥ 8.3) | 8 |
+| Database | MariaDB (DDEV 10.11) | 10 |
+| Theme | `dovira`, custom classic theme (Syndicode starter) | — |
+| Fields & blocks | ACF Pro + StoutLogic ACF Builder | 6 / 1 |
+| Languages | Polylang | 3 |
+| Forms | Contact Form 7 | 6 |
+| SEO | Yoast SEO | 28 |
+| MCP transport | `mcp-adapter` (WordPress MCP Adapter), committed; the Abilities API of core | 0.7 |
+| Environment loading | vlucas/phpdotenv (theme `composer.json`, `vendor/` committed) | 5 |
+| AI translation | anthropic-ai/sdk + guzzlehttp/guzzle | 0.25 / 7 |
+| Front-end build | Vite + PostCSS + LightningCSS | 5 / 8 / 1 |
+| Front-end libraries | Swiper, Fancybox (`@fancyapps/ui`), iMask; vanilla ES modules | 11 / 5 / 7 |
+| PHP tests | PHPUnit + Brain\Monkey — the plugin's `composer.json` and the theme's separate `tests/composer.json`, both dev-only | 12 / 2 |
+| JS tests | Vitest, `node` environment, no DOM library (theme `devDependencies`) | 3 |
+| Analysis & formatting (plugin) | PHPStan + szepeviktor/phpstan-wordpress; PHPCS + WordPress Coding Standards | 2 / 3 |
 
 ## Check command
-`bin/check.sh` (repo root, committed and executable) is the gate every commit
-passes. It runs six stages in order and stops at the first failure:
-1. PHPCS (WordPress Coding Standards), inside
-   `wp-content/plugins/ga-telegram-bridge/`.
-2. PHPStan (level 8, analysing against PHP 8.1), same place.
-3. PHPUnit, same place.
-4. `php -l` over every theme PHP file outside `vendor/` and `node_modules/`
-   (111 files today; the theme's `tests/*.php` are included and its
-   `tests/vendor/` is not).
-5. PHPUnit in the theme's `tests/` (DECISIONS "The theme gets PHPUnit +
-   Brain\Monkey, run by the check command").
-6. Vitest in the theme (`npm test`, the tests in `tests/js/`) — DECISIONS "The
-   theme gets Vitest for the unit tests of its JavaScript, run by the check
-   command".
+`bin/check.sh` from the repo root gates every commit and stops at the first
+failure: PHPCS, PHPStan (level 8, two workers, `--memory-limit=1G`) and
+PHPUnit in `wp-content/plugins/ga-telegram-bridge/`, then `php -l` over the
+theme, PHPUnit in the theme's `tests/`, and Vitest in the theme (`npm test`).
+It refuses to start below PHP 8.3 or without `node` and `npm`, installs a
+missing plugin `vendor/`, theme `tests/vendor/` or theme `node_modules/`, and
+first checks that Vite loads on this OS. It runs on the host, because
+`node_modules/` is shared with the DDEV container and holds native packages
+for the host's OS only. Both PHPUnit configurations set `failOnRisky` and
+Vitest sets `expect.requireAssertions`, so a test that asserts nothing fails
+the gate. A task's commit passes the same script; `npm run build` is not part
+of it and is run when a task changes `source/`.
 
-It refuses to start below PHP 8.3, and without `node` or `npm` on PATH. It
-runs `composer install` in the plugin when the plugin's `vendor/` is missing,
-in `wp-content/themes/dovira/tests/` when `tests/vendor/` is missing, and
-`npm install` in the theme when its `node_modules/` is missing. The theme's own
-committed `vendor/` is never installed or touched by the gate (DECISIONS "The
-theme's test tooling is its own Composer project in `tests/`"). Both PHPUnit
-suites set `failOnRisky` and Vitest sets `expect.requireAssertions`, so a test
-that asserts nothing fails the gate.
+## ANTI-PATTERNS
+- Do not create or edit an ACF field group in the admin UI — write a `FieldsBuilder` in `inc/acf/`, because a group made in the UI lives only in one database and no deploy carries it.
+- Do not register a block outside `inc/acf/blocks/{name}/` (or a feature's `blocks/{name}/`) with its trio `block.json` + `fields.php` + `template.php` — the directory scan in `inc/acf.php` is the only registration, and the name must also be added to `dovira_allowed_block_types()`.
+- Do not register a post type or a taxonomy inline — one file each in `inc/post-types/` or `inc/taxonomies/`, which are glob-loaded.
+- Do not make `service-city` Polylang-translatable or re-create its terms — price field names and stored postmeta derive from its term ids, and its names are Polylang strings.
+- Do not write an ACF value with `update_post_meta()` or `$wpdb`, nor read one by its stored key — use `update_field()` / `get_field()` by name, which keep the `_{name}` key rows and a repeater's row count (`PostWriter`).
+- Do not read or write an ACF block's `attrs.data` by its flattened keys — go through `acf_setup_meta()` and `get_field_objects()` / ACF's save capture (`PostReader::block_fields()`, `PostWriter::acf_block()`), keep unchanged fields unformatted (`get_fields( $id, false )`), and give a new block every unnamed field's `default_value`.
+- Do not call Telegram before `wp_insert_post()` has succeeded, nor let its result change the form's answer — the record is the source of truth (`dovira_telegram_notify()`).
+- Do not decide the city from anything but the site URL — no option, constant or env flag exists for it.
+- Do not write `https://dovira.vet` or `https://kyiv.dovira.vet` into new code — derive the other install's host from the own one (the Kharkiv host is the own host without `kyiv.`, the Kyiv host is `kyiv.` + it; `dovira\CityPopup\Sites`).
+- Do not keep the visitor's chosen city anywhere but the cookies `dovira_city` / `dovira_city_dismissed` on the Kharkiv host's domain, nor read them in PHP or vary a page, a redirect or a cache key by them (`source/scripts/features/city-popup/logic.js`).
+- Do not record a search from PHP — the browser module `source/scripts/features/search-stats/record.js` is the one recorder, so a crawler that runs no JavaScript leaves no row.
+- Do not escape a value of a Telegram HTML message with `esc_html()`, which keeps named entities Telegram refuses — decode a stored title, then use `htmlspecialchars( $v, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', true )`.
+- Do not print a number in a Telegram message with `number_format_i18n()` — its Ukrainian thousands separator is the entity `&nbsp;`, so print plain digits.
+- Do not treat `event.target === dialog` as a click on a `<dialog>`'s backdrop — also test that the point lies outside `getBoundingClientRect()` (`isOutside()` in `logic.js`).
+- Do not colour `::backdrop` with a `:root` custom property — older browsers do not pass custom properties into it, so write the value.
+- Do not expose a core, adapter or other plugin's ability on the `dovira` MCP server, nor a `dovira/*` ability on the adapter's default server — every `dovira/*` ability carries `meta.mcp.public: false` and `meta.show_in_rest: true` and never `meta.public: true` (`DescribeSite::args()`, `Catalogue::TOOLS`).
+- Do not gate a read of `conversation`, `application` or `questionary` with `read_post` — core maps it to plain `read` for a published post, so gate with `edit_others_conversations` (`Scope::can_read_type()`).
+- Do not hand-edit `assets/` or `assets/.vite/manifest.json` — run `npm run build`.
+- Do not enqueue a front-end asset by a written path — go through `starter_theme_vite_asset()`.
+- Do not put runtime code into `temp-data/`, `reports/` or `_to_delete/` — they are ops artifacts the theme never loads.
+- Do not use `wp-content/mu-plugins/` — it is gitignored and would not deploy.
+- Do not put a per-city analytics id or any Kyiv-only change on `master` — `kyiv` carries them and only merges `master` in.
+- Do not add a Contact Form 7 form id to a hook without naming it in `ARCHITECTURE.md` → Flows — the three ids (6, 1430, 1399) are environment-specific.
+- Do not add a dev or tooling package to the theme's own `composer.json`, whose committed `vendor/` loads on every request — it goes into `tests/composer.json` or the theme's `package.json` `devDependencies`.
+- Do not install a check, lint or test tool globally — it is a committed script or a dev dependency.
 
-Before stage 1 it checks that Vite loads, because Vitest runs on it and Vite
-loads a native Rollup package built for one OS only. A `node_modules/`
-installed on another OS, or an incomplete one, stops the gate there with a
-message that names the cause. Otherwise it would fail at stage 6 with Rollup's
-advice to delete `node_modules/`, which from the DDEV container would break the
-host's `npm start` / `npm run build`. The host and the container share the one
-`node_modules/`, so **stage 6 runs where it was installed: the host** (DECISIONS
-"The gate runs on the host; before stage 1 it checks that Vite loads on this OS").
-
-PHPStan needs two settings of its own, both learned from the gate
-crashing on code that has no errors: it is capped at **two parallel workers** in
-`phpstan.neon.dist`, because its pool otherwise scales with the CPU count and
-every worker loads the WordPress stubs (on a 14-core machine that alone
-exhausted the default), and it is run with **`--memory-limit=1G`**, because the
-stubs push the analysis to ~730M peak — measured, and the same with or without
-`tests/` in the paths, so the cost is the stubs and not the plugin's own files.
-The limit is a CLI flag in `bin/check.sh` and in the plugin's `composer analyse`
-script; PHPStan has no memory setting in its config file. The host PHP (8.5) and the DDEV web container (8.3) both qualify
-for stages 1–5, but `ddev exec bash bin/check.sh` stops at the Vite check
-while `node_modules/` holds the host's (darwin) packages. It passes only with
-a `node_modules/` installed inside the container, which the host's Vite can
-no longer use. The theme's `npm run build` is NOT part
-of the gate (`assets/` are committed; rebuild only when the front end
-changes) — DECISIONS "Testing tooling and the project check command".
-
-## ANTI-PATTERNS (mandatory reading before writing code)
-<!-- Only code that steps keep writing (queries, migrations, tests,
-     components, UI strings, calls to integrations) where the default on
-     this stack is one way and this project requires another. One line
-     each: "Do not X — Y", plus the DECISIONS entry behind it. -->
-- Do not create or edit ACF field groups in the admin UI — every group is a
-  PHP `FieldsBuilder` in `inc/acf/`; the UI would create a DB copy that the
-  code cannot see and that a deploy cannot carry.
-- Do not add a block outside `inc/acf/blocks/{name}/` with the trio
-  `block.json` + `fields.php` + `template.php` — the directory scan in
-  `inc/acf.php` is the only registration; also add the block name to
-  `dovira_allowed_block_types()` or editors will not see it.
-- Do not make `service-city` Polylang-translatable and do not rename its terms
-  by id — Service price field names (`price_city_{id}`, `city_{id}`) and stored
-  postmeta derive from term ids. Translate names as Polylang strings.
-- Do not send the Telegram notification before `wp_insert_post` succeeds, and
-  do not let a Telegram failure change the HTTP/mail result — the record is
-  the source of truth, the notification is best-effort.
-- Do not decide "which city site is this" anywhere except from the site URL
-  (`site-header.php`, `dovira_conversation_telegram_message()`) — there is no
-  option, constant or env flag for it.
-- Do not hand-edit `assets/` or `assets/.vite/manifest.json` — run
-  `npm run build`; the manifest resolver `starter_theme_vite_asset()` maps
-  `source/*` entries to hashed files.
-- Do not enqueue front-end assets by hand-written paths — go through
-  `starter_theme_vite_asset()`; in development the Vite dev server serves them.
-- Do not put runtime-loaded code into `temp-data/`, `reports/` or `_to_delete/` —
-  they are ops artifacts; the theme never requires them.
-- Do not register a post type / taxonomy outside `inc/post-types/*.php` /
-  `inc/taxonomies/*.php` — they are glob-loaded; an inline `register_post_type`
-  in `functions.php` breaks the one-file-per-type convention.
-- Do not use `wp-content/mu-plugins/` — it is gitignored (starter-theme legacy)
-  and would not deploy.
-- Do not put per-city analytics ids or any Kyiv-only change on `master` —
-  `kyiv` carries them and only ever merges `master` in.
-- Do not add new hardcoded CF7 form ids without recording them in
-  ARCHITECTURE.md → Integrations; the three existing ids (6, 1430, 1399) are
-  environment-specific already.
-- Do not add a check/lint/test tool as a global install — it must be a
-  committed script or `composer.json`/`package.json` dev dependency.
-- Do not add a dev or tooling package to the theme's own `composer.json`.
-  - The theme's `vendor/` is committed and `functions.php` loads its autoloader
-    on every request.
-  - A dev package's autoload `files` entry would therefore either ship the
-    tool to every server, or take every page down when the entry is committed
-    without the package.
-  - The theme's test tooling lives in `tests/composer.json` (DECISIONS "The
-    theme's test tooling is its own Composer project in `tests/`").
-- Do not record a search server-side in `search.php`. The browser module
-  (`source/scripts/features/search-stats/record.js`) is the one recorder: a
-  results page fetched by a crawler or a prefetcher runs no JavaScript and so
-  leaves no row, which a PHP recorder could only approximate with a user-agent
-  list (DECISIONS "Every search is recorded from the browser through one
-  public REST route").
-- Do not escape a value for a Telegram HTML message with `esc_html()`.
-  - WordPress keeps an entity it recognises (`&nbsp;`, `&laquo;`).
-  - Telegram refuses every named entity except `&lt;`, `&gt;`, `&amp;` and
-    `&quot;`, so one such value makes the whole message unsendable.
-  - Escape with double encoding,
-    `htmlspecialchars( $v, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', true )`,
-    and decode a stored WordPress title first (DECISIONS "Values in a
-    Telegram message are escaped with double encoding, never with
-    `esc_html()`").
-  - Brain\Monkey's `esc_html` stub double-encodes, so a unit test cannot see
-    the difference.
-- Do not keep the visitor's chosen city anywhere but the cookies
-  `dovira_city` / `dovira_city_dismissed` on the Kharkiv host's domain, and do
-  not read them in PHP or vary a page, a redirect or a cache key by them.
-  - `localStorage` is per origin, so `kyiv.dovira.vet` would never see a choice
-    made on `dovira.vet`.
-  - A server that reads the choice serves one URL differently to different
-    visitors and to crawlers (DECISIONS "The visitor's city choice is a cookie
-    written by JavaScript on the domain both installs share; PHP never reads
-    it").
-- Do not write `https://dovira.vet` or `https://kyiv.dovira.vet` into new code.
-  Derive the other install's host from the site URL: the Kharkiv host is the
-  own host without `kyiv.`, and the Kyiv host is `kyiv.` + the Kharkiv host.
-  Literals send dev and DDEV visitors to production. The header switcher's two
-  literals are legacy (DECISIONS "The other install's host and the cookie
-  domain are derived from the site URL").
-- Do not test the branch of a `function_exists()` check (Polylang, another
-  plugin) by leaving the function unstubbed.
-  - Brain\Monkey declares every function a test stubs for the rest of the
-    PHPUnit run, so `function_exists()` stays true in every later test.
-  - Calling that function unstubbed throws `MissingFunctionExpectations`.
-  - Inject the check instead, e.g. `new Pages( ?bool $polylang = null )` with
-    `null` meaning `function_exists( 'pll_get_post' )`, and pass `false` in
-    the test (city-popup Sprint 1 Step 2).
-- Do not treat `event.target === dialog` as a click on a `<dialog>`'s backdrop.
-  - A click on the dialog's own padding has the same target.
-  - Also test that the point lies outside `dialog.getBoundingClientRect()`
-    (`isOutside()` in `source/scripts/features/city-popup/logic.js`).
-  - Do not colour `::backdrop` with a `:root` custom property either: browsers
-    before 2024 do not pass custom properties into `::backdrop`, so write the
-    value (city-popup Sprint 1 Step 3).
-
-- Do not write an ACF value with `update_post_meta()` / `$wpdb` and do not
-  read one with `get_post_meta()` by its stored key — go through
-  `update_field()` / `get_field()` (`get_fields()`), by field name on the
-  post, so ACF keeps the `_{name}` field-key rows and the repeater's row
-  count in step; a connector or script that writes `prices_0_price` directly
-  leaves a repeater the editor cannot open (DECISIONS 2026-11-05 — The tool
-  catalogue speaks ACF field names and block names, prices have their own
-  tools, and a price change mirrors into the Russian copy by row index).
-- Do not expose a core or adapter ability, or an ability of another plugin, on
-  the `dovira` MCP server, and do not register an ability of this project on
-  the adapter's default server — the `dovira` server's tool list is the
-  feature's whole surface, and every tool on it carries the write protocol
-  (DECISIONS 2026-11-05 — The content connector is the official MCP Adapter
-  serving Dovira abilities registered by a theme feature).
-  - So a `dovira/*` ability never sets `meta.public: true`. The adapter reads
-    `meta.public` as the default of `meta.mcp.public`, and that flag is what
-    lets its default server discover and execute an ability.
-  - Every one carries `meta.mcp.public: false` and `meta.show_in_rest: true`
-    instead (`DescribeSite::args()`).
-  - The `dovira` server lists abilities by name from `Catalogue::TOOLS` and
-    ignores the flag (content-mcp Sprint 1 Step 1).
-
-- Do not gate a `conversation` / `application` / `questionary` read with
-  `read_post` (or any check that reduces to it). The records are `publish`,
-  and core maps `read_post` of a public status to the type's `read` cap, plain
-  `read`, which every editor has. Gate with the type's `edit_others_posts`
-  (`edit_others_conversations`) instead: `Scope::can_read_type()` in
-  `inc/features/content-mcp/`, the same gate `dovira-bridge-conversations`
-  uses (content-mcp Sprint 1 Step 2).
-- Do not read an ACF block's `attrs.data` by its stored keys or with a
-  hand-written key mapper. It is flattened like postmeta: `years_0_year` plus
-  `_years_0_year` → field key, and a repeater's row count under its name. Read
-  it by name through ACF:
-  `acf_setup_meta( $data, $block_id, true )` → `get_field_objects( $block_id )`
-  → `acf_reset_meta( $block_id )` (`PostReader::block_fields()`). Write it
-  through ACF the same way: field-key values (`FieldInput::keyed()`) into
-  `acf_setup_meta()`, which simulates ACF's save and returns the flattened
-  data (`PostWriter::acf_block()`). Fields not being changed are taken
-  unformatted (`get_fields( $block_id, false )`), never from the reader's
-  formatted values, which would rewrite a wysiwyg with `<p>` and a
-  true_false `'1'` as `true`. A **new** block gets every unnamed field's
-  `default_value`, as the block editor stores it on insert: ACF applies a
-  default only to a field the block data names, so a block stored with its
-  named fields alone renders hidden (`is_visible`) (DECISIONS 2026-11-05 —
-  Every post's content is read as blocks; content-mcp Sprint 1 Step 4,
-  Sprint 2 Step 1).
-
-## CONVENTIONS (mandatory reading before writing code)
-<!-- Project-wide rules for code that later steps must follow and would
-     otherwise write differently, where the stack has no default or leaves
-     the choice open (a stack default that leads the other way → ANTI-PATTERNS).
-     One line each, present tense: the rule — why, in a few words — and
-     where it was set (`DECISIONS {date} — {title}`, or
-     `{feature} Sprint {N} Step {M}`). The line is the record: a rule no
-     alternatives were weighed for needs no DECISIONS entry. Current state,
-     not a log: a line that stops being true is edited or removed.
-     Not here: a one-time choice, a detail of one step or screen, a
-     data-model or domain rule, scope — they live in their own docs; a rule
-     of one code area → that area's CLAUDE.md → Area conventions.
-     `none yet` while there are none. -->
-- A theme feature's JavaScript logic lives in pure modules with no DOM access, unit-tested with Vitest in `tests/js/{feature}/`; the DOM glue that calls them stays thin and is verified by hand — Vitest runs without a DOM library (DECISIONS 2026-09-23 — The theme gets Vitest for the unit tests of its JavaScript, run by the check command).
-- Every `dovira/*` write ability extends `WriteAbility` (`inc/features/content-mcp/`): it implements `preview()` → `Diff` and `write()`, and leaves the token, the session's dump and the result shapes to `run()` (what `write()` returns besides `written` / `warnings`, e.g. `upload-media`'s `media`, is added to the result, never replacing the protocol's keys); the MCP session is read only through `Session::id()`, because the adapter gives an ability its input alone (content-mcp Sprint 1 Step 3, Sprint 2 Step 2).
-
-## Dependency policy
-New dependencies (runtime AND dev/tooling) only after explicit user approval —
-see CLAUDE.md core rule 1. Record approved additions here with one line of
-justification.
-
-## Approved dependencies log
-| Date | Package | Why |
-|---|---|---|
-| (pre-adoption) | everything in the Stack table | inherited as-is at adoption, 2026-09-08 |
-| 2026-09-08 | phpunit/phpunit `^12.5` (12.5.34) | test runner for the plugin. Not `^13`: it requires PHP ≥ 8.4.1 and would not run in DDEV (PHP 8.3) |
-| 2026-09-08 | brain/monkey `^2.7` (2.7.0) | stubs WordPress functions so unit tests need no WP bootstrap and no database |
-| 2026-09-08 | squizlabs/php_codesniffer `^3.13` (3.13.6) | linter. Not `^4`: WPCS 3.4.1 requires PHPCS `^3.13.5` |
-| 2026-09-08 | wp-coding-standards/wpcs `^3.4` (3.4.1) | WordPress Coding Standards ruleset for the plugin |
-| 2026-09-08 | dealerdirect/phpcodesniffer-composer-installer `^1.2` (1.2.1) | registers the WPCS standard with PHPCS on install |
-| 2026-09-08 | phpstan/phpstan `^2.2` (2.2.13) | static analysis — the plugin runs on unknown hosts |
-| 2026-09-08 | szepeviktor/phpstan-wordpress `^2.0` (2.0.4) | WordPress stubs for PHPStan (pulls php-stubs/wordpress-stubs 7.1.0, matching the installed core) |
-| 2026-09-22 | phpunit/phpunit `^12.5` (12.5.35) — **theme** | test runner for the theme's unit suite; same pin and reason as the plugin's row above |
-| 2026-09-22 | brain/monkey `^2.7` (2.7.0) — **theme** | stubs WordPress functions for the theme's suite (pulls mockery 1.6.15, antecedent/patchwork 2.2.3, hamcrest v3.0.0) |
-| 2026-09-23 | vitest `^3.2` — **theme**, `devDependencies` of `package.json` | unit tests of the theme features' pure JS modules, reusing the theme's Vite toolchain; approved in DECISIONS "The theme gets Vitest for the unit tests of its JavaScript, run by the check command". Installed 3.2.7 by `city-popup` Sprint 1 Step 1 (pulls `@vitest/*` 3.2.7, vite-node 3.2.4, chai 5.3.3, tinypool 1.1.1; reuses the theme's Vite 5.4.19, no second copy) |
-| 2026-11-05 | `mcp-adapter` 0.7.1 — **plugin**, `wp-content/plugins/mcp-adapter/` (runtime, committed, the WordPress.org zip unchanged) | the MCP server and transport for feature `content-mcp`; approved in DECISIONS "The content connector is the official MCP Adapter serving Dovira abilities registered by a theme feature". Installed by `content-mcp` Sprint 1 Step 1 (2026-11-05: 330 files, no `.gitignore`d file in the zip); updated only as a plugin-folder change plus this row |
-
-The first seven are **dev-only**, live in `wp-content/plugins/ga-telegram-bridge/composer.json`,
-and never reach a server: the plugin's `vendor/` is gitignored and it has zero runtime
-dependencies. Approved in the Sprint 1 Step 1 plan.
-
-The two **theme** rows are dev-only too. They live in
-`wp-content/themes/dovira/tests/composer.json` with `config.platform.php = 8.3`,
-**not** in the theme's own `composer.json`, whose `vendor/` is committed.
-- `tests/vendor/` is gitignored and never deployed, and `tests/composer.lock`
-  is not committed.
-- The versions above are what `composer install` locked on 2026-09-23 (29
-  packages).
-- Approved in DECISIONS "The theme gets PHPUnit + Brain\Monkey, run by the
-  check command". Their place is set by DECISIONS "The theme's test tooling is
-  its own Composer project in `tests/`".
-
-The **vitest** row is dev-only as well: a `devDependencies` entry of the
-theme's `package.json`. `node_modules/` and `package-lock.json` are gitignored,
-so an install resolves the caret range afresh (3.2.7 on 2026-09-23), nothing
-of it deploys, and no page loads it — Vite builds `assets/` from `source/`.
+## CONVENTIONS
+- A theme feature's JavaScript logic is pure modules with no DOM access, unit-tested with Vitest in `tests/js/{feature}/`, and the DOM glue that calls them stays thin and is verified by hand (DECISIONS 2026-09-23 — The theme gets Vitest for the unit tests of its JavaScript).
+- Every `dovira/*` write ability extends `WriteAbility`: it implements `preview()` → `Diff` and `write()`, leaves the token, the session's dump and the result's keys to `run()`, and reads the session only through `Session::id()`.

@@ -1,26 +1,39 @@
 # Worklog — Dovira
 
-<!-- Add-only project memory for the agent: entries are never edited or
-     removed. Written ONLY by /close-step, /fix-step (a fix after a step's
-     close) and /adhoc (off-cycle tasks), newest entry at the TOP, directly
-     under the entry format. A fresh Claude Code session reads the latest 5
-     entries at start (CLAUDE.md core rule 6).
-     Keep entries 3–6 lines; this is a memory index, not a diary — details live
-     in commits and verification guides. -->
+<!-- playbook: v3.0.4. The agent's memory: `## Open` is state — replaced at
+     every close; the entries are a journal — newest first, never edited.
+     Written only by /close-step, /fix-step after a close and /adhoc. A
+     session reads `## Open` and the newest entry at start (CLAUDE.md core
+     rule 6). The report to the user is the chat reply, not this file.
+     Shape, triggers and what does not belong here: docs/CONTRACTS.md →
+     `### docs/WORKLOG.md`. Entries up to 2026-11-12 have the shape of
+     playbook v1.x; their open items were gathered into `## Open` on
+     2026-11-24. -->
 
-Entry format:
+## Open
+- 2026-11-12 · Before the next deploy, the uk and ru values of the ~60 Polylang strings keyed in English are filled in Polylang → Strings on dev, Kharkiv and Kyiv — until then both languages show the English keys.
+- 2026-11-12 · Hardcoded strings remain on the staff print pages (`single-questionary.php`, `single-application.php`, the simple header), in the Telegram texts and in the legacy LMS templates — an `/adhoc` if wanted.
+- 2026-11-12 · `QuestionaryController` and the schema.org breadcrumbs still hold `dovira.vet` URL literals, and `TelegramController::send_test_message()` sends a forgotten personal message — an `/adhoc` if wanted.
+- 2026-11-05 · The content-mcp hand-over values were never reported (the `curl` codes, the dump footers for `docs/ops/content-mcp-production-checklist.md` → B, Kyiv's term id and webroot path).
+- 2026-11-05 · One more hand deploy of `master` and `kyiv` brings content-mcp's final instructions and tool order to production.
+- 2026-11-05 · Local `master` is not pushed to `origin/main`.
+- 2026-11-05 · A pasted image cannot be uploaded from claude.ai because the model cannot pass its bytes; images go by URL.
+- 2026-11-05 · The local `wp-config.php` sets `DOVIRA_MCP_DUMP_DIR` to dev's path, so connector writes fail in DDEV.
+- 2026-11-05 · `_to_delete/content-mcp-dump-spike.php` can be removed (`/adhoc`).
+- 2026-11-04 · Every install needs Polylang ≥ 3.9 before the language-switcher change is deployed to it.
+- 2026-10-20 · The vacancy notification links to `dev.dovira.vet` and the blood-donor one to `dovira.vet`, unlike the conversation one, which links to its own install.
+- 2026-10-20 · Before each hand deploy, the install's `wp-config.php` defines `DOVIRA_TELEGRAM_BOT_TOKEN`, `DOVIRA_TELEGRAM_JOIN_PASSWORD`, `DOVIRA_TELEGRAM_CHAT_ID` and `DOVIRA_TELEGRAM_THREAD_ID`; then the token is rotated in BotFather and a new join password chosen, because the old ones are in the git history.
+- 2026-10-20 · The public routes `dovira/v1/telegram/send-test-message` and `reset-telegram-log` are still unauthenticated.
+- 2026-10-20 · After the hand deploy of plugin 0.4.1 to `dovira.vet`, the settings screen is saved once with thread id `172` and *Check Telegram* confirms the message lands in the thread.
+- 2026-09-24 · After the next hand deploy and the merge into `kyiv`, the Kyiv side of city-popup is checked (from a `dovira.vet` article «Київ» → `kyiv.dovira.vet/services/`; the Kyiv switcher saves `kharkiv`; `kyiv.dovira.vet/services/no-such-service/?city-popup=1` → the Kyiv list) and the ru strings of the dialog are typed on each production.
 
-## {{YYYY-MM-DD}} — [{{feature}}] Sprint {{N}} Step {{M}} — {{title}}
-(ad-hoc tasks: `## {{YYYY-MM-DD}} — [adhoc] [{{feature}}] — {{title}}`;
-a fix after a step's close:
-`## {{YYYY-MM-DD}} — [{{feature}}] Sprint {{N}} Step {{M}} — fix: {{what failed}}`;
-the last step of a sprint ends its entry with `Sprint {{N}} complete — all
-steps closed, {{sprint branch}} merged into main`)
-- Changed: {{what, at module/feature level}}
-- Decisions: {{key ones made or DECISIONS.md entries added, or "—"}}
-- Open: {{unresolved questions carried forward, or "—"}}
+## Entries
 
----
+## 2026-11-24 — [adhoc] [core] — Playbook v1.25 → v3.0.4
+- **Changed:** The playbook's commands (now with `/question`), the action-log hook with `.claude/settings.json`, and `docs/templates/` (moved from `templates/`) are v3.0.4; root `CLAUDE.md` takes the template's profile, Documentation, Core rules and Step protocol, and Domain invariants are a verbatim selection of `DOMAIN.md` → Rules; every state document and `FEATURE.md` is rewritten to its contract in the new `docs/CONTRACTS.md`, with `API.md`, `THIRD-PARTY-SERVICES.md` and `INCIDENTS.md` new; LEARNINGS is archived in `docs/archive/`; the verification guides moved to `verification/sprint-N/step-M.md`; the two production checklists moved to `docs/ops/`.
+- **Decisions:** —
+- **Shared code:** none — no application code changed.
+- **Opened / closed:** the items of `## Open` above were gathered from the entries below.
 
 ## 2026-11-12 — [adhoc] [core] — Hardcoded Ukrainian UI strings moved into Polylang
 - Changed: page templates (404, service, search, post, employee, vacancy, sub-service), header city switcher, schema.org names, ACF blocks (questionary, contacts, text-form, news, files, services, employees, vacancies) and the donor form's JS (`data-message-*`) print Polylang strings via `dovira_translate_string()`; ~60 new strings; `dovira_recaptcha_disclaimer()`; `assets/` rebuilt.

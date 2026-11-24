@@ -1,447 +1,252 @@
 # Data model — Dovira
 
-<!-- This file MUST match the actual schema at all times. A schema change
-     without updating this file in the same commit = unfinished task
-     (CLAUDE.md core rule 5). Adoption: documented from the code as-is, 2026-09-08. -->
+<!-- playbook: v3.0.4. State document, read by block, never whole; a block is
+     replaced when its post type, field group, option or table changes.
+     Shape, triggers and what does not belong here: docs/CONTRACTS.md →
+     `### docs/DATA-MODEL.md`. -->
 
 ## Conventions
-- Standard WordPress tables (`wp_` prefix; `wp_posts`, `wp_postmeta`,
-  `wp_terms`/`wp_term_taxonomy`/`wp_term_relationships`, `wp_options`,
-  `wp_users`/`wp_usermeta`) plus plugin tables (Polylang, Yoast
-  `wp_yoast_indexable`, CF7). Schema = registered post types, taxonomies and
-  ACF field groups in PHP.
-- **One custom table**, `{prefix}dovira_search_queries` of feature
-  `search-stats` (→ Feature `search-stats` below).
-  - It is created and upgraded with `dbDelta()` from a schema version stored
-    in an option. That is the project's only migrations mechanism, and it
-    serves this one table.
-  - Every other entity is still a post type.
-- Every domain entity is a post type; every attribute is an ACF field stored
-  in `wp_postmeta` (ACF convention: `{name}` value row + `_{name}` field-key
-  row). Field names below are ACF names; repeater rows are
-  `{repeater}_{i}_{subfield}` in postmeta.
-- ACF options page fields live in `wp_options` as `options_{name}` (uk, default
-  language) and `options_{lang}_{name}` (other languages; `inc/polylang.php`).
-- Ids: WordPress auto-increment. Timestamps: `post_date`; custom
-  `processing_date` is a Unix timestamp **+10800 s** (UTC+3 offset applied in
-  code). Deletion: WordPress trash; no soft-delete flags of our own.
-- Each city install (Kharkiv, Kyiv) has its own database; nothing is shared
-  between them at the DB level.
-- Languages: Polylang `language` / `post_translations` taxonomies link uk↔ru
-  posts; `service` and `vacancy` are translatable (plus core `page`, `post`);
-  `employee`, `conversation`, `application`, `questionary` are not.
+- Each install has its own MariaDB database with WordPress's standard tables (prefix `wp_`), the plugins' own (Polylang, Yoast `wp_yoast_indexable`, CF7), and one custom table, `{prefix}dovira_search_queries`; charset and collation are `$wpdb->get_charset_collate()` (`utf8mb4` / `utf8mb4_unicode_520_ci`).
+- The schema is code: post types in `inc/post-types/`, the taxonomy in `inc/taxonomies/`, ACF field groups in `inc/acf/`, the custom table in `Schema` with `dbDelta()` — a change to any of these is this document's "migration".
+- A domain entity is a post type, and its attributes are ACF fields in `wp_postmeta` (a `{name}` value row plus a `_{name}` field-key row; a repeater's rows are `{repeater}_{i}_{subfield}`).
+- A block below is headed by the post type, taxonomy, option, transient or table name, and its column table lists ACF field names, option keys or SQL columns.
+- Every post has WordPress's id (auto-increment), `post_date` and `post_modified`, not repeated per block.
+- Types in the column tables are ACF field types (`text`, `textarea`, `wysiwyg`, `number`, `true_false`, `select`, `radio`, `checkbox`, `image`, `file`, `link`, `repeater`, `group`, `post_object`), "postmeta" for a plain meta row, or SQL types for the custom table.
+- An enumeration is a `select` / `radio` field or a string key, its values listed in Notes.
+- Prices are ACF `number` fields in hryvnias, without a currency column.
+- Time is WordPress's (`post_date` in the site zone, `post_date_gmt` in UTC); the custom table stores UTC; `processing_date` is a Unix timestamp shifted by +10800 s in code.
+- Records (`conversation`, `application`, `questionary`) are facts: they are processed by a status, and removed only to the WordPress trash by an administrator.
+- Options of the ACF options page are `options_{name}` for Ukrainian and `options_ru_{name}` for Russian.
+- Polylang links translations with its taxonomies `language` and `post_translations`; `service`, `vacancy`, `page`, `post` are translatable, `employee` and the three records are not.
 
 ## Tables
-### Post type `service` (public, hierarchical, slug `services/`, supports title, editor, page-attributes)
-A clinic service (e.g. "Хірургія") with its price list. Field group in `inc/acf/fields/post-type-service.php`, not shown on the `templates/sub-service.php` template.
-| Field | Type | Notes |
+
+### service
+- **Purpose:** a clinic service with its price list (post type, public, hierarchical, slug `services/`; a child page on the template «Sub-Service» has no price group).
+- **Written by:** wp-admin; `content-mcp` (`PostWriter`, `PriceRows`, `Translator`); `save_post_service` writes `key_words_services`.
+
+| Column | Type | Notes |
 |---|---|---|
 | `image` | image | required |
-| `description` | wysiwyg | intro under the H1 |
-| `prices` | repeater (table) | one row per priced item |
-| `prices_*_title`, `prices_*_description` | textarea | row text |
-| `prices_*_is_price_general` | true/false | default 1: one `price` for all ticked cities; 0: per-city prices |
-| `prices_*_price` | number | shown when `is_price_general = 1` |
-| `prices_*_city_prices_price_city_{term_id}` | number (group) | **one subfield per `service-city` term, generated at runtime from the terms** |
-| `prices_*_cities` | checkbox, values `city_{term_id}` | which city tabs the row appears in |
-| `key_words` | textarea | editor-entered search keywords |
-| `seo_description` | wysiwyg | rendered by `template-parts/seo-description.php` |
-| `key_words_services` | plain postmeta (not ACF) | concatenated row titles, written on `save_post_service` for search |
-| taxonomy `service-city` | — | scopes the service to a city |
+| `description` | wysiwyg | |
+| `prices` | repeater | |
+| `prices_*_title`, `prices_*_description` | textarea | |
+| `prices_*_is_price_general` | true_false | default 1 |
+| `prices_*_price` | number | used when `is_price_general` = 1 |
+| `prices_*_city_prices_price_city_{term_id}` | number (in group `city_prices`) | one subfield per `service-city` term, generated from the terms |
+| `prices_*_cities` | checkbox | values `city_{term_id}` |
+| `prices_*_linked_page` | link | |
+| `key_words` | textarea | |
+| `seo_description` | wysiwyg | |
+| `key_words_services` | postmeta | generated on save |
+| taxonomy `service-city` | — | |
 
-### Post type `employee` (public, slug `team/`, supports title; `capability_type` page)
-| Field | Type | Notes |
+### employee
+- **Purpose:** a team member of a city (post type, public, slug `team/`, `capability_type` page).
+- **Written by:** wp-admin; `content-mcp` (`PostWriter`).
+
+| Column | Type | Notes |
 |---|---|---|
-| `photo` | image | |
+| `photo` | image | required |
 | `position` | text | |
 | `quote` | textarea | |
-| `social_links` | group: `facebook`, `instagram`, `linkedin` | urls |
-| `is_contact_cta_enabled` | true/false | |
-| `title`, `description` | text, textarea | contact CTA block |
+| `social_links` | group: `facebook`, `instagram`, `linkedin` | |
+| `is_contact_cta_enabled` | true_false | |
+| `title`, `description` | text, textarea | |
 | `facts` | repeater: `title`, `fact` | |
 | taxonomy `service-city` | — | |
 
-### Post type `vacancy` (public, hierarchical, slug `vacancies/`, supports title, page-attributes; Polylang-translatable)
-| Field | Type | Notes |
+### vacancy
+- **Purpose:** a job offer of a city (post type, public, hierarchical, slug `vacancies/`).
+- **Written by:** wp-admin; `content-mcp` (`PostWriter`, `Translator`).
+
+| Column | Type | Notes |
 |---|---|---|
-| `is_open` | true/false | only open vacancies appear in the application filter |
-| `description` | wysiwyg | |
-| `salary_type` | select: `static` / `from` / `range` | |
-| `static_salary`, `salary_from`, `salary_to` | number | which apply depends on `salary_type` |
+| `is_open` | true_false | default 1 |
+| `description` | wysiwyg | required |
+| `salary_type` | select | `static` / `from` / `range` |
+| `static_salary`, `salary_from`, `salary_to` | number | |
 | `contacts` | repeater: `phone` | |
 | `seo_description` | wysiwyg | |
 | taxonomy `service-city` | — | |
 
-### Post type `conversation` (private, not queryable, supports title; `capability_type` conversation)
-A contact-form or franchise-form submission. Created by `dovira_wpcf7_submit_action`.
-| Field | Type | Notes |
-|---|---|---|
-| `is_processed` | true/false | admin list "Нове / Опрацьовано" |
-| `note` | textarea | admin note |
-| `name`, `pet_name`, `phone`, `email`, `message` | text/email/textarea | from CF7 `your-*` fields; `pet_name` only from form 6 |
-| `processing_date` | plain postmeta, int | set when `is_processed` flips to 1, reset to 0 otherwise |
-| `responsible_persons` | plain postmeta, array `{user_id: {name, email}}` | every admin who opened the editor (`the_editor_content` filter) |
-| `post_title` | — | `"{name} | {phone}"`, prefixed `"Франшиза: "` for form 1430 |
+### conversation
+- **Purpose:** a contact-form or franchise-form submission (post type, not queryable, `capability_type` conversation).
+- **Written by:** `dovira_wpcf7_submit_action()`; staff in wp-admin (`is_processed`, `note`); `dovira-bridge/v1` (processed status); `responsible_persons` by the `the_editor_content` filter.
 
-### Post type `application` (public but `show_in_rest` false, hierarchical, slug `applications/`; `capability_type` conversation)
-A vacancy application. Created by `dovira_wpcf7_before_send_mail` (CF7 form 1399).
-| Field | Type | Notes |
+| Column | Type | Notes |
 |---|---|---|
-| `status` | select: `new` / `in_processing` / `interview_scheduled` / `rejected` / `closed` | admin list badge + filter |
+| `post_title` | — | `{name} \| {phone}`, prefix `Франшиза: ` for form 1430 |
+| `is_processed` | true_false | |
 | `note` | textarea | |
-| `first_name`, `last_name`, `phone`, `email` | text/email | |
-| `file` | file (attachment id) | CV sideloaded into the media library, attached to this post |
-| `file_error` | textarea | sideload error message if upload failed |
-| `vacancy` | post_object → `vacancy` id | admin filter `vacancy_id` |
-| `processing_date`, `responsible_persons` | plain postmeta | as for `conversation` |
+| `name`, `pet_name`, `phone`, `email`, `message` | text / email / textarea | `pet_name` from form 6 only |
+| `processing_date` | postmeta, int | set when processed, 0 otherwise |
+| `responsible_persons` | postmeta, array `{user_id: {name, email}}` | |
 
-### Post type `questionary` (public, `show_in_rest` true, supports title; `capability_type` conversation)
-A blood-donor questionnaire. Created by `QuestionaryController::save_questionary`.
-| Field | Type | Notes |
+### application
+- **Purpose:** a candidate's response to a vacancy (post type, public, hierarchical, slug `applications/`, not in REST, `capability_type` conversation).
+- **Written by:** `dovira_wpcf7_before_send_mail()` (form 1399); staff in wp-admin (`status`, `note`).
+
+| Column | Type | Notes |
 |---|---|---|
+| `status` | select | `new` / `in_processing` / `interview_scheduled` / `rejected` / `closed`; `new` on creation |
+| `note` | textarea | |
+| `first_name`, `last_name`, `phone`, `email` | text / email | |
+| `file` | file | attachment id, attached to this post |
+| `file_error` | textarea | |
+| `vacancy` | post_object | → `vacancy` |
+| `processing_date`, `responsible_persons` | postmeta | as `conversation` |
+
+### questionary
+- **Purpose:** a blood-donor questionnaire (post type, public, in REST, `capability_type` conversation).
+- **Written by:** `QuestionaryController::save_questionary()`; staff in wp-admin (`admin_note`).
+
+| Column | Type | Notes |
+|---|---|---|
+| `post_title` | — | `{name} - {pet-name}` |
 | `admin_note` | textarea | |
-| `name`, `phone`, `city`, `email`, `pet_name`, `pet_type`, `pet_old`, `pet_weight`, `vaccination_date` | text/email | free text; `city` is ucfirst'ed request value, not a term |
-| `animal` | radio: `dog` / `cat` | |
-| `pet_sex` | radio: `female` / `male` | |
-| `blood_group` | select | choices in `fields/post-type-questionary.php` (`all-dont-know`, `cat-a`, `cat-b`, `cat-ab`, `dog-dea-1-plus`, `dog-dea-1-minus`); the admin filter in `utils/questionary.php` lists a different, older set (`cat-AB`, `dog-dea-1.1` …) |
-| `street`, `cat_contact`, `castration`, `donor_before`, `blood_take`, `chronic_diseases`, `pills` | true/false | from `yes`/`no` request values |
-| `post_title` | — | `"{name} - {pet-name}"` |
+| `name`, `phone`, `city`, `email`, `pet_name`, `pet_type`, `pet_old`, `pet_weight`, `vaccination_date` | text / email | `city` is free text, not a term |
+| `animal` | radio | `dog` / `cat` |
+| `pet_sex` | radio | `female` / `male` |
+| `blood_group` | select | `all-dont-know`, `cat-a`, `cat-b`, `cat-ab`, `dog-dea-1-plus`, `dog-dea-1-minus` |
+| `street`, `cat_contact`, `castration`, `donor_before`, `blood_take`, `chronic_diseases`, `pills` | true_false | |
 
-### Taxonomy `service-city` (hierarchical, public, REST, admin column) — on `service`, `employee`, `vacancy`
-Cities the clinic operates in. **Not Polylang-translatable** (invariant 2); term names are registered as Polylang strings `service-city-{term_id}` (group "Dovira: Cities"). Term ids are referenced by Service price field names.
+### service-city
+- **Purpose:** the cities the clinic works in (taxonomy on `service`, `employee`, `vacancy`; hierarchical, public, in REST).
+- **Written by:** wp-admin only; never by `content-mcp`.
 
-### Options page `acf-options-settings` ("Settings", under Appearance) — `wp_options`
-| Field | Type | Notes |
+| Column | Type | Notes |
+|---|---|---|
+| term id | — | referenced by `service` field names; never re-created |
+| `slug` | — | `kharkiv` / `kyiv` — the install's own term is found by the city of its URL |
+| name | — | not Polylang-translatable; a Polylang string `service-city-{term_id}` (group «Dovira: Cities») |
+
+### options page `acf-options-settings`
+- **Purpose:** contacts per city and the global social links (ACF options page «Settings», per language).
+- **Written by:** wp-admin; `wp dovira translate-options`.
+
+| Column | Type | Notes |
 |---|---|---|
 | `contacts_main_phone`, `contacts_telegram`, `contacts_viber` | text | |
-| `contacts_cities` | repeater: `city`, `phones` (repeater: `number`), `address`, `note`, `schedule`, `schedule_shop`, `map_iframe`, `email`, `instagram_link` | header phones, footer, JSON-LD departments, fallback phone on price lists |
+| `contacts_cities` | repeater: `city`, `phones` (repeater `number`), `address`, `note`, `schedule`, `schedule_shop`, `map_iframe`, `email`, `instagram_link` | |
 | `social_links` | repeater: `url`, `is_icon_image_file`, `icon_image`, `icon_svg_tag` | |
 
-### Other `wp_options` rows written by the theme
-| Option | Type | Notes |
+### options `telegram_bot_chats`, `telegram_webhook_data`
+- **Purpose:** the chats subscribed to form notifications, and the raw updates of the theme bot's webhook.
+- **Written by:** `TelegramController::handle_updates()`; `reset-telegram-log` empties `telegram_webhook_data`.
+
+| Column | Type | Notes |
 |---|---|---|
-| `telegram_bot_chats` | array `{chat_id: chat_id}` | chats that receive notifications; added by password, removed by `/reset` |
-| `telegram_webhook_data` | array of raw Telegram updates | append-only log; cleared by `GET dovira/v1/telegram/reset-telegram-log` |
+| `telegram_bot_chats` | array `{chat_id: chat_id}` | |
+| `telegram_webhook_data` | array of updates | append-only |
 
-The theme bot's secrets are not stored here: the bot token and the join password
-are the `wp-config.php` constants `DOVIRA_TELEGRAM_BOT_TOKEN` and
-`DOVIRA_TELEGRAM_JOIN_PASSWORD`, and the one chat thread every notification also
-goes to is `DOVIRA_TELEGRAM_CHAT_ID` + `DOVIRA_TELEGRAM_THREAD_ID`
-(docs/ARCHITECTURE.md → Environments & deploy).
+### users and roles
+- **Purpose:** WordPress users; the role `customer_support_specialist` (caps `*_conversation(s)`); application passwords of connector and Dovira Bridge users.
+- **Written by:** wp-admin; `inc/custom-roles/`; the `mcp-adapter` sessions in user meta.
 
-### Users
-Roles: WordPress defaults + `customer_support_specialist` (caps `edit_conversations` … `read_conversation`, see `inc/custom-roles/`). Legacy: a `student` role (cap `take_course`) is added on theme activation and `user_study_state` usermeta is written by `dovira_update_user_study_state()` — remnants of a removed LMS, not used by any live page.
-
-## Plugin `ga-telegram-bridge` (`wp_options`)
-Owned entirely by the plugin (`docs/features/ga-telegram-bridge/FEATURE.md`), on
-every install separately. No custom tables; nothing here is autoloaded.
-
-### Option `gatb_settings` — one array, autoload `no`
-Created with the defaults by the activation hook (`Plugin::activate()`), written
-only by the settings screen through the Settings API. `Settings::merge_defaults()`
-completes a partially written row, so a missing key never reaches a getter.
-
-| Key | Type | Default | Validation on save |
-|---|---|---|---|
-| `property_id` | string | `''` | digits only (`/^\d+$/`); the GA4 property, not the measurement id |
-| `service_account_json` | string | `''` | must `json_decode` to an object holding non-empty `client_email`, `private_key`, `token_uri` |
-| `telegram_bot_token` | string | `''` | stored as typed; the token is only proven by "Check Telegram" |
-| `telegram_chat_id` | string | `''` | `/^-?\d+$/` — a person is positive, a group or channel negative |
-| `telegram_thread_id` | string | `''` | empty, or a positive whole number (`/^[1-9]\d*$/`) — the thread (forum topic) of the chat, sent as `message_thread_id` with every message (report, failure notice, test message); empty posts into the chat itself, which is also what a row saved before the key existed means |
-| `send_time` | string | `'09:00'` | `HH:MM`, 24-hour (`/^([01]\d\|2[0-3]):[0-5]\d$/`); site-local. Read by the scheduler in Sprint 2 |
-| `max_attempts` | int | `3` | whole number 1–10. Read by the retry logic in Sprint 2 |
-| `blocks` | array<string,bool> | all six `true` | exactly `visitors`, `pages`, `channels`, `cities`, `devices`, `trend`; unknown keys dropped; `visitors` is forced `true` (the visitors block is always sent). A key a **stored** row does not carry takes its default — a row written before a block existed must not switch that block off when the plugin is updated — while a key missing from a **submitted** form is an unticked box and is off (every checkbox posts a hidden `0` of its own name) |
-
-Save semantics: an empty credential is accepted and stored as `''` (an install
-that is not configured yet must be able to save). A value that is present but
-breaks its rule is rejected **alone** — that field keeps the stored value, every
-other field of the same submission is saved, and the reason appears as an admin
-notice; error messages never repeat the submitted value, which may be a private
-key. An empty `send_time` or `max_attempts` keeps the stored value: unlike the
-credentials, those two have no "unset" state.
-
-Secrets: `service_account_json` and `telegram_bot_token` are overridden by the
-constants `GATB_GA_SERVICE_ACCOUNT_JSON` and `GATB_TELEGRAM_BOT_TOKEN` when
-those are defined in `wp-config.php` — the getter returns the constant, the
-field is read-only in the admin and a submitted value for it is ignored, so the
-option row keeps whatever it held (DECISIONS "Plugin structure, storage and
-secrets"). Both Dovira installs configure the secrets this way, which is why
-neither ever appears in the committed `mysql.sql` snapshot.
-
-### Transient `gatb_google_access_token` — one string
-The Google access token, cached by `GoogleAuth::access_token()` for
-`expires_in - 60` seconds (Google issues 3599 s, so 3539 s). It holds the bearer
-token and nothing else — never the service-account key, never the JWT — and is
-deleted whenever Google answers 401, so the next attempt signs in again. Losing
-it costs one extra token exchange of ~200-350 ms.
-
-### Option `gatb_state` — one array, autoload `no`
-Created by `RunLog` on the first run or the first cron hit, never by the settings
-screen. It is the whole of the plugin's idempotency (DECISIONS "Scheduling,
-retries and idempotency on WP-Cron"): a report for a day is sent at most once.
-
-| Key | Type | Default | Written by |
-|---|---|---|---|
-| `last_report_date` | string | `''` | `RunLog::mark_sent()` after Telegram accepted the message — the property's day, `Y-m-d`, never the server's |
-| `attempt` | int | `0` | `RunLog::mark_failed()` adds one; a success resets it to 0, and so does `RunLog::reset_attempt()` when a day is given up after its last attempt |
-| `last_cron_hit` | int | `0` | `RunLog::mark_cron_hit()` on any request that runs as WP-Cron (`wp_doing_cron()`); `0` = never |
-
-Every write **merges** into the stored row rather than replacing it: the day and
-the counter are written by a run, the hit by a cron request, and neither may drop
-what the other remembered. A row written before `last_cron_hit` existed completes
-to `0` on read, so there is no migration.
-
-A failed run leaves `last_report_date` untouched on purpose: the day stays
-unsent, which is what the retry looks for and what keeps a failure from being
-remembered as a delivery. Giving a day up after its last attempt does not change
-that either — only the counter goes back to 0, so the next day starts at 1. `last_cron_hit` is read by one thing only —
-screen `Settings`, to warn when WP-Cron is switched off in `wp-config.php` and
-nothing has called `wp-cron.php` for 24 hours.
-
-The plugin's two cron events are the other half of this row. `gatb_daily_report`
-recurs daily and takes no arguments; `gatb_retry_report` is a single event booked
-an hour after a failed scheduled run and **carries the day it is for** (`Y-m-d`),
-because an hour later "yesterday" may be another day. Both are removed with
-`wp_unschedule_hook()`, which unschedules a hook's events whatever arguments they
-carry.
-
-The **next run is not stored here.** `wp_next_scheduled( 'gatb_daily_report' )`
-is the one copy of it; a second one in this row would have to be invalidated on
-every reschedule and could only ever disagree with the event that actually
-fires.
-
-### Option `gatb_log` — a list of at most 30 entries, autoload `no`
-Created on the first run by `RunLog::add()`, newest first, capped at
-`RunLog::KEEP` = 30 — the 31st run drops the oldest. Read by screen `Run log`
-under the settings form.
-
-| Key | Type | Meaning |
+| Column | Type | Notes |
 |---|---|---|
-| `time` | int | Unix time of the run; the screen prints it with `wp_date()` in the site's zone |
-| `trigger` | string | `manual` (the *Send now* button), `cron` or `retry` — the last two are written from Sprint 2 |
-| `date` | string | the day the report was about, `Y-m-d`; when the report could not be built at all, the day the **site** would call yesterday |
-| `status` | string | `sent` or `failed` |
-| `attempt` | int | which attempt this was for that day: 1 after a success, 2 after one failure, and so on |
-| `message` | string | what to tell the administrator |
+| role `customer_support_specialist` | — | caps shared by `conversation`, `application`, `questionary` |
+| role `student`, usermeta `user_study_state` | — | written by unused legacy code |
 
-**No secret is ever written here.** The only text stored is the mapped message of
-a `TelegramException`, `GaClientException` or `GoogleAuthException`; those are
-scrubbed of the bot token before they are thrown and never carry the
-service-account key. A stored entry is completed and typed on the way out, so a
-row edited by hand cannot break the table that prints it.
+### gatb_settings
+- **Purpose:** the configuration of `ga-telegram-bridge` (option, autoload `no`).
+- **Written by:** `Plugin::activate()` (defaults) and the settings screen through the Settings API (`Settings`).
 
-`uninstall.php` removes everything above when the plugin is **deleted**: the
-three options `gatb_settings`, `gatb_state` and `gatb_log`, the transient
-`gatb_google_access_token`, and both cron events (`wp_unschedule_hook()`, so the
-retry goes with the day it carries). It runs with the plugin unloaded, so the
-names are literals in that file and a unit test holds each one to the constant it
-must equal. **Deactivating** the plugin is a different thing and takes only the
-schedule: the settings, the state and the log survive being switched off.
+| Column | Type | Notes |
+|---|---|---|
+| `property_id` | string | default `''`; digits only |
+| `service_account_json` | string | default `''`; overridden by `GATB_GA_SERVICE_ACCOUNT_JSON` |
+| `telegram_bot_token` | string | default `''`; overridden by `GATB_TELEGRAM_BOT_TOKEN` |
+| `telegram_chat_id` | string | default `''`; `/^-?\d+$/` |
+| `telegram_thread_id` | string | default `''`; empty or `/^[1-9]\d*$/` |
+| `send_time` | string | default `09:00`; `HH:MM`, site-local |
+| `max_attempts` | int | default 3; 1–10 |
+| `blocks` | array<string,bool> | keys `visitors` (always true), `pages`, `channels`, `cities`, `devices`, `trend`; default all true |
 
-## Feature `search-stats` (custom table + `wp_options`)
-Owned entirely by the theme feature `search-stats`
-(`docs/features/search-stats/FEATURE.md`, code in
-`inc/features/search-stats/`), on every install separately. No other feature
-writes here.
+### gatb_state
+- **Purpose:** the plugin's idempotency — which day was delivered, the day's attempts, the last WP-Cron hit (option, autoload `no`).
+- **Written by:** `RunLog`, merging into the stored row.
 
-### Table `{prefix}dovira_search_queries`: one row per recorded search
-Created by `Schema::install()` through `dbDelta()`. That runs on
-`after_switch_theme`, and on `init` whenever the stored schema version is
-behind `Schema::VERSION`. On an install where the theme is already active, as
-after a hand deploy, the first request after the code arrives creates the
-table. A `wp db …` command does not load WordPress, so it does not create it.
+| Column | Type | Notes |
+|---|---|---|
+| `last_report_date` | string | default `''`; `Y-m-d` of the property's day |
+| `attempt` | int | default 0 |
+| `last_cron_hit` | int | default 0; Unix time |
 
-| Column | Type | Null | Meaning |
-|---|---|---|---|
-| `id` | `bigint(20) unsigned` auto-increment | no | primary key |
-| `level` | `varchar(16)` | no | `site` (header search), `services` (the `services` block filter) or `service` (a service's price-list filter) |
-| `query_text` | `varchar(100)` | no | the query, normalized once on the server (lowercase, trimmed, whitespace collapsed); the raw text is never stored |
-| `context_id` | `bigint(20) unsigned`, default `0` | no | the post the search belongs to: the page hosting the block for `services`, the service for `service`; `0` for `site` |
-| `results` | `int(10) unsigned` | yes | how many results the results page showed, for `site` only; `NULL` for the other levels |
-| `created_at` | `datetime` | no | when the search was recorded, **UTC** |
+### gatb_log
+- **Purpose:** the last runs of the report (option, autoload `no`).
+- **Written by:** `RunLog::add()`, newest first.
 
-Keys:
-- `PRIMARY KEY (id)`;
-- `level_created_at (level, created_at)`, for the report's per-level period
-  queries;
-- `created_at (created_at)`, for the purge.
+| Column | Type | Notes |
+|---|---|---|
+| (list) | array | at most 30 entries (`RunLog::KEEP`) |
+| `time` | int | Unix time |
+| `trigger` | string | `manual` / `cron` / `retry` |
+| `date` | string | `Y-m-d` |
+| `status` | string | `sent` / `failed` |
+| `attempt` | int | |
+| `message` | string | never a secret |
 
-The report reads the table with one query per level and period, six in all
-(`Repository::top()`, called by `Stats::build()`):
-```sql
-SELECT query_text, context_id, COUNT(*) AS n, MAX(results) AS max_results, MAX(created_at) AS last_at
-FROM {prefix}dovira_search_queries
-WHERE level = %s AND created_at >= %s AND created_at < %s
-GROUP BY query_text, context_id
-ORDER BY n DESC, last_at DESC
-LIMIT 5
-```
-- The bounds are the UTC edges of whole calendar days in the site's zone
-  (`Periods`), half-open: yesterday, and the 28 days that end with it.
-- `level_created_at` is the key built for it: equality on `level`, then a range
-  on `created_at`. `created_at` alone can serve the range too, and MariaDB
-  picks between the two from the table's statistics — on the empty local table
-  it picked `created_at`. The code forces neither.
-- "Nothing found" is `MAX(results) = 0`; the two filter levels store `NULL`,
-  so their `max_results` is `NULL` and never flags.
-- `GROUP BY query_text` follows the column's collation
-  (`utf8mb4_unicode_520_ci`), not byte equality. Measured on the local
-  MariaDB: `ґ` = `г` and `ё` = `е`, while `й` ≠ `и`, `ї` ≠ `і` and `є` ≠ `е`.
-  So «ґудзик» and «гудзик» are one query in the report, printed in one of the
-  two spellings.
-- Nothing derived is stored: every report runs the six queries again.
+### gatb_google_access_token
+- **Purpose:** the cached Google access token (transient).
+- **Written by:** `GoogleAuth::access_token()`; deleted on a 401.
 
-The charset and collation are `$wpdb->get_charset_collate()` (`utf8mb4` /
-`utf8mb4_unicode_520_ci` locally).
+| Column | Type | Notes |
+|---|---|---|
+| (value) | string | expires after `expires_in` − 60 s |
 
-Rows are inserted only by the REST route `POST dovira/v1/search-stats/record`
-(`Repository::insert()`, called after the whole request has been validated):
-one row per valid request, `created_at` = `current_time( 'mysql', true )`. A
-refused request writes nothing.
+### {prefix}dovira_search_queries
+- **Purpose:** one row per search a visitor made in a browser.
+- **Written by:** `Repository::insert()` behind `POST dovira/v1/search-stats/record`; deleted only by `Purge::run()`.
 
-No personal data: no IP, user agent, cookie or user id.
+| Column | Type | Notes |
+|---|---|---|
+| `id` | bigint(20) unsigned | auto-increment, primary key |
+| `level` | varchar(16) | not null; `site` / `services` / `service`; key `level_created_at (level, created_at)` |
+| `query_text` | varchar(100) | not null; normalized |
+| `context_id` | bigint(20) unsigned | not null, default 0 |
+| `results` | int(10) unsigned | null; set for `site` only |
+| `created_at` | datetime | not null; UTC; key `created_at` |
 
-### Option `dovira_search_stats_db_version`: an int, autoloaded
-The schema version of the table: `Schema::VERSION`, `1` today.
-- It is written only after a `dbDelta()` run that leaves `$wpdb->last_error`
-  empty. A failed run is therefore retried on the next request.
-- It is autoloaded because `init` reads it on every request.
-- Raising `Schema::VERSION` together with the `CREATE TABLE` is how the table
-  changes. `dbDelta()` adds columns and keys but never drops them.
+### dovira_search_stats_db_version
+- **Purpose:** the schema version of `{prefix}dovira_search_queries` (option, autoloaded).
+- **Written by:** `Schema::install()` after a `dbDelta()` run with no error.
 
-### Retention: cron hook `dovira_search_stats_purge` and filter `dovira_search_stats_retention_days`
-Rows older than the retention period are deleted once a day by
-`Purge::run()` on the WP-Cron event `dovira_search_stats_purge`.
-- The event recurs `daily`. It is registered on `init` whenever it is not
-  scheduled, and it carries no arguments.
-- The retention is `apply_filters( 'dovira_search_stats_retention_days', 90 )`,
-  clamped to at least **29** days. The report reads the last 28 days, so a
-  filter can shorten the log but never cut into the period the report needs.
-- The cutoff is the current UTC time minus that many days, compared with
-  `created_at`.
+| Column | Type | Notes |
+|---|---|---|
+| (value) | int | equals `Schema::VERSION` (1) |
 
-**The purge is the only delete**, and it never runs from a public request.
+### dovira_mcp_confirm_{hash}
+- **Purpose:** one pending write confirmation of the connector (transient, 15 minutes).
+- **Written by:** `Confirmation`; deleted when the token is used.
 
-### Removing the feature's data by hand
-A theme has no uninstall, so nothing removes the table, the option or the
-event. After the feature is removed from the code, on each install:
-```bash
-wp db query "DROP TABLE {prefix}dovira_search_queries"
-wp option delete dovira_search_stats_db_version
-wp cron event delete dovira_search_stats_purge
-```
+| Column | Type | Notes |
+|---|---|---|
+| `{hash}` | — | SHA-256 of user id, `Mcp-Session-Id` and the canonical payload without `confirmation` |
+| `user_id`, `session`, `payload_hash`, `issued_at` | — | |
+| `token_hash` | string | SHA-256 of the token; the token itself is never stored |
+| `diff` | array | |
 
-## Feature `content-mcp` (transients, cron, files — no table)
-The connector owns no table, post type or option. It writes posts, postmeta
-(through ACF), terms and attachments of `core` as the connected user, through
-the same WordPress functions the admin uses. Its own data:
+### dovira_mcp_dumped_{session}
+- **Purpose:** marks that a connector session has its dump (transient, 24 hours).
+- **Written by:** `Dump::ensure()`; never set for an empty session.
 
-### Transient `dovira_mcp_confirm_{hash}` — one pending confirmation, 15 minutes
-`hash` = SHA-256 of (user id, `Mcp-Session-Id`, canonical JSON of the write
-payload: keys sorted at every level, without `confirmation`). Value:
-`{user_id, session, payload_hash, token_hash, diff, issued_at}`. The random
-token the preview returns is stored only as its SHA-256 (`token_hash`). A new
-preview of the same payload replaces the pending one. Deleted when the token
-is used, so a token writes once (`Confirmation`).
+| Column | Type | Notes |
+|---|---|---|
+| (value) | string | the dump file's name |
 
-### Transient `dovira_mcp_dumped_{session}` — the session has its dump, 24 hours
-Value: the dump file name. `session` = the adapter's `Mcp-Session-Id`; an empty
-session (REST `wp-abilities/v1`, WP-CLI) sets no transient and dumps every time.
+## Relations without a foreign key
+- A `service` price row's `cities` values and its `city_prices.price_city_{term_id}` names point at `service-city` term ids, many to many.
+- `service`, `employee` and `vacancy` belong to `service-city` terms through WordPress's term relationships, many to many.
+- An `application`'s `vacancy` names one `vacancy` post, and its `file` one attachment, many to one.
+- Polylang's `post_translations` links a Ukrainian post to at most one Russian post.
+- `{prefix}dovira_search_queries.context_id` names a `wp_posts.ID` (the page hosting the `services` block, or the `service`), 0 for level `site`, checked only when the row is written.
+- A `dovira_mcp_dumped_{session}` value names a dump file in `DOVIRA_MCP_DUMP_DIR` (`dovira-{host}-{YYYY-MM-DD}-{HHMMSS}.sql.gz`, never overwritten).
 
-### Dump files — `DOVIRA_MCP_DUMP_DIR` (fallback `wp-content/backup-db/`)
-`dovira-{host}-{YYYY-MM-DD}-{HHMMSS}.sql.gz`, mode `0600`, a numeric suffix
-when the name exists; never overwritten or renamed. Whole database, written by
-PHP (`SHOW TABLES`, `SHOW CREATE TABLE` + `INSERT`s of 500 rows, gzip level
-6). The file opens with a comment naming the host and the date and ends with
-`-- tables: N` and `-- finished in X s, peak memory Y MB` (read with
-`zcat … | tail -2`); a dump without that footer is incomplete and is never
-left behind: any failure deletes the file and aborts the write. The fallback
-folder also holds an `.htaccess` (deny) and an empty `index.php` written by
-the feature.
-
-### Cron `dovira_mcp_dump_retention` (daily) and filter `dovira_mcp_dump_retention_days`
-Deletes dump files of the pattern above older than the filtered days (default
-90, never fewer than 1). Nothing else is ever deleted from the folder.
-
-### Writing posts
-The connector stores nothing of its own here: a change goes through
-`wp_update_post` (title, status, slug, parent, menu order, `post_content`),
-`wp_set_object_terms` (existing terms only) and `update_field` (the post's
-ACF fields), as the connected user. An `acf/*` block's `attrs.data` is the
-flattened `name` / `_name` → field key data that ACF's own save returns
-(`acf_setup_meta()` capture), in the block's field order; a block's other
-attrs are kept; a new block also stores its unnamed fields' defaults.
-`trash-post` sets `post_status = trash` through `wp_trash_post` (with
-WordPress's `_wp_trash_meta_*`), never deletes.
-
-`create-post` inserts with `wp_insert_post` (author = the connected user,
-the status the person named), sets the language `uk`
-(`pll_set_post_language`), then writes the ACF fields and the terms. A new
-service's `prices` rows are general rows: `is_price_general = 1`, `price`,
-and `cities` = `["city_{term_id}"]` of this install's own `service-city`
-term; `city_prices` is never written. `create-term` inserts a `category` /
-`post_tag` term with `wp_insert_term` and sets it to `uk`
-(`pll_set_term_language`) when Polylang translates the taxonomy;
-`update-term` uses `wp_update_term`. No `service-city` term is ever
-written.
-
-`create-translation` inserts the Russian copy of a Ukrainian post with
-`wp_insert_post` (author = the connected user; `page_template`,
-`_thumbnail_id` for `page` / `post`, and the source's `post_date` /
-`post_date_gmt` as arguments), sets it to `ru` (`pll_set_post_language`) and
-links it to the source and its other translations
-(`pll_save_post_translations`). Its ACF fields are written with
-`update_field` by field key: the payload's translated values, and the
-source's raw values (`get_field_objects( id, false )`) for the rest — a
-service's price rows as stored, with only `title` / `description` replaced.
-Its terms are the source's mapped to their `ru` terms (`pll_get_term`),
-`service-city` by the same id.
-
-`upload-media` adds an attachment through `media_handle_sideload()`: author =
-the connected user, `post_parent` = `attach_to` (0 when not asked), the file
-in the uploads folder with WordPress's own metadata and sizes, and the alt
-text as `_wp_attachment_image_alt`. Attachments have no language (Polylang's
-media support is off).
-
-### Reading `service` prices
-The connector stores nothing to read prices. It reads a row's price in this
-install's city by the rule of `single-service.php`:
-- `is_price_general` → `price`;
-- otherwise `city_prices_price_city_{term_id}` of the install's own
-  `service-city` term (the term whose slug is the city of the site URL);
-- `empty()` → no price (`null`).
-
-### Sessions
-The MCP sessions are the adapter's: user meta of the connected user, idle
-expiry 24 h (plugin `mcp-adapter`). This feature reads the session id from the
-request only: `Session` keeps the `Mcp-Session-Id` header of a REST request to
-`/mcp/dovira` (filter `rest_request_before_callbacks`), which the adapter has
-checked against the user's sessions (protocol 2025-11-25 and the legacy
-revisions it maps there). Any other request (REST `wp-abilities/v1`, WP-CLI,
-the sessionless revision 2026-07-28) has the session `''`.
-
-## Relations
-```
-service-city ──< service            application >── vacancy (post_object)
-service-city ──< employee           application >── attachment (file / CV)
-service-city ──< vacancy            service.prices[*].cities ──> service-city term ids
-uk post <── Polylang post_translations ──> ru post   (page, post, service, vacancy)
-dovira_search_queries.context_id ──> wp_posts.ID   (not enforced; 0 for level site)
-```
-`conversation` and `questionary` have no relations to other posts.
-`dovira_search_queries.context_id` is checked only when the row is written (a
-published post; a `service` for level `service`). Nothing keeps it in step
-afterwards: a post deleted later leaves its id behind in the table.
-
-## Invariants
-- A `service` price row is visible in a city tab only if `cities` contains
-  that city's `city_{term_id}`; a per-city price lives in
-  `city_prices_price_city_{term_id}` of the same row.
-- Deleting or re-creating a `service-city` term orphans every stored
-  `price_city_{old_id}` value — term ids are stable identifiers.
-- `conversation`, `application`, `questionary` rows are created only by the
-  form/REST handlers, never by editors; `post_author` is user 1 for CF7-created
-  records.
-- `processing_date` is derived from a status change and never entered by hand.
-- `options_ru_*` rows exist only for the ru language and are produced by
-  `wp dovira translate-options` or by saving the options page while viewing ru.
+## Invariants across tables
+- A price row appears under a city only when its `cities` contains that city's `city_{term_id}`, and its per-city price lives in the same row's `city_prices_price_city_{term_id}`.
+- Deleting or re-creating a `service-city` term orphans every stored value whose name carries the old id.
+- `conversation`, `application` and `questionary` posts are created only by the form and REST handlers, never by staff or the connector.
+- `options_ru_*` rows exist only for Russian and are written by `wp dovira translate-options` or by saving the options page in Russian.
+- A Russian `service` has the same price rows, in the same order, as its Ukrainian source; a price is changed in the source and copied by row index.

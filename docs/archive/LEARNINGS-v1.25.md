@@ -1,4 +1,8 @@
-# Learnings — Dovira
+# Learnings — Dovira (ARCHIVE)
+
+<!-- ARCHIVE since the migration to playbook v3.0.4 (2026-11-24): read by no
+     step and never written. Its successor is docs/INCIDENTS.md; the
+     entries below are kept for the playbook's author. -->
 
 <!-- Playbook system file: how the playbook itself failed in this project,
      for the playbook's author. Not project documentation — its entries are

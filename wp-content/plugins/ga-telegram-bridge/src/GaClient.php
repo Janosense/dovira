@@ -14,7 +14,7 @@ namespace GaTelegramBridge;
  * way it can fail.
  *
  * The error shapes mapped here are the ones the Sprint 1 spike actually
- * received (docs/LEARNINGS.md, "Sprint 1 spike findings"); they are not the
+ * received (docs/archive/LEARNINGS-v1.25.md, "Sprint 1 spike findings"); they are not the
  * shape the token endpoint uses, which GoogleAuth maps separately.
  */
 final class GaClient {

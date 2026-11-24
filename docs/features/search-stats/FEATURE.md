@@ -1,78 +1,69 @@
 # Feature — search-stats
 
-<!-- playbook: v1.21. Lightweight ARCHITECTURE + DATA-MODEL for one
-     feature. Lives at docs/features/search-stats/FEATURE.md next to its
-     sprints/. Root ARCHITECTURE.md holds only one row + a link here.
-     Keep ≤80 lines. -->
+<!-- playbook: v3.0.4. State document, read whole at the start of every step
+     of the feature. Shape, triggers and what does not belong here:
+     docs/CONTRACTS.md → `### docs/features/{feature}/FEATURE.md`. -->
 
-## Purpose & scope
-Records what visitors search for on the site itself — the header search
-(`?s=`), the filter of the `services` block and the price-list filter on a
-service page — on each city install, and adds three blocks with the five most
-frequent queries of yesterday and of the last 28 days to the daily Telegram
-report `ga-telegram-bridge` already sends, so the owner sees what people look
-for and what they do not find. OUT of scope: a wp-admin screen or export of
-the queries, clicks on results, changes to how any search works (relevance,
-suggestions), a separate message or chat, sending anything to Google Analytics,
-counting visitors without JavaScript.
+## Scope
+Records what visitors search for on each city site — the header search, the
+filter of the services list and the filter of a service's price list — and
+adds up to three blocks with the five most frequent queries of yesterday and
+of the last 28 days to the daily Telegram report of `ga-telegram-bridge`, so
+the owner sees what people look for and what they do not find.
 
-## Fit into the host
-- **Code location:** `wp-content/themes/dovira/inc/features/search-stats/` (+ `source/scripts/features/search-stats/`, `tests/Unit/SearchStats/`)
-- **Host area:** theme `dovira` — obeys its `CLAUDE.md` isolation rules
+## Fit
+- **Code path:** `wp-content/themes/dovira/inc/features/search-stats/` (JS in `source/scripts/features/search-stats/`, tests in `tests/Unit/SearchStats/`)
 - **Entry point:** `inc/features/search-stats/bootstrap.php`, required by one line in `functions.php`
-- **Shared code it depends on:** `search.php` (prints the query and its results count as data attributes), `source/scripts/modules/services-search.js` and `source/scripts/modules/init-service-price-lists.js` (call the recorder), `inc/acf/blocks/services/template.php` and `single-service.php` (print `data-search-stats-context` on the filter's input), `source/scripts/app.js` (imports the module), `dovira\` REST registration in `inc/rest-api.php`; plugin `ga-telegram-bridge` ≥ 0.3.0 for the filter `gatb_extra_blocks` (absent plugin = nothing is rendered, recording continues)
+- **Depends on:** `search.php` (prints the query and its results count as data attributes); `source/scripts/modules/services-search.js` and `init-service-price-lists.js` (hand their inputs to the recorder); `inc/acf/blocks/services/template.php` and `single-service.php` (print `data-search-stats-context`); `source/scripts/app.js` (calls `recordSiteSearch()`); `inc/rest-api.php` (registers the controller); plugin `ga-telegram-bridge` ≥ 0.3.0 for the filter `gatb_extra_blocks` — without it nothing is rendered and recording continues
+- **Exposes:** the route `POST dovira/v1/search-stats/record` (`API.md`); the filter `dovira_search_stats_retention_days` (int, default 90, at least 29); `recordSearch( level, query, contextId, results )` in `record.js`
+
+## Structure
+| Module | Where | Responsibility |
+|---|---|---|
+| `Schema` | `inc/features/search-stats/Schema.php` | creates and upgrades the table with `dbDelta()` |
+| `Purge` | `inc/features/search-stats/Purge.php` | the daily deletion of old rows |
+| `Normalizer` | `inc/features/search-stats/Normalizer.php` | the one normalization of a query |
+| `RecordController`, `Repository` | `inc/features/search-stats/` | validation and the one insert; the report's reads |
+| `ResultsCount` | `inc/features/search-stats/ResultsCount.php` | counts what `search.php` lists |
+| `Periods`, `Stats`, `SearchStats`, `TopQuery` | `inc/features/search-stats/` | yesterday and 28 days in the site's zone; the six top-five lists |
+| `Renderer` | `inc/features/search-stats/Renderer.php` | the blocks of the message; the `gatb_extra_blocks` callback |
+| `record.js` | `source/scripts/features/search-stats/record.js` | the browser recorder |
 
 ## Data
-Owns the table `{$wpdb->prefix}dovira_search_queries` (`id`, `level` ∈ `site`
-| `services` | `service`, `query_text` normalized, `context_id` post id or 0,
-`results` count for `site` else `NULL`, `created_at` UTC; details in
-`docs/DATA-MODEL.md`), the option `dovira_search_stats_db_version` (schema
-version for `dbDelta`), the daily cron hook `dovira_search_stats_purge` and
-the filter `dovira_search_stats_retention_days` (default 90, floor 29). No
-other feature writes to this table; nothing removes it — a theme has no
-uninstall, so dropping it is a documented manual step.
-
-## Invariants
-- The REST route validates everything before writing and writes at most one row per request (root invariant 8); an invalid request leaves no trace.
-- Normalization happens in one place, on the server (`mb_strtolower`, trim, whitespace collapsed); only the normalized text is stored and printed.
-- One search = one row: the browser sends a value once it has rested for the pause or the field lost focus, at least 3 characters, never the value that input sent last in this page view; `search.php` sends its query once per results page.
-- No personal data: no IP, user agent, cookie or user id is stored.
-- Public pages never call Telegram: the theme only hands HTML to the plugin's filter, inside the plugin's own run.
-- A purge is the only delete and runs from cron, never from a public request.
-- Rendering reads the table with two queries per level (yesterday, 28 days), top-5 each; nothing derived is stored.
-
-## Interfaces
-- **REST:** `POST dovira/v1/search-stats/record` — public; JSON `{level, query, context_id, results}`; `204` on success, `400` on refusal (WordPress's error body `{code, message, data: {status}}`), `500` when the row could not be written (DECISIONS "Every search is recorded from the browser through one public REST route").
-- **Hook consumed:** `gatb_extra_blocks` (plugin `ga-telegram-bridge`) — the theme returns the plugin's list plus its three blocks (DECISIONS "A theme feature that records site search, plugged into the daily report through a new plugin filter").
-- **Filter exposed:** `dovira_search_stats_retention_days` (int).
-- **JS:** `recordSearch(level, query, contextId, results)` from `source/scripts/features/search-stats/record.js`; the two filters and `search.php` are its only callers — `search.php` through `recordSiteSearch()`, which `app.js` calls once on load and which reads the results section's `data-search-stats-query` / `data-search-stats-results`.
+- table `{prefix}dovira_search_queries`
+- option `dovira_search_stats_db_version`
+- cron event `dovira_search_stats_purge`
 
 ## UI
-- **Screens:** none of its own — the three blocks inside the plugin's message (no design export; DECISIONS "No UI design phase; the three sections are fixed as a template in FEATURE.md"). Confirmed against the rendered message in Sprint 2 Step 3 (`Renderer::blocks()`, printed by the plugin between the devices block and the GA link):
-  ```
-  🔎 <b>Пошук по сайту</b>
-  Вчора:
-  1. {query} — {count}[ · нічого не знайдено]
-  За 28 днів:
-  1. {query} — {count}[ · нічого не знайдено]
+| Screen | Route | In code | Artboard |
+|---|---|---|---|
+| Search blocks of the daily report | the Telegram message of `ga-telegram-bridge`, after its own blocks and before the GA link | `Renderer::blocks()` | none — the template below |
 
-  🗂 <b>Пошук у переліку послуг</b>
-  Вчора:
-  1. {query} — {page title} — {count}
-  За 28 днів:
-  —
+The template, one blank line between blocks:
+```
+🔎 <b>Пошук по сайту</b>
+Вчора:
+1. {query} — {count}[ · нічого не знайдено]
+За 28 днів:
+1. {query} — {count}[ · нічого не знайдено]
 
-  💊 <b>Пошук у послугах</b>
-  Вчора:
-  1. {query} — {service title} — {count}
-  За 28 днів:
-  1. {query} — {service title} — {count}
-  ```
-  Up to five rows per list, ordered by count then by the most recent search; the marker when `MAX(results) = 0` over the period; `{page title}` / `{service title}` = the Ukrainian source post of `context_id` (`(видалено)` when gone); a query longer than 40 characters keeps its first 40 and gets `…` (cut before escaping, no space left before the `…`); `{count}` is plain digits (`number_format_i18n()` would write the Ukrainian thousands separator as `&nbsp;`, which Telegram refuses); every value HTML-escaped with double encoding (`htmlspecialchars`, `ENT_QUOTES | ENT_HTML401`) — not `esc_html()`, which keeps an entity it recognises, so a visitor who searched `&nbsp;` would make Telegram refuse the whole message; a title is the post's raw title with its entities decoded, then escaped once; an empty list prints `—`; a block with two empty lists is not contributed; the blocks sit after the plugin's own blocks and before the GA link, one blank line between blocks (DECISIONS "Three blocks, each with a yesterday list and a 28-day list").
-- **Reuses:** —
-- **Introduces:** —
+🗂 <b>Пошук у переліку послуг</b>
+Вчора:
+1. {query} — {page title} — {count}
+За 28 днів:
+—
+
+💊 <b>Пошук у послугах</b>
+Вчора:
+1. {query} — {service title} — {count}
+За 28 днів:
+1. {query} — {service title} — {count}
+```
+Up to five rows per list, by count, then by the latest search; an empty list
+prints `—`, and a level with two empty lists adds no block; a title is the
+Ukrainian source post of `context_id`, or `(видалено)`; a query longer than
+40 characters keeps its first 40 and gets `…`; `{count}` is plain digits.
 
 ## Roadmap
 - Sprint 1 — every search on both sites lands in the table, so rows accumulate on production before the first report (`sprints/SPRINT-1.md`)
 - Sprint 2 — the morning report on both installs carries the three search blocks (`sprints/SPRINT-2.md`)
-- Later (not planned): a wp-admin list of queries, clicks on results, a weekly view

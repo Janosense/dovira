@@ -13,7 +13,7 @@ namespace GaTelegramBridge;
  * Builds and signs the JWT, exchanges it for an access token and caches it.
  *
  * Everything here follows what the Sprint 1 spike observed against the real
- * endpoint (docs/LEARNINGS.md, "Sprint 1 spike findings"), in particular: the
+ * endpoint (docs/archive/LEARNINGS-v1.25.md, "Sprint 1 spike findings"), in particular: the
  * private key needs no newline repair, and the token endpoint answers with its
  * own error shape, not the Data API's.
  */

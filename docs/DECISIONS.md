@@ -1,19 +1,20 @@
 # Decisions log — Dovira
 
-<!-- One decision log per project, across ALL features and code areas.
-     Append-only; a reversed decision gets a NEW entry that links the old one,
-     the old entry is never edited. Read this file before proposing any architecture or
-     tooling change — it may already be decided. -->
-
-Entry format:
-
-## {{YYYY-MM-DD}} — {{Short title}}
-- **Context:** {{what forced the decision}}
-- **Decision:** {{what was decided, one sentence, imperative}}
-- **Alternatives rejected:** {{and the one-line reason each lost}}
-- **Consequences:** {{what this commits us to}}
-
----
+<!-- playbook: v3.0.4. One log per project, across all features. Append-only,
+     in date order; the only edit ever made to an entry is the bullet
+     `Superseded by:`. An entry exists only when real alternatives were
+     weighed and the loser is one a future agent might reasonably propose —
+     how a decided thing was built is not a decision. The title is the index:
+     search titles before proposing a change. Shape, triggers and what does
+     not belong here: docs/CONTRACTS.md → `### docs/DECISIONS.md`.
+     Migration to v3.0.4 (2026-11-24): the entries up to 2026-11-12 have the
+     shape of playbook v1.x and are not edited. In them "LEARNINGS" is the
+     archived docs/archive/LEARNINGS-v1.25.md, "templates/" is
+     docs/templates/, "verification/sprint-N-step-M.md" is
+     verification/sprint-N/step-M.md, "Data flows" is ARCHITECTURE.md →
+     Flows, "Feature map" is the CLAUDE.md Features table, and a FEATURE.md
+     "Interfaces" / "Invariants" section is FEATURE.md → Fit, DOMAIN.md →
+     Rules and API.md. -->
 
 ## 2026-09-08 — Adopt the playbook (v1.14) into the existing codebase
 - **Context:** The site has been live and developed without a written record; new work should go through the playbook's discovery → step cycle.

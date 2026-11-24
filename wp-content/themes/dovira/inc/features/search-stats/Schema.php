@@ -4,7 +4,7 @@ namespace dovira\SearchStats;
 
 /**
  * The table every recorded search lands in, created and upgraded with dbDelta()
- * from a schema version kept in an option (docs/DATA-MODEL.md → Feature search-stats).
+ * from a schema version kept in an option (docs/DATA-MODEL.md → {prefix}dovira_search_queries).
  */
 final class Schema {
 

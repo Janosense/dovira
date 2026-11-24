@@ -48,7 +48,7 @@ final class Runner {
 
 		if ( null !== $for_date && $for_date !== $report->date ) {
 			// Every range this plugin asks Google for is relative and resolved
-			// in the property's zone (FEATURE.md → Invariants), so once the
+			// in the property's zone (docs/DOMAIN.md → Rules → Daily report), so once the
 			// property's day has turned, the day this attempt was booked for
 			// cannot be read again — and no later attempt could do better. The
 			// report in hand belongs to the run the daily event will make at

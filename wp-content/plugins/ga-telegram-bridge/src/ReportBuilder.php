@@ -23,7 +23,7 @@ use Exception;
  * visitors report come back ordered by metric value rather than by the order
  * the date ranges were asked for, so they are keyed by the dateRange dimension
  * GA adds; reading them by row index would silently swap yesterday with the
- * previous 28 days (docs/LEARNINGS.md, "Sprint 1 spike findings").
+ * previous 28 days (docs/archive/LEARNINGS-v1.25.md, "Sprint 1 spike findings").
  */
 final class ReportBuilder {
 
@@ -250,7 +250,7 @@ final class ReportBuilder {
 	 * The rows are keyed by their own `date` dimension (`Ymd`) and never by
 	 * position: the request asks for them in date order, but GA orders rows by
 	 * metric whenever it is not told otherwise, and an index-based parser is how
-	 * one day's figure ends up under another day's name (docs/LEARNINGS.md,
+	 * one day's figure ends up under another day's name (docs/archive/LEARNINGS-v1.25.md,
 	 * "Sprint 1 spike findings"). The 28 days are then walked from the oldest to
 	 * the report's own day, so a day GA left out of the answer — one with no
 	 * visitors at all — is a zero in its place rather than a hole or a shift.

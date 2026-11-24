@@ -8,7 +8,10 @@ verification guide (written by `/do-step`) on the task branch, and every
 item holds. Never ask whether the step was verified.
 
 **Which step.** The step is the one implemented or fixed in this session —
-feature, N and M come from its plan section. If this session did neither:
+feature, N and M, the plan section, its `### Branch` and the documents the
+session already read are in the context: nothing is re-read to establish
+them (not `docs/WORKLOG.md`, not the Features table, not the sprint file).
+Only a session that did neither derives the step from the files:
 the checked-out branch is a task branch named in a plan section's
 `### Branch` → that step. Otherwise take the feature from the latest
 `docs/WORKLOG.md` entry, open its
@@ -30,59 +33,102 @@ committed: do not repeat steps 1–4 and do not write a second WORKLOG entry.
   step 7.
 
 1. **Completeness check.** The plan section is
-   `implemented, awaiting verification`, all its checkboxes — those of its
-   `### Verification fix` subsections too — are ticked, and the check
-   command (`docs/TECH-STACK.md` → Check command) exits 0 on the task
-   branch. If not — list what's missing and stop. The verification guide
-   `docs/features/{feature}/verification/sprint-{N}-step-{M}.md` missing →
+   `implemented, awaiting verification` and all its checkboxes — those of
+   its `### Verification fix` subsections too — are ticked. The check
+   command (`docs/TECH-STACK.md` → Check command) is run here only when a
+   commit after the step gate (the last run of the whole command) changed a
+   file outside `docs/**` and `*.md` (`git log --name-only` since that
+   commit); otherwise that green run stands and nothing is run. If something is missing or the run
+   is red — list it and stop. The verification guide
+   `docs/features/{feature}/verification/sprint-{N}/step-{M}.md` missing →
    write it (Read `.claude/commands/do-step.md`, step 8), commit it on the
    task branch and STOP: the user verifies by it, then runs `/close-step`
    again.
 
-2. **Docs self-check.** Go through this checklist and update files where the
-   answer is "yes" (in the same closing commit):
-   - schema / table / field / index changed → `docs/DATA-MODEL.md` (and the feature's `FEATURE.md` data section)
-   - new module, endpoint, flow, background job, integration → `docs/ARCHITECTURE.md`; feature-internal structure → its `FEATURE.md`
-   - a decision was made, changed, or a fixed decision was challenged → new entry in `docs/DECISIONS.md` (a rule for code → the `docs/TECH-STACK.md` item below)
-   - dependency or tool added → `docs/TECH-STACK.md`
-   - the step set a rule for code that later steps must follow and would
-     otherwise write differently → one line in `docs/TECH-STACK.md`:
-     ANTI-PATTERNS when the stack's default leads the other way
-     (`Do not X — Y`), otherwise CONVENTIONS; a rule of one code area only
-     → that area's `CLAUDE.md` → Area conventions. The line is the record:
-     it needs a DECISIONS entry only when alternatives were weighed. A line
-     this step made untrue is edited or removed. A one-time choice, a
-     detail of this step or screen, a data-model or domain rule is not such
-     a rule — it has its own item in this list
-   - new domain term or rule appeared or changed → `docs/DOMAIN.md`
-   - endpoint / event / payload shape changed → `docs/CONTRACTS.md` (if the project keeps one)
-   - design token or shared UI component added or changed, or a screen built → `docs/DESIGN.md` (if the project keeps one: Tokens / Components "In code" / Screens) and the feature's `FEATURE.md` UI section
-   - a playbook rule was missing, ambiguous, contradicted another, or was
-     broken in this step → entry in `docs/LEARNINGS.md` per its header. A
-     playbook rule says which command, file, branch or approval does what
-     and when (a section of `.claude/commands/`, a Core rule or Step protocol
-     line of `CLAUDE.md`, a template); how to write code or tests is not one
+2. **Docs self-check.** Two parts, both against `docs/CONTRACTS.md`.
 
-3. **Worklog.** Add a new entry at the TOP of `docs/WORKLOG.md` (3–6 lines;
-   existing entries are never edited): date, [feature] sprint/step, what
-   changed, key decisions, open questions.
-   If the step touched shared code, say so explicitly — other features read this.
-   If the section has `### Verification fix` subsections: one line — which
-   guide item failed and the cause.
-   If this is the last step of the sprint, the entry ends with the
-   line `Sprint {N} complete — all steps closed, {sprint branch} merged into
-   main`.
+   The first is mechanical and reads no document: take `git diff
+   --name-only {base}..HEAD` on the task branch and walk the **Write
+   index** of `docs/CONTRACTS.md` — every diff trigger whose change the
+   diff shows must have its file in the same diff. A trigger hit with no
+   record → the task that changed the code did not do its documentation:
+   write the record now, in the shape the file's Contract gives, in this
+   closing commit. A document that is in the diff is not re-read here —
+   `/do-step` wrote it. The plan section holds the template's subsections,
+   `### Mid-step decisions` and `### Verification fix` only; any other
+   subsection a session added (a report of what was built, proven or
+   looked at) is deleted in the closing commit — its decisions, if any,
+   become one sentence each under `### Mid-step decisions`.
+
+   The second part is judgement, over the step's plan section — its
+   Questions with their `Resolved:` answers and its `### Mid-step
+   decisions` — not over the diff. These are the Write index's
+   *judgement, at close* triggers; the criterion for every one of them is
+   the same: **the next step, written by an agent with no memory of this
+   one, would do it differently without the record.** An item that does
+   not meet it goes with the plan and is written nowhere.
+   - **`docs/TECH-STACK.md`** — an item shows a stack default overridden
+     or switched off, an idiom that contradicted a decision or an
+     invariant, or a new architecture test → one sentence: ANTI-PATTERNS
+     when the stack's default leads the other way (`Do not X — Y instead
+     (pointer)`), otherwise CONVENTIONS (`X is Y (pointer)`); a rule of
+     one code area only → that area's `CLAUDE.md` → Area conventions; a
+     rule CLAUDE.md → Domain invariants already states is not repeated.
+     A sentence this step made untrue is edited or removed.
+   - **`docs/DOMAIN.md`** — an item states a law of the domain the step
+     uncovered (a rule a test can prove, a term, a state) → one Rules
+     sentence, a Glossary row or a Lifecycles row; if it was a choice
+     between alternatives, it is a DECISIONS entry instead. A Rules
+     sentence this step rewrote or removed that root `CLAUDE.md` → Domain
+     invariants copies → the copy is replaced verbatim (removed with its
+     rule) in the same commit; a step adds no sentence there.
+   - **`docs/TESTING.md`** — an item fixes how tests are written in this
+     project, or names a trap that will recur → one Rules sentence; a
+     trap met once is not written.
+   - **`docs/DECISIONS.md`** — the user chose between alternatives in a
+     plan question, or an item reversed or refined a fixed decision → one
+     entry in the shape of its Contract (Context · Decision · Alternatives
+     rejected · Consequences · Supersedes), and the bullet `Superseded by:
+     {date — title}` on the entry it reverses. Only when real alternatives
+     were weighed and the loser is one a future agent might reasonably
+     propose; how the step built a decided thing is never an entry.
+   - **`docs/INCIDENTS.md`** — this is the second `/fix-step` on this
+     step, or the same failure the previous step had → one `repeat` entry
+     in the shape of its Contract. Nothing else about the playbook is
+     written: an inconvenience, a plan that proved wrong against the code,
+     a rule the agent found awkward are not events.
+   - **`docs/TESTING.md` → Layers** — the check command ran in step 1 →
+     the sentence with the full run's time is refreshed.
+
+3. **Worklog.** Write the step's entry at the top of `docs/WORKLOG.md` →
+   Entries, in the shape of its Contract (`docs/CONTRACTS.md` →
+   WORKLOG.md), in the language of the documents: the heading `## {date} —
+   [{feature}] Sprint {N} Step {M} — {title}`, then exactly Changed ·
+   Decisions (the titles of the DECISIONS entries step 2 added, or "—") ·
+   Shared code · Opened / closed. Then replace `## Open`: remove every
+   bullet this step closed, add one bullet per item it leaves owed — a
+   guide item not verified, an artefact pending the run the plan named
+   (Checks → Not locally verifiable), a question carried forward — each
+   opening with today's date. Existing entries are never edited; an Open
+   item is never repeated inside an entry. If this is the last step of the
+   sprint, the entry ends with the sentence `Sprint {N} complete — {sprint
+   branch} merged into main.` The entry is the agent's memory, not the
+   report: the report is step 6.
 
 4. **Status and commit.** Tick the step's checkbox in
    `docs/features/{feature}/sprints/SPRINT-{N}.md` (`### [x] Step {M} — …`),
    mark the plan section `(status: closed)`. Then commit everything from
-   steps 2–4 on the task branch: `chore(step): close sprint {N} step {M}`.
-   Nothing else is written to `SPRINT-{N}.md` — the tick is the only thing
-   this command changes there.
+   steps 2–4 on the task branch: `chore(step): close sprint {N} step {M}` —
+   a docs-only commit, no check run. Nothing else is written to
+   `SPRINT-{N}.md` — the tick is the only thing this command changes there.
 
 5. **Merge.** Merge the task branch into its base (both named in the plan's
-   `### Branch`) with `--no-ff`, message `merge: sprint {N} step {M} — {title}`;
-   run the check command on the base (exit 0), then delete the task branch.
+   `### Branch`) with `--no-ff`, message `merge: sprint {N} step {M} — {title}`.
+   Then `git diff --quiet {task branch} {base}`: an empty diff means the
+   base now holds exactly the tree the task branch was verified with — no
+   check run, say so in the report; a non-empty diff (the base moved since
+   the branch was made) → run the check command on the base (exit 0). Then
+   delete the task branch.
    A conflict limited to entries added at the TOP of `docs/WORKLOG.md` is
    resolved by keeping both, newest on top; any other conflict is never
    resolved silently: run `git merge --abort`, report the conflicting files
@@ -91,20 +137,16 @@ committed: do not repeat steps 1–4 and do not write a second WORKLOG entry.
    `/adhoc` on the base). Either way the next `/close-step` resumes here
    (**Resume**).
 
-6. **Final report** in the chat (plain language if root `CLAUDE.md` →
-   Project profile says `user-verified`):
+6. **Report.** The chat reply is built from the WORKLOG entry of step 3
+   and the plan — not the entry verbatim: in plain language (CLAUDE.md →
+   Project profile → Verification) — what the user can now see or do,
+   which of their answers shaped it, what stays open and what closes it —
+   as long as it needs to be understood, and
+   nothing a file already shows (no file list, no commit list: `git log`
+   and the plan hold them). It ends with two bullets:
 
    ```
-   ## Step {M} closed — {title}
-   - What was done:
-   - Files changed:
-   - Commits:  (+ merged into {base})
-   - Deviations from plan:  (incl. the section's `### Mid-step decisions` and `### Verification fix` subsections)
-   - Verification guide: `docs/features/{feature}/verification/sprint-{N}-step-{M}.md` — verified by the user
-   - Not locally verifiable: n/a | {artefact} — pending {the run named in the plan, e.g. the next deploy from `main`}
-   - Docs updated: [list]
-   - Design: n/a | unchanged | changed — `docs/DESIGN.md` (Tokens / Components "In code" / Screens) and `FEATURE.md` → UI updated in this close
-   - Open questions:
+   - Merged: `{task branch}` → `{base}` ({merge commit}; check on {base}: passed | not run — tree identical to the task branch)
    - Next: /plan-step [feature] {N} {M+1}   (feature name required when several exist)
      — or, if this was the last step of the sprint, the lines of **Last step of the sprint** below
    ```
@@ -115,8 +157,9 @@ committed: do not repeat steps 1–4 and do not write a second WORKLOG entry.
    - **Merge the sprint into `main`.** Per the git model in root
      `CLAUDE.md`: with chained sprint branches, merge the sprint branch (the
      base of step 5) into `main` with `--no-ff`, message
-     `merge: sprint {N} — {sprint name}`; the sprint branch stays. The check
-     command exits 0 on `main` after the merge; if it fails, report it and
+     `merge: sprint {N} — {sprint name}`; the sprint branch stays. Then
+     `git diff --quiet {sprint branch} main`: empty → no check run; otherwise
+     the check command exits 0 on `main`, and if it fails, report it and
      STOP (the fix goes through `/adhoc` on `main`). A conflict is handled
      as in step 5 (WORKLOG entries only → keep both; otherwise
      `git merge --abort`, report the conflicting files and STOP — the next

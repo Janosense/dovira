@@ -1,227 +1,48 @@
 # Testing — Dovira
 
-<!-- Created by the ga-telegram-bridge discovery (2026-09-08) per DECISIONS
-     "Testing tooling and the project check command". The theme gained its own
-     unit suite in search-stats Sprint 1 Step 1 (DECISIONS "The theme gets
-     PHPUnit + Brain\Monkey, run by the check command" and "The theme's test
-     tooling is its own Composer project in `tests/`"). The theme's JS got a
-     Vitest suite in city-popup Sprint 1 Step 1 (DECISIONS "The theme gets
-     Vitest for the unit tests of its JavaScript, run by the check command").
-     This file governs every suite and any future feature. -->
+<!-- playbook: v3.0.4. State document, read whole at "Tests to write" and
+     before writing a test; a sentence or row that stops being true is
+     edited or removed. Shape, triggers and what does not belong here:
+     docs/CONTRACTS.md → `### docs/TESTING.md`. -->
 
-## Profile
-Developer-reviewed (root `CLAUDE.md`): the user reads code and diffs; tests
-are still mandatory in the test-critical zones and for every piece of pure
-logic in a plugin or a theme feature.
-
-## Levels
-| Level | What | Where | Runs WordPress? |
+## Layers
+| Layer | Where | Proves | Cost of one test |
 |---|---|---|---|
-| Unit (plugin) | pure logic: JWT building, response parsing, report maths, message rendering, sanitizers, scheduling maths, state transitions | `wp-content/plugins/ga-telegram-bridge/tests/Unit/` | No — Brain\Monkey stubs `__()`, `esc_html()`, `get_option()`, `wp_remote_post()` etc. |
-| Unit (theme) | the theme features' pure code: query normalization, REST validation, the SQL a class builds and the shaping of its results, rendering | `wp-content/themes/dovira/tests/Unit/` (one directory per feature, e.g. `SearchStats/`) | No — the same Brain\Monkey approach; `$wpdb` is a test double |
-| Unit (theme JS) | the theme features' pure JS modules — no DOM access; the DOM glue that calls them is verified by hand (TECH-STACK → CONVENTIONS) | `wp-content/themes/dovira/tests/js/` (one directory per feature, e.g. `city-popup/`; `smoke.test.js` at the root checks the setup) | No — Vitest in the `node` environment, no DOM library; modules are imported through the `@scripts` alias (`vitest.config.js`) |
-| Integration | none automated in v1; the manual verification guides written by `/close-step` (`docs/features/{feature}/verification/`) are the regression suite | — | — |
+| Plugin unit | `wp-content/plugins/ga-telegram-bridge/tests/Unit/` | a rule of a plugin class — JWT, response parsing, report maths, message rendering, settings validation, scheduling — with WordPress functions and the network stubbed, no WordPress and no database | — |
+| Theme unit | `wp-content/themes/dovira/tests/Unit/{Feature}/` | a rule of a theme feature's class or of `core`'s shared code — normalization, REST validation, the SQL a class builds and the shaping of its rows, rendering, a connector tool's preview and write — with `$wpdb` a test double, no WordPress and no database | — |
+| Theme JS unit | `wp-content/themes/dovira/tests/js/{feature}/` | a rule of a pure JS module, in Vitest's `node` environment with no DOM | — |
+| Page, DOM glue, real database, a live service | the step's verification guide | what only a browser, MariaDB or the service shows | a guide item |
 
-## How to run
-- Everything that gates a commit: `bin/check.sh` from the repo root. The order is
-  PHPCS → PHPStan → PHPUnit in the plugin → `php -l` over the theme → PHPUnit
-  in the theme's `tests/` → Vitest in the theme.
-  - It needs PHP ≥ 8.3, Composer, Node and npm on PATH.
-  - It installs the theme's test tooling by itself when `tests/vendor/` or the
-    theme's `node_modules/` is missing.
-  - Run it on the host. `node_modules/` is shared with the DDEV container but
-    holds native packages for the host's OS only. So `ddev exec bash
-    bin/check.sh` stops before stage 1 with "Vite does not load here" (TECH-STACK
-    → Check command). Stages 1–5 alone would run there, including with a
-    `tests/vendor/` installed on the host.
-- Plugin only: `cd wp-content/plugins/ga-telegram-bridge && composer install`,
-  then `composer test` (PHPUnit), `composer lint` / `composer lint:fix` (PHPCS /
-  PHPCBF) and `composer analyse` (PHPStan).
-- Theme only: `cd wp-content/themes/dovira/tests && composer install`, then
-  `composer test`.
-  - `tests/` is a Composer project of its own, holding only the test tooling
-    (PHPUnit, Brain\Monkey). Its `vendor/` is gitignored and its lock is not
-    committed.
-  - The theme's own `composer.json` never gets a dev package. Its `vendor/`
-    is committed and `functions.php` loads that autoloader on every request.
-  - The theme has no PHPCS or PHPStan.
-- Theme JS only: `cd wp-content/themes/dovira && npm test` (`vitest run`).
-  - Vitest is a `devDependencies` entry of the theme's `package.json`;
-    `node_modules/` and `package-lock.json` are gitignored.
-  - A `node_modules/` installed before Vitest was added has no `vitest` and
-    the run fails with `vitest: command not found`: run `npm install` in the
-    theme once.
-- **A test that asserts nothing fails the run, in all three suites.** Each `phpunit.xml.dist` sets
-  `failOnRisky="true"` beside `failOnWarning`, `failOnNotice` and
-  `failOnDeprecation`, so PHPUnit's "This test did not perform any assertions"
-  stops the gate instead of passing inside a green run. It was added in Sprint 3
-  Step 1 with no failing test behind it; a test written as a Brain\Monkey
-  expectation (`Functions\expect( … )->never()`) has to record what happened and
-  assert it, rather than relying on the expectation alone. The Vitest suite
-  gets the same through `expect.requireAssertions` in `vitest.config.js`: a
-  test without an `expect()` fails with "expected any number of assertion, but
-  got none".
-- **Suite order is fixed, not alphabetical (plugin).** `phpunit.xml.dist` declares two
-  suites so that `SettingsSecretConstantsTest` — the one class that defines the
-  real `GATB_GA_SERVICE_ACCOUNT_JSON` and `GATB_TELEGRAM_BOT_TOKEN` — runs last.
-  A PHP constant cannot be undefined, so once that class has run, every later
-  test sees a secret it cannot control: `Settings::telegram_bot_token()` returns
-  the constant no matter what `get_option()` is stubbed to. Any test that needs
-  an unset or a chosen secret must therefore be in the first suite. Adding a
-  test class needs nothing; adding a second class that defines **secret**
-  constants means moving it into the last suite too. `UninstallTest` defines
-  `WP_UNINSTALL_PLUGIN`, which nothing else reads, and stays in the first suite.
-- **Secret constants run in separate processes (theme).** The theme's suite is
-  one suite, so a test class that defines `DOVIRA_TELEGRAM_BOT_TOKEN` or
-  `DOVIRA_TELEGRAM_JOIN_PASSWORD` carries `#[RunTestsInSeparateProcesses]` and
-  `#[PreserveGlobalState( false )]` (`tests/Unit/Telegram/NotifyTest.php`); the
-  suite's own process never defines them, which `SecretsUnsetTest` asserts. A test
-  of code that calls `error_log()` declares `$this->expectErrorLog()` — PHPUnit
-  captures the log itself, so a test cannot redirect it.
+The full run's time on the development machine: —.
 
-## Fixtures
-- **Theme:** fixtures go in `wp-content/themes/dovira/tests/fixtures/{feature}/`.
-  There are none yet. The same recorded-vs-written rule below applies.
-  - A `$wpdb` result that a SQL test shapes (the rows `get_results()` would
-    return) is written inside the test, next to the query it answers.
-  - A fixture file is only for data that was actually captured.
-
-The rest of this section is the plugin's
-(`wp-content/plugins/ga-telegram-bridge/tests/fixtures/`).
-- Google responses live in `tests/fixtures/ga/*.json` (Data API and the token
-  endpoint, one directory), Telegram responses in `tests/fixtures/telegram/`.
-- Every file keeps the envelope the Sprint 1 spike recorded —
-  `{"status": …, "body": …, "ms": …}` — so a test rebuilds a `wp_remote_post`
-  response from it instead of hand-writing one.
-- **Recorded vs. written.** A plain `*.json` is a real response captured against
-  the live API. One that could not be captured is named `*.written.json` and is
-  built from the vendor's documentation. The distinction matters: a written
-  fixture proves only that our parser handles the shape we believe in, so a
-  written case still needs a real run somewhere — the step's manual verification
-  guide, if nothing else.
-  - Google (`tests/fixtures/ga/`): written are `token-success.written.json` (the
-    spike deliberately never printed a real access token) and
-    `error-quota-exceeded.written.json` (one PHP process cannot exhaust the
-    quota; see LEARNINGS "Sprint 1 spike findings"). The other six are recorded.
-  - Telegram (`tests/fixtures/telegram/`): recorded are `error-unauthorized.json`
-    (401) and `error-not-found.json` (404) — a wrong or malformed token needs no
-    credential to provoke, so both were captured against the live API. The other
-    five (the successful send, `chat not found`, `can't parse entities`,
-    `Forbidden`, `Too Many Requests`) all need a working bot token and are
-    written from Telegram's Bot API documentation.
-- A recorded fixture is committed only after the property id, the
-  service-account address and any token are checked for and removed. The six
-  Sprint 1 Google dumps contained none of them and are committed unchanged; the
-  two Telegram recordings are constant refusals with no request data in them.
-- A throwaway RSA key pair for JWT tests is generated in the test bootstrap
-  (`tests/TestKey.php`, one 2048-bit pair per run, ~30 ms) — never a real
-  service-account key in the repo.
-
-## Never mocked
-- The report maths (`Dynamics`), the response parsers and `MessageRenderer`
-  run on real recorded payloads — a test that stubs them tests nothing.
-  For the daily report those payloads are
-  `batch-run-reports-daily-call-{1,2}.json`: the two `batchRunReports` calls
-  `ReportBuilder` composes, recorded against the live property. They are worth
-  reading before changing the parser, because the real data carries the awkward
-  cases — the visitors rows come back ordered by metric (`date_range_3` first,
-  `date_range_0` last) and the cities list contains a real `(not set)` row. The
-  two pages reports inside `call-1` (positions 1 and 2) were re-recorded on
-  2026-09-10, when the request dropped `pageTitle` and grouped by `pagePath`
-  alone (DECISIONS "Top pages are counted by path and named by their post"); the
-  rest of `call-1` is the Sprint 1 recording, unchanged. `call-2` was re-recorded
-  whole on 2026-09-16, when the trend block made the seventh request: it now
-  holds **two** reports, `devices` then `trend`, and the one-report recording it
-  replaced is kept as `batch-run-reports-daily-call-2-no-trend.json` for the test
-  that switches the trend off. Re-recording moved the device figures, so the
-  shares in `ReportBuilderTest` and in the message snapshot are those of the new
-  day.
-- **The pinned clock belongs to the recordings.** `NOON` in `ReportBuilderTest`,
-  `MessageRendererTest` and `RunnerTest` is noon UTC of the day `call-2` was
-  recorded, so the report is about the day before it. Until Sprint 3 the value
-  was arbitrary, because no recorded row carried a calendar date — the visitors
-  report is keyed by `date_range_0…3` and every other block by a label. The trend
-  report is the first whose rows *are* dates, and `ReportBuilder` walks the 28
-  days ending on the report date: a clock that disagreed with the recording would
-  read all 28 as 0 and the test would still pass. Re-recording the daily calls
-  therefore means moving that constant with them. The other dates in the suite —
-  `report_date()`'s own midnight tests, `render_failure()`'s argument, the log
-  rows in `AdminSendNowTest` — are self-contained and stay where they are. The empty-property
-  shape is the one written fixture (`batch-run-reports-no-data.written.json`):
-  a property with traffic cannot produce it.
-- A page is named by the post WordPress finds at its path — `url_to_postid()`,
-  `get_permalink()`, `get_post_field()`. Those are WordPress globals, so they are
-  stubbed, by `tests/SitePosts.php`, with what a local copy of the Kharkiv site
-  answered for the recorded paths on 2026-09-10. A test that builds a real report
-  but is not about page names stubs `url_to_postid()` with `0`, which labels
-  every page by its path.
-- `MessageRenderer` is asserted as **whole messages**, built from those same
-  recorded payloads through the real `ReportBuilder`. Two WordPress functions
-  are stubbed inside it — `wp_date()` and `number_format_i18n()` — with what
-  WordPress does in **English**, so the expected messages in the test are the
-  English source strings; Brain\Monkey's translation stubs return the original
-  anyway. The Ukrainian rendering is therefore proven by the step's manual
-  verification guide and by nothing else. One test stubs
-  `number_format_i18n()` with the Ukrainian thousands separator, which really is
-  the string `&nbsp;`, because Telegram accepts only four named entities
-  (`&lt;`, `&gt;`, `&amp;`, `&quot;`) and would otherwise print it or refuse the
-  message.
-- `openssl_sign`/`openssl_verify` — the signature is verified for real against
-  the test key.
-- Only the network boundary (`wp_remote_post`/`wp_remote_get`) and WordPress
-  globals are stubbed.
-- **Theme suite: the same rule.**
-  - What is stubbed: WordPress globals, the network boundary, and `$wpdb` (a
-    test double that records the query it is given and returns fixed rows).
-  - What always runs for real: the feature's own code, meaning the normalizer,
-    the REST validation, the SQL a class builds, the shaping of its results
-    and the renderer.
+## Run
+- Everything: `bin/check.sh` from the repo root, on the host (`TECH-STACK.md` → Check command).
+- The plugin alone: `cd wp-content/plugins/ga-telegram-bridge && composer test` (`composer lint`, `composer analyse` for PHPCS and PHPStan); one test: `composer test -- --filter {TestName}`.
+- The theme alone: `cd wp-content/themes/dovira/tests && composer test`, one test with `-- --filter {TestName}`; its JS: `cd wp-content/themes/dovira && npm test`, one file with `npx vitest run tests/js/{feature}/{file}`.
+- There is no test database: no suite boots WordPress or connects to MariaDB.
 
 ## Rules
-- A new fixture is added in the same commit as the parser that reads it.
-- No test may contain a real token, key or chat id; the check command's
-  PHPCS config may add a sniff for `private_key` literals if this is ever
-  violated (see LEARNINGS.md).
-- **Theme: never a database.**
-  - SQL is tested by asserting the query the code builds and by shaping fixed
-    `$wpdb` results.
-  - No `WP_UnitTestCase`, no test database (DECISIONS "The theme gets
-    PHPUnit + Brain\Monkey, run by the check command").
-  - What a query really does against MariaDB is proven by the step's manual
-    verification.
-- **Theme: tooling lives in `tests/composer.json`** (DECISIONS "The theme's test
-  tooling is its own Composer project in `tests/`").
-  - A new test class needs nothing: PHPUnit scans `tests/Unit/`, and the PSR-4
-    `dovira\Tests\` → `tests/` autoloads its helpers.
-  - The code under test is loaded with `require_once` by its path in the
-    theme, as the theme itself loads its classes, e.g.
-    `require_once dirname( __DIR__, 3 ) . '/inc/features/search-stats/Schema.php';`
-    from `tests/Unit/SearchStats/`.
-    - Never add a PSR-4 entry for theme code to `tests/composer.json`: the
-      gate installs only when `tests/vendor/` is missing, so an existing
-      install would not see the new mapping until someone ran
-      `composer dump-autoload` by hand.
-    - Never require a feature's `bootstrap.php` in a test either: it
-      registers hooks when it loads.
-  - `$wpdb` is `dovira\Tests\WpdbDouble` (`tests/WpdbDouble.php`), put in
-    `$GLOBALS['wpdb']` in `setUp()` and removed in `tearDown()`. It records
-    `prepare()`, `query()`, `insert()` and `get_results()` calls and carries
-    `prefix` and `last_error`; `insert()` returns `$insert_result`, which a
-    test sets to `false` for a failed insert, and `get_results()` answers with
-    the next entry of `$results` (a list of `stdClass` rows whose values are
-    strings or `null`, as WordPress returns them, or `null`; `[]` once the
-    queue is empty), recording each query in `$selected`. Extend it when a
-    class needs another `$wpdb` method.
-  - **WordPress's own classes come from the committed core, never rewritten
-    in `tests/`.** `tests/bootstrap.php` requires `WP_Error`,
-    `WP_HTTP_Response`, `WP_REST_Response`, `WP_REST_Request` and
-    `WP_REST_Controller` from `wp-includes/`. None of those files runs code
-    when loaded, so a REST test builds a real `WP_REST_Request` (header plus
-    body) and WordPress parses the JSON body itself.
-    - The WordPress functions those classes call are stubbed like any other:
-      `absint()` and `do_action()` come from Brain\Monkey, and a test stubs
-      `wp_is_json_media_type()`.
-    - A class whose file needs `ABSPATH` or loads a library, such as
-      `WP_Http`, stays out. A malformed JSON body therefore has no unit test:
-      WordPress refuses it with `rest_invalid_json` before a route's callback
-      runs, and the step's verification guide checks it.
+- A theme test never uses a database: SQL is proven by asserting the query the class builds and by shaping fixed `$wpdb` rows, and what the query does in MariaDB is a guide item.
+- The code under test is loaded with `require_once` by its path in the theme, as the theme loads it; never by a PSR-4 entry in `tests/composer.json` and never through a feature's `bootstrap.php`, which registers hooks.
+- WordPress's own classes (`WP_Error`, `WP_HTTP_Response`, `WP_REST_Response`, `WP_REST_Request`, `WP_REST_Controller`) come from the committed `wp-includes/` through `tests/bootstrap.php`, never rewritten in `tests/`, so a REST test builds a real request.
+- A class whose file needs `ABSPATH` or loads a library (`WP_Http`) stays out of the suites, and what it does is a guide item (for example a malformed JSON body refused before the route runs).
+- Only WordPress globals, the network boundary and `$wpdb` are stubbed; the class under test, its parsers and its renderer always run for real.
+- A Brain\Monkey expectation such as `Functions\expect( … )->never()` records what happened and is followed by an assertion, because a test without one fails the run.
+- A `function_exists()` branch is tested through an injected check, never by leaving the function unstubbed: Brain\Monkey keeps every stubbed function declared for the rest of the run.
+- Brain\Monkey's `esc_html` stub double-encodes, so a unit test cannot tell `esc_html()` from the escaping a Telegram message needs; the guide proves the message.
+- In the plugin, a test class that defines a real secret constant (`GATB_GA_SERVICE_ACCOUNT_JSON`, `GATB_TELEGRAM_BOT_TOKEN`) belongs to the last suite of `phpunit.xml.dist`, since a constant cannot be undefined.
+- In the theme, a test class that defines `DOVIRA_TELEGRAM_BOT_TOKEN` or `DOVIRA_TELEGRAM_JOIN_PASSWORD` runs in separate processes (`#[RunTestsInSeparateProcesses]`, `#[PreserveGlobalState( false )]`), and `SecretsUnsetTest` holds that the suite's own process never defines them.
+- A test of code that calls `error_log()` declares `$this->expectErrorLog()`.
+- A message is asserted whole, built through the real `ReportBuilder` from the recorded payloads, with `wp_date()` and `number_format_i18n()` stubbed in English; the Ukrainian rendering is a guide item.
+- The clock a report test pins (`NOON` in `ReportBuilderTest`, `MessageRendererTest`, `RunnerTest`) is noon UTC of the day `batch-run-reports-daily-call-2.json` was recorded, and it moves with any re-recording of the daily calls.
+- A fixture is added in the commit of the parser that reads it, and no test or fixture holds a real token, key, property id, service-account address or chat id.
+
+## Fakes & helpers
+- `tests/fixtures/ga/*.json`, `tests/fixtures/telegram/*.json` (plugin) — Google and Telegram responses in the envelope `{status, body, ms}`, rebuilt into a `wp_remote_post` response; a plain `*.json` is recorded against the live API, a `*.written.json` is built from the provider's documentation.
+- `batch-run-reports-daily-call-1.json`, `batch-run-reports-daily-call-2.json` (plugin) — the two `batchRunReports` calls of a real daily report; `…-call-2-no-trend.json` is the call without the trend report.
+- `TestKey` (plugin `tests/TestKey.php`) — a throwaway 2048-bit RSA pair generated per run, so `openssl_sign` / `openssl_verify` run for real.
+- `SitePosts` (plugin `tests/SitePosts.php`) — stubs `url_to_postid()`, `get_permalink()`, `get_post_field()` with what the Kharkiv site answered for the recorded paths.
+- `TestCase` (plugin and theme) — sets up and tears down Brain\Monkey.
+- `WpdbDouble` (theme `tests/WpdbDouble.php`) — `$GLOBALS['wpdb']` for a test: records `prepare()`, `query()`, `insert()`, `get_results()`, answers `get_results()` from a queue of rows and `insert()` from `$insert_result`; extended when a class needs another method.
+- Theme fixtures, when one is captured, go into `tests/fixtures/{feature}/`; rows a test shapes are written inside the test, next to the query they answer.
+- There are no factories: a test builds its posts, rows and requests inline.

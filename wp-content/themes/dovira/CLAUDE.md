@@ -1,12 +1,15 @@
 # dovira theme — code-area conventions
 
-<!-- Code-area CLAUDE.md: ONE per code directory (an app, package, or
-     service; in WP — a theme or plugin), even when
-     several features live inside it. Delta only, ≤60 lines — everything
-     shared (core rules, step protocol, git model) stays in the ROOT CLAUDE.md.
+<!-- playbook: v3.0.4. Code-area CLAUDE.md: ONE per code directory (an
+     app, package, or service; in WordPress a theme or a plugin), even when
+     several features live inside it. Delta only — everything shared (core
+     rules, step protocol, git model) stays in the ROOT CLAUDE.md.
      Claude Code loads this file automatically when working inside this
      directory. Feature docs do NOT live here — they are in
-     docs/features/{feature}/ (see the Features table in root CLAUDE.md). -->
+     docs/features/{feature}/ (see the Features table in root CLAUDE.md).
+     Area conventions: one rule each, in the shape of docs/TECH-STACK.md →
+     CONVENTIONS; written by /close-step when a step sets a rule of this
+     area (docs/CONTRACTS.md → TECH-STACK.md). -->
 
 The `dovira` classic theme — the whole custom codebase of the site: content
 model, ACF blocks, templates, form pipelines, REST, CLI (feature `core`,

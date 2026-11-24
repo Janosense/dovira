@@ -3,7 +3,7 @@
 namespace dovira\ContentMcp;
 
 /**
- * One post in the connector's shape (FEATURE.md → Interfaces):
+ * One post in the connector's shape:
  * `{id, type, status, lang, translations, title, slug, parent, link,
  * menu_order, modified, terms, acf, blocks}`.
  *

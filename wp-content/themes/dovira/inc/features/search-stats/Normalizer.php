@@ -4,7 +4,7 @@ namespace dovira\SearchStats;
 
 /**
  * The one place a search text is normalized; only its result is stored and
- * printed (docs/features/search-stats/FEATURE.md → Invariants).
+ * printed (docs/ARCHITECTURE.md → Flows → Site search → statistics row).
  */
 final class Normalizer {
 

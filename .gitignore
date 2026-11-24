@@ -77,3 +77,7 @@ wp-content/mysql.sql
 
 # one-off ops exports (price / service comparisons)
 /reports/
+
+# playbook action log written by .claude/hooks/log.py — local, never committed
+.claude/log/
+__pycache__/

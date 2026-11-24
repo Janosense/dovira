@@ -5,7 +5,7 @@ namespace dovira\SearchStats;
 /**
  * Reads what the daily report prints: two queries per level — yesterday and
  * the last 28 days — top five each, straight from the table every time
- * (docs/features/search-stats/FEATURE.md → Invariants).
+ * (docs/ARCHITECTURE.md → Flows → Daily report → search blocks).
  */
 final class Stats {
 

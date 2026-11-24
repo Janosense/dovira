@@ -3,7 +3,7 @@
 namespace dovira\ContentMcp;
 
 /**
- * The one preview format of every write (FEATURE.md → Interfaces):
+ * The one preview format of every write:
  * `{diff:[{target:{id, lang}, field, from, to}], warnings:[…]}`.
  */
 final class Diff {

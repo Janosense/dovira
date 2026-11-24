@@ -1,349 +1,187 @@
 # Architecture — Dovira
 
-<!-- Describes what exists. Adoption mode filled it from the codebase as-is (2026-09-08). -->
+<!-- playbook: v3.0.4. State document: a section is read whole and replaced;
+     no provenance, no future tense. Shape, triggers and what does not
+     belong here: docs/CONTRACTS.md → `### docs/ARCHITECTURE.md`. -->
 
 ## Overview
-A single WordPress install per city (Kharkiv `dovira.vet`, Kyiv `kyiv.dovira.vet`)
-running the same custom classic theme `wp-content/themes/dovira`. Everything
-custom is in the theme: post types, taxonomy, ACF field groups and blocks (PHP
-via ACF Builder), page templates, a REST namespace `dovira/v1`, WP-CLI
-commands, a custom role, Polylang glue. The only custom plugin is
-`ga-telegram-bridge` (its own code area, no theme coupling); there are no
-mu-plugins. Content is bilingual (uk source, ru translation) via Polylang.
-
-```
- Browser ──► nginx/PHP-FPM ──► WordPress core 7.1
-                                  │
-                                  ├─ theme dovira (functions.php bootstrap)
-                                  │    ├─ inc/register-post-types.php  → inc/post-types/*.php   (6 CPTs)
-                                  │    ├─ inc/register-taxonomies.php  → inc/taxonomies/city.php (service-city)
-                                  │    ├─ inc/acf.php                  → inc/acf/{fields,blocks,option-pages}
-                                  │    ├─ inc/utils.php                → CF7 hooks, admin columns/filters, Vite manifest
-                                  │    ├─ inc/rest-api.php             → dovira/v1 (Telegram, Questionary, search-stats)
-                                  │    ├─ inc/custom-roles.php         → customer_support_specialist
-                                  │    ├─ inc/polylang.php             → translatable CPTs, per-language ACF options
-                                  │    └─ inc/cli.php (WP_CLI only)    → wp dovira translate*, translations-*
-                                  │
-                                  ├─ plugins: ACF Pro, Polylang, Contact Form 7, Yoast SEO, Cyr2Lat,
-                                  │           Simple Custom Post Order, Enable Media Replace, Akismet, Loco Translate
-                                  ├─ plugin ga-telegram-bridge (own code area, feature ga-telegram-bridge)
-                                  │    └─ ga-telegram-bridge.php → src/ (PSR-4, own autoloader)
-                                  └─ MariaDB
- External: Telegram Bot API (notifications + webhook), Anthropic Messages API (CLI translation),
-           Google Fonts, GTM/GA4
-```
-
-## Feature map
-| Feature | Code area | Docs |
-|---|---|---|
-| `core` | the theme as-is, `wp-content/themes/dovira/` | `docs/features/core/FEATURE.md` |
-| `ga-telegram-bridge` | plugin `wp-content/plugins/ga-telegram-bridge/` (own `CLAUDE.md`) | `docs/features/ga-telegram-bridge/FEATURE.md` |
-| `search-stats` | theme feature `wp-content/themes/dovira/inc/features/search-stats/` (+ `source/scripts/features/search-stats/`) | `docs/features/search-stats/FEATURE.md` |
-| `city-popup` | theme feature `wp-content/themes/dovira/inc/features/city-popup/` (+ `source/scripts/features/city-popup/`, `source/styles/features/city-popup/`) | `docs/features/city-popup/FEATURE.md` |
-| `content-mcp` | theme feature `wp-content/themes/dovira/inc/features/content-mcp/` (tests in `tests/Unit/ContentMcp/`); transport: the third-party plugin `wp-content/plugins/mcp-adapter/` | `docs/features/content-mcp/FEATURE.md` |
-
-A new feature inside the theme goes into
-`wp-content/themes/dovira/inc/features/{name}/` with one registration line in
-`functions.php` (see the theme's `CLAUDE.md`); a feature that must run on any
-WordPress site goes into its own plugin, as `ga-telegram-bridge` does.
+One WordPress install per city — Kharkiv `dovira.vet`, Kyiv `kyiv.dovira.vet`,
+each with its own database — runs the same repository: the custom classic
+theme `wp-content/themes/dovira` (feature `core` and the theme features under
+`inc/features/`), the standalone plugin `ga-telegram-bridge`, the single-file
+plugin `dovira-bridge-conversations`, the third-party plugin `mcp-adapter`
+(transport of `content-mcp`) and stock plugins (ACF Pro, Polylang, Contact
+Form 7, Yoast SEO, Cyr2Lat, Simple Custom Post Order, Enable Media Replace,
+Akismet, Loco Translate); content is Ukrainian with Russian Polylang
+translations. Constraints every step respects:
+- Which city an install serves is decided once, from the site URL (`kyiv` in `get_site_url()` / `home_url()`), never from an option, constant, env flag or URL literal.
+- The two installs share code and nothing else: no database, option or request crosses between them, except a visitor's own navigation and the cookies `city-popup` writes on the domain both share.
+- Built front-end assets (`assets/`) and the theme's Composer `vendor/` are committed, so a deploy is a file sync with no build step on the server.
+- Public pages never call Google or Telegram synchronously on a visitor's behalf except the form notification, which runs after the record is saved.
+- `wp-content/mu-plugins/` is not used: it is gitignored and would not deploy.
 
 ## Modules
-| Module | Location | Responsibility / public surface | Must never |
+| Module | Where | Responsibility | Must never | Used by |
+|---|---|---|---|---|
+| Public pages | `header.php`, `footer.php`, `index.php`, `single*.php`, `search.php`, `404.php`, `templates/*.php`, `template-parts/**` | classic PHP templates of every public screen | branch on the city other than through the site URL | core, search-stats, city-popup |
+| Back office | wp-admin: post-type lists and columns in `inc/utils/{conversation,application,questionary}.php`, options page «Settings», role `customer_support_specialist` (`inc/custom-roles/`) | staff edit content and process records | define ACF field groups in the admin UI | core |
+| REST `dovira/v1` | controllers in `inc/rest-api/` and the features, registered in `inc/rest-api.php` | public JSON endpoints the theme's own pages call, and the Telegram webhook | write before every required field is validated | core, search-stats |
+| MCP server `mcp/dovira` | `inc/features/content-mcp/` on plugin `mcp-adapter` | the content connector's tools, as the connected user | expose an ability that is not `dovira/*` | content-mcp |
+| REST `dovira-bridge/v1` | plugin `wp-content/plugins/dovira-bridge-conversations/` (one file) | lets the outside app Dovira Bridge read conversations and set their processed status, as a user with `edit_others_conversations` | store data of its own | — (outside caller) |
+| WP-CLI `wp dovira …` | `inc/cli.php`, `inc/cli/` | AI translation uk → ru and translation bundles | run outside WP-CLI | core |
+| Bootstrap | `functions.php` | Composer autoload, theme `.env`, constants (`TEMPLATE_DIR`, `TEMPLATE_DIR_URI`, `ASSETS_DIR_URI`, `VITE_SERVER`), every `inc/*.php`, one `require_once` per theme feature's `bootstrap.php` | contain feature logic | every theme feature |
+| Content model | `inc/post-types/*.php`, `inc/taxonomies/*.php` (glob-loaded, one file each) | six post types and the taxonomy `service-city` | be registered anywhere else | core, content-mcp, search-stats |
+| ACF definitions | `inc/acf/fields/`, `inc/acf/option-pages/`, `inc/acf/blocks/{name}/` | every field group in PHP (ACF Builder); `acf/*` blocks registered by directory scan; the block allow-list `dovira_allowed_block_types()` | be created in the ACF admin UI | core, content-mcp |
+| Form pipelines | `inc/utils/conversation.php`, `inc/utils/application.php`, `inc/rest-api/QuestionaryController.php`, `inc/utils/telegram.php` | a submission becomes a post, then a Telegram notification (Flows) | call Telegram before the post is saved | core |
+| Polylang glue | `inc/polylang.php`, `inc/utils/polylang-string-translations.php` | translatable post types, ACF options per language, theme strings (`dovira_translate_string()`) | make `service-city` translatable | every theme feature |
+| Front-end build | `vite.config.js`, `postcss.config.cjs`, `source/**` → `assets/**` | ES modules imported by `source/scripts/app.js`, one CSS file per component or block, resolved through `starter_theme_vite_asset()` | be edited in `assets/` by hand | every theme feature |
+| Check script | `bin/check.sh` | the commit gate (`TECH-STACK.md` → Check command) | be replaced by an ad-hoc shell chain | every feature |
+| Ops tooling | `temp-data/` (read `temp-data/README.md` before touching Yoast meta or the SEO import), `reports/` | one-off imports and exports | be loaded by the theme at runtime | — |
+
+**Dependency rules**
+- A theme feature lives in `inc/features/{name}/` with one `bootstrap.php`, and `functions.php` holds exactly one line per feature.
+- A theme feature reads `core` through WordPress, ACF and Polylang functions and changes shared code only as a plan task marked "touches shared code" (theme `CLAUDE.md` → Feature isolation).
+- A feature never writes another feature's data; `content-mcp` writes `core`'s posts, terms and attachments only through the functions wp-admin uses, as the connected user.
+- The plugin `ga-telegram-bridge` never references the theme, and the theme reaches it only through the plugin's filters (`gatb_report_data`, `gatb_extra_blocks`, `gatb_message_html`), only when `GaTelegramBridge\Plugin` is loaded.
+- A new theme feature copies the layout of `inc/features/search-stats/`: classes in namespace `dovira\{Feature}` required by its `bootstrap.php`, JS in `source/scripts/features/{name}/`, styles in `source/styles/features/{name}/`, tests in `tests/Unit/{Feature}/` and `tests/js/{name}/`; a feature that must run on any WordPress site is a plugin of its own instead.
+
+## Platform
+| Concern | Mechanism | Where configured | Rule for new code |
 |---|---|---|---|
-| Bootstrap | `functions.php` | Loads Composer autoload, `.env` (phpdotenv), defines `TEMPLATE_DIR`, `VITE_SERVER`, `WP_ENVIRONMENT_TYPE`, `ASSETS_DIR_URI`; requires every `inc/*.php` and one `inc/features/{name}/bootstrap.php` per theme feature (today `search-stats`, `city-popup`) | contain logic beyond requires and constants |
-| Theme setup & assets | `inc/template-functions.php` | `after_setup_theme` supports, nav menus (`primary`, `footer_col_1`, `footer_col_2`), Vite asset enqueue via manifest (`starter_theme_vite_asset`), HMR in development, `defer` on scripts, head cleanup, block allow-list (`dovira_allowed_block_types`), JSON-LD (`VeterinaryCare`, `BreadcrumbList`), lowercase-URL 301, `responsible_persons` tracking on edit, CF7 shortcode attr `vacancy`, query vars `status`/`vacancy`, submenu toggle button, Polylang switcher labels | — |
-| Content model | `inc/post-types/*.php`, `inc/taxonomies/city.php` | 6 CPTs (`service`, `employee`, `vacancy`, `conversation`, `application`, `questionary`), taxonomy `service-city` on service/employee/vacancy. See DATA-MODEL.md | register anything outside these glob-loaded files |
-| ACF definitions | `inc/acf/fields/*.php`, `inc/acf/option-pages/settings.php`, `inc/acf/blocks/{name}/{block.json,fields.php,template.php}` | All field groups in PHP (StoutLogic ACF Builder); 21 blocks auto-registered by directory scan on `acf/init`; options page "Settings" (`acf-options-settings`) | define fields in the ACF admin UI |
-| Templates | `header.php`, `footer.php`, `index.php`, `single*.php`, `search.php`, `404.php`, `templates/*.php`, `template-parts/**` | Classic PHP templates; `single-service.php` builds per-city price tabs; `templates/sub-service.php` ("Sub-Service") is a service page template without the price group | — |
-| Forms → records | `inc/utils/conversation.php`, `inc/utils/application.php`, `inc/rest-api/QuestionaryController.php` | CF7 form 6 (contact) & 1430 (franchise) → `conversation`; CF7 form 1399 (vacancy) → `application` + CV sideload; REST `POST dovira/v1/questionary/save` → `questionary`. Each then notifies Telegram | send Telegram before the post is saved |
-| Admin lists | `inc/utils/{conversation,application,questionary}.php` | Custom columns and filter dropdowns for the three record CPTs; `processing_date` set on status change | — |
-| Telegram bot | `inc/rest-api/TelegramController.php` | Webhook `POST dovira/v1/telegram/handle-updates` (join by password → chat id stored in option `telegram_bot_chats`; `/reset`), `GET …/send-test-message`, `GET …/reset-telegram-log` — all `permission_callback: __return_true` | — |
-| Role | `inc/custom-roles/customer-support-specialist.php` | Role `customer_support_specialist` with `*_conversation(s)` caps (shared by `conversation`, `application`, `questionary`), trimmed admin menu/bar, login redirect to Conversations | — |
-| Polylang glue | `inc/polylang.php`, `inc/utils/polylang-string-translations.php` | `service`/`vacancy` translatable; ACF options per language via `acf/settings/current_language`; `service-city` term names + UI strings registered as Polylang strings (new ones keyed in English, DECISIONS 2026-11-12); `dovira_translate_string()`; `dovira_recaptcha_disclaimer()` (the reCAPTCHA notice under CF7 forms, one string with the two links as placeholders) | make `service-city` translatable |
-| CLI translation | `inc/cli/*.php` | `wp dovira translate`, `translate-options`, `translations-export`, `translations-import`: extract strings (title, ACF block data, core block HTML, Yoast meta) → Anthropic Messages API (default `claude-haiku-4-5`, JSON schema, chunked 100 items / 8000 chars) → copy post + Polylang link; bundles keyed by source post id + fingerprint | run outside WP-CLI |
-| Front-end build | `vite.config.js`, `postcss.config.cjs`, `source/**` → `assets/**` (committed) | Entries `main` (`source/main.js` → `scripts/app.js` + `styles/app.css`) and `admin`; ES modules loaded via dynamic `import()`; Swiper, Fancybox, iMask; admin CSS prefixed `.acf-block-preview` for editor iframe previews | edit `assets/` by hand |
-| GA → Telegram bridge (plugin) | `wp-content/plugins/ga-telegram-bridge/` | Standalone plugin, feature `ga-telegram-bridge`: PSR-4 `src/` under namespace `GaTelegramBridge` loaded by its own autoloader, `gatb_` prefix, text domain `ga-telegram-bridge`, zero runtime dependencies, OpenSSL required (checked on activation). In as of Sprint 2 Step 1: `Plugin` (bootstrap, activation guard, option creation, the schedule registered on activation and cleared on deactivation), `Settings` (the option `gatb_settings` — defaults, validation, typed getters, constant overrides for the two secrets), `Admin` (screen Settings → "GA → Telegram", Settings API, `manage_options`, the *Check GA*, *Check Telegram*, *Preview* and *Send now* buttons behind admin-post nonces, the run log under them and the next run in the Schedule section; each result travels back in WordPress's own notice transient, and the preview is lifted out of it on `all_admin_notices` so the screen prints the whole message in a block of its own — the notices themselves are printed by wp-admin, which requires `options-head.php` for every screen under Settings), `GoogleAuth` + `GaClient` (sign in to Google, read the Data API), `TelegramClient` (post one HTML message to one chat), `ReportBuilder` + `Report` + `Dynamics` (compose the day's seven GA4 reports into at most two `batchRunReports` calls and read them back as one value object, shares and changes already computed) and `MessageRenderer` (that value object as the HTML message of FEATURE.md → UI, in the site's language, plus the failure notice; the filters `gatb_report_data`, `gatb_extra_blocks` and `gatb_message_html` are applied here — since 0.3.0 `gatb_extra_blocks` lets other code on the site add HTML blocks, printed after the plugin's own and before the closing link; `compose()` drops the last of those while the message's text as Telegram counts it is longer than `TelegramClient::MAX_TEXT_LENGTH` (4 096) and returns how many it dropped, and `render()` is its HTML) with `Sparkline` (pure: a series of integers as one line of block characters, scaled between the series' own ends, which the visitors block prints inside `<code>`). Sending the message and the schedule are in as well: `Runner` (the one path a report takes — build, date guard, render, send, log), `RunLog` (the options `gatb_log` and `gatb_state`) and `Scheduler` (the recurring `gatb_daily_report` event, computed from the configured send time in the site zone, re-registered on every settings save, re-anchored at the end of every scheduled run so a clock change cannot shift it, and cleared on deactivation — the only class that touches cron, and the one that books the single `gatb_retry_report` event an hour after a failed scheduled run — a day is given `max_attempts` tries and then reported as missing to the chat). `uninstall.php` at the plugin root is the last piece: WordPress includes it when the plugin is **deleted**, with the plugin unloaded, and it removes the three options, the cached token and both events — deactivation, by contrast, takes only the schedule | reference the theme, its functions, options or data; ship its dev `vendor/` (gitignored) |
-| Search stats (theme feature) | `inc/features/search-stats/` | Feature `search-stats` (`docs/features/search-stats/FEATURE.md`). `bootstrap.php` requires the feature's classes and registers their hooks. In as of Sprint 1 Step 3: `Schema` (`dovira\SearchStats\Schema`) creates and upgrades the table `{prefix}dovira_search_queries` with `dbDelta()` on `after_switch_theme`, and on `init` when the option `dovira_search_stats_db_version` is behind `Schema::VERSION`; it never runs dbDelta on a current install. `Purge` (`dovira\SearchStats\Purge`) registers the daily WP-Cron event `dovira_search_stats_purge` on `init` when it is absent. On that event (registered with no arguments) it deletes the rows older than `apply_filters( 'dovira_search_stats_retention_days', 90 )` days, never fewer than 29 (docs/DATA-MODEL.md → Feature `search-stats`). `Normalizer` (`dovira\SearchStats\Normalizer`) is the one place a search text is normalized: whitespace runs collapsed to one space (Unicode whitespace included), ends trimmed, `mb_strtolower()`; invalid UTF-8 gives `''`. `RecordController` (`dovira\SearchStats\RecordController extends WP_REST_Controller`, registered in `inc/rest-api.php` with the theme's other controllers; the class is required by the feature's `bootstrap.php`) serves `POST dovira/v1/search-stats/record`, public (`__return_true`), JSON body only. It validates everything before the one write: `level` one of `site` / `services` / `service`; the normalized `query` 1–100 characters for `site`, 3–100 for the two filters; for `services` / `service` a `context_id` that is a published post (a `service` post for `service`); `results` a non-negative integer required for `site` and refused on the other levels. A refusal is a `WP_Error` with status 400 and writes nothing; a valid request gets `204` with no body; a failed insert gets `500` (`search_stats_not_recorded`). `Repository::insert()` (`dovira\SearchStats\Repository`) is the one `$wpdb->insert()`, `created_at` = `current_time( 'mysql', true )`. In as of Sprint 1 Step 4: `ResultsCount::shown()` (`dovira\SearchStats\ResultsCount`) counts what `search.php` lists, and `search.php` prints it with the query as data attributes; `source/scripts/features/search-stats/record.js` is the browser side: `recordSearch()` sends one search to the route, `recordSiteSearch()`, called by `app.js`, sends the results page's query, and `debouncedRecorder()`, attached by the two filter modules, sends a filter's value after a 1500 ms pause or on blur (Data flows → "Site search → statistics row"). In as of Sprint 2 Step 2, the reading side of the daily report: `Periods` (`dovira\SearchStats\Periods`) turns a clock into the report's two periods — yesterday and the 28 calendar days that end with it — as half-open UTC bounds of whole calendar days in `wp_timezone()`, stepping back by calendar days so a clock-change night is 23 or 25 hours; `Repository::top()` reads one level's five most frequent queries of one period (`GROUP BY query_text, context_id`, ordered by count, then by the latest search; docs/DATA-MODEL.md → Feature `search-stats`) as `TopQuery` value objects (`query`, `context_id`, `count`, `nothing_found` — `MAX(results) = 0`); `Stats::build( ?int $now )` runs it six times — each level, yesterday and 28 days — into one `SearchStats` value object of six lists, with no cache and nothing stored. In as of Sprint 2 Step 3: `Renderer::blocks( SearchStats )` (`dovira\SearchStats\Renderer`) writes those lists as the up to three blocks of FEATURE.md → UI — Ukrainian literal headings, `—` for an empty list, no block for a level with nothing, queries cut at 40 characters, context titles from the Ukrainian source post (`pll_get_post()`) or `(видалено)`, every value escaped with double encoding into the entities Telegram accepts; `Renderer::add_to()` is the `gatb_extra_blocks` callback `bootstrap.php` registers when the plugin is loaded (Data flows → "Daily report → search blocks") | write to another feature's data; run dbDelta on every request; delete rows from a public request; write the table from anywhere but the route; record a search from PHP |
-| City popup (theme feature) | `inc/features/city-popup/` | Feature `city-popup` (`docs/features/city-popup/FEATURE.md`). `bootstrap.php` requires the feature's classes, hooks `Dialog::print_on_blog()` and `Dialog::print_config()` on `wp_footer` and `Fallback::redirect()` on `template_redirect`. In as of Sprint 1 Step 2: `Sites` (`dovira\CityPopup\Sites`, pure) takes the site URL (`home_url()` at the call site) and gives the current city (`kyiv` when the URL contains `kyiv`, else `kharkiv`), the Kharkiv origin (scheme + host without a leading `kyiv.` + port), the Kyiv origin (`kyiv.` + that host) and the cookie domain (the bare Kharkiv host). `Pages` (`dovira\CityPopup\Pages`) holds the Ukrainian slugs `news`, `services`, `contacts`: `is_blog()` is a single `post` or the `news` page in the current language (`get_page_by_path()` + `pll_get_post()`); `targets()` gives `services` and `contacts` (permalinks in the current language) and `service` (the type's rewrite slug under `pll_home_url()`), leaving out whatever does not exist. `Dialog` (`dovira\CityPopup\Dialog`) prints on a blog page one closed `<dialog data-city-popup>` — title, «Харків» / «Київ» buttons (`data-city-popup-choice`, autofocus on the first), × (`data-city-popup-close`, `aria-label`) — with the city, both origins and `data-targets` (JSON) as escaped attributes; its four strings are Polylang strings of the theme's list, keyed in Ukrainian. As of Sprint 1 Step 3, `Dialog::render_config()` prints on every page one `<div hidden data-city-popup-config>` with the cookie domain and `data-days` (`dovira_city_popup_days`, `Dialog::DEFAULT_DAYS` = 90, below 1 falls back), because the header switcher saves the city on every page. The browser side is `source/scripts/features/city-popup/`: `logic.js`, pure (target match, plain-click test, the move to the other install with `city-popup=1`, the cookie decision, the cookie strings, `namedCityCookie()` for a link's `data-city` — `null` for anything but `kharkiv` / `kyiv`, the backdrop point; Vitest in `tests/js/city-popup/`), and `city-popup.js`, the DOM glue that `app.js` imports last inside its own `try`/`catch` (Data flows → "Blog click → city question"). As of Sprint 1 Step 4, `Fallback` (`dovira\CityPopup\Fallback`, `MARKER` = `city-popup`, the PHP half of `logic.js`'s marker) decides from the URL alone: `target()` returns the services page of the request's language (`Pages::targets()`) for a 404 whose query has `city-popup=1` exactly and whose path lies under that language's service base, `null` otherwise; `redirect()` sends it with `wp_safe_redirect( …, 302 )` and exits | read the `dovira_city` / `dovira_city_dismissed` cookies in PHP or vary any output by them; hold a URL literal of either install; print the dialog off the blog; redirect a 404 without `city-popup=1` or outside the service base; write another feature's data |
-| Project gate (not a feature) | `bin/check.sh` | PHPCS + PHPStan + PHPUnit in the plugin, `php -l` over the theme, PHPUnit in the theme's `tests/` (its own dev-only Composer project, installed by the gate when `tests/vendor/` is missing), Vitest in the theme (`npm test`, `tests/js/`; `npm install` when `node_modules/` is missing; needs Node and npm, and a `node_modules/` installed for the OS it runs on, so it runs on the host); run before every commit (docs/TECH-STACK.md → Check command) | be replaced by an ad-hoc shell chain |
-| Ops tooling (not a feature) | `temp-data/` | Yoast SEO import script + data (`yoast-import.php`, run via `wp eval-file`), translation bundles, SEO CSVs; `reports/` (repo root) holds Kyiv/Kharkiv service diff CSVs | be loaded by the theme at runtime |
+| Content storage | post types + ACF fields in `wp_postmeta`, options page in `wp_options` (`options_*`, `options_ru_*`) | `inc/post-types/`, `inc/acf/` | read and write ACF values with `get_field()` / `update_field()` by name |
+| Own tables | `dbDelta()` from a schema version kept in an option | `inc/features/search-stats/Schema.php` | a new table copies `Schema` (version option, `after_switch_theme` + `init`) |
+| Scheduled work | WP-Cron events, registered on `init` when absent | the owning feature or plugin (Jobs) | never runs from a public request; registers itself when missing |
+| Short-lived state | transients | the owning feature | never holds a secret except the Google access token |
+| Settings | ACF options page «Settings» (per language); a plugin's own option row through the Settings API | `inc/acf/option-pages/settings.php`; plugin `Settings` | a business value is a setting or a filter, never a constant |
+| Secrets | theme `.env` (phpdotenv) for `ANTHROPIC_API_KEY`; `wp-config.php` constants for the Telegram bots, GA key and dump folder | each install's own files, never committed | read through the one accessor that owns the secret |
+| Authentication | WordPress users and roles; application passwords for outside callers (`mcp/dovira`, `dovira-bridge/v1`) | wp-admin → Users | every REST route sets an explicit `permission_callback` |
+| Translations | Polylang: posts linked uk ↔ ru, theme strings in Polylang → Strings | `inc/polylang.php`, `inc/utils/polylang-string-translations.php` | every visible string is a Polylang string |
+| Front-end assets | Vite manifest → hashed files in `assets/`, dev server in development | `vite.config.js`, theme `.env` `WP_ENVIRONMENT_TYPE` | enqueue through `starter_theme_vite_asset()` |
+| Media | the WordPress media library | — | add files with `media_handle_sideload()` |
+| Error reporting | PHP `error_log`; the plugin's run log `gatb_log` | host PHP settings | never log a secret value |
 
-Legacy remnants present in the theme but not wired to any live page: `templates/{sign-in,sign-up,profile,testing}.php`, `dovira_get_user_study_state()` / `chapter` / `question` helpers, `student` role on theme switch, `source/scripts/modules/{authentication,reset-progress}.js`, `learning-plan` styles/HTML in `temp-data/`. Documented as-is; see DECISIONS.md open questions.
+## Flows
 
-## Data flows
-**Service price page (FIXED — do not deviate; CLAUDE.md invariants 2–3).**
-`single-service.php` loads all `service-city` terms → reads ACF repeater `prices` →
-groups rows by the term ids ticked in each row's `cities` → renders one tab per
-city (`dovira_translate_string(term name)`), client-side search
-(`init-service-price-lists.js`, `services-search.js`); a row without a price for
-the city renders the city's first phone from options `contacts_cities`.
-`save_post_service` stores a search index `key_words_services` from the row titles.
+### Service price page
+- **Started by:** a visit to a `service` page (`single-service.php`).
+1. The template loads every `service-city` term and the service's ACF repeater `prices`.
+2. Each row is grouped under the city terms ticked in its `cities` checklist, one tab per city, the tab named by the term's Polylang string.
+3. A row prints its general `price`, or its `city_prices.price_city_{term_id}` for that tab's city.
+4. A row with no price for the city prints that city's first phone from the options repeater `contacts_cities` instead of an amount.
+5. On save, `save_post_service` stores the row titles in the postmeta `key_words_services` for search.
+- **State kept in:** the service's ACF fields; the term ids in the field names.
+- `FIXED`
 
-**Contact / franchise form (FIXED; invariant 1).** CF7 `wpcf7_submit` with
-`status === mail_sent` (or any status in DDEV) → `wp_insert_post('conversation')`
-→ `update_field()` for name, pet_name (form 6 only), phone, email, message →
-`dovira_conversation_telegram_message()` (which form, «із сайту в Харкові» or
-«із сайту в Києві» from the site URL, a link to this install's own
-`admin_url( 'edit.php?post_type=conversation' )`) → `dovira_telegram_notify()`: `wp_remote_get` Telegram `sendMessage` to every chat id in option
-`telegram_bot_chats`, then once to the thread named by `DOVIRA_TELEGRAM_CHAT_ID` /
-`DOVIRA_TELEGRAM_THREAD_ID` when set (a subscribed chat that is that chat gets it
-only in the thread). The vacancy and questionnaire flows below send the same way.
+### Form submission → record → Telegram
+- **Started by:** Contact Form 7 form 6 (contact) or 1430 (franchise) on `wpcf7_submit`, form 1399 (vacancy) on `wpcf7_before_send_mail`, or `POST dovira/v1/questionary/save`.
+1. A contact or franchise submission whose status is `mail_sent` (any status in DDEV) becomes a `conversation` post, the franchise one titled with the prefix «Франшиза: ».
+2. A vacancy submission becomes an `application` post with status `new` and the vacancy id from the shortcode attribute, and its CV is added with `media_handle_sideload()`.
+3. A questionnaire request is checked for its 13 required fields before anything is written, then becomes a `questionary` post and answers `{success, message, post_id}`.
+4. The post's ACF fields are written with `update_field()`.
+5. Only after that the message is built — a conversation's names the city from the site URL and links to the install's own admin list — and `dovira_telegram_notify()` sends it.
+6. `dovira_telegram_notify()` sends to every chat in the option `telegram_bot_chats`, then once to `DOVIRA_TELEGRAM_CHAT_ID` with `message_thread_id` = `DOVIRA_TELEGRAM_THREAD_ID` when set, a subscribed chat that is that chat getting it only in the thread.
+7. The send's result is ignored: without the bot token nothing is sent and one `error_log` line names the constant, and the record stays saved.
+- **State kept in:** the `conversation`, `application`, `questionary` posts.
+- `FIXED`
 
-**Vacancy application (FIXED; invariant 1).** CF7 form 1399 on `wpcf7_before_send_mail`
-→ `application` post (`status = new`, `vacancy` = post id from the shortcode attr)
-→ CV `media_handle_sideload` → Telegram.
+### Telegram join (dormant)
+- **Started by:** a Telegram update posted to `dovira/v1/telegram/handle-updates` — none arrives, because the bot has no webhook set.
+1. The raw update is appended to the option `telegram_webhook_data`.
+2. `/start` or `/join` asks for the password, the password message stores the chat id in `telegram_bot_chats`, `/reset` removes it.
+- **State kept in:** `telegram_bot_chats`, `telegram_webhook_data`.
 
-**Blood-donor questionnaire (FIXED; invariants 1, 8).** Front-end
-`questionary-form-handler.js` → `POST /wp-json/dovira/v1/questionary/save` →
-server-side required-field check (13 fields) → `questionary` post + ACF fields
-(`city` ucfirst'ed) → Telegram → `{success, message, post_id}`.
+### Site search → statistics row
+- **Started by:** a results page of the header search, or a pause in typing in the filter of the `services` block or of a service's price list.
+1. `search.php` counts what it lists (`ResultsCount::shown()`) and prints the query and the count as `data-search-stats-*` attributes.
+2. On load, `app.js` calls `recordSiteSearch()`, which sends a non-empty query once through `recordSearch()`.
+3. Each filter input carries `data-search-stats-context` (the hosting page or the service), and `debouncedRecorder()` sends its value after 1500 ms of rest or on blur, at least 3 characters once trimmed, never the value that input sent last.
+4. `recordSearch()` posts JSON with `navigator.sendBeacon`, falling back to `fetch(keepalive)`, to `POST dovira/v1/search-stats/record` and never reads the answer.
+5. The route validates the whole request, normalizes the text once (`Normalizer`) and inserts one row with `Repository::insert()`, or writes nothing.
+- **State kept in:** the table `{prefix}dovira_search_queries`.
+- `FIXED`
 
-**Site search → statistics row (feature `search-stats`; invariant 8).** Every
-search is recorded from the browser, never from PHP, so a crawler or a
-prefetcher that fetches a results page without running its JavaScript leaves
-no row. Header search: `search.php` builds its result sets, and
-`ResultsCount::shown()` counts what the page lists (price rows, top-level
-services, posts, pages, employees). The results section carries
-`data-search-stats-query` and `data-search-stats-results`. On load, `app.js`
-calls `recordSiteSearch()` (`source/scripts/features/search-stats/record.js`),
-which sends the query once, and nothing for an empty one, through
-`recordSearch()`: `navigator.sendBeacon` with a JSON `Blob`, falling back to
-`fetch(keepalive)` → `POST /wp-json/dovira/v1/search-stats/record` → validation
-→ one row in `{prefix}dovira_search_queries` → `204`. The answer is never read.
-The two filters: `#services-search-input` (the `services` block) and
-`#service-search-input` (`single-service.php`) each carry
-`data-search-stats-context` (`get_the_ID()`: the page hosting the block, or
-the service). `services-search.js` and `init-service-price-lists.js` hand
-each input to `debouncedRecorder()`, only where their filter is wired. It
-sends through `recordSearch()` once the value has rested for 1500 ms or the
-field loses focus, only when it has at least 3 characters once trimmed, and
-never the value that input sent last. Its listeners are its own; the
-filtering code is unchanged.
+### Blog click → city question
+- **Started by:** a click on a page that carries the config element `data-city-popup-config`, which `Dialog` prints in `wp_footer` on every page.
+1. `city-popup.js`, imported last by `app.js` inside its own `try`/`catch`, adds one delegated `click` listener and takes every decision from the pure `logic.js`.
+2. The listener leaves alone a click already cancelled, a click with a modifier or a non-main button, and a click on a link that opens another window.
+3. A plain click on a link with `data-city="kharkiv|kyiv"` writes `dovira_city` for the configured days and the browser follows the link — this is the header switcher.
+4. On a blog page (the `news` page in either language, or a single `post`), where `Dialog` also prints the closed `<dialog data-city-popup>` with the city, both origins and the target URLs (`services`, `contacts`, the `service` base) from `home_url()` and Polylang, a plain click on a target on the current host is decided from the cookies.
+5. `dovira_city` of this install or only `dovira_city_dismissed` → the link is followed; `dovira_city` of the other city → its version on the other install (same path, query and fragment plus `city-popup=1`); neither → `showModal()` with focus on «Харків».
+6. A city button writes `dovira_city` and goes to the link on that city's install; ×, Esc or a click outside the dialog's box writes the session cookie `dovira_city_dismissed` and follows the link; the dialog is closed before every navigation.
+7. On the receiving install, `Fallback::redirect()` on `template_redirect` answers a 404 under its language's service base whose query has `city-popup=1` with a 302 to that language's services page, without the marker, after core's `wp_old_slug_redirect` and `redirect_canonical`.
+- **State kept in:** the visitor's cookies `dovira_city` and `dovira_city_dismissed` on the Kharkiv host's domain; no PHP reads them.
+- `FIXED`
 
-**Blog click → city question (feature `city-popup`; invariant 4 — FIXED, do
-not deviate).** On every page `Dialog` prints in `wp_footer` one hidden
-`<div data-city-popup-config>` carrying the cookie domain and the days
-(`dovira_city_popup_days`, default 90). On a blog page (the page `news` or its
-Polylang translation, or a single `post`) it also prints one closed
-`<dialog data-city-popup>`. The dialog's data attributes carry the current
-city, both installs' origins and the target URLs: the `services` and
-`contacts` pages and the `service` base, in the current language. All of
-these come from `home_url()` and Polylang, never from a URL literal:
-- Kharkiv host = own host without `kyiv.`;
-- Kyiv host = `kyiv.` + the Kharkiv host;
-- cookie domain = the Kharkiv host.
+### Connector write → dump → write
+- **Started by:** a write tool of the `mcp/dovira` server called by a person's Claude, authenticated as that person's WordPress user with an application password.
+1. Called without `confirmation`, the ability validates the payload, computes the diff (target post and language, field, from, to, warnings) and stores a confirmation token bound to the user, the `Mcp-Session-Id` and the payload's hash for 15 minutes, issuing none for an empty diff.
+2. The person's Claude shows the diff and calls again with the same payload and the token only after the person agrees.
+3. The token is verified and consumed, and `Dump::ensure()` dumps the whole database to a new timestamped `.sql.gz` in `DOVIRA_MCP_DUMP_DIR` when the session has no dump yet, a failed dump aborting the write.
+4. The write runs as the connected user through WordPress's own functions (`wp_insert_post`, `wp_update_post`, `update_field`, `wp_set_object_terms`, `wp_trash_post`, `media_handle_sideload`, Polylang's linking) and returns `{written, dump, warnings}`.
+5. Reads issue no token and take no dump.
+- **State kept in:** the transients `dovira_mcp_confirm_{hash}` and `dovira_mcp_dumped_{session}`; the dump files.
+- `FIXED`
 
-`source/scripts/features/city-popup/city-popup.js` is imported last by
-`app.js`, inside its own `try`/`catch`. Where the config element exists, it
-adds one delegated `click` listener on `document`. Every decision is a pure
-function of `logic.js`.
+### Daily GA report
+- **Started by:** the WP-Cron event `gatb_daily_report` (trigger `cron`), the single event `gatb_retry_report` (trigger `retry`), or the admin's *Send now* (trigger `manual`).
+1. `Runner::run()` is the one path: `ReportBuilder::build()` reads the enabled blocks in at most two `batchRunReports` calls into one `Report`.
+2. A run that is not manual stops, sending and logging nothing, when the report's day — the property's own — equals `gatb_state.last_report_date`.
+3. `MessageRenderer::compose()` renders the plugin's blocks, then those `gatb_extra_blocks` adds, dropping added blocks from the last one back while the text is longer than 4 096 characters.
+4. `TelegramClient::send_message()` posts it to the one configured chat (and thread), and a delivery writes `gatb_state.last_report_date`.
+5. Every run writes one `gatb_log` row; a failure raises `gatb_state.attempt`, and a scheduled run with attempts left books `gatb_retry_report` an hour out carrying its day, the last attempt sending the failure notice instead.
+6. A scheduled run ends by re-registering `gatb_daily_report` at the next configured local time.
+- **State kept in:** the options `gatb_state` and `gatb_log`; the next run only in `wp_next_scheduled()`.
+- `FIXED`
 
-The browser keeps these clicks, and the listener does nothing with them:
-- a click another handler already cancelled (`defaultPrevented`);
-- a click with a modifier, or with a button other than the main one;
-- a click on a link that opens another window.
+### Daily report → search blocks
+- **Started by:** every run of the daily GA report — schedule, retry, *Preview* and *Send now* alike.
+1. `MessageRenderer::compose()` applies `gatb_extra_blocks`, which the theme hooks in `inc/features/search-stats/bootstrap.php` with `Renderer::add_to()`.
+2. `Stats::build()` runs six queries on the install's own table — each level, yesterday and the 28 days that end with it, in the site's zone, top five each.
+3. `Renderer::blocks()` turns them into up to three blocks, appended to the plugin's list; a day with no searches adds nothing.
+- **State kept in:** nothing; every report queries again.
 
-On every page, a plain click on a link with a valid `data-city` writes
-`dovira_city` for the configured days, and the browser follows the link. The
-header switcher (`template-parts/header/site-header.php`, desktop and mobile)
-is that link: `data-city="kyiv"` on Kharkiv's link to Kyiv and
-`data-city="kharkiv"` on Kyiv's link to Kharkiv, with the hrefs unchanged. It
-still leads to the other install's home page and now changes the remembered
-city. On a blog page, a plain click on a target on the
-current host is decided from the cookies:
-- `dovira_city` set to this install's city → the browser follows the link;
-- `dovira_city` set to the other city → go to that install's version of the
-  link (same path, query and fragment + `city-popup=1`);
-- only `dovira_city_dismissed` set → the browser follows the link;
-- neither → `showModal()`, with focus on «Харків».
+### AI translation (CLI)
+- **Started by:** `wp dovira translate --post-type=X --lang-from=uk --lang-to=ru`.
+1. `ContentExtractor` and `MetaExtractor` extract the title, ACF block data, core block HTML and Yoast meta.
+2. `AnthropicTranslator` translates them in chunks with the Anthropic Messages API.
+3. `PostCopier` creates the Russian post, copies terms and thumbnail and links it with `pll_save_post_translations()`.
+4. `translations-export` writes the result as a JSON bundle keyed by source post id and fingerprint; `translations-import` recreates it on another environment without the API.
+- **State kept in:** the Russian posts; the bundles in `temp-data/`.
 
-A city button writes `dovira_city` and goes: to the link itself for this
-install's city, to its version on the other install otherwise. ×, Esc and a
-click on the backdrop write the session cookie `dovira_city_dismissed` and
-follow the link. A backdrop click is one whose point lies outside the
-dialog's box: a click on the dialog's own padding has the same target and
-does nothing. The dialog is closed before every navigation, so Back does not
-restore it open.
-
-On the receiving install, `Fallback::redirect()` (`template_redirect`, default
-priority) answers a 404 whose path lies under the service base of the
-request's language (`/services/…`, `/ru/services/…`) and whose query has
-`city-popup=1` with a 302 to its services page in that language
-(`/services/`, `/ru/uslugi/`), without the marker. It runs after core's
-`wp_old_slug_redirect` and `redirect_canonical`, so a renamed service, or a
-longer slug WordPress guesses, is reached as for every visitor, and only
-what would otherwise be shown as a 404 page falls back. A 404 without the
-marker, or outside the service base, stays a 404. No PHP reads either
-cookie, so every URL returns the same HTML to every visitor and crawler.
-
-**Connector write → dump → write (feature `content-mcp`; invariants 7, 8 —
-FIXED, do not deviate).** A person's Claude calls a write ability of the
-`dovira` MCP server (`/wp-json/mcp/dovira`, plugin `mcp-adapter`,
-authenticated as that person's WP user by application password) **without**
-`confirmation` → the ability validates the payload, computes the diff (every
-target post and language, field, from, to; warnings) and stores a confirmation
-token bound to the user, the `Mcp-Session-Id` and the payload hash (transient,
-15 min; a diff that changes nothing issues no token) → the agent shows the diff
-and waits for consent → the same call
-**with** `confirmation` → token verified and consumed → `Dump::ensure(
-session )` (the session id is the header of the `/mcp/dovira` REST request,
-kept by `Session`; the adapter does not hand it to abilities): no dump yet for
-this session → PHP-only dump of the whole database
-to `DOVIRA_MCP_DUMP_DIR` as a new timestamped `.sql.gz` (a failure aborts the
-write) → the write through WordPress's own functions (`wp_insert_post`,
-`update_field`, `wp_set_object_terms`, `wp_trash_post`, Polylang's linking) as
-the connected user → `{written, dump, warnings}`. A Russian copy
-(`create-translation`) is one more such write: the copy is inserted as the
-connected user from the Ukrainian source's values overlaid by the Russian
-texts the agent wrote, set to `ru` and linked with
-`pll_save_post_translations()` — the calls `wp dovira translate` makes, with
-the text from the chat instead of a server-side API. An image upload
-(`upload-media`) checks the URL at preview with a HEAD request only (scheme,
-public host, type, declared size) or decodes the base64; after consent it
-downloads with `wp_safe_remote_get()` capped at the size limit and adds the
-file with `media_handle_sideload()`. Reads issue no token and no
-dump. No write ability exists for `conversation`, `application`,
-`questionary`; `trash-post` needs `manage_options`. Details in
-`docs/features/content-mcp/FEATURE.md`.
-
-**Telegram join.** Bot webhook → `handle-updates` appends the raw update to option
-`telegram_webhook_data`; `/start|/join` asks for a password; the password message
-stores the chat id in `telegram_bot_chats`; `/reset` removes it. **Dormant:** the
-bot has no webhook set (Telegram `getWebhookInfo`, 2026-10-20), so this route
-receives nothing from Telegram and `telegram_bot_chats` holds the chats that
-joined earlier; the site only sends.
-
-**Daily GA report (plugin `ga-telegram-bridge`).** One path, one class:
-`Runner::run( $trigger, $bypass_date_guard )`, with two callers. The recurring
-WP-Cron event `gatb_daily_report` — registered by `Scheduler` at the next
-occurrence of the configured send time in the site's zone (`wp_timezone()`),
-re-registered on every settings save **and again at the end of every run it
-makes**, cleared on deactivation — passes `cron`
-and keeps the guard; the admin-post action `gatb_send_now` behind the *Send now*
-button (nonce, `manage_options`) passes `manual` and bypasses it on purpose. The
-screen reads the next run from `wp_next_scheduled()`, which is the only copy of
-it, and warns when `DISABLE_WP_CRON` is set and nothing has called `wp-cron.php`
-for a day (`gatb_state.last_cron_hit`).
-`ReportBuilder::build()` (≤ 2 `batchRunReports` calls, only the enabled blocks)
-→ `Report` → **date guard**: the day is the property's own (`Report::$time_zone`),
-and a run that is not manual stops here when `gatb_state.last_report_date`
-already holds it — nothing sent, nothing logged → `MessageRenderer::compose()`
-(the plugin's blocks, then those `gatb_extra_blocks` adds, dropped from the last
-one back while the text is longer than Telegram's 4 096 characters)
-→ `TelegramClient::send_message()` to the one configured chat → `gatb_log`
-(30 entries; the detail line names how many added blocks were dropped, whether
-the message was sent or refused) and, only on delivery,
-`gatb_state.last_report_date`. A failure at
-either host is logged with its mapped reason, raises `gatb_state.attempt` and
-leaves the day unsent; no secret is ever written. While that day has attempts
-left (`gatb_settings.max_attempts`), a run started by the schedule books the
-single event `gatb_retry_report` an hour out, carrying the day it is for — a
-run started by *Send now* books nothing, because a person is at the screen.
-Screen `Run log` under the settings form prints the entries newest first.
-
-**Daily report → search blocks (feature `search-stats` into plugin
-`ga-telegram-bridge`).** Inside every run of the report above — the schedule, a
-retry, *Preview* and *Send now* alike — `MessageRenderer::compose()` applies
-`gatb_extra_blocks`. The theme hooks it in `inc/features/search-stats/bootstrap.php`,
-only when `GaTelegramBridge\Plugin` is loaded, with `Renderer::add_to()` →
-`Stats::build()` (six queries on `{prefix}dovira_search_queries`: each level,
-yesterday and the 28 days that end with it, in the site's zone, top five each)
-→ `Renderer::blocks()` (up to three blocks, FEATURE.md → UI) → appended to the
-plugin's list. The plugin prints them after its own blocks and before the GA
-link, and drops them from the last one back while the message's text is longer
-than Telegram's 4 096 characters. A day with no searches adds nothing, and the
-message is the plugin's own. Each install reads its own table, so Kyiv's
-queries never reach Kharkiv's message. Nothing is stored, and no public request
-is involved.
-
-**Translation (CLI).** `wp dovira translate --post-type=X --lang-from=uk --lang-to=ru`
-→ `ContentExtractor` + `MetaExtractor` → `AnthropicTranslator` → `PostCopier`
-creates the ru post, copies terms/thumbnail, links via `pll_save_post_translations`.
-`translations-export` writes a JSON bundle; `translations-import` recreates the
-same result on another environment without the API.
-
-**Kyiv vs Kharkiv.** `template-parts/header/site-header.php` sets
-`$current_site_id` from `str_contains(get_site_url(), 'kyiv')` and renders the
-cross-site switcher; content differs per install (separate DBs), code is shared.
+## Jobs
+| Job | Schedule | What it does | Module |
+|---|---|---|---|
+| `gatb_daily_report` | daily at the configured local send time, re-anchored after each run | builds and sends the daily GA report | plugin `ga-telegram-bridge` (`Scheduler`, `Runner`) |
+| `gatb_retry_report` | single, an hour after a failed scheduled run, carrying the day | retries that day's report | plugin `ga-telegram-bridge` |
+| `dovira_search_stats_purge` | daily | deletes search rows older than the retention | `inc/features/search-stats/` (`Purge`) |
+| `dovira_mcp_dump_retention` | daily | deletes dump files older than the retention | `inc/features/content-mcp/` (`Dump`) |
 
 ## Integrations
-| Service | Used for | Auth / credentials | Failure behaviour |
-|---|---|---|---|
-| Telegram Bot API (theme, feature `core`) | notifications after every form record (`dovira_telegram_notify()` in `inc/utils/telegram.php`, the one send loop of all three pipelines: every subscribed chat, plus one fixed chat thread — `DOVIRA_TELEGRAM_CHAT_ID` and optional `DOVIRA_TELEGRAM_THREAD_ID`, sent as `message_thread_id`); bot webhook (none set — Data flows → Telegram join) | Bot token and join password are the constants `DOVIRA_TELEGRAM_BOT_TOKEN` and `DOVIRA_TELEGRAM_JOIN_PASSWORD` in the install's `wp-config.php` (DECISIONS "Theme Telegram secrets are `wp-config.php` constants"), read only by `dovira_telegram_token()` / `dovira_telegram_join_password()`; an unset password never matches. The thread target is read only by `dovira_telegram_target()` | `wp_remote_get` result ignored — the record is already saved; no retry. Token constant unset → no request at all and one `error_log` line naming the constant |
-| Telegram Bot API (plugin `ga-telegram-bridge`) | the daily GA report to one configured chat (`TelegramClient::send_message()` → `POST api.telegram.org/bot{token}/sendMessage`, HTML parse mode, link previews off, 15 s timeout; with `message_thread_id` when a thread id is configured, so the report, the failure notice and the test message all land in that thread (forum topic) of the chat); one fixed test message behind the *Check Telegram* button on screen `Settings` (admin-post action `gatb_check_telegram`, nonce, `manage_options`) | Its **own** bot token, chat id and optional thread id in `gatb_settings`, overridable by `GATB_TELEGRAM_BOT_TOKEN`; shares nothing with the theme's bot (separate token, separate chat registry) | one mapped `TelegramException` per case (401 the token was revoked, 404 the token is malformed, 400 `chat not found`, 400 unreadable HTML, 403 the bot may not post there, 429 flood control naming `retry_after`, 5xx, and a host that cannot reach Telegram at all). A flood limit is the one refusal answered inside the same run: a `retry_after` of at most 30 seconds is waited out once and the message posted again — longer than that is left to the hourly retry, because every send happens inside a WP-Cron or an admin request. The bot token travels in the request URL, so every value entering a message is scrubbed of it first — Telegram never echoes it, but a transport error can quote the URL back. Every run is recorded in `gatb_log` with its mapped reason. A scheduled run that is refused is repeated an hour later while the day has attempts left; after the last one the same chat receives the short failure notice, whose own refusal is caught and written into that run's log row |
-| Google Analytics 4 Data API (plugin `ga-telegram-bridge`) | reads one GA4 property (`GaClient::batch_run_reports()`; `check_connection()` behind the *Check GA* button) | Service-account JSON in `gatb_settings` (or `GATB_GA_SERVICE_ACCOUNT_JSON`) → RS256 JWT signed with `openssl_sign` (`GoogleAuth`, scope `analytics.readonly`) → token exchanged at `oauth2.googleapis.com/token` (15 s) and cached in the transient `gatb_google_access_token` for `expires_in - 60`; reports posted to `analyticsdata.googleapis.com/v1beta` (20 s). The **Admin API is deliberately not used** — it is a second API each install would have to enable, so the check names the property id with the reporting time zone from the report's own `metadata`, not the property's display name | one mapped `GoogleAuthException` / `GaClientException` per case (bad property id, no Viewer access — the message names the service account —, refused token → the cached token is dropped, quota, 5xx, host cannot reach Google); no message or log line ever carries the key, the JWT or the token. `ReportBuilder` composes the day's reports into **at most two** `batchRunReports` calls (the API takes five requests per call and a full report is seven), asks only for the blocks that are switched on, and keys the visitors rows by the `dateRange` dimension because GA returns them ordered by metric. A day Google could not be read for is retried and finally reported to the chat exactly like one Telegram refused; a retry that wakes up after the property's own midnight can no longer read the day it was booked for — every range is relative — so it reports that day as failed and books nothing more |
-| Anthropic Messages API | `wp dovira translate*` (CLI only) | `ANTHROPIC_API_KEY` in the theme `.env` (phpdotenv), read by `anthropic-ai/sdk` | command errors out via `WP_CLI::error`; chunk retry for strings whose markup changed |
-| Contact Form 7 | contact (id 6), franchise (1430), vacancy (1399) forms | — (form ids hardcoded in hooks) | mail failure → no `conversation` (except in DDEV) |
-| Google Tag Manager / GA4 | analytics; ids differ per install (`master`: GTM-53M4V7M5 + G-HKYZFG0E2W; `kyiv`: G-Q597WTF16L only) | inline in `header.php` | — |
-| Google Fonts | Inter, Oswald, Raleway (`header.php`); Open Sans self-hosted | — | — |
-| Yoast SEO | meta; one-off import via `temp-data/yoast-import.php` | — | see `temp-data/README.md` |
-| MCP clients — claude.ai, Claude Desktop (feature `content-mcp`) | the content connector: each person's Claude calls the `dovira` MCP server over Streamable HTTP from Anthropic's cloud (user agent `Claude-User`); the server and transport are the plugin `mcp-adapter` (0.7.1, committed), the 14 tools are the feature's abilities (`Catalogue::TOOLS`) | the person's own WordPress application password as a fixed request header of their claude.ai custom connector — «Без входу», header `authorization`, value `Basic base64(login:password)`; no OAuth, no shared secret (DECISIONS "Each person connects with an application password of their own WordPress user") | the hosting's bot protection answers 403/405 before WordPress unless `Claude-User` is allowed (claude.ai then reports it cannot reach the server); a request without a valid password is 401 at the server gate; a write without a valid confirmation token, or whose session dump fails, writes nothing and returns an error |
+| Service | Used for | Module that talks to it | Auth model | On failure | Docs |
+|---|---|---|---|---|---|
+| Telegram Bot API (theme bot) | a notification after every form record | `inc/utils/telegram.php` | bot token constant `DOVIRA_TELEGRAM_BOT_TOKEN` | result ignored, no retry; token unset → no request and one `error_log` line | https://core.telegram.org/bots/api |
+| Telegram Bot API (report bot) | the daily report, the failure notice, the test message | plugin `TelegramClient` | its own bot token (`gatb_settings` or `GATB_TELEGRAM_BOT_TOKEN`) | one mapped `TelegramException` per refusal, logged; a `retry_after` up to 30 s is waited out once; the hourly retry repeats the rest | https://core.telegram.org/bots/api |
+| Google Analytics 4 Data API | the report's figures | plugin `GoogleAuth`, `GaClient` | service-account JWT (RS256, `analytics.readonly`) → access token cached in a transient | one mapped exception per refusal, logged; a refused token is dropped; the day is retried like a Telegram failure | https://developers.google.com/analytics/devguides/reporting/data/v1/rest |
+| Google OAuth 2.0 token endpoint | the access token for the Data API | plugin `GoogleAuth` | the signed JWT | mapped `GoogleAuthException` | https://developers.google.com/identity/protocols/oauth2/service-account |
+| Anthropic Messages API | `wp dovira translate*` | `inc/cli/` (`AnthropicTranslator`, SDK `anthropic-ai/sdk`) | `ANTHROPIC_API_KEY` in the theme `.env` | the command stops with `WP_CLI::error`; chunks whose markup changed are retried | https://docs.claude.com/en/api/messages |
+| MCP clients (claude.ai, Claude Desktop) | call the content connector from Anthropic's cloud (user agent `Claude-User`) | plugin `mcp-adapter` + `inc/features/content-mcp/` | the person's own application password as a fixed `authorization: Basic` header | 401 without a valid password; the host's bot protection answers 403/405 before WordPress unless `Claude-User` is allowed | https://modelcontextprotocol.io/specification/2025-11-25 |
+| Dovira Bridge (Dovira Pro) | reads conversations and sets their processed status | plugin `dovira-bridge-conversations` | an application password of a user with `edit_others_conversations` | 401 / 403 from the route's permission check | — |
+| Google Tag Manager / GA4 tag | site analytics, ids per install | `header.php` (inline) | — | — | https://developers.google.com/tag-platform |
+| Google Fonts | Inter, Oswald, Raleway | `header.php` | — | the system font | https://developers.google.com/fonts/docs/css2 |
 
 ## Environments & deploy
-| Env | URL | Source | How |
+| Environment | Tracks | Runs as | Deploy |
 |---|---|---|---|
-| Local | `https://dovira.ddev.site` | working tree | DDEV (`.ddev/config.yaml`: wordpress, PHP 8.3, nginx-fpm, MariaDB 10.11); `wp-config.php` is DDEV-generated and gitignored; DB snapshot `mysql.sql` at repo root; theme `.env` sets `WP_ENVIRONMENT_TYPE` (development → assets from Vite :3000, otherwise from `assets/` manifest) |
-| Dev | `dev.dovira.vet` | branch `dev` | **push-to-deploy**: `.github/workflows/dev.yml` — SamKirkland/FTP-Deploy-Action syncs the whole repo over FTP on push to `dev` (secrets `REMOTE_HOST_DEV`, `FTP_USER_DEV`, `FTP_PASSWORD_DEV`, `FTP_PATH_DEV`) |
-| Production Kharkiv | `dovira.vet` | branch `master` | **manual** deploy by the developer |
-| Production Kyiv | `kyiv.dovira.vet` | branch `kyiv` (= `master` merged in + Kyiv analytics ids in `header.php`) | **manual** deploy by the developer; after each `master` release, merge `master` into `kyiv` and deploy |
+| Local | the working tree | DDEV `https://dovira.ddev.site`: PHP 8.3, nginx-fpm, MariaDB 10.11; `wp-config.php` generated by DDEV; database snapshot `mysql.sql`; theme `.env` `WP_ENVIRONMENT_TYPE=development` serves assets from Vite on :3000 | `ddev start`, `ddev import-db --file=mysql.sql` |
+| Dev | `dev` | `dev.dovira.vet` on the shared host (webroot `/home/dovirave/dovira.vet/dev`); the connector's steps are verified here | push to `dev` → GitHub Actions `.github/workflows/dev.yml` syncs the repo over FTP |
+| Production Kharkiv | `master` (published as `origin/main`) | `dovira.vet` | by hand, a file sync; plugins activated by hand |
+| Production Kyiv | `kyiv` (= `master` merged in + the Kyiv analytics ids in `header.php`; published as `origin/kyiv`) | `kyiv.dovira.vet` | by hand after merging `master` into `kyiv` |
 
-Built assets (`assets/`) and Composer `vendor/` are committed — a deploy is a
-file sync, no build step on the server. The deployment branches are published
-on GitHub as their deploy remotes: local `master` as `origin/main` — the remote
-has no `master` — and local `kyiv` as `origin/kyiv` (DECISIONS "`origin/main` is
-the deploy remote").
-
-**Content connector per install (feature `content-mcp`).** The code is the
-same everywhere; each install is its own connector URL —
-`https://dovira.vet/wp-json/mcp/dovira`, `https://kyiv.dovira.vet/wp-json/mcp/dovira`,
-and `https://dev.dovira.vet/wp-json/mcp/dovira` where steps are verified —
-with its own database, its own dump folder and its own three application
-passwords (owner and developer as administrators, the content manager as
-editor), each in that person's own claude.ai. Before the first session an
-install needs: the hosting letting the user agent `Claude-User` through
-(claude.ai's calls carry it; the hosting's bot protection blocks it with
-403/405 before WordPress otherwise); its own `service-city` term with the slug
-its URL implies (`kharkiv` / `kyiv`); the plugin
-`mcp-adapter` activated; `DOVIRA_MCP_DUMP_DIR` `define()`d in its
-`wp-config.php` naming a writable folder outside the webroot (unset → the
-feature uses `wp-content/backup-db/` and writes an `.htaccess` deny and an
-`index.php` there — Apache/LiteSpeed only); the daily event
-`dovira_mcp_dump_retention` (registered on `init` when absent; filter
-`dovira_mcp_dump_retention_days`, default 90). On the shared host, dev's webroot
-`/home/dovirave/dovira.vet/dev` is nested inside `/home/dovirave/dovira.vet/`,
-so the dump folder of every install sits directly under `/home/dovirave/`, one
-per install, never inside `dovira.vet/`. The Sprint 1 spike dumped dev's
-database (18 tables, 7.18 MB SQL → 0.70 MB gz) in 0.75 s at a 96.5 MB peak;
-the numbers are in the checklist below. Steps of the feature are verified
-on `dev.dovira.vet` after the user's push to `dev`, because claude.ai calls the
-connector from Anthropic's cloud (DECISIONS "The connector is verified on
-`dev.dovira.vet`"). The per-install checklist is
-`docs/features/content-mcp/PRODUCTION-CHECKLIST.md`.
-
-**Theme Telegram bot per install.** `DOVIRA_TELEGRAM_BOT_TOKEN` and
-`DOVIRA_TELEGRAM_JOIN_PASSWORD` are `define()`d in each install's own
-`wp-config.php` (gitignored, never committed) — local DDEV, `dev.dovira.vet`,
-`dovira.vet` and `kyiv.dovira.vet`. They must be there **before** code that reads
-them is deployed: without the token the forms still save their records, but no
-notification is sent. Rotating the token changes only the constant; the
-subscribed chats live in the option `telegram_bot_chats` and stay. The same file
-may name the one chat thread every notification of that install also goes to:
-`DOVIRA_TELEGRAM_CHAT_ID` (`/^-?\d+$/`, a group is `-100…`) and the optional
-`DOVIRA_TELEGRAM_THREAD_ID` (`/^[1-9]\d*$/`, the topic; unset = the chat itself).
-Unset chat id = no thread send; a malformed value = no thread send and one
-`error_log` line naming the constant. The bot has to be a member of that group.
-
-**Plugin `ga-telegram-bridge` per install.** The code is the same everywhere and
-holds nothing about a city; each install carries its own configuration. The
-service-account key and the bot token are `define()`d in that install's own
-`wp-config.php` (`GATB_GA_SERVICE_ACCOUNT_JSON`, `GATB_TELEGRAM_BOT_TOKEN`),
-which is gitignored on every environment and never committed; everything else —
-the numeric GA4 property id, the chat id (and its thread id, if any), the send time, the number of attempts
-and the blocks — is saved on the settings screen into that install's
-`gatb_settings`. One property and one chat per install: Kharkiv reads the
-property whose web data stream is `G-HKYZFG0E2W` and Kyiv the one that is
-`G-Q597WTF16L` (→ Integrations), and each sends to its own chat. The plugin has
-zero runtime dependencies, so the file sync is the whole deploy. Setting an
-install up, or checking one after a deploy, is
-`docs/features/ga-telegram-bridge/PRODUCTION-CHECKLIST.md`; no value from it is
-written into this repository.
+Each install's `wp-config.php` (gitignored, never committed) carries its own
+`DOVIRA_TELEGRAM_BOT_TOKEN`, `DOVIRA_TELEGRAM_JOIN_PASSWORD`,
+`DOVIRA_TELEGRAM_CHAT_ID`, `DOVIRA_TELEGRAM_THREAD_ID`,
+`GATB_GA_SERVICE_ACCOUNT_JSON`, `GATB_TELEGRAM_BOT_TOKEN` and
+`DOVIRA_MCP_DUMP_DIR`, set before the code that reads them is deployed; the
+dump folder of every install sits directly under `/home/dovirave/`, outside
+every webroot. Per-install set-up is in `docs/ops/` (THIRD-PARTY-SERVICES.md
+names the files).
